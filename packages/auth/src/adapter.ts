@@ -1,0 +1,210 @@
+import type { Adapter, AdapterUser, AdapterAccount } from "next-auth/adapters";
+import type { PrismaClient, User, Account } from "@zakazi-termin/prisma";
+
+function parseIntSafe(value: string | number | undefined): number {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return parseInt(value, 10);
+  throw new Error("Invalid ID type");
+}
+
+function toAdapterUser(user: User): AdapterUser {
+  return {
+    id: user.id.toString(),
+    name: user.name,
+    email: user.email,
+    emailVerified: user.emailVerified,
+    image: user.avatarUrl,
+  };
+}
+
+function toAdapterAccount(account: Account): AdapterAccount {
+  return {
+    userId: account.userId.toString(),
+    type: account.type as AdapterAccount["type"],
+    provider: account.provider,
+    providerAccountId: account.providerAccountId,
+    refresh_token: account.refresh_token ?? undefined,
+    access_token: account.access_token ?? undefined,
+    expires_at: account.expires_at ?? undefined,
+    token_type: account.token_type ?? undefined,
+    scope: account.scope ?? undefined,
+    id_token: account.id_token ?? undefined,
+    session_state: account.session_state ?? undefined,
+  };
+}
+
+export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
+  return {
+    async createUser(data) {
+      const user = await prisma.user.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          emailVerified: data.emailVerified,
+          avatarUrl: data.image,
+          identityProvider: "GOOGLE",
+        },
+      });
+      return toAdapterUser(user);
+    },
+
+    async getUser(id) {
+      const user = await prisma.user.findUnique({
+        where: { id: parseIntSafe(id) },
+      });
+      return user ? toAdapterUser(user) : null;
+    },
+
+    async getUserByEmail(email) {
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
+      return user ? toAdapterUser(user) : null;
+    },
+
+    async getUserByAccount({ providerAccountId, provider }) {
+      const account = await prisma.account.findUnique({
+        where: {
+          provider_providerAccountId: { provider, providerAccountId },
+        },
+        include: { user: true },
+      });
+      return account?.user ? toAdapterUser(account.user) : null;
+    },
+
+    async updateUser(data) {
+      const user = await prisma.user.update({
+        where: { id: parseIntSafe(data.id) },
+        data: {
+          name: data.name,
+          email: data.email,
+          emailVerified: data.emailVerified,
+          avatarUrl: data.image,
+        },
+      });
+      return toAdapterUser(user);
+    },
+
+    async deleteUser(userId) {
+      const user = await prisma.user.delete({
+        where: { id: parseIntSafe(userId) },
+      });
+      return toAdapterUser(user);
+    },
+
+    async linkAccount(account) {
+      const createdAccount = await prisma.account.create({
+        data: {
+          userId: parseIntSafe(account.userId),
+          type: account.type,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+          refresh_token: account.refresh_token,
+          access_token: account.access_token,
+          expires_at: account.expires_at,
+          token_type: account.token_type,
+          scope: account.scope,
+          id_token: account.id_token,
+          session_state: account.session_state,
+        },
+      });
+      return toAdapterAccount(createdAccount);
+    },
+
+    async unlinkAccount({ providerAccountId, provider }) {
+      const deletedAccount = await prisma.account.delete({
+        where: {
+          provider_providerAccountId: { provider, providerAccountId },
+        },
+      });
+      return toAdapterAccount(deletedAccount);
+    },
+
+    async createSession(data) {
+      const session = await prisma.session.create({
+        data: {
+          userId: parseIntSafe(data.userId),
+          sessionToken: data.sessionToken,
+          expires: data.expires,
+        },
+      });
+      return {
+        sessionToken: session.sessionToken,
+        userId: session.userId.toString(),
+        expires: session.expires,
+      };
+    },
+
+    async getSessionAndUser(sessionToken) {
+      const session = await prisma.session.findUnique({
+        where: { sessionToken },
+        include: { user: true },
+      });
+      if (!session) return null;
+      return {
+        session: {
+          sessionToken: session.sessionToken,
+          userId: session.userId.toString(),
+          expires: session.expires,
+        },
+        user: toAdapterUser(session.user),
+      };
+    },
+
+    async updateSession(data) {
+      const session = await prisma.session.update({
+        where: { sessionToken: data.sessionToken },
+        data: {
+          expires: data.expires,
+        },
+      });
+      return {
+        sessionToken: session.sessionToken,
+        userId: session.userId.toString(),
+        expires: session.expires,
+      };
+    },
+
+    async deleteSession(sessionToken) {
+      const session = await prisma.session.delete({
+        where: { sessionToken },
+      });
+      return {
+        sessionToken: session.sessionToken,
+        userId: session.userId.toString(),
+        expires: session.expires,
+      };
+    },
+
+    async createVerificationToken(data) {
+      const token = await prisma.verificationToken.create({
+        data: {
+          identifier: data.identifier,
+          token: data.token,
+          expires: data.expires,
+        },
+      });
+      return {
+        identifier: token.identifier,
+        token: token.token,
+        expires: token.expires,
+      };
+    },
+
+    async useVerificationToken({ identifier, token }) {
+      try {
+        const verificationToken = await prisma.verificationToken.delete({
+          where: { identifier_token: { identifier, token } },
+        });
+        return {
+          identifier: verificationToken.identifier,
+          token: verificationToken.token,
+          expires: verificationToken.expires,
+        };
+      } catch (error) {
+        // Token already used or doesn't exist
+        return null;
+      }
+    },
+  };
+}
