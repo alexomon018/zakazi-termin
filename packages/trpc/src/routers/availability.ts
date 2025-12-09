@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { getAvailability, getBookingBusyTimes } from "@zakazi-termin/scheduling";
+import { GoogleCalendarService, googleCredentialSchema } from "@zakazi-termin/calendar";
 
 export const availabilityRouter = router({
   // List user's schedules
@@ -341,7 +342,59 @@ export const availabilityRouter = router({
       });
 
       // Get busy times from bookings
-      const busyTimes = getBookingBusyTimes(bookings);
+      const bookingBusyTimes = getBookingBusyTimes(bookings);
+
+      // Get busy times from connected calendars
+      const calendarBusyTimes: { start: Date; end: Date }[] = [];
+
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+      if (clientId && clientSecret) {
+        const credentials = await ctx.prisma.credential.findMany({
+          where: {
+            userId: eventType.userId,
+            type: "google_calendar",
+            invalid: { not: true },
+          },
+          include: {
+            selectedCalendars: true,
+          },
+        });
+
+        for (const credential of credentials) {
+          try {
+            const key = googleCredentialSchema.parse(credential.key);
+            const service = new GoogleCalendarService(
+              { id: credential.id, userId: credential.userId, key },
+              clientId,
+              clientSecret
+            );
+
+            const selectedCalendarIds = credential.selectedCalendars.map(
+              (sc: { externalId: string }) => sc.externalId
+            );
+
+            const gcalBusyTimes = await service.getAvailability(
+              input.dateFrom.toISOString(),
+              input.dateTo.toISOString(),
+              selectedCalendarIds
+            );
+
+            calendarBusyTimes.push(
+              ...gcalBusyTimes.map((bt: { start: string; end: string }) => ({
+                start: new Date(bt.start),
+                end: new Date(bt.end),
+              }))
+            );
+          } catch (error) {
+            console.error(`Failed to get calendar busy times:`, error);
+          }
+        }
+      }
+
+      // Combine all busy times
+      const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes];
 
       // Use scheduling package to calculate available slots
       const timeZone = eventType.schedule?.timeZone || eventType.user.timeZone;

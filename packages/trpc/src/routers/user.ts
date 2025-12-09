@@ -38,6 +38,37 @@ export const userRouter = router({
       return user;
     }),
 
+  // Get public profile with event types
+  getPublicProfile: publicProcedure
+    .input(z.object({ username: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: { username: input.username },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          avatarUrl: true,
+          timeZone: true,
+          eventTypes: {
+            where: { hidden: false },
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              description: true,
+              length: true,
+              hidden: true,
+              locations: true,
+              requiresConfirmation: true,
+            },
+            orderBy: { position: "asc" },
+          },
+        },
+      });
+      return user;
+    }),
+
   // Update user profile
   update: protectedProcedure
     .input(

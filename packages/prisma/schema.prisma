@@ -95,6 +95,7 @@ model User {
   defaultScheduleId   Int?
   accounts            Account[]
   sessions            Session[]
+  credentials         Credential[]
   selectedCalendars   SelectedCalendar[]
   destinationCalendar DestinationCalendar?
   memberships         Membership[]
@@ -235,12 +236,31 @@ model Availability {
 
 // ===== CALENDAR SYNC =====
 
+model Credential {
+  id            Int       @id @default(autoincrement())
+  type          String    // e.g., "google_calendar"
+  key           Json      // OAuth tokens (access_token, refresh_token, expiry_date, etc.)
+  userId        Int
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appId         String?   // e.g., "google-calendar"
+  invalid       Boolean?  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  selectedCalendars    SelectedCalendar[]
+  destinationCalendars DestinationCalendar[]
+
+  @@index([userId])
+  @@index([type])
+}
+
 model SelectedCalendar {
   userId        Int
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   integration   String
   externalId    String
   credentialId  Int?
+  credential    Credential? @relation(fields: [credentialId], references: [id], onDelete: Cascade)
 
   @@id([userId, integration, externalId])
   @@index([userId])
@@ -248,14 +268,15 @@ model SelectedCalendar {
 }
 
 model DestinationCalendar {
-  id            Int        @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   integration   String
   externalId    String
   credentialId  Int?
-  userId        Int?       @unique
-  user          User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventTypeId   Int?       @unique
-  eventType     EventType? @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  credential    Credential? @relation(fields: [credentialId], references: [id], onDelete: Cascade)
+  userId        Int?        @unique
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventTypeId   Int?        @unique
+  eventType     EventType?  @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([credentialId])
