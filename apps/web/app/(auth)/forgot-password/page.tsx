@@ -40,11 +40,11 @@ export default function ForgotPasswordPage() {
     return (
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Proverite email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Proverite email</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-gray-600 mb-6">
-            Ako nalog sa email adresom <strong>{email}</strong> postoji, poslaćemo
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Ako nalog sa email adresom <strong className="text-gray-900 dark:text-white">{email}</strong> postoji, poslaćemo
             vam link za resetovanje lozinke.
           </p>
           <Link href="/login">
@@ -60,21 +60,21 @@ export default function ForgotPasswordPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Zaboravljena lozinka</CardTitle>
-        <p className="text-gray-600 mt-2">
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zaboravljena lozinka</CardTitle>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
             <Input
               id="email"
               type="email"
@@ -91,9 +91,9 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Setili ste se lozinke?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+          <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
             Prijavite se
           </Link>
         </p>

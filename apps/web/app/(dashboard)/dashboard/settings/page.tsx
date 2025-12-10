@@ -42,22 +42,22 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Podešavanja</h1>
-        <p className="text-gray-600 mt-1">Upravljajte svojim nalogom i integracijama</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Podešavanja</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte svojim nalogom i integracijama</p>
       </div>
 
       {/* Success/Error Messages */}
       {successParam === "google_calendar_connected" && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <Check className="w-5 h-5 text-green-600" />
-          <span className="text-green-800">Google Calendar je uspešno povezan!</span>
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+          <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <span className="text-green-800 dark:text-green-300">Google Calendar je uspešno povezan!</span>
         </div>
       )}
 
       {errorParam && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600" />
-          <span className="text-red-800">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <span className="text-red-800 dark:text-red-300">
             {errorParam === "google_auth_denied" && "Odbili ste pristup Google Calendar-u."}
             {errorParam === "google_auth_failed" && "Greška pri povezivanju sa Google Calendar-om."}
             {errorParam === "google_not_configured" && "Google Calendar integracija nije podešena."}
@@ -75,24 +75,24 @@ export default function SettingsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Povežite svoje kalendare kako bismo automatski proveravali vašu zauzetost i
             izbegavali duple rezervacije.
           </p>
 
           {/* Connected Calendars */}
           {isLoading ? (
-            <div className="text-gray-500">Učitavanje...</div>
+            <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
           ) : (
             <div className="space-y-3">
               {connections && connections.length > 0 ? (
                 connections.map((connection) => (
                   <div
                     key={connection.id}
-                    className="flex items-center justify-between p-4 border rounded-lg bg-gray-50"
+                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white border flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center">
                         <svg className="w-6 h-6" viewBox="0 0 24 24">
                           <path
                             fill="#4285F4"
@@ -113,8 +113,8 @@ export default function SettingsPage() {
                         </svg>
                       </div>
                       <div>
-                        <p className="font-medium">Google Calendar</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-gray-900 dark:text-white">Google Calendar</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {connection.calendarsCount} kalendar(a) odabrano
                         </p>
                       </div>
@@ -131,13 +131,13 @@ export default function SettingsPage() {
                         }}
                         disabled={disconnectCalendar.isPending}
                       >
-                        <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                        <Trash2 className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
                       </Button>
                     </div>
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-gray-500 py-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 py-2">
                   Nemate povezanih kalendara.
                 </p>
               )}
@@ -203,22 +203,22 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold">Odaberite kalendare</h3>
-          <p className="text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="font-semibold text-gray-900 dark:text-white">Odaberite kalendare</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Odabrani kalendari će se koristiti za proveru zauzetosti
           </p>
         </div>
         <div className="p-4 max-h-80 overflow-y-auto">
           {isLoading ? (
-            <div className="text-gray-500 text-center py-4">Učitavanje...</div>
+            <div className="text-gray-500 dark:text-gray-400 text-center py-4">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
               {calendars?.map((cal) => (
                 <label
                   key={cal.externalId}
-                  className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -230,12 +230,12 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
                         selected: !cal.selected,
                       })
                     }
-                    className="rounded border-gray-300"
+                    className="rounded border-gray-300 dark:border-gray-600"
                   />
                   <div>
-                    <p className="font-medium">{cal.name}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
                     {cal.primary && (
-                      <span className="text-xs text-green-600">Primarni</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
                     )}
                   </div>
                 </label>
@@ -243,7 +243,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
             </div>
           )}
         </div>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <Button onClick={() => setIsOpen(false)} className="w-full">
             Zatvori
           </Button>

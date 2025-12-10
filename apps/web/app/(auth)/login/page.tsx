@@ -53,19 +53,19 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Zakazi Termin</CardTitle>
-        <p className="text-gray-600 mt-2">Prijavite se na vaš nalog</p>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zakazi Termin</CardTitle>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Prijavite se na vaš nalog</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
             <Input
               id="email"
               type="email"
@@ -78,7 +78,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Lozinka</Label>
+            <Label htmlFor="password" className="text-gray-900 dark:text-white">Lozinka</Label>
             <Input
               id="password"
               type="password"
@@ -93,7 +93,7 @@ export default function LoginPage() {
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
               Zaboravili ste lozinku?
             </Link>
@@ -106,10 +106,10 @@ export default function LoginPage() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
+            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">ili</span>
+            <span className="px-2 bg-card text-gray-500 dark:text-gray-400">ili</span>
           </div>
         </div>
 
@@ -141,9 +141,9 @@ export default function LoginPage() {
           Prijavite se sa Google
         </Button>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Nemate nalog?{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline font-medium">
+          <Link href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
             Registrujte se
           </Link>
         </p>

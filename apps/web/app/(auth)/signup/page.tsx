@@ -94,19 +94,19 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Zakazi Termin</CardTitle>
-        <p className="text-gray-600 mt-2">Kreirajte vaš nalog</p>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zakazi Termin</CardTitle>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">Kreirajte vaš nalog</p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
               {error}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Ime i prezime</Label>
+            <Label htmlFor="name" className="text-gray-900 dark:text-white">Ime i prezime</Label>
             <Input
               id="name"
               name="name"
@@ -120,7 +120,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
             <Input
               id="email"
               name="email"
@@ -134,7 +134,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username">Korisničko ime</Label>
+            <Label htmlFor="username" className="text-gray-900 dark:text-white">Korisničko ime</Label>
             <Input
               id="username"
               name="username"
@@ -145,13 +145,13 @@ export default function SignupPage() {
               required
               disabled={isLoading}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Vaš profil: zakazi-termin.rs/{formData.username || "korisnickoime"}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Lozinka</Label>
+            <Label htmlFor="password" className="text-gray-900 dark:text-white">Lozinka</Label>
             <Input
               id="password"
               name="password"
@@ -165,7 +165,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Potvrdite lozinku</Label>
+            <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-white">Potvrdite lozinku</Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
@@ -185,10 +185,10 @@ export default function SignupPage() {
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
+            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">ili</span>
+            <span className="px-2 bg-card text-gray-500 dark:text-gray-400">ili</span>
           </div>
         </div>
 
@@ -220,9 +220,9 @@ export default function SignupPage() {
           Nastavite sa Google
         </Button>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Već imate nalog?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline font-medium">
+          <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
             Prijavite se
           </Link>
         </p>

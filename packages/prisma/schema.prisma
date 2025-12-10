@@ -79,6 +79,7 @@ model User {
   username            String?               @unique
   password            UserPassword?
   avatarUrl           String?
+  bio                 String?
   timeZone            String                @default("Europe/Belgrade")
   weekStart           String                @default("Monday")
   locale              String                @default("sr")
@@ -87,6 +88,11 @@ model User {
   emailVerified       DateTime?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
+
+  // Appearance settings
+  theme               String?               // "light" | "dark" | null (system)
+  brandColor          String?               @default("#292929")
+  darkBrandColor      String?               @default("#fafafa")
 
   // Relations
   eventTypes          EventType[]
@@ -99,6 +105,7 @@ model User {
   selectedCalendars   SelectedCalendar[]
   destinationCalendar DestinationCalendar?
   memberships         Membership[]
+  outOfOfficeEntries  OutOfOffice[]
 
   @@index([email])
   @@index([username])
@@ -353,4 +360,34 @@ model BookingReference {
   @@index([bookingId])
   @@index([credentialId])
   @@index([type])
+}
+
+// ===== OUT OF OFFICE =====
+
+model OutOfOfficeReason {
+  id              Int           @id @default(autoincrement())
+  emoji           String        @default("🏝️")
+  reason          String
+  userId          Int?          // null = global/system reason, userId = custom user reason
+  enabled         Boolean       @default(true)
+  outOfOffices    OutOfOffice[]
+
+  @@index([userId])
+}
+
+model OutOfOffice {
+  id        Int                @id @default(autoincrement())
+  uuid      String             @unique @default(uuid())
+  userId    Int
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  start     DateTime           @db.Date
+  end       DateTime           @db.Date
+  notes     String?
+  reasonId  Int?
+  reason    OutOfOfficeReason? @relation(fields: [reasonId], references: [id])
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([start, end])
 }

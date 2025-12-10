@@ -141,14 +141,14 @@ export default function NewEventTypePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Novi tip termina</h1>
-          <p className="text-gray-600 mt-1">Kreirajte novu vrstu termina za vaše klijente</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Novi tip termina</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Kreirajte novu vrstu termina za vaše klijente</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {errors.form && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg">
             {errors.form}
           </div>
         )}
@@ -164,7 +164,7 @@ export default function NewEventTypePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Naziv</Label>
+                <Label htmlFor="title" className="text-gray-900 dark:text-white">Naziv</Label>
                 <Input
                   id="title"
                   placeholder="npr. Konsultacija"
@@ -175,9 +175,9 @@ export default function NewEventTypePage() {
                 {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="slug">URL slug</Label>
+                <Label htmlFor="slug" className="text-gray-900 dark:text-white">URL slug</Label>
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-500 mr-1">/</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">/</span>
                   <Input
                     id="slug"
                     placeholder="konsultacija"
@@ -191,19 +191,19 @@ export default function NewEventTypePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Opis (opciono)</Label>
+              <Label htmlFor="description" className="text-gray-900 dark:text-white">Opis (opciono)</Label>
               <textarea
                 id="description"
                 rows={3}
                 placeholder="Opišite šta klijent može očekivati od ovog termina..."
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Trajanje</Label>
+              <Label className="text-gray-900 dark:text-white">Trajanje</Label>
               <div className="flex flex-wrap gap-2">
                 {durationOptions.map((duration) => (
                   <button
@@ -213,7 +213,7 @@ export default function NewEventTypePage() {
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       formData.length === duration
                         ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     }`}
                   >
                     {duration < 60 ? `${duration} min` : `${duration / 60}h`}
@@ -228,7 +228,7 @@ export default function NewEventTypePage() {
                     onChange={(e) => setFormData((prev) => ({ ...prev, length: parseInt(e.target.value) || 30 }))}
                     className="w-20"
                   />
-                  <span className="text-sm text-gray-500">min</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">min</span>
                 </div>
               </div>
               {errors.length && <p className="text-sm text-red-500">{errors.length}</p>}
@@ -246,7 +246,7 @@ export default function NewEventTypePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="locationAddress">Adresa</Label>
+              <Label htmlFor="locationAddress" className="text-gray-900 dark:text-white">Adresa</Label>
               <Input
                 id="locationAddress"
                 placeholder="npr. Knez Mihailova 10, Beograd"
@@ -257,7 +257,7 @@ export default function NewEventTypePage() {
               {errors.locationAddress && (
                 <p className="text-sm text-red-500">{errors.locationAddress}</p>
               )}
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Ova adresa će biti prikazana klijentima prilikom zakazivanja
               </p>
             </div>
@@ -274,7 +274,7 @@ export default function NewEventTypePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Koristi raspored</Label>
+              <Label className="text-gray-900 dark:text-white">Koristi raspored</Label>
               <select
                 value={formData.scheduleId || ""}
                 onChange={(e) =>
@@ -283,7 +283,7 @@ export default function NewEventTypePage() {
                     scheduleId: e.target.value ? parseInt(e.target.value) : null,
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Podrazumevani raspored</option>
                 {schedules?.map((schedule) => (
@@ -292,7 +292,7 @@ export default function NewEventTypePage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Izaberite koji raspored radnog vremena da koristite za ovaj tip termina
               </p>
             </div>
@@ -309,7 +309,7 @@ export default function NewEventTypePage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Minimalno vreme unapred za zakazivanje</Label>
+              <Label className="text-gray-900 dark:text-white">Minimalno vreme unapred za zakazivanje</Label>
               <select
                 value={formData.minimumBookingNotice}
                 onChange={(e) =>
@@ -318,7 +318,7 @@ export default function NewEventTypePage() {
                     minimumBookingNotice: parseInt(e.target.value),
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {noticeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -326,14 +326,14 @@ export default function NewEventTypePage() {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Koliko ranije klijent mora zakazati termin
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Pauza pre termina</Label>
+                <Label className="text-gray-900 dark:text-white">Pauza pre termina</Label>
                 <select
                   value={formData.beforeEventBuffer}
                   onChange={(e) =>
@@ -342,7 +342,7 @@ export default function NewEventTypePage() {
                       beforeEventBuffer: parseInt(e.target.value),
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {bufferOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -352,7 +352,7 @@ export default function NewEventTypePage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Pauza posle termina</Label>
+                <Label className="text-gray-900 dark:text-white">Pauza posle termina</Label>
                 <select
                   value={formData.afterEventBuffer}
                   onChange={(e) =>
@@ -361,7 +361,7 @@ export default function NewEventTypePage() {
                       afterEventBuffer: parseInt(e.target.value),
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {bufferOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -374,8 +374,8 @@ export default function NewEventTypePage() {
 
             <div className="flex items-center justify-between">
               <div>
-                <Label>Zahtevaj ručnu potvrdu</Label>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <Label className="text-gray-900 dark:text-white">Zahtevaj ručnu potvrdu</Label>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   Termini neće biti automatski potvrđeni dok ih ne odobrite
                 </p>
               </div>
@@ -388,7 +388,7 @@ export default function NewEventTypePage() {
                   }))
                 }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  formData.requiresConfirmation ? "bg-blue-500" : "bg-gray-200"
+                  formData.requiresConfirmation ? "bg-blue-500" : "bg-gray-200 dark:bg-gray-700"
                 }`}
               >
                 <span
