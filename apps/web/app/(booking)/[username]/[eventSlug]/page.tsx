@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import { Button, Card, CardContent, Input, Label } from "@zakazi-termin/ui";
@@ -16,15 +16,17 @@ import {
   Phone,
   FileText,
   CheckCircle,
+  RefreshCw,
 } from "lucide-react";
 
 type BookingStep = "select-time" | "enter-details" | "confirmation";
 
 export default function PublicBookingPage() {
   const params = useParams();
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const username = params.username as string;
   const eventSlug = params.eventSlug as string;
+  const rescheduleUid = searchParams.get("rescheduleUid");
 
   const [currentStep, setCurrentStep] = useState<BookingStep>("select-time");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -39,6 +41,26 @@ export default function PublicBookingPage() {
     notes: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Fetch existing booking if rescheduling
+  const { data: existingBooking, isLoading: existingBookingLoading } =
+    trpc.booking.byUid.useQuery(
+      { uid: rescheduleUid! },
+      { enabled: !!rescheduleUid }
+    );
+
+  // Pre-fill form data from existing booking
+  useEffect(() => {
+    if (existingBooking && existingBooking.attendees[0]) {
+      const attendee = existingBooking.attendees[0];
+      setFormData({
+        name: attendee.name,
+        email: attendee.email,
+        phoneNumber: attendee.phoneNumber || "",
+        notes: existingBooking.description || "",
+      });
+    }
+  }, [existingBooking]);
 
   // Fetch event type
   const { data: eventType, isLoading: eventTypeLoading } =
@@ -65,7 +87,6 @@ export default function PublicBookingPage() {
     return { start, end };
   }, [currentMonth]);
 
-  console.log("dateRange", dateRange);
   // Fetch available slots
   const { data: slotsData, isLoading: slotsLoading } =
     trpc.availability.getSlots.useQuery(
@@ -79,8 +100,6 @@ export default function PublicBookingPage() {
       }
     );
 
-  console.log("slotsData", slotsData);
-
   // Create booking mutation
   const createBooking = trpc.booking.create.useMutation({
     onSuccess: (booking) => {
@@ -91,6 +110,25 @@ export default function PublicBookingPage() {
       if (error.message.includes("nije dostupan")) {
         setErrors({
           form: "Izabrani termin više nije dostupan. Molimo izaberite drugi.",
+        });
+        setSelectedSlot(null);
+        setCurrentStep("select-time");
+      } else {
+        setErrors({ form: error.message });
+      }
+    },
+  });
+
+  // Reschedule mutation
+  const rescheduleBooking = trpc.booking.reschedule.useMutation({
+    onSuccess: (booking) => {
+      setBookingUid(booking.uid);
+      setCurrentStep("confirmation");
+    },
+    onError: (error) => {
+      if (error.message.includes("nije dostupan")) {
+        setErrors({
+          form: "Izabrani termin nije dostupan. Molimo izaberite drugi.",
         });
         setSelectedSlot(null);
         setCurrentStep("select-time");
@@ -194,15 +232,25 @@ export default function PublicBookingPage() {
       startTime.getTime() + eventType.length * 60 * 1000
     );
 
-    createBooking.mutate({
-      eventTypeId: eventType.id,
-      startTime,
-      endTime,
-      name: formData.name,
-      email: formData.email,
-      phoneNumber: formData.phoneNumber || undefined,
-      notes: formData.notes || undefined,
-    });
+    // If rescheduling, use reschedule mutation
+    if (rescheduleUid) {
+      rescheduleBooking.mutate({
+        uid: rescheduleUid,
+        newStartTime: startTime,
+        newEndTime: endTime,
+      });
+    } else {
+      // Create new booking
+      createBooking.mutate({
+        eventTypeId: eventType.id,
+        startTime,
+        endTime,
+        name: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber || undefined,
+        notes: formData.notes || undefined,
+      });
+    }
   };
 
   const goToPreviousMonth = () => {
@@ -231,7 +279,11 @@ export default function PublicBookingPage() {
     return !!slotsByDate[date.toDateString()]?.length;
   };
 
-  if (eventTypeLoading) {
+  const isLoading = eventTypeLoading || (rescheduleUid && existingBookingLoading);
+  const isPending = createBooking.isPending || rescheduleBooking.isPending;
+  const isRescheduling = !!rescheduleUid;
+
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <div className="text-gray-500">Učitavanje...</div>
@@ -266,12 +318,16 @@ export default function PublicBookingPage() {
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h2 className="mb-2 text-2xl font-bold text-gray-900">
-              {eventType.requiresConfirmation
+              {isRescheduling
+                ? "Termin je promenjen!"
+                : eventType.requiresConfirmation
                 ? "Zahtev je poslat!"
                 : "Termin je zakazan!"}
             </h2>
             <p className="mb-6 text-gray-600">
-              {eventType.requiresConfirmation
+              {isRescheduling
+                ? "Uspešno ste promenili termin. Detalje ćete dobiti na email."
+                : eventType.requiresConfirmation
                 ? "Vaš zahtev za termin je poslat. Dobićete obaveštenje kada bude potvrđen."
                 : "Uspešno ste zakazali termin. Detalje ćete dobiti na email."}
             </p>
@@ -310,12 +366,19 @@ export default function PublicBookingPage() {
               </div>
             </div>
 
-            <p className="text-sm text-gray-500">
+            <p className="mb-4 text-sm text-gray-500">
               Referentni kod:{" "}
               <code className="px-2 py-1 bg-gray-100 rounded">
-                {bookingUid}
+                {bookingUid?.slice(0, 8).toUpperCase()}
               </code>
             </p>
+
+            <Link
+              href={`/booking/${bookingUid}`}
+              className="text-blue-600 hover:underline"
+            >
+              Pogledaj detalje termina
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -325,6 +388,29 @@ export default function PublicBookingPage() {
   return (
     <div className="px-4 py-8 min-h-screen bg-gray-50">
       <div className="mx-auto max-w-4xl">
+        {/* Reschedule banner */}
+        {isRescheduling && existingBooking && (
+          <div className="flex gap-2 items-center p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200">
+            <RefreshCw className="flex-shrink-0 w-5 h-5 text-blue-600" />
+            <div>
+              <p className="font-medium text-blue-900">Promena termina</p>
+              <p className="text-sm text-blue-700">
+                Trenutni termin:{" "}
+                {new Date(existingBooking.startTime).toLocaleDateString("sr-RS", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}{" "}
+                u{" "}
+                {new Date(existingBooking.startTime).toLocaleTimeString("sr-RS", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="flex gap-3 justify-center items-center mb-4">
@@ -346,7 +432,7 @@ export default function PublicBookingPage() {
             </div>
           </div>
           <h2 className="mb-2 text-2xl font-bold text-gray-900">
-            {eventType.title}
+            {isRescheduling ? `Promena termina: ${eventType.title}` : eventType.title}
           </h2>
           {eventType.description && (
             <p className="mx-auto max-w-lg text-gray-600">
@@ -545,6 +631,7 @@ export default function PublicBookingPage() {
                         }))
                       }
                       className={errors.name ? "border-red-500" : ""}
+                      disabled={isRescheduling}
                     />
                     {errors.name && (
                       <p className="text-sm text-red-500">{errors.name}</p>
@@ -568,58 +655,67 @@ export default function PublicBookingPage() {
                         }))
                       }
                       className={errors.email ? "border-red-500" : ""}
+                      disabled={isRescheduling}
                     />
                     {errors.email && (
                       <p className="text-sm text-red-500">{errors.email}</p>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex gap-2 items-center">
-                      <Phone className="w-4 h-4" />
-                      Telefon (opciono)
-                    </Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+381 60 123 4567"
-                      value={formData.phoneNumber}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          phoneNumber: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
+                  {!isRescheduling && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="flex gap-2 items-center">
+                          <Phone className="w-4 h-4" />
+                          Telefon (opciono)
+                        </Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+381 60 123 4567"
+                          value={formData.phoneNumber}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              phoneNumber: e.target.value,
+                            }))
+                          }
+                        />
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="notes" className="flex gap-2 items-center">
-                      <FileText className="w-4 h-4" />
-                      Napomena (opciono)
-                    </Label>
-                    <textarea
-                      id="notes"
-                      rows={3}
-                      placeholder="Dodatne informacije ili pitanja..."
-                      value={formData.notes}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          notes: e.target.value,
-                        }))
-                      }
-                      className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="notes" className="flex gap-2 items-center">
+                          <FileText className="w-4 h-4" />
+                          Napomena (opciono)
+                        </Label>
+                        <textarea
+                          id="notes"
+                          rows={3}
+                          placeholder="Dodatne informacije ili pitanja..."
+                          value={formData.notes}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              notes: e.target.value,
+                            }))
+                          }
+                          className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={createBooking.isPending}
+                    disabled={isPending}
                   >
-                    {createBooking.isPending
-                      ? "Zakazivanje..."
+                    {isPending
+                      ? isRescheduling
+                        ? "Menjam termin..."
+                        : "Zakazivanje..."
+                      : isRescheduling
+                      ? "Promeni termin"
                       : "Zakaži termin"}
                   </Button>
                 </form>

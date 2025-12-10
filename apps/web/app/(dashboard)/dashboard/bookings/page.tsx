@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
@@ -12,8 +12,8 @@ export default function BookingsPage() {
   const [filter, setFilter] = useState<BookingFilter>("upcoming");
   const utils = trpc.useUtils();
 
-  // Determine query parameters based on filter
-  const getQueryParams = () => {
+  // Memoize query parameters to prevent infinite re-fetching
+  const queryParams = useMemo(() => {
     const now = new Date();
     switch (filter) {
       case "upcoming":
@@ -27,9 +27,9 @@ export default function BookingsPage() {
       default:
         return {};
     }
-  };
+  }, [filter]);
 
-  const { data: bookings, isLoading } = trpc.booking.list.useQuery(getQueryParams());
+  const { data: bookings, isLoading } = trpc.booking.list.useQuery(queryParams);
 
   const confirmBooking = trpc.booking.confirm.useMutation({
     onSuccess: () => {

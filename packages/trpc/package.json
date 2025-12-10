@@ -8,6 +8,7 @@
     "@trpc/server": "^11.0.0-rc.660",
     "@zakazi-termin/calendar": "workspace:*",
     "@zakazi-termin/config": "workspace:*",
+    "@zakazi-termin/emails": "workspace:*",
     "@zakazi-termin/prisma": "workspace:*",
     "@zakazi-termin/scheduling": "workspace:*",
     "superjson": "^2.2.1",
