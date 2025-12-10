@@ -59,7 +59,7 @@ export default function EventTypesPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Učitavanje...</div>
+        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
       </div>
     );
   }
@@ -68,8 +68,8 @@ export default function EventTypesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tipovi termina</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tipovi termina</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
         </div>
@@ -85,11 +85,11 @@ export default function EventTypesPage() {
         <Card>
           <CardContent className="py-12">
             <div className="text-center">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                 Nemate tipove termina
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 Kreirajte svoj prvi tip termina da biste omogućili klijentima da zakazuju.
               </p>
               <Link href="/dashboard/event-types/new">
@@ -118,21 +118,21 @@ export default function EventTypesPage() {
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-gray-900">
+                        <h3 className="font-medium text-gray-900 dark:text-white">
                           {eventType.title}
                         </h3>
                         {eventType.hidden && (
-                          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
                             Skriveno
                           </span>
                         )}
                         {eventType.requiresConfirmation && (
-                          <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
+                          <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded">
                             Zahteva potvrdu
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3.5 h-3.5" />
                           {formatDuration(eventType.length)}
@@ -154,7 +154,7 @@ export default function EventTypesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleCopyLink(eventType)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       {copySuccess === index ? (
                         <span className="text-green-600 text-xs">Kopirano!</span>
@@ -170,7 +170,7 @@ export default function EventTypesPage() {
                     <Link
                       href={`/${currentUser?.username}/${eventType.slug}`}
                       target="_blank"
-                      className="text-gray-500 hover:text-gray-700 p-2 rounded-md hover:bg-gray-100"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Link>
@@ -180,7 +180,7 @@ export default function EventTypesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       {eventType.hidden ? (
                         <Eye className="w-4 h-4" />
@@ -191,7 +191,7 @@ export default function EventTypesPage() {
 
                     {/* Edit */}
                     <Link href={`/dashboard/event-types/${eventType.id}`}>
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+                      <Button variant="ghost" size="sm" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                         <Pencil className="w-4 h-4" />
                       </Button>
                     </Link>
@@ -201,7 +201,7 @@ export default function EventTypesPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(eventType.id)}
-                      className="text-gray-500 hover:text-red-600"
+                      className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -209,8 +209,8 @@ export default function EventTypesPage() {
                 </div>
 
                 {/* Public URL bar */}
-                <div className="border-t border-gray-100 px-4 py-2 bg-gray-50 rounded-b-lg">
-                  <code className="text-xs text-gray-600">
+                <div className="border-t border-gray-100 dark:border-gray-700 px-4 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-b-lg">
+                  <code className="text-xs text-gray-600 dark:text-gray-400">
                     {process.env.NEXT_PUBLIC_APP_URL || window.location.origin}/{currentUser?.username}/{eventType.slug}
                   </code>
                 </div>
@@ -222,9 +222,9 @@ export default function EventTypesPage() {
 
       {/* Help section */}
       {eventTypes && eventTypes.length > 0 && (
-        <div className="bg-blue-50 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-1">Kako funkcioniše?</h4>
-          <p className="text-sm text-blue-700">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 dark:text-blue-300 mb-1">Kako funkcioniše?</h4>
+          <p className="text-sm text-blue-700 dark:text-blue-400">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin
             iz vaše dostupnosti, a vi ćete dobiti obaveštenje o novom terminu.
           </p>

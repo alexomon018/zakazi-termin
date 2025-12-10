@@ -285,21 +285,21 @@ export default function PublicBookingPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
-        <div className="text-gray-500">Učitavanje...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
       </div>
     );
   }
 
   if (!eventType) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <Card className="mx-auto max-w-md">
           <CardContent className="py-12 text-center">
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">
+            <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
               Stranica nije pronađena
             </h2>
-            <p className="text-gray-500">
+            <p className="text-gray-500 dark:text-gray-400">
               Ovaj tip termina ne postoji ili nije dostupan.
             </p>
           </CardContent>
@@ -311,20 +311,20 @@ export default function PublicBookingPage() {
   // Confirmation step
   if (currentStep === "confirmation") {
     return (
-      <div className="px-4 py-12 min-h-screen bg-gray-50">
+      <div className="px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
         <Card className="mx-auto max-w-lg">
           <CardContent className="py-12 text-center">
-            <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-green-100 rounded-full">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+            <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full">
+              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
+            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
               {isRescheduling
                 ? "Termin je promenjen!"
                 : eventType.requiresConfirmation
                 ? "Zahtev je poslat!"
                 : "Termin je zakazan!"}
             </h2>
-            <p className="mb-6 text-gray-600">
+            <p className="mb-6 text-gray-600 dark:text-gray-400">
               {isRescheduling
                 ? "Uspešno ste promenili termin. Detalje ćete dobiti na email."
                 : eventType.requiresConfirmation
@@ -332,11 +332,11 @@ export default function PublicBookingPage() {
                 : "Uspešno ste zakazali termin. Detalje ćete dobiti na email."}
             </p>
 
-            <div className="p-4 mb-6 text-left bg-gray-50 rounded-lg">
-              <h3 className="mb-3 font-medium text-gray-900">
+            <div className="p-4 mb-6 text-left bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">
                 {eventType.title}
               </h3>
-              <div className="space-y-2 text-sm text-gray-600">
+              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex gap-2 items-center">
                   <Calendar className="w-4 h-4" />
                   <span>
@@ -366,16 +366,16 @@ export default function PublicBookingPage() {
               </div>
             </div>
 
-            <p className="mb-4 text-sm text-gray-500">
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
               Referentni kod:{" "}
-              <code className="px-2 py-1 bg-gray-100 rounded">
+              <code className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">
                 {bookingUid?.slice(0, 8).toUpperCase()}
               </code>
             </p>
 
             <Link
               href={`/booking/${bookingUid}`}
-              className="text-blue-600 hover:underline"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
             >
               Pogledaj detalje termina
             </Link>
@@ -386,15 +386,15 @@ export default function PublicBookingPage() {
   }
 
   return (
-    <div className="px-4 py-8 min-h-screen bg-gray-50">
+    <div className="px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="mx-auto max-w-4xl">
         {/* Reschedule banner */}
         {isRescheduling && existingBooking && (
-          <div className="flex gap-2 items-center p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200">
-            <RefreshCw className="flex-shrink-0 w-5 h-5 text-blue-600" />
+          <div className="flex gap-2 items-center p-4 mb-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+            <RefreshCw className="flex-shrink-0 w-5 h-5 text-blue-600 dark:text-blue-400" />
             <div>
-              <p className="font-medium text-blue-900">Promena termina</p>
-              <p className="text-sm text-blue-700">
+              <p className="font-medium text-blue-900 dark:text-blue-100">Promena termina</p>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 Trenutni termin:{" "}
                 {new Date(existingBooking.startTime).toLocaleDateString("sr-RS", {
                   weekday: "long",
@@ -421,25 +421,25 @@ export default function PublicBookingPage() {
                 className="w-12 h-12 rounded-full"
               />
             ) : (
-              <div className="flex justify-center items-center w-12 h-12 bg-blue-100 rounded-full">
-                <User className="w-6 h-6 text-blue-600" />
+              <div className="flex justify-center items-center w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full">
+                <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
             )}
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {eventType.user?.name}
               </h1>
             </div>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900">
+          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
             {isRescheduling ? `Promena termina: ${eventType.title}` : eventType.title}
           </h2>
           {eventType.description && (
-            <p className="mx-auto max-w-lg text-gray-600">
+            <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">
               {eventType.description}
             </p>
           )}
-          <div className="flex gap-4 justify-center items-center mt-4 text-sm text-gray-500">
+          <div className="flex gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
             <span className="flex gap-1 items-center">
               <Clock className="w-4 h-4" />
               {eventType.length} minuta
@@ -458,11 +458,11 @@ export default function PublicBookingPage() {
         <Card>
           <CardContent className="p-0">
             {currentStep === "select-time" ? (
-              <div className="grid grid-cols-1 divide-y divide-gray-200 md:grid-cols-2 md:divide-y-0 md:divide-x">
+              <div className="grid grid-cols-1 divide-y divide-gray-200 dark:divide-gray-700 md:grid-cols-2 md:divide-y-0 md:divide-x">
                 {/* Calendar */}
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                       {currentMonth.toLocaleDateString("sr-RS", {
                         month: "long",
                         year: "numeric",
@@ -489,7 +489,7 @@ export default function PublicBookingPage() {
                       (day) => (
                         <div
                           key={day}
-                          className="py-2 text-xs font-medium text-center text-gray-500"
+                          className="py-2 text-xs font-medium text-center text-gray-500 dark:text-gray-400"
                         >
                           {day}
                         </div>
@@ -520,8 +520,8 @@ export default function PublicBookingPage() {
                             isSelected
                               ? "text-white bg-blue-500"
                               : isDisabled
-                              ? "text-gray-300 cursor-not-allowed"
-                              : "text-gray-900 hover:bg-blue-50"
+                              ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                              : "text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                           } ${hasSlots && !isPast ? "font-semibold" : ""}`}
                         >
                           {date.getDate()}
@@ -531,7 +531,7 @@ export default function PublicBookingPage() {
                   </div>
 
                   {slotsLoading && (
-                    <p className="mt-4 text-sm text-center text-gray-500">
+                    <p className="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
                       Učitavanje termina...
                     </p>
                   )}
@@ -539,7 +539,7 @@ export default function PublicBookingPage() {
 
                 {/* Time slots */}
                 <div className="p-6">
-                  <h3 className="mb-4 font-semibold text-gray-900">
+                  <h3 className="mb-4 font-semibold text-gray-900 dark:text-gray-100">
                     {selectedDate
                       ? formatDate(selectedDate)
                       : "Izaberite datum"}
@@ -554,20 +554,20 @@ export default function PublicBookingPage() {
                           onClick={() => handleSlotSelect(slot)}
                           className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                             selectedSlot === slot
-                              ? "border-blue-500 bg-blue-50 text-blue-700"
-                              : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
+                              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                              : "border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-gray-50 dark:hover:bg-gray-800 dark:text-gray-100"
                           }`}
                         >
                           {formatTime(slot)}
                         </button>
                       )) || (
-                        <p className="py-4 text-center text-gray-500">
+                        <p className="py-4 text-center text-gray-500 dark:text-gray-400">
                           Nema dostupnih termina za ovaj dan
                         </p>
                       )}
                     </div>
                   ) : (
-                    <p className="py-12 text-center text-gray-500">
+                    <p className="py-12 text-center text-gray-500 dark:text-gray-400">
                       Izaberite datum sa kalendara da vidite dostupne termine
                     </p>
                   )}
@@ -585,21 +585,21 @@ export default function PublicBookingPage() {
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="flex items-center mb-6 text-sm text-gray-500 hover:text-gray-700"
+                  className="flex items-center mb-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
                   <ChevronLeft className="mr-1 w-4 h-4" />
                   Nazad na izbor termina
                 </button>
 
                 {/* Selected time summary */}
-                <div className="p-4 mb-6 bg-gray-50 rounded-lg">
-                  <div className="flex gap-2 items-center mb-1 text-sm text-gray-600">
+                <div className="p-4 mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex gap-2 items-center mb-1 text-sm text-gray-600 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span>
                       {selectedSlot && formatDate(new Date(selectedSlot))}
                     </span>
                   </div>
-                  <div className="flex gap-2 items-center text-sm text-gray-600">
+                  <div className="flex gap-2 items-center text-sm text-gray-600 dark:text-gray-400">
                     <Clock className="w-4 h-4" />
                     <span>
                       {selectedSlot && formatTime(selectedSlot)} (
@@ -609,7 +609,7 @@ export default function PublicBookingPage() {
                 </div>
 
                 {errors.form && (
-                  <div className="p-4 mb-4 text-red-700 bg-red-50 rounded-lg">
+                  <div className="p-4 mb-4 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-lg">
                     {errors.form}
                   </div>
                 )}
@@ -699,7 +699,7 @@ export default function PublicBookingPage() {
                               notes: e.target.value,
                             }))
                           }
-                          className="px-3 py-2 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="px-3 py-2 w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
                     </>
@@ -725,9 +725,9 @@ export default function PublicBookingPage() {
         </Card>
 
         {/* Footer */}
-        <div className="mt-8 text-sm text-center text-gray-500">
+        <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
           Pokreće{" "}
-          <Link href="/" className="text-blue-600 hover:underline">
+          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
             Zakazi Termin
           </Link>
         </div>

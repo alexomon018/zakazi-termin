@@ -125,7 +125,7 @@ export default function AvailabilityPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Učitavanje...</div>
+        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
       </div>
     );
   }
@@ -133,8 +133,8 @@ export default function AvailabilityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dostupnost</h1>
-        <p className="text-gray-600 mt-1">Upravljajte svojim radnim vremenom i rasporedima</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dostupnost</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte svojim radnim vremenom i rasporedima</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -168,16 +168,16 @@ export default function AvailabilityPage() {
                   key={schedule.id}
                   className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedScheduleId === schedule.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
                   onClick={() => handleSelectSchedule(schedule.id)}
                 >
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="font-medium">{schedule.name}</span>
+                    <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <span className="font-medium text-gray-900 dark:text-white">{schedule.name}</span>
                     {currentUser?.defaultScheduleId === schedule.id && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
                         Podrazumevani
                       </span>
                     )}
@@ -198,7 +198,7 @@ export default function AvailabilityPage() {
               ))}
 
               {schedules?.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                   Nemate nijedan raspored. Kreirajte novi raspored iznad.
                 </p>
               )}
@@ -219,7 +219,7 @@ export default function AvailabilityPage() {
                 {/* Availability entries */}
                 <div className="space-y-4">
                   {availability.map((entry, entryIndex) => (
-                    <div key={entryIndex} className="border rounded-lg p-4 space-y-4">
+                    <div key={entryIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4">
                       {/* Days selector */}
                       <div className="flex flex-wrap gap-2">
                         {DAYS_OF_WEEK.map((day) => (
@@ -230,7 +230,7 @@ export default function AvailabilityPage() {
                             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                               entry.days.includes(day.value)
                                 ? "bg-blue-500 text-white"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                             }`}
                           >
                             {day.short}
@@ -241,7 +241,7 @@ export default function AvailabilityPage() {
                       {/* Time inputs */}
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm text-gray-500">Od</Label>
+                          <Label className="text-sm text-gray-500 dark:text-gray-400">Od</Label>
                           <Input
                             type="time"
                             value={entry.startTime}
@@ -250,7 +250,7 @@ export default function AvailabilityPage() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          <Label className="text-sm text-gray-500">Do</Label>
+                          <Label className="text-sm text-gray-500 dark:text-gray-400">Do</Label>
                           <Input
                             type="time"
                             value={entry.endTime}
@@ -279,7 +279,7 @@ export default function AvailabilityPage() {
                 </Button>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t">
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                   <Button
                     variant="outline"
                     onClick={() => setDefaultSchedule.mutate({ scheduleId: selectedScheduleId! })}
@@ -297,8 +297,8 @@ export default function AvailabilityPage() {
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-gray-500">
-                <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                 <p>Izaberite raspored sa leve strane ili kreirajte novi</p>
               </div>
             )}

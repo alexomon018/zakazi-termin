@@ -123,7 +123,7 @@ export default function BookingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Učitavanje...</div>
+        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
       </div>
     );
   }
@@ -131,20 +131,20 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Termini</h1>
-        <p className="text-gray-600 mt-1">Upravljajte zakazanim terminima</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 border-b border-gray-200 pb-4">
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4">
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               filter === f.key
-                ? "bg-blue-100 text-blue-700"
-                : "text-gray-600 hover:bg-gray-100"
+                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
             }`}
           >
             {f.label}
@@ -156,8 +156,8 @@ export default function BookingsPage() {
       {bookings?.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500">
+            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+            <p className="text-gray-500 dark:text-gray-400">
               {filter === "upcoming" && "Nemate predstojećih termina."}
               {filter === "pending" && "Nemate termina na čekanju."}
               {filter === "past" && "Nemate prošlih termina."}
@@ -175,31 +175,31 @@ export default function BookingsPage() {
                     <div className="flex-1">
                       {/* Title and status */}
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">{booking.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{booking.title}</h3>
                         {getStatusBadge(booking.status)}
                       </div>
 
                       {/* Event type */}
                       {booking.eventType && (
-                        <p className="text-sm text-gray-500 mb-3">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                           {booking.eventType.title}
                         </p>
                       )}
 
                       {/* Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <Calendar className="w-4 h-4" />
                           <span>{formatDateTime(booking.startTime)}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <Clock className="w-4 h-4" />
                           <span>
                             {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                           </span>
                         </div>
                         {booking.location && (
-                          <div className="flex items-center gap-2 text-gray-600">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                             <MapPin className="w-4 h-4" />
                             <span className="truncate">{booking.location}</span>
                           </div>
@@ -208,18 +208,18 @@ export default function BookingsPage() {
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <p className="text-xs font-medium text-gray-500 mb-2">GOST</p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">GOST</p>
                           {booking.attendees.map((attendee) => (
                             <div key={attendee.id} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                <User className="w-4 h-4 text-gray-500" />
+                              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                               </div>
                               <div>
-                                <p className="text-sm font-medium text-gray-900">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
                                   {attendee.name}
                                 </p>
-                                <p className="text-xs text-gray-500">{attendee.email}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{attendee.email}</p>
                               </div>
                             </div>
                           ))}
@@ -228,9 +228,9 @@ export default function BookingsPage() {
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <p className="text-xs font-medium text-gray-500 mb-1">NAPOMENA</p>
-                          <p className="text-sm text-gray-600">{booking.description}</p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">NAPOMENA</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{booking.description}</p>
                         </div>
                       )}
                     </div>
@@ -266,7 +266,7 @@ export default function BookingsPage() {
                           variant="outline"
                           onClick={() => handleCancel(booking.uid)}
                           disabled={cancelBooking.isPending}
-                          className="text-gray-600 hover:text-red-600"
+                          className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                         >
                           Otkaži
                         </Button>
@@ -276,7 +276,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="bg-gray-50 px-4 py-2 text-xs text-gray-500 rounded-b-lg">
+                <div className="bg-gray-50 dark:bg-gray-800/50 px-4 py-2 text-xs text-gray-500 dark:text-gray-400 rounded-b-lg">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>

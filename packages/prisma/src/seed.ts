@@ -1,0 +1,44 @@
+import { prisma } from "./index";
+
+async function main() {
+  console.log("🌱 Seeding database...");
+
+  // Seed default Out of Office reasons
+  const defaultReasons = [
+    { emoji: "🏝️", reason: "Godišnji odmor" },
+    { emoji: "🏠", reason: "Rad od kuće" },
+    { emoji: "🤒", reason: "Bolovanje" },
+    { emoji: "✈️", reason: "Putovanje" },
+    { emoji: "📚", reason: "Obuka/Konferencija" },
+    { emoji: "👨‍👩‍👧‍👦", reason: "Porodične obaveze" },
+    { emoji: "🎄", reason: "Praznici" },
+    { emoji: "📅", reason: "Lični razlozi" },
+  ];
+
+  for (const reason of defaultReasons) {
+    await prisma.outOfOfficeReason.upsert({
+      where: {
+        id: defaultReasons.indexOf(reason) + 1,
+      },
+      update: {},
+      create: {
+        emoji: reason.emoji,
+        reason: reason.reason,
+        userId: null, // Global reason
+        enabled: true,
+      },
+    });
+  }
+
+  console.log("✅ Seeded Out of Office reasons");
+  console.log("🎉 Database seeding completed!");
+}
+
+main()
+  .catch((e) => {
+    console.error("❌ Seeding failed:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
