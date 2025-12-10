@@ -1,0 +1,9 @@
+export { emailService, type SendEmailOptions } from "./email-service";
+export { BookingConfirmedEmail } from "./templates/booking-confirmed";
+export { BookingPendingEmail } from "./templates/booking-pending";
+export { BookingCancelledEmail } from "./templates/booking-cancelled";
+export { BookingRejectedEmail } from "./templates/booking-rejected";
+export { BookingConfirmedOrganizerEmail } from "./templates/booking-confirmed-organizer";
+export { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
+export { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+export type { BookingEmailData } from "./types";
