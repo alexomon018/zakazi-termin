@@ -85,12 +85,12 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
                               : `${eventType.length / 60}h`}
                           </span>
                           {eventType.locations &&
-                            (eventType.locations as { address?: string }[])[0]?.address && (
+                            (eventType.locations as { address?: string }[])[0]?.address ? (
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3.5 h-3.5" />
                                 Uživo
                               </span>
-                            )}
+                            ) : null}
                         </div>
                       </div>
 

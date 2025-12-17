@@ -2,21 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { useTheme } from "@/lib/theme-provider";
 import { Button, Card, CardContent, CardHeader, CardTitle, Label } from "@zakazi-termin/ui";
 import { Check, AlertCircle, Sun, Moon, Monitor } from "lucide-react";
 import { cn } from "@zakazi-termin/ui";
 
 type Theme = "light" | "dark" | null;
-
-type User = {
-  id: number;
-  name: string | null;
-  bio: string | null;
-  theme: string | null;
-  brandColor: string | null;
-  darkBrandColor: string | null;
-};
+type User = NonNullable<RouterOutputs["user"]["me"]>;
 
 type AppearanceClientProps = {
   initialUser: User;

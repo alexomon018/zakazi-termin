@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent } from "@zakazi-termin/ui";
 import {
   Clock,
@@ -19,38 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-type Attendee = {
-  id: number;
-  name: string;
-  email: string;
-  phoneNumber: string | null;
-};
-
-type Booking = {
-  id: number;
-  uid: string;
-  title: string;
-  description: string | null;
-  startTime: Date;
-  endTime: Date;
-  status: string;
-  location: string | null;
-  cancellationReason: string | null;
-  rejectionReason: string | null;
-  attendees: Attendee[];
-  eventType: {
-    id: number;
-    title: string;
-    slug: string;
-    length: number;
-  } | null;
-  user: {
-    id: number;
-    name: string | null;
-    email: string;
-    username: string | null;
-  } | null;
-};
+type Booking = NonNullable<RouterOutputs["booking"]["byUid"]>;
 
 type BookingDetailsClientProps = {
   initialBooking: Booking;

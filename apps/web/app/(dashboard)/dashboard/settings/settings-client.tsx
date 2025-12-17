@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
 import { Calendar, Check, Trash2, ExternalLink, AlertCircle } from "lucide-react";
 
-type Connection = {
-  id: number;
-  calendarsCount: number;
-};
+type Connection = RouterOutputs["calendar"]["listConnections"][number];
 
 type SettingsClientProps = {
   initialConnections: Connection[];
@@ -99,7 +97,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
           {/* Connected Calendars */}
           <div className="space-y-3">
             {connections && connections.length > 0 ? (
-              connections.map((connection) => (
+              connections.map((connection: Connection) => (
                 <div
                   key={connection.id}
                   className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50"
@@ -223,7 +221,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
             <div className="text-gray-500 dark:text-gray-400 text-center py-4">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
-              {calendars?.map((cal) => (
+              {calendars?.map((cal: { externalId: string; selected: boolean; name: string; primary: boolean }) => (
                 <label
                   key={cal.externalId}
                   className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"

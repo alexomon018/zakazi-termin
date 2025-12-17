@@ -7,5 +7,5 @@ export default async function ProfileSettingsPage() {
   // Pre-fetch user data
   const user = await caller.user.me();
 
-  return <ProfileClient initialUser={user} />;
+  return <ProfileClient initialUser={user!} />;
 }

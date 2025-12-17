@@ -35,7 +35,7 @@ function toAdapterAccount(account: Account): AdapterAccount {
 
 export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
   return {
-    async createUser(data) {
+    async createUser(data: AdapterUser) {
       const user = await prisma.user.create({
         data: {
           name: data.name,
@@ -92,7 +92,7 @@ export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
       return toAdapterUser(user);
     },
 
-    async linkAccount(account) {
+    async linkAccount(account: AdapterAccount) {
       const createdAccount = await prisma.account.create({
         data: {
           userId: parseIntSafe(account.userId),
@@ -111,7 +111,7 @@ export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
       return toAdapterAccount(createdAccount);
     },
 
-    async unlinkAccount({ providerAccountId, provider }) {
+    async unlinkAccount({ providerAccountId, provider }: { providerAccountId: string; provider: string }) {
       const deletedAccount = await prisma.account.delete({
         where: {
           provider_providerAccountId: { provider, providerAccountId },

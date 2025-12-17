@@ -3,25 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent } from "@zakazi-termin/ui";
 import { Plus, Clock, MapPin, Eye, EyeOff, Trash2, Copy, ExternalLink, Pencil } from "lucide-react";
 
-type EventType = {
-  id: number;
-  title: string;
-  slug: string;
-  description: string | null;
-  length: number;
-  hidden: boolean;
-  requiresConfirmation: boolean;
-  locations: unknown;
-};
-
-type User = {
-  id: number;
-  username: string | null;
-  name: string | null;
-};
+type EventType = RouterOutputs["eventType"]["list"][number];
+type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "username" | "name">;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
@@ -54,7 +41,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
     try {
       await navigator.clipboard.writeText(link);
-      setCopySuccess(eventTypes?.findIndex((e) => e.slug === eventType.slug) ?? null);
+      setCopySuccess(eventTypes?.findIndex((e: { slug: string }) => e.slug === eventType.slug) ?? null);
       setTimeout(() => setCopySuccess(null), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
@@ -120,7 +107,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
         </Card>
       ) : (
         <div className="space-y-4">
-          {eventTypes?.map((eventType, index) => (
+          {eventTypes?.map((eventType: EventType, index: number) => (
             <Card
               key={eventType.id}
               className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
@@ -156,13 +143,13 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         </span>
                         {eventType.locations &&
                           Array.isArray(eventType.locations) &&
-                          eventType.locations.length > 0 && (
+                          eventType.locations.length > 0 ? (
                             <span className="flex items-center gap-1">
                               <MapPin className="w-3.5 h-3.5" />
                               {(eventType.locations as { type: string; address?: string }[])[0]?.address ||
                                 "Lokacija"}
                             </span>
-                          )}
+                          ) : null}
                       </div>
                     </div>
                   </div>

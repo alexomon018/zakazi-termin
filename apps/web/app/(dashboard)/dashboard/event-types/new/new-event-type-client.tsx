@@ -51,7 +51,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
       utils.eventType.list.invalidate();
       router.push("/dashboard/event-types");
     },
-    onError: (error) => {
+    onError: (error: { message: string }) => {
       if (error.message.includes("Unique constraint")) {
         setErrors({ slug: "Ovaj slug već postoji. Izaberite drugi." });
       } else {

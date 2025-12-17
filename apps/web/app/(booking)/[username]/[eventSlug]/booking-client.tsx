@@ -100,11 +100,11 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
 
   // Create booking mutation
   const createBooking = trpc.booking.create.useMutation({
-    onSuccess: (booking) => {
+    onSuccess: (booking: { uid: string }) => {
       setBookingUid(booking.uid);
       setCurrentStep("confirmation");
     },
-    onError: (error) => {
+    onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
         setErrors({
           form: "Izabrani termin više nije dostupan. Molimo izaberite drugi.",
@@ -119,11 +119,11 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
 
   // Reschedule mutation
   const rescheduleBooking = trpc.booking.reschedule.useMutation({
-    onSuccess: (booking) => {
+    onSuccess: (booking: { uid: string }) => {
       setBookingUid(booking.uid);
       setCurrentStep("confirmation");
     },
-    onError: (error) => {
+    onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
         setErrors({
           form: "Izabrani termin nije dostupan. Molimo izaberite drugi.",
@@ -140,7 +140,7 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
   const slotsByDate = useMemo(() => {
     if (!slotsData?.slots) return {};
     const grouped: Record<string, string[]> = {};
-    slotsData.slots.forEach((slot) => {
+    slotsData.slots.forEach((slot: { time: string }) => {
       const date = new Date(slot.time).toDateString();
       if (!grouped[date]) grouped[date] = [];
       grouped[date].push(slot.time);
@@ -321,12 +321,12 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
                   </span>
                 </div>
                 {eventType.locations &&
-                  (eventType.locations as { address?: string }[])[0]?.address && (
+                  (eventType.locations as { address?: string }[])[0]?.address ? (
                     <div className="flex gap-2 items-center">
                       <MapPin className="w-4 h-4" />
                       <span>{(eventType.locations as { address?: string }[])[0].address}</span>
                     </div>
-                  )}
+                  ) : null}
               </div>
             </div>
 
@@ -409,12 +409,12 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
               {eventType.length} minuta
             </span>
             {eventType.locations &&
-              (eventType.locations as { address?: string }[])[0]?.address && (
+              (eventType.locations as { address?: string }[])[0]?.address ? (
                 <span className="flex gap-1 items-center">
                   <MapPin className="w-4 h-4" />
                   {(eventType.locations as { address?: string }[])[0].address}
                 </span>
-              )}
+              ) : null}
           </div>
         </div>
 

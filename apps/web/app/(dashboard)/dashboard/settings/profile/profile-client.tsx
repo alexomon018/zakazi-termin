@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
 import { Check, AlertCircle, User, ExternalLink } from "lucide-react";
 
@@ -33,16 +34,7 @@ const TIMEZONES = [
   { value: "America/New_York", label: "Njujork (GMT-5)" },
 ];
 
-type User = {
-  id: number;
-  name: string | null;
-  email: string;
-  username: string | null;
-  bio: string | null;
-  timeZone: string;
-  avatarUrl: string | null;
-  identityProvider: string | null;
-};
+type User = NonNullable<RouterOutputs["user"]["me"]>;
 
 type ProfileClientProps = {
   initialUser: User;

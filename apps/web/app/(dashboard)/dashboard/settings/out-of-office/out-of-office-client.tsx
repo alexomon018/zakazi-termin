@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
 import { Check, AlertCircle, Plus, Trash2, Edit2, X, CalendarDays } from "lucide-react";
 import { cn } from "@zakazi-termin/ui";
@@ -18,27 +19,11 @@ const outOfOfficeSchema = z.object({
 
 type OutOfOfficeFormValues = z.infer<typeof outOfOfficeSchema>;
 
-type OutOfOfficeEntry = {
-  uuid: string;
-  start: Date;
-  end: Date;
-  reasonId: number | null;
-  notes: string | null;
-  reason: {
-    id: number;
-    emoji: string;
-    reason: string;
-  } | null;
-};
-
-type Reason = {
-  id: number;
-  emoji: string;
-  reason: string;
-};
+type OutOfOfficeEntry = RouterOutputs["outOfOffice"]["list"]["entries"][number];
+type Reason = RouterOutputs["outOfOffice"]["reasons"][number];
 
 type OutOfOfficeClientProps = {
-  initialEntries: { entries: OutOfOfficeEntry[] };
+  initialEntries: RouterOutputs["outOfOffice"]["list"];
   initialReasons: Reason[];
 };
 
@@ -180,7 +165,7 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
         <CardContent>
           {entries?.entries && entries.entries.length > 0 ? (
             <div className="space-y-3">
-              {entries.entries.map((entry) => {
+              {entries.entries.map((entry: OutOfOfficeEntry) => {
                 const isActive = isActiveOrUpcoming(entry.end);
                 return (
                   <div
@@ -307,7 +292,7 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                 <div className="space-y-2">
                   <Label className="text-gray-900 dark:text-white">Razlog (opciono)</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {reasons.map((reason) => (
+                    {reasons.map((reason: Reason) => (
                       <button
                         key={reason.id}
                         type="button"

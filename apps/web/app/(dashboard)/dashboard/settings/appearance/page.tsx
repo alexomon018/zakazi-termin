@@ -7,5 +7,5 @@ export default async function AppearanceSettingsPage() {
   // Pre-fetch user data
   const user = await caller.user.me();
 
-  return <AppearanceClient initialUser={user} />;
+  return <AppearanceClient initialUser={user!} />;
 }

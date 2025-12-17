@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
 import { Plus, Trash2, Check, Clock } from "lucide-react";
 
@@ -21,25 +22,12 @@ type AvailabilityEntry = {
   endTime: string;
 };
 
-type Schedule = {
-  id: number;
-  name: string;
-  availability: {
-    id: number;
-    days: number[];
-    startTime: Date;
-    endTime: Date;
-  }[];
-};
-
-type User = {
-  id: number;
-  defaultScheduleId: number | null;
-};
+type Schedule = RouterOutputs["availability"]["listSchedules"][number];
+type User = RouterOutputs["user"]["me"];
 
 type AvailabilityClientProps = {
   initialSchedules: Schedule[];
-  currentUser: User | null;
+  currentUser: User;
 };
 
 export function AvailabilityClient({ initialSchedules, currentUser: initialUser }: AvailabilityClientProps) {
@@ -60,7 +48,7 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
   });
 
   const createSchedule = trpc.availability.createSchedule.useMutation({
-    onSuccess: (schedule) => {
+    onSuccess: (schedule: { id: number }) => {
       utils.availability.listSchedules.invalidate();
       setSelectedScheduleId(schedule.id);
       setNewScheduleName("");
@@ -86,16 +74,16 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
     },
   });
 
-  const selectedSchedule = schedules?.find((s) => s.id === selectedScheduleId);
+  const selectedSchedule = schedules?.find((s: { id: number }) => s.id === selectedScheduleId);
 
   // Load availability when schedule is selected
   const handleSelectSchedule = (scheduleId: number) => {
     setSelectedScheduleId(scheduleId);
-    const schedule = schedules?.find((s) => s.id === scheduleId);
+    const schedule = schedules?.find((s: { id: number }) => s.id === scheduleId);
     if (schedule?.availability) {
       const workingHours = schedule.availability
-        .filter((a) => a.days.length > 0)
-        .map((a) => ({
+        .filter((a: { days: number[] }) => a.days.length > 0)
+        .map((a: { days: number[]; startTime: Date; endTime: Date }) => ({
           days: a.days,
           startTime: formatTime(a.startTime),
           endTime: formatTime(a.endTime),
@@ -187,7 +175,7 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
 
             {/* Schedule list */}
             <div className="space-y-2">
-              {schedules?.map((schedule) => (
+              {schedules?.map((schedule: Schedule) => (
                 <div
                   key={schedule.id}
                   className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${

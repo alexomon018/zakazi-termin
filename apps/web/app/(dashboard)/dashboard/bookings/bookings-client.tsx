@@ -3,39 +3,38 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
-import { Calendar, Clock, MapPin, User, Check, X, MoreVertical, ExternalLink } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@zakazi-termin/ui";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Check,
+  X,
+  MoreVertical,
+  ExternalLink,
+} from "lucide-react";
+
+import type { RouterOutputs } from "@zakazi-termin/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
-
-type Booking = {
-  id: number;
-  uid: string;
-  title: string;
-  description: string | null;
-  startTime: Date;
-  endTime: Date;
-  status: string;
-  location: string | null;
-  eventType: {
-    id: number;
-    title: string;
-    slug: string;
-  } | null;
-  attendees: {
-    id: number;
-    name: string;
-    email: string;
-    phoneNumber: string | null;
-  }[];
-};
+type Booking = RouterOutputs["booking"]["list"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
   initialFilter?: BookingFilter;
 };
 
-export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: BookingsClientProps) {
+export function BookingsClient({
+  initialBookings,
+  initialFilter = "upcoming",
+}: BookingsClientProps) {
   const [filter, setFilter] = useState<BookingFilter>(initialFilter);
   const utils = trpc.useUtils();
 
@@ -56,9 +55,12 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
     }
   }, [filter]);
 
-  const { data: bookings, isLoading } = trpc.booking.list.useQuery(queryParams, {
-    initialData: filter === initialFilter ? initialBookings : undefined,
-  });
+  const { data: bookings, isLoading } = trpc.booking.list.useQuery(
+    queryParams,
+    {
+      initialData: filter === initialFilter ? initialBookings : undefined,
+    }
+  );
 
   const confirmBooking = trpc.booking.confirm.useMutation({
     onSuccess: () => {
@@ -160,8 +162,12 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Termini
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Upravljajte zakazanim terminima
+        </p>
       </div>
 
       {/* Filters */}
@@ -196,7 +202,7 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
         </Card>
       ) : (
         <div className="space-y-4">
-          {bookings?.map((booking) => (
+          {bookings?.map((booking: Booking) => (
             <Card key={booking.id}>
               <CardContent className="p-0">
                 <div className="p-4">
@@ -204,7 +210,9 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
                     <div className="flex-1">
                       {/* Title and status */}
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{booking.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {booking.title}
+                        </h3>
                         {getStatusBadge(booking.status)}
                       </div>
 
@@ -224,7 +232,8 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
                         <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                           <Clock className="w-4 h-4" />
                           <span>
-                            {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                            {formatTime(booking.startTime)} -{" "}
+                            {formatTime(booking.endTime)}
                           </span>
                         </div>
                         {booking.location && (
@@ -238,28 +247,46 @@ export function BookingsClient({ initialBookings, initialFilter = "upcoming" }: 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">GOST</p>
-                          {booking.attendees.map((attendee) => (
-                            <div key={attendee.id} className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                            GOST
+                          </p>
+                          {booking.attendees.map(
+                            (attendee: {
+                              id: number;
+                              name: string;
+                              email: string;
+                              phoneNumber: string | null;
+                            }) => (
+                              <div
+                                key={attendee.id}
+                                className="flex items-center gap-2"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {attendee.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {attendee.email}
+                                  </p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                  {attendee.name}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{attendee.email}</p>
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          )}
                         </div>
                       )}
 
                       {/* Notes/description */}
                       {booking.description && (
                         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">NAPOMENA</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{booking.description}</p>
+                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                            NAPOMENA
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            {booking.description}
+                          </p>
                         </div>
                       )}
                     </div>
