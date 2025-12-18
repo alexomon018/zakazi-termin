@@ -10,20 +10,22 @@ const handler = async (req: Request) => {
     req,
     router: appRouter,
     createContext: async (): Promise<Context> => {
+      const trpcSession = session
+        ? {
+            user: {
+              id: Number(session.user.id),
+              email: session.user.email,
+              name: session.user.name,
+              username: session.user.username,
+            },
+          }
+        : null;
+
       return createTRPCContext({
         req,
         resHeaders: new Headers(),
         info: {} as never,
-        session: session
-          ? {
-              user: {
-                id: session.user.id,
-                email: session.user.email,
-                name: session.user.name,
-                username: session.user.username,
-              },
-            }
-          : null,
+        session: trpcSession,
       });
     },
     onError: ({ error, path }) => {
