@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createServerCaller } from "@/lib/trpc/server";
-import { BookingsClient } from "./bookings-client";
+import { BookingsClient } from "@zakazi-termin/ui";
 
 export default async function BookingsPage() {
   const caller = await createServerCaller();

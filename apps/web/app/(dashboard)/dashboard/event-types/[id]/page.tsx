@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createServerCaller } from "@/lib/trpc/server";
-import { EditEventTypeClient } from "./edit-event-type-client";
-import { Button } from "@zakazi-termin/ui";
+import { EditEventTypeClient, Button } from "@zakazi-termin/ui";
 
 type Props = {
   params: Promise<{ id: string }>;

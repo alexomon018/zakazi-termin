@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Button } from "@zakazi-termin/ui";
+import { NavItem } from "@zakazi-termin/ui";
+import { MobileNavItem } from "@zakazi-termin/ui";
+import { UserInfoDisplay } from "@zakazi-termin/ui";
 import { Calendar, Clock, Settings, LogOut, LayoutDashboard } from "lucide-react";
-import { cn } from "@zakazi-termin/ui";
 
 interface DashboardNavProps {
   user: {
@@ -40,24 +42,18 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href ||
-                              (item.href !== "/dashboard" && pathname.startsWith(item.href));
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
               return (
-                <Link
+                <NavItem
                   key={item.href}
                   href={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                    isActive
-                      ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-                  )}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {item.label}
-                </Link>
+                  label={item.label}
+                  icon={item.icon}
+                  isActive={isActive}
+                />
               );
             })}
           </nav>
@@ -65,8 +61,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* User menu */}
           <div className="flex items-center space-x-4">
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+              <UserInfoDisplay name={user.name || ""} email={user.email} />
             </div>
             <Button
               variant="outline"
@@ -85,24 +80,18 @@ export function DashboardNav({ user }: DashboardNavProps) {
       <nav className="md:hidden border-t border-gray-200 dark:border-gray-700 px-4 py-2">
         <div className="flex space-x-2 overflow-x-auto">
           {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href ||
-                            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
             return (
-              <Link
+              <MobileNavItem
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap",
-                  isActive
-                    ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-                    : "text-gray-600 dark:text-gray-300"
-                )}
-              >
-                <Icon className="w-4 h-4 mr-1" />
-                {item.label}
-              </Link>
+                label={item.label}
+                icon={item.icon}
+                isActive={isActive}
+              />
             );
           })}
         </div>
