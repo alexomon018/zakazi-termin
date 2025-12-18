@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { OutOfOfficeClient } from "./out-of-office-client";
+import { OutOfOfficeClient } from "@zakazi-termin/ui";
 
 export default async function OutOfOfficeSettingsPage() {
   const caller = await createServerCaller();

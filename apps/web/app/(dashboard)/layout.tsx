@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { DashboardNav } from "./components/nav";
+import { DashboardNav } from "@zakazi-termin/ui";
 
 export default async function DashboardLayout({
   children,

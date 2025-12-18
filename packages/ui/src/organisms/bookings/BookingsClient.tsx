@@ -7,19 +7,15 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
+  StatusBadge,
+  DateTimeDisplay,
+  TimeRangeDisplay,
+  LocationDisplay,
+  UserAvatar,
+  UserInfoDisplay,
+  TabFilter,
 } from "@zakazi-termin/ui";
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  User,
-  Check,
-  X,
-  MoreVertical,
-  ExternalLink,
-} from "lucide-react";
+import { Calendar, Check, X } from "lucide-react";
 
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 
@@ -96,60 +92,27 @@ export function BookingsClient({
     }
   };
 
-  const formatDateTime = (date: Date) => {
-    return new Date(date).toLocaleDateString("sr-RS", {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            Na čekanju
-          </span>
-        );
-      case "ACCEPTED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-            Potvrđeno
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            Otkazano
-          </span>
-        );
-      case "REJECTED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-            Odbijeno
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
-
   const filters: { key: BookingFilter; label: string }[] = [
     { key: "upcoming", label: "Predstojeći" },
     { key: "pending", label: "Na čekanju" },
     { key: "past", label: "Prošli" },
     { key: "cancelled", label: "Otkazani" },
   ];
+
+  const getEmptyMessage = () => {
+    switch (filter) {
+      case "upcoming":
+        return "Nemate predstojećih termina.";
+      case "pending":
+        return "Nemate termina na čekanju.";
+      case "past":
+        return "Nemate prošlih termina.";
+      case "cancelled":
+        return "Nemate otkazanih termina.";
+      default:
+        return "Nema termina.";
+    }
+  };
 
   if (isLoading) {
     return (
@@ -173,17 +136,12 @@ export function BookingsClient({
       {/* Filters */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4">
         {filters.map((f) => (
-          <button
+          <TabFilter
             key={f.key}
+            label={f.label}
+            isActive={filter === f.key}
             onClick={() => setFilter(f.key)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-              filter === f.key
-                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-            }`}
-          >
-            {f.label}
-          </button>
+          />
         ))}
       </div>
 
@@ -193,10 +151,7 @@ export function BookingsClient({
           <CardContent className="py-12 text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
             <p className="text-gray-500 dark:text-gray-400">
-              {filter === "upcoming" && "Nemate predstojećih termina."}
-              {filter === "pending" && "Nemate termina na čekanju."}
-              {filter === "past" && "Nemate prošlih termina."}
-              {filter === "cancelled" && "Nemate otkazanih termina."}
+              {getEmptyMessage()}
             </p>
           </CardContent>
         </Card>
@@ -213,7 +168,15 @@ export function BookingsClient({
                         <h3 className="font-semibold text-gray-900 dark:text-white">
                           {booking.title}
                         </h3>
-                        {getStatusBadge(booking.status)}
+                        <StatusBadge
+                          status={
+                            booking.status as
+                              | "PENDING"
+                              | "ACCEPTED"
+                              | "CANCELLED"
+                              | "REJECTED"
+                          }
+                        />
                       </div>
 
                       {/* Event type */}
@@ -225,22 +188,13 @@ export function BookingsClient({
 
                       {/* Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                          <Calendar className="w-4 h-4" />
-                          <span>{formatDateTime(booking.startTime)}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                          <Clock className="w-4 h-4" />
-                          <span>
-                            {formatTime(booking.startTime)} -{" "}
-                            {formatTime(booking.endTime)}
-                          </span>
-                        </div>
+                        <DateTimeDisplay date={booking.startTime} />
+                        <TimeRangeDisplay
+                          startTime={booking.startTime}
+                          endTime={booking.endTime}
+                        />
                         {booking.location && (
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <MapPin className="w-4 h-4" />
-                            <span className="truncate">{booking.location}</span>
-                          </div>
+                          <LocationDisplay location={booking.location} />
                         )}
                       </div>
 
@@ -261,17 +215,11 @@ export function BookingsClient({
                                 key={attendee.id}
                                 className="flex items-center gap-2"
                               >
-                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                    {attendee.name}
-                                  </p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    {attendee.email}
-                                  </p>
-                                </div>
+                                <UserAvatar name={attendee.name} />
+                                <UserInfoDisplay
+                                  name={attendee.name}
+                                  email={attendee.email}
+                                />
                               </div>
                             )
                           )}
