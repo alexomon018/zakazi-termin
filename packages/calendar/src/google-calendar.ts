@@ -1,4 +1,4 @@
-import { calendar_v3, google } from "@googleapis/calendar";
+import { calendar as googleCalendar, calendar_v3 } from "@googleapis/calendar";
 import { OAuth2Client } from "googleapis-common";
 import { z } from "zod";
 
@@ -60,7 +60,7 @@ export class GoogleCalendarService {
    * Get authenticated Google Calendar API client
    */
   private async getCalendar(): Promise<calendar_v3.Calendar> {
-    return google.calendar({ version: "v3", auth: this.oAuth2Client });
+    return googleCalendar({ version: "v3", auth: this.oAuth2Client });
   }
 
   /**

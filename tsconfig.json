@@ -15,6 +15,9 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["apps/web/*"],
+      "@zakazi-termin/auth": ["packages/auth/src"],
+      "@zakazi-termin/auth/*": ["packages/auth/src/*"],
       "@zakazi-termin/prisma": ["packages/prisma/src"],
       "@zakazi-termin/prisma/*": ["packages/prisma/src/*"],
       "@zakazi-termin/scheduling": ["packages/scheduling/src"],
@@ -26,7 +29,9 @@
       "@zakazi-termin/emails": ["packages/emails/src"],
       "@zakazi-termin/emails/*": ["packages/emails/src/*"],
       "@zakazi-termin/trpc": ["packages/trpc/src"],
-      "@zakazi-termin/trpc/*": ["packages/trpc/src/*"]
+      "@zakazi-termin/trpc/*": ["packages/trpc/src/*"],
+      "@zakazi-termin/calendar": ["packages/calendar/src"],
+      "@zakazi-termin/calendar/*": ["packages/calendar/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
