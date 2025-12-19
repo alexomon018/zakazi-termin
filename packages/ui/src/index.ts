@@ -74,8 +74,16 @@ export { ProfileClient } from "./organisms/settings/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
 
+// Molecules - Booking
+export { BookingEventHeader } from "./molecules/booking/BookingEventHeader";
+export { BookingCalendar } from "./molecules/booking/BookingCalendar";
+export { TimeSlotsList } from "./molecules/booking/TimeSlotsList";
+export { BookingDetailsForm } from "./molecules/booking/BookingDetailsForm";
+export { BookingConfirmation } from "./molecules/booking/BookingConfirmation";
+export { RescheduleBanner } from "./molecules/booking/RescheduleBanner";
+
 // Organisms - Booking Flow
-export { BookingClient, EventNotFound } from "./organisms/booking-flow/BookingClient";
+export { BookingFlow, EventNotFound } from "./organisms/booking-flow/BookingFlow";
 export { UserProfileClient, UserNotFound } from "./organisms/booking-flow/UserProfileClient";
 export { BookingDetailsClient, BookingNotFound } from "./organisms/booking-flow/BookingDetailsClient";
 
