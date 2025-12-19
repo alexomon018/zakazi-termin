@@ -14,6 +14,8 @@ import {
   UserAvatar,
   UserInfoDisplay,
   TabFilter,
+  CancelBookingDialog,
+  RejectBookingDialog,
 } from "@zakazi-termin/ui";
 import { Calendar, Check, X } from "lucide-react";
 
@@ -32,6 +34,9 @@ export function BookingsClient({
   initialFilter = "upcoming",
 }: BookingsClientProps) {
   const [filter, setFilter] = useState<BookingFilter>(initialFilter);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedBookingUid, setSelectedBookingUid] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
   // Memoize query parameters to prevent infinite re-fetching
@@ -55,24 +60,37 @@ export function BookingsClient({
     queryParams,
     {
       initialData: filter === initialFilter ? initialBookings : undefined,
+      staleTime: 0,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: false,
     }
   );
 
+  const handleFilterChange = async (newFilter: BookingFilter) => {
+    // Invalidate cache before changing filter
+    await utils.booking.list.invalidate();
+    // Change the filter, which will trigger a new query with new params
+    setFilter(newFilter);
+  };
+
   const confirmBooking = trpc.booking.confirm.useMutation({
-    onSuccess: () => {
-      utils.booking.list.invalidate();
+    onSuccess: async () => {
+      // Invalidate all booking list queries to ensure all tabs update
+      await utils.booking.list.invalidate();
     },
   });
 
   const rejectBooking = trpc.booking.reject.useMutation({
-    onSuccess: () => {
-      utils.booking.list.invalidate();
+    onSuccess: async () => {
+      // Invalidate all booking list queries to ensure all tabs update
+      await utils.booking.list.invalidate();
     },
   });
 
   const cancelBooking = trpc.booking.cancel.useMutation({
-    onSuccess: () => {
-      utils.booking.list.invalidate();
+    onSuccess: async () => {
+      // Invalidate all booking list queries to ensure all tabs update
+      await utils.booking.list.invalidate();
     },
   });
 
@@ -80,15 +98,29 @@ export function BookingsClient({
     confirmBooking.mutate({ uid });
   };
 
-  const handleReject = (uid: string) => {
-    const reason = prompt("Unesite razlog odbijanja (opciono):");
-    rejectBooking.mutate({ uid, reason: reason || undefined });
+  const handleRejectClick = (uid: string) => {
+    setSelectedBookingUid(uid);
+    setRejectDialogOpen(true);
   };
 
-  const handleCancel = (uid: string) => {
-    if (confirm("Da li ste sigurni da želite da otkažete ovaj termin?")) {
-      const reason = prompt("Unesite razlog otkazivanja (opciono):");
-      cancelBooking.mutate({ uid, reason: reason || undefined });
+  const handleRejectConfirm = (reason?: string) => {
+    if (selectedBookingUid) {
+      rejectBooking.mutate({ uid: selectedBookingUid, reason });
+      setRejectDialogOpen(false);
+      setSelectedBookingUid(null);
+    }
+  };
+
+  const handleCancelClick = (uid: string) => {
+    setSelectedBookingUid(uid);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = (reason?: string) => {
+    if (selectedBookingUid) {
+      cancelBooking.mutate({ uid: selectedBookingUid, reason });
+      setCancelDialogOpen(false);
+      setSelectedBookingUid(null);
     }
   };
 
@@ -140,7 +172,7 @@ export function BookingsClient({
             key={f.key}
             label={f.label}
             isActive={filter === f.key}
-            onClick={() => setFilter(f.key)}
+            onClick={() => handleFilterChange(f.key)}
           />
         ))}
       </div>
@@ -255,7 +287,7 @@ export function BookingsClient({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleReject(booking.uid)}
+                            onClick={() => handleRejectClick(booking.uid)}
                             disabled={rejectBooking.isPending}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -268,7 +300,7 @@ export function BookingsClient({
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCancel(booking.uid)}
+                          onClick={() => handleCancelClick(booking.uid)}
                           disabled={cancelBooking.isPending}
                           className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
                         >
@@ -288,6 +320,20 @@ export function BookingsClient({
           ))}
         </div>
       )}
+
+      {/* Dialogs */}
+      <CancelBookingDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={handleCancelConfirm}
+        isLoading={cancelBooking.isPending}
+      />
+      <RejectBookingDialog
+        open={rejectDialogOpen}
+        onOpenChange={setRejectDialogOpen}
+        onConfirm={handleRejectConfirm}
+        isLoading={rejectBooking.isPending}
+      />
     </div>
   );
 }

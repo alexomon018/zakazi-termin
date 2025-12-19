@@ -6,6 +6,18 @@ export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
 export { Label } from "./atoms/Label";
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./atoms/Card";
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogTrigger,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "./atoms/Dialog";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";
@@ -28,6 +40,19 @@ export { MobileNavItem } from "./molecules/navigation/MobileNavItem";
 
 // Molecules - Filters
 export { TabFilter } from "./molecules/filters/TabFilter";
+
+// Molecules - Dialogs
+export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
+export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
+
+// Molecules - Landing
+export { FeatureCard } from "./molecules/landing/FeatureCard";
+export { StatDisplay } from "./molecules/landing/StatDisplay";
+export { ProcessStep } from "./molecules/landing/ProcessStep";
+export { PricingCard } from "./molecules/landing/PricingCard";
+export { FooterColumn } from "./molecules/landing/FooterColumn";
+export { TrialBadge } from "./molecules/landing/TrialBadge";
+export { NavLink } from "./molecules/landing/NavLink";
 
 // Organisms - Navigation
 export { DashboardNav } from "./organisms/navigation/DashboardNav";
@@ -53,3 +78,13 @@ export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
 export { BookingClient, EventNotFound } from "./organisms/booking-flow/BookingClient";
 export { UserProfileClient, UserNotFound } from "./organisms/booking-flow/UserProfileClient";
 export { BookingDetailsClient, BookingNotFound } from "./organisms/booking-flow/BookingDetailsClient";
+
+// Organisms - Landing
+export { LandingHeader } from "./organisms/landing/LandingHeader";
+export { HeroSection } from "./organisms/landing/HeroSection";
+export { SocialProofBar } from "./organisms/landing/SocialProofBar";
+export { FeaturesSection } from "./organisms/landing/FeaturesSection";
+export { ProcessSection } from "./organisms/landing/ProcessSection";
+export { PricingSection } from "./organisms/landing/PricingSection";
+export { CtaBanner } from "./organisms/landing/CtaBanner";
+export { LandingFooter } from "./organisms/landing/LandingFooter";
