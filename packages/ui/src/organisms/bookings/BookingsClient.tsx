@@ -296,7 +296,7 @@ export function BookingsClient({
                           </Button>
                         </>
                       )}
-                      {booking.status === "ACCEPTED" && (
+                      {booking.status === "ACCEPTED" && new Date(booking.endTime) > new Date() && (
                         <Button
                           size="sm"
                           variant="outline"

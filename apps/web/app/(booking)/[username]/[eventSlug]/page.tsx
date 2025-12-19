@@ -1,5 +1,5 @@
 import { createPublicServerCaller } from "@/lib/trpc/server";
-import { BookingClient, EventNotFound } from "@zakazi-termin/ui";
+import { BookingFlow, EventNotFound } from "@zakazi-termin/ui";
 
 type Props = {
   params: Promise<{
@@ -24,7 +24,7 @@ export default async function PublicBookingPage({ params }: Props) {
     }
 
     return (
-      <BookingClient
+      <BookingFlow
         eventType={eventType}
         username={username}
         eventSlug={eventSlug}
