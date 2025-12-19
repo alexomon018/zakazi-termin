@@ -286,8 +286,8 @@ export function BookingClient({ eventType, username, eventSlug }: BookingClientP
   // Confirmation step
   if (currentStep === "confirmation") {
     return (
-      <div className="px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Card className="mx-auto max-w-lg">
+      <div className="flex justify-center items-center px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Card className="w-full max-w-lg">
           <CardContent className="py-12 text-center">
             <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full">
               <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />

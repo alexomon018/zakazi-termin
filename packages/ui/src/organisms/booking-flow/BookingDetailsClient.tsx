@@ -26,7 +26,9 @@ type BookingDetailsClientProps = {
   initialBooking: Booking;
 };
 
-export function BookingDetailsClient({ initialBooking }: BookingDetailsClientProps) {
+export function BookingDetailsClient({
+  initialBooking,
+}: BookingDetailsClientProps) {
   const router = useRouter();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -63,28 +65,28 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
     switch (status) {
       case "ACCEPTED":
         return (
-          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-300 rounded-full">
+          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-full dark:bg-green-900/30 dark:text-green-300">
             <CheckCircle className="w-4 h-4" />
             Potvrđeno
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-yellow-700 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-full">
+          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-yellow-700 bg-yellow-100 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300">
             <AlertCircle className="w-4 h-4" />
             Čeka potvrdu
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-300 rounded-full">
+          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-red-700 bg-red-100 rounded-full dark:bg-red-900/30 dark:text-red-300">
             <XCircle className="w-4 h-4" />
             Otkazano
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 dark:bg-gray-800 dark:text-gray-300 rounded-full">
+          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-gray-300">
             <XCircle className="w-4 h-4" />
             Odbijeno
           </span>
@@ -99,24 +101,16 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
   }
 
   const isPast = new Date(booking.startTime) < new Date();
-  const canModify = booking.status === "ACCEPTED" || booking.status === "PENDING";
+  const canModify =
+    booking.status === "ACCEPTED" || booking.status === "PENDING";
   const canCancel = canModify && !isPast;
   const canReschedule = canModify && !isPast;
 
   const attendee = booking.attendees[0];
 
   return (
-    <div className="px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="mx-auto max-w-2xl">
-        {/* Back link */}
-        <Link
-          href="/"
-          className="inline-flex gap-2 items-center mb-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Nazad na početnu
-        </Link>
-
+    <div className="flex justify-center items-center px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="w-full max-w-2xl">
         <Card>
           <CardContent className="p-6">
             {/* Header */}
@@ -147,7 +141,8 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                 <Clock className="flex-shrink-0 mt-0.5 w-5 h-5 text-gray-400" />
                 <div>
                   <p className="text-gray-900 dark:text-white">
-                    {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
+                    {formatTime(booking.startTime)} -{" "}
+                    {formatTime(booking.endTime)}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {booking.eventType?.length || 30} minuta
@@ -158,7 +153,9 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
               {booking.location && (
                 <div className="flex gap-3 items-start">
                   <MapPin className="flex-shrink-0 mt-0.5 w-5 h-5 text-gray-400" />
-                  <p className="text-gray-900 dark:text-white">{booking.location}</p>
+                  <p className="text-gray-900 dark:text-white">
+                    {booking.location}
+                  </p>
                 </div>
               )}
 
@@ -168,7 +165,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                   Organizator
                 </h3>
                 <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full">
+                  <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900">
                     <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
@@ -213,27 +210,33 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                   <h3 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                     Napomena
                   </h3>
-                  <p className="text-gray-900 dark:text-white">{booking.description}</p>
+                  <p className="text-gray-900 dark:text-white">
+                    {booking.description}
+                  </p>
                 </div>
               )}
 
               {/* Cancellation reason */}
               {booking.cancellationReason && (
-                <div className="p-4 mt-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div className="p-4 mt-4 bg-red-50 rounded-lg dark:bg-red-900/20">
                   <h3 className="mb-1 text-sm font-medium text-red-800 dark:text-red-300">
                     Razlog otkazivanja
                   </h3>
-                  <p className="text-red-700 dark:text-red-400">{booking.cancellationReason}</p>
+                  <p className="text-red-700 dark:text-red-400">
+                    {booking.cancellationReason}
+                  </p>
                 </div>
               )}
 
               {/* Rejection reason */}
               {booking.rejectionReason && (
-                <div className="p-4 mt-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-4 mt-4 bg-gray-50 rounded-lg dark:bg-gray-800">
                   <h3 className="mb-1 text-sm font-medium text-gray-800 dark:text-gray-300">
                     Razlog odbijanja
                   </h3>
-                  <p className="text-gray-700 dark:text-gray-400">{booking.rejectionReason}</p>
+                  <p className="text-gray-700 dark:text-gray-400">
+                    {booking.rejectionReason}
+                  </p>
                 </div>
               )}
             </div>
@@ -241,20 +244,22 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
             {/* Actions */}
             {(canReschedule || canCancel) && (
               <div className="flex flex-col gap-3 pt-6 mt-6 border-t dark:border-gray-700 sm:flex-row">
-                {canReschedule && booking.user?.username && booking.eventType?.slug && (
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() =>
-                      router.push(
-                        `/${booking.user?.username}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
-                      )
-                    }
-                  >
-                    <RefreshCw className="mr-2 w-4 h-4" />
-                    Promeni termin
-                  </Button>
-                )}
+                {canReschedule &&
+                  booking.user?.username &&
+                  booking.eventType?.slug && (
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() =>
+                        router.push(
+                          `/${booking.user?.username}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
+                        )
+                      }
+                    >
+                      <RefreshCw className="mr-2 w-4 h-4" />
+                      Promeni termin
+                    </Button>
+                  )}
                 {canCancel && (
                   <Button
                     variant="outline"
@@ -272,7 +277,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
         {/* Cancel dialog */}
         {showCancelDialog && (
-          <div className="flex fixed inset-0 justify-center items-center p-4 bg-black bg-opacity-50 z-50">
+          <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50">
             <Card className="w-full max-w-md">
               <CardContent className="p-6">
                 <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
@@ -290,7 +295,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                     placeholder="Unesite razlog..."
                     value={cancelReason}
                     onChange={(e) => setCancelReason(e.target.value)}
-                    className="px-3 py-2 w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 w-full text-gray-900 bg-white rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex gap-3">
@@ -312,7 +317,9 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                       })
                     }
                   >
-                    {cancelMutation.isPending ? "Otkazujem..." : "Otkaži termin"}
+                    {cancelMutation.isPending
+                      ? "Otkazujem..."
+                      : "Otkaži termin"}
                   </Button>
                 </div>
               </CardContent>
@@ -323,7 +330,10 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
         {/* Footer */}
         <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
           Pokreće{" "}
-          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+          <Link
+            href="/"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
             Zakazi Termin
           </Link>
         </div>
