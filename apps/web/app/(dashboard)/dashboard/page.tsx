@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@zakazi-termin/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
 import { Calendar, Clock, Users } from "lucide-react";
+import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -103,46 +104,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Upcoming bookings */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Predstojeći termini</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {bookings.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-              Nemate zakazanih termina.
-            </p>
-          ) : (
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
-              {bookings.map((booking) => (
-                <div key={booking.id} className="py-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.title}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {new Date(booking.startTime).toLocaleDateString("sr-RS", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(booking.startTime).toLocaleTimeString("sr-RS", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <UpcomingBookings
+        initialBookings={bookings}
+        totalBookings={upcomingBookings}
+      />
 
       {/* Quick links */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">

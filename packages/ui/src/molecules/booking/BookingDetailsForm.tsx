@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label } from "@zakazi-termin/ui";
 import {
   Clock,
@@ -11,35 +13,46 @@ import {
   Phone,
   FileText,
 } from "lucide-react";
+import {
+  bookingDetailsSchema,
+  type BookingDetailsFormData,
+} from "../../lib/validations/booking";
 
 interface BookingDetailsFormProps {
   selectedSlot: string | null;
   eventLength: number;
-  formData: {
-    name: string;
-    email: string;
-    phoneNumber: string;
-    notes: string;
-  };
-  errors: Record<string, string>;
+  defaultValues?: Partial<BookingDetailsFormData>;
+  serverError?: string | null;
   isPending: boolean;
   isRescheduling: boolean;
-  onFormDataChange: (data: Partial<BookingDetailsFormProps["formData"]>) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (data: BookingDetailsFormData) => void;
   onBack: () => void;
 }
 
 export function BookingDetailsForm({
   selectedSlot,
   eventLength,
-  formData,
-  errors,
+  defaultValues,
+  serverError,
   isPending,
   isRescheduling,
-  onFormDataChange,
   onSubmit,
   onBack,
 }: BookingDetailsFormProps) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<BookingDetailsFormData>({
+    resolver: zodResolver(bookingDetailsSchema),
+    defaultValues: {
+      name: defaultValues?.name || "",
+      email: defaultValues?.email || "",
+      phoneNumber: defaultValues?.phoneNumber || "",
+      notes: defaultValues?.notes || "",
+    },
+  });
+
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString("sr-RS", {
       hour: "2-digit",
@@ -80,13 +93,13 @@ export function BookingDetailsForm({
         </div>
       </div>
 
-      {errors.form && (
+      {serverError && (
         <div className="p-4 mb-4 text-red-700 bg-red-50 rounded-lg dark:text-red-400 dark:bg-red-900/30">
-          {errors.form}
+          {serverError}
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name" className="flex gap-2 items-center">
             <User className="w-4 h-4" />
@@ -94,13 +107,17 @@ export function BookingDetailsForm({
           </Label>
           <Input
             id="name"
+            type="text"
             placeholder="Vaše ime"
-            value={formData.name}
-            onChange={(e) => onFormDataChange({ name: e.target.value })}
+            disabled={isRescheduling || isPending}
+            {...register("name")}
             className={errors.name ? "border-red-500" : ""}
-            disabled={isRescheduling}
           />
-          {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {errors.name.message}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -110,29 +127,32 @@ export function BookingDetailsForm({
           </Label>
           <Input
             id="email"
-            type="email"
+            type="text"
             placeholder="vas@email.com"
-            value={formData.email}
-            onChange={(e) => onFormDataChange({ email: e.target.value })}
+            disabled={isRescheduling || isPending}
+            {...register("email")}
             className={errors.email ? "border-red-500" : ""}
-            disabled={isRescheduling}
           />
-          {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {errors.email.message}
+            </p>
+          )}
         </div>
 
         {!isRescheduling && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="phone" className="flex gap-2 items-center">
+              <Label htmlFor="phoneNumber" className="flex gap-2 items-center">
                 <Phone className="w-4 h-4" />
                 Telefon (opciono)
               </Label>
               <Input
-                id="phone"
+                id="phoneNumber"
                 type="tel"
                 placeholder="+381 60 123 4567"
-                value={formData.phoneNumber}
-                onChange={(e) => onFormDataChange({ phoneNumber: e.target.value })}
+                disabled={isPending}
+                {...register("phoneNumber")}
               />
             </div>
 
@@ -145,9 +165,9 @@ export function BookingDetailsForm({
                 id="notes"
                 rows={3}
                 placeholder="Dodatne informacije ili pitanja..."
-                value={formData.notes}
-                onChange={(e) => onFormDataChange({ notes: e.target.value })}
-                className="px-3 py-2 w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isPending}
+                {...register("notes")}
+                className="px-3 py-2 w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </>
@@ -166,3 +186,5 @@ export function BookingDetailsForm({
     </div>
   );
 }
+
+export type { BookingDetailsFormData };

@@ -1,78 +1,55 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import { signupSchema, type SignupFormData } from "@/lib/validations/auth";
 
 export default function SignupPage() {
   const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
   });
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const username = watch("username", "");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    // Validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Lozinke se ne poklapaju");
-      setIsLoading(false);
-      return;
-    }
-
-    if (formData.password.length < 8) {
-      setError("Lozinka mora imati najmanje 8 karaktera");
-      setIsLoading(false);
-      return;
-    }
-
-    if (!/^[a-z0-9_-]+$/.test(formData.username)) {
-      setError("Korisničko ime može sadržati samo mala slova, brojeve, _ i -");
-      setIsLoading(false);
-      return;
-    }
+  const onSubmit = async (data: SignupFormData) => {
+    setServerError(null);
 
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email.toLowerCase(),
-          username: formData.username.toLowerCase(),
-          password: formData.password,
+          name: data.name,
+          email: data.email.toLowerCase(),
+          username: data.username.toLowerCase(),
+          password: data.password,
         }),
       });
 
-      const data = await response.json();
+      const responseData = await response.json();
 
       if (!response.ok) {
-        setError(data.message || "Greška pri registraciji");
+        setServerError(responseData.message || "Greška pri registraciji");
         return;
       }
 
       // Auto sign in after successful registration
       const result = await signIn("credentials", {
-        email: formData.email.toLowerCase(),
-        password: formData.password,
+        email: data.email.toLowerCase(),
+        password: data.password,
         redirect: false,
       });
 
@@ -81,9 +58,7 @@ export default function SignupPage() {
         router.refresh();
       }
     } catch {
-      setError("Došlo je do greške. Pokušajte ponovo.");
-    } finally {
-      setIsLoading(false);
+      setServerError("Došlo je do greške. Pokušajte ponovo.");
     }
   };
 
@@ -98,10 +73,10 @@ export default function SignupPage() {
         <p className="text-gray-600 dark:text-gray-400 mt-2">Kreirajte vaš nalog</p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {serverError && (
             <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
-              {error}
+              {serverError}
             </div>
           )}
 
@@ -109,77 +84,78 @@ export default function SignupPage() {
             <Label htmlFor="name" className="text-gray-900 dark:text-white">Ime i prezime</Label>
             <Input
               id="name"
-              name="name"
               type="text"
-              value={formData.name}
-              onChange={handleChange}
               placeholder="Marko Marković"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("name")}
             />
+            {errors.name && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
             <Input
               id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
+              type="text"
               placeholder="vas@email.com"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="username" className="text-gray-900 dark:text-white">Korisničko ime</Label>
             <Input
               id="username"
-              name="username"
               type="text"
-              value={formData.username}
-              onChange={handleChange}
               placeholder="marko"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("username")}
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Vaš profil: zakazi-termin.rs/{formData.username || "korisnickoime"}
-            </p>
+            {errors.username ? (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.username.message}</p>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Vaš profil: zakazi-termin.rs/{username || "korisnickoime"}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-gray-900 dark:text-white">Lozinka</Label>
             <Input
               id="password"
-              name="password"
               type="password"
-              value={formData.password}
-              onChange={handleChange}
               placeholder="Najmanje 8 karaktera"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("password")}
             />
+            {errors.password && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-white">Potvrdite lozinku</Label>
             <Input
               id="confirmPassword"
-              name="confirmPassword"
               type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
               placeholder="Ponovite lozinku"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("confirmPassword")}
             />
+            {errors.confirmPassword && (
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Kreiranje naloga..." : "Registrujte se"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Kreiranje naloga..." : "Registrujte se"}
           </Button>
         </form>
 
@@ -197,7 +173,7 @@ export default function SignupPage() {
           variant="outline"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
           <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
             <path

@@ -25,6 +25,7 @@ export function FeatureCard({
         )}
       >
         <Icon
+          aria-hidden="true"
           className={cn(
             "w-6 h-6",
             variant === "primary" ? "text-primary" : "text-accent"

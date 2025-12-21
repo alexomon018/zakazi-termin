@@ -1,11 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@zakazi-termin/ui";
 import { ErrorCode, errorMessages } from "@zakazi-termin/auth";
+
+import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,36 +25,41 @@ export default function LoginPage() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const errorParam = searchParams.get("error");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(
-    errorParam ? errorMessages[errorParam as ErrorCode] || "Greška pri prijavi" : null
+  const [serverError, setServerError] = useState<string | null>(
+    errorParam
+      ? errorMessages[errorParam as ErrorCode] || "Greška pri prijavi"
+      : null
   );
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setServerError(null);
 
     try {
       const result = await signIn("credentials", {
-        email: email.toLowerCase(),
-        password,
+        email: data.email.toLowerCase(),
+        password: data.password,
         redirect: false,
         callbackUrl,
       });
 
       if (result?.error) {
-        setError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
+        setServerError(
+          errorMessages[result.error as ErrorCode] || "Greška pri prijavi"
+        );
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
-      setError("Došlo je do greške. Pokušajte ponovo.");
-    } finally {
-      setIsLoading(false);
+      setServerError("Došlo je do greške. Pokušajte ponovo.");
     }
   };
 
@@ -53,41 +70,55 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zakazi Termin</CardTitle>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Prijavite se na vaš nalog</p>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          Zakazi Termin
+        </CardTitle>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Prijavite se na vaš nalog
+        </p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
-              {error}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {serverError && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md dark:text-red-400 dark:bg-red-900/20">
+              {serverError}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">
+              Email
+            </Label>
             <Input
               id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
               placeholder="vas@email.com"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-900 dark:text-white">Lozinka</Label>
+            <Label htmlFor="password" className="text-gray-900 dark:text-white">
+              Lozinka
+            </Label>
             <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
               placeholder="Vaša lozinka"
-              required
-              disabled={isLoading}
+              disabled={isSubmitting}
+              {...register("password")}
             />
+            {errors.password && (
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end">
@@ -99,17 +130,19 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Prijavljivanje..." : "Prijavite se"}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Prijavljivanje..." : "Prijavite se"}
           </Button>
         </form>
 
         <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
+          <div className="flex absolute inset-0 items-center">
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-card text-gray-500 dark:text-gray-400">ili</span>
+          <div className="flex relative justify-center text-sm">
+            <span className="px-2 text-gray-500 bg-card dark:text-gray-400">
+              ili
+            </span>
           </div>
         </div>
 
@@ -118,9 +151,9 @@ export default function LoginPage() {
           variant="outline"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isSubmitting}
         >
-          <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+          <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24">
             <path
               fill="currentColor"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -141,9 +174,12 @@ export default function LoginPage() {
           Prijavite se sa Google
         </Button>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
           Nemate nalog?{" "}
-          <Link href="/signup" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+          <Link
+            href="/signup"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+          >
             Registrujte se
           </Link>
         </p>
