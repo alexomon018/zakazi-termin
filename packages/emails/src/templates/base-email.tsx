@@ -24,11 +24,26 @@ export function BaseEmail({ preview, heading, children }: BaseEmailProps) {
       <Preview>{preview}</Preview>
       <Body style={main}>
         <Container style={container}>
+          {/* Header with logo */}
+          <Section style={header}>
+            <table cellPadding="0" cellSpacing="0" style={{ width: "100%" }}>
+              <tr>
+                <td style={{ textAlign: "center" }}>
+                  <span style={calendarIcon}>📅</span>
+                  <span style={logoText}>Zakazi Termin</span>
+                </td>
+              </tr>
+            </table>
+          </Section>
+          <Hr style={headerHr} />
           <Heading style={h1}>{heading}</Heading>
           {children}
           <Hr style={hr} />
           <Text style={footer}>
             Zakazi Termin - Vaš partner za zakazivanje termina
+          </Text>
+          <Text style={footerLinks}>
+            © {new Date().getFullYear()} Zakazi Termin. Sva prava zadržana.
           </Text>
         </Container>
       </Body>
@@ -38,7 +53,7 @@ export function BaseEmail({ preview, heading, children }: BaseEmailProps) {
 
 // Shared styles
 const main = {
-  backgroundColor: "#f6f9fc",
+  backgroundColor: "#f0f4f8",
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
 };
@@ -46,9 +61,36 @@ const main = {
 const container = {
   backgroundColor: "#ffffff",
   margin: "0 auto",
-  padding: "20px 0 48px",
+  padding: "0 24px 48px",
   marginBottom: "64px",
-  borderRadius: "8px",
+  borderRadius: "12px",
+  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+  maxWidth: "600px",
+  width: "100%",
+};
+
+const header = {
+  padding: "24px 24px 16px",
+  textAlign: "center" as const,
+};
+
+const calendarIcon = {
+  fontSize: "28px",
+  verticalAlign: "middle",
+};
+
+const logoText = {
+  color: "#1f2937",
+  fontSize: "20px",
+  fontWeight: "700",
+  marginLeft: "8px",
+  verticalAlign: "middle",
+};
+
+const headerHr = {
+  borderColor: "#3b82f6",
+  borderWidth: "2px",
+  margin: "0 0 20px",
 };
 
 const h1 = {
@@ -57,7 +99,7 @@ const h1 = {
   fontWeight: "600",
   lineHeight: "32px",
   margin: "16px 0",
-  padding: "0 48px",
+  padding: "0",
 };
 
 const hr = {
@@ -70,7 +112,17 @@ const footer = {
   fontSize: "12px",
   lineHeight: "16px",
   textAlign: "center" as const,
-  padding: "0 48px",
+  padding: "0",
+  margin: "0",
+};
+
+const footerLinks = {
+  color: "#a0aec0",
+  fontSize: "11px",
+  lineHeight: "14px",
+  textAlign: "center" as const,
+  padding: "0",
+  margin: "8px 0 0",
 };
 
 // Shared component styles
@@ -78,14 +130,14 @@ export const text = {
   color: "#374151",
   fontSize: "14px",
   lineHeight: "24px",
-  padding: "0 48px",
+  padding: "0",
 };
 
 export const infoBox = {
   backgroundColor: "#f3f4f6",
   borderRadius: "8px",
-  padding: "16px",
-  margin: "16px 48px",
+  padding: "16px 24px",
+  margin: "16px 0",
 };
 
 export const infoRow = {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@zakazi-termin/prisma";
 import { hashPassword } from "@zakazi-termin/auth";
+import { emailService } from "@zakazi-termin/emails";
 import { z } from "zod";
 
 const signupSchema = z.object({
@@ -140,6 +141,18 @@ export async function POST(request: Request) {
 
       return newUser;
     });
+
+    // Send welcome email
+    try {
+      await emailService.sendWelcomeEmail({
+        userName: name,
+        userEmail: email.toLowerCase(),
+        username: username.toLowerCase(),
+      });
+    } catch (error) {
+      console.error("Failed to send welcome email:", error);
+      // Don't block signup if email fails
+    }
 
     return NextResponse.json(
       {

@@ -6,4 +6,5 @@ export { BookingRejectedEmail } from "./templates/booking-rejected";
 export { BookingConfirmedOrganizerEmail } from "./templates/booking-confirmed-organizer";
 export { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 export { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+export { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 export type { BookingEmailData } from "./types";

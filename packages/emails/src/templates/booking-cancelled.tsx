@@ -60,7 +60,7 @@ export function BookingCancelledEmail(props: BookingEmailData) {
       </Section>
 
       {cancellationReason && (
-        <Section style={{ padding: "0 48px", marginTop: "16px" }}>
+        <Section style={{ padding: "0", marginTop: "16px" }}>
           <Text style={{ ...text, padding: 0 }}>
             <span style={label}>Razlog otkazivanja:</span>
           </Text>
@@ -83,3 +83,21 @@ export function BookingCancelledEmail(props: BookingEmailData) {
     </BaseEmail>
   );
 }
+
+// Preview props for React Email dev server
+BookingCancelledEmail.PreviewProps = {
+  bookingUid: "abc12345-test-uid",
+  bookingTitle: "Šišanje sa Marko Marković",
+  startTime: new Date("2024-12-25T10:00:00"),
+  endTime: new Date("2024-12-25T10:30:00"),
+  location: "Bulevar Kralja Aleksandra 123, Beograd",
+  eventTypeTitle: "Šišanje",
+  eventTypeDuration: 30,
+  organizerName: "Marko Marković",
+  organizerEmail: "marko@example.com",
+  attendeeName: "Petar Petrović",
+  attendeeEmail: "petar@example.com",
+  cancellationReason: "Neočekivane obaveze",
+} as BookingEmailData;
+
+export default BookingCancelledEmail;

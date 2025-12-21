@@ -96,7 +96,7 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
         Referentni broj: <strong>{bookingUid.slice(0, 8).toUpperCase()}</strong>
       </Text>
 
-      <Section style={{ padding: "0 48px", marginTop: "24px" }}>
+      <Section style={{ padding: "0", marginTop: "24px" }}>
         <Link href={bookingUrl} style={button}>
           Pogledaj detalje termina
         </Link>
@@ -114,3 +114,21 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
     </BaseEmail>
   );
 }
+
+// Preview props for React Email dev server
+BookingRescheduledEmail.PreviewProps = {
+  bookingUid: "abc12345-test-uid",
+  bookingTitle: "Šišanje sa Marko Marković",
+  startTime: new Date("2024-12-25T10:00:00"),
+  endTime: new Date("2024-12-25T10:30:00"),
+  location: "Bulevar Kralja Aleksandra 123, Beograd",
+  eventTypeTitle: "Šišanje",
+  eventTypeDuration: 30,
+  organizerName: "Marko Marković",
+  organizerEmail: "marko@example.com",
+  attendeeName: "Petar Petrović",
+  attendeeEmail: "petar@example.com",
+  rescheduledFromDate: new Date("2024-12-24T14:00:00"),
+} as BookingEmailData;
+
+export default BookingRescheduledEmail;
