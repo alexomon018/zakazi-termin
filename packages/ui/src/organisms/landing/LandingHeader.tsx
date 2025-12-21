@@ -15,7 +15,7 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
     <header className="border-b border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="w-8 h-8 text-primary" />
+          <Calendar aria-hidden="true" className="w-8 h-8 text-primary" />
           <span className="text-2xl font-bold text-foreground">
             Zakaži Termin
           </span>

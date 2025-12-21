@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
+import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc/client";
 import {
   Button,
@@ -26,72 +25,173 @@ type Booking = RouterOutputs["booking"]["list"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
+  initialTotal: number;
   initialFilter?: BookingFilter;
 };
 
+const ITEMS_PER_PAGE = 5;
+
 export function BookingsClient({
   initialBookings,
+  initialTotal,
   initialFilter = "upcoming",
 }: BookingsClientProps) {
   const [filter, setFilter] = useState<BookingFilter>(initialFilter);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedBookingUid, setSelectedBookingUid] = useState<string | null>(null);
+
+  // Track displayed bookings and pagination per filter
+  const [bookingsPerFilter, setBookingsPerFilter] = useState<Record<BookingFilter, Booking[]>>({
+    upcoming: initialFilter === "upcoming" ? initialBookings : [],
+    pending: initialFilter === "pending" ? initialBookings : [],
+    past: initialFilter === "past" ? initialBookings : [],
+    cancelled: initialFilter === "cancelled" ? initialBookings : [],
+  });
+
+  const [totalsPerFilter, setTotalsPerFilter] = useState<Record<BookingFilter, number>>({
+    upcoming: initialFilter === "upcoming" ? initialTotal : 0,
+    pending: initialFilter === "pending" ? initialTotal : 0,
+    past: initialFilter === "past" ? initialTotal : 0,
+    cancelled: initialFilter === "cancelled" ? initialTotal : 0,
+  });
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLoadingFilter, setIsLoadingFilter] = useState(false);
+
   const utils = trpc.useUtils();
 
-  // Memoize query parameters to prevent infinite re-fetching
-  const queryParams = useMemo(() => {
+  // Get query params for a specific filter
+  const getQueryParams = useCallback((filterType: BookingFilter, skip: number = 0) => {
     const now = new Date();
-    switch (filter) {
+    switch (filterType) {
       case "upcoming":
-        return { dateFrom: now, status: "ACCEPTED" as const };
+        return { dateFrom: now, status: "ACCEPTED" as const, skip, take: ITEMS_PER_PAGE };
       case "pending":
-        return { status: "PENDING" as const };
+        return { status: "PENDING" as const, skip, take: ITEMS_PER_PAGE };
       case "past":
-        return { dateTo: now, status: "ACCEPTED" as const };
+        return { dateTo: now, status: "ACCEPTED" as const, skip, take: ITEMS_PER_PAGE };
       case "cancelled":
-        return { status: "CANCELLED" as const };
+        return { status: "CANCELLED" as const, skip, take: ITEMS_PER_PAGE };
       default:
-        return {};
+        return { skip, take: ITEMS_PER_PAGE };
     }
-  }, [filter]);
+  }, []);
 
-  const { data: bookings, isLoading } = trpc.booking.list.useQuery(
-    queryParams,
+  // Current bookings and hasMore for active filter
+  const currentBookings = bookingsPerFilter[filter];
+  const currentTotal = totalsPerFilter[filter];
+  const hasMore = currentBookings.length < currentTotal;
+
+  // Query for loading more or changing filters
+  const { refetch } = trpc.booking.listPaginated.useQuery(
+    getQueryParams(filter, currentBookings.length),
     {
-      initialData: filter === initialFilter ? initialBookings : undefined,
-      staleTime: 0,
-      refetchOnMount: "always",
+      enabled: false,
       refetchOnWindowFocus: false,
     }
   );
 
   const handleFilterChange = async (newFilter: BookingFilter) => {
-    // Invalidate cache before changing filter
-    await utils.booking.list.invalidate();
-    // Change the filter, which will trigger a new query with new params
+    if (newFilter === filter) return;
+
+    // If we already have data for this filter, just switch
+    if (bookingsPerFilter[newFilter].length > 0) {
+      setFilter(newFilter);
+      return;
+    }
+
+    // Otherwise, fetch data for the new filter
+    setIsLoadingFilter(true);
     setFilter(newFilter);
+
+    try {
+      const result = await utils.booking.listPaginated.fetch(getQueryParams(newFilter, 0));
+      if (result) {
+        setBookingsPerFilter(prev => ({
+          ...prev,
+          [newFilter]: result.bookings,
+        }));
+        setTotalsPerFilter(prev => ({
+          ...prev,
+          [newFilter]: result.total,
+        }));
+      }
+    } finally {
+      setIsLoadingFilter(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
+    try {
+      const result = await utils.booking.listPaginated.fetch(
+        getQueryParams(filter, currentBookings.length)
+      );
+      if (result) {
+        setBookingsPerFilter(prev => ({
+          ...prev,
+          [filter]: [...prev[filter], ...result.bookings],
+        }));
+        setTotalsPerFilter(prev => ({
+          ...prev,
+          [filter]: result.total,
+        }));
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
+
+  // Invalidate and refresh current filter data
+  const refreshCurrentFilter = async () => {
+    setIsLoadingFilter(true);
+    try {
+      const result = await utils.booking.listPaginated.fetch(getQueryParams(filter, 0));
+      if (result) {
+        setBookingsPerFilter(prev => ({
+          ...prev,
+          [filter]: result.bookings,
+        }));
+        setTotalsPerFilter(prev => ({
+          ...prev,
+          [filter]: result.total,
+        }));
+      }
+      // Clear other filters so they refresh on next visit
+      setBookingsPerFilter(prev => {
+        const updated = { ...prev };
+        for (const key of Object.keys(updated) as BookingFilter[]) {
+          if (key !== filter) {
+            updated[key] = [];
+          }
+        }
+        return updated;
+      });
+      setTotalsPerFilter(prev => {
+        const updated = { ...prev };
+        for (const key of Object.keys(updated) as BookingFilter[]) {
+          if (key !== filter) {
+            updated[key] = 0;
+          }
+        }
+        return updated;
+      });
+    } finally {
+      setIsLoadingFilter(false);
+    }
   };
 
   const confirmBooking = trpc.booking.confirm.useMutation({
-    onSuccess: async () => {
-      // Invalidate all booking list queries to ensure all tabs update
-      await utils.booking.list.invalidate();
-    },
+    onSuccess: refreshCurrentFilter,
   });
 
   const rejectBooking = trpc.booking.reject.useMutation({
-    onSuccess: async () => {
-      // Invalidate all booking list queries to ensure all tabs update
-      await utils.booking.list.invalidate();
-    },
+    onSuccess: refreshCurrentFilter,
   });
 
   const cancelBooking = trpc.booking.cancel.useMutation({
-    onSuccess: async () => {
-      // Invalidate all booking list queries to ensure all tabs update
-      await utils.booking.list.invalidate();
-    },
+    onSuccess: refreshCurrentFilter,
   });
 
   const handleConfirm = (uid: string) => {
@@ -146,10 +246,35 @@ export function BookingsClient({
     }
   };
 
+  const isLoading = isLoadingFilter && currentBookings.length === 0;
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Termini
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            Upravljajte zakazanim terminima
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4">
+          {filters.map((f) => (
+            <TabFilter
+              key={f.key}
+              label={f.label}
+              isActive={filter === f.key}
+              onClick={() => handleFilterChange(f.key)}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
+        </div>
       </div>
     );
   }
@@ -178,7 +303,7 @@ export function BookingsClient({
       </div>
 
       {/* Bookings list */}
-      {bookings?.length === 0 ? (
+      {currentBookings.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
@@ -189,7 +314,7 @@ export function BookingsClient({
         </Card>
       ) : (
         <div className="space-y-4">
-          {bookings?.map((booking: Booking) => (
+          {currentBookings.map((booking: Booking) => (
             <Card key={booking.id}>
               <CardContent className="p-0">
                 <div className="p-4">
@@ -318,6 +443,19 @@ export function BookingsClient({
               </CardContent>
             </Card>
           ))}
+
+          {/* Load more button */}
+          {hasMore && (
+            <div className="text-center pt-4">
+              <Button
+                variant="outline"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? "Učitavanje..." : "Vidi još"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

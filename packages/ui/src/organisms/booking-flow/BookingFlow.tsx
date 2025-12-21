@@ -13,7 +13,10 @@ import { getCalendarLinks } from "./utils/getCalendarLinks";
 import { BookingEventHeader } from "../../molecules/booking/BookingEventHeader";
 import { BookingCalendar } from "../../molecules/booking/BookingCalendar";
 import { TimeSlotsList } from "../../molecules/booking/TimeSlotsList";
-import { BookingDetailsForm } from "../../molecules/booking/BookingDetailsForm";
+import {
+  BookingDetailsForm,
+  type BookingDetailsFormData,
+} from "../../molecules/booking/BookingDetailsForm";
 import { BookingConfirmation } from "../../molecules/booking/BookingConfirmation";
 import { RescheduleBanner } from "../../molecules/booking/RescheduleBanner";
 
@@ -69,7 +72,7 @@ export function BookingFlow({
   const [currentStep, setCurrentStep] = useState<BookingStep>("select-time");
   const selectedDate = selectedDateStr ? new Date(selectedDateStr) : null;
   const [bookingUid, setBookingUid] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const [monthDirection, setMonthDirection] = useState<"next" | "prev">("next");
 
   // Resize animation
@@ -137,13 +140,13 @@ export function BookingFlow({
     },
     onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
-        setErrors({
-          form: "Izabrani termin više nije dostupan. Molimo izaberite drugi.",
-        });
+        setServerError(
+          "Izabrani termin više nije dostupan. Molimo izaberite drugi."
+        );
         setTentativeSlot(null);
         setCurrentStep("select-time");
       } else {
-        setErrors({ form: error.message });
+        setServerError(error.message);
       }
     },
   });
@@ -156,13 +159,13 @@ export function BookingFlow({
     },
     onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
-        setErrors({
-          form: "Izabrani termin nije dostupan. Molimo izaberite drugi.",
-        });
+        setServerError(
+          "Izabrani termin nije dostupan. Molimo izaberite drugi."
+        );
         setTentativeSlot(null);
         setCurrentStep("select-time");
       } else {
-        setErrors({ form: error.message });
+        setServerError(error.message);
       }
     },
   });
@@ -204,22 +207,8 @@ export function BookingFlow({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-
-    // Validation
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = "Ime je obavezno";
-    if (!formData.email.trim()) newErrors.email = "Email je obavezan";
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Unesite ispravnu email adresu";
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
+  const handleSubmit = (data: BookingDetailsFormData) => {
+    setServerError(null);
 
     if (!eventType || !selectedSlot) return;
 
@@ -241,10 +230,10 @@ export function BookingFlow({
         eventTypeId: eventType.id,
         startTime,
         endTime,
-        name: formData.name,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber || undefined,
-        notes: formData.notes || undefined,
+        name: data.name,
+        email: data.email,
+        phoneNumber: data.phoneNumber || undefined,
+        notes: data.notes || undefined,
       });
     }
   };
@@ -373,11 +362,10 @@ export function BookingFlow({
                   <BookingDetailsForm
                     selectedSlot={selectedSlot}
                     eventLength={eventType.length}
-                    formData={formData}
-                    errors={errors}
+                    defaultValues={formData}
+                    serverError={serverError}
                     isPending={isPending}
                     isRescheduling={isRescheduling}
-                    onFormDataChange={setFormData}
                     onSubmit={handleSubmit}
                     onBack={handleBack}
                   />

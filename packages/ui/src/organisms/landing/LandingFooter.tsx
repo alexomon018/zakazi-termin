@@ -31,7 +31,7 @@ export function LandingFooter() {
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-6 h-6 text-primary" />
+              <Calendar aria-hidden="true" className="w-6 h-6 text-primary" />
               <span className="text-lg font-bold text-foreground">
                 Zakaži Termin
               </span>

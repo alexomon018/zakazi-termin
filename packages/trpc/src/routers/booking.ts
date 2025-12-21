@@ -69,6 +69,49 @@ function buildEmailData(
 }
 
 export const bookingRouter = router({
+  // Get upcoming bookings with pagination
+  upcoming: protectedProcedure
+    .input(
+      z.object({
+        skip: z.number().default(0),
+        take: z.number().default(5),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const skip = input?.skip ?? 0;
+      const take = input?.take ?? 5;
+
+      const [bookings, total] = await Promise.all([
+        ctx.prisma.booking.findMany({
+          where: {
+            userId: ctx.session.user.id,
+            startTime: { gte: new Date() },
+            status: { in: ["ACCEPTED", "PENDING"] },
+          },
+          include: {
+            eventType: true,
+            attendees: true,
+          },
+          orderBy: { startTime: "asc" },
+          skip,
+          take,
+        }),
+        ctx.prisma.booking.count({
+          where: {
+            userId: ctx.session.user.id,
+            startTime: { gte: new Date() },
+            status: { in: ["ACCEPTED", "PENDING"] },
+          },
+        }),
+      ]);
+
+      return {
+        bookings,
+        total,
+        hasMore: skip + bookings.length < total,
+      };
+    }),
+
   // List bookings for current user
   list: protectedProcedure
     .input(
@@ -93,6 +136,46 @@ export const bookingRouter = router({
         orderBy: { startTime: "asc" },
       });
       return bookings;
+    }),
+
+  // List bookings with pagination
+  listPaginated: protectedProcedure
+    .input(
+      z.object({
+        status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),
+        dateFrom: z.date().optional(),
+        dateTo: z.date().optional(),
+        skip: z.number().default(0),
+        take: z.number().default(5),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const where = {
+        userId: ctx.session.user.id,
+        ...(input.status && { status: input.status }),
+        ...(input.dateFrom && { startTime: { gte: input.dateFrom } }),
+        ...(input.dateTo && { endTime: { lte: input.dateTo } }),
+      };
+
+      const [bookings, total] = await Promise.all([
+        ctx.prisma.booking.findMany({
+          where,
+          include: {
+            eventType: true,
+            attendees: true,
+          },
+          orderBy: { startTime: input.dateTo ? "desc" : "asc" },
+          skip: input.skip,
+          take: input.take,
+        }),
+        ctx.prisma.booking.count({ where }),
+      ]);
+
+      return {
+        bookings,
+        total,
+        hasMore: input.skip + bookings.length < total,
+      };
     }),
 
   // Get single booking
