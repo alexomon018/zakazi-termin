@@ -8,6 +8,7 @@ import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingConfirmedOrganizerEmail } from "./templates/booking-confirmed-organizer";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 
 export interface SendEmailOptions {
   to: string;
@@ -168,6 +169,15 @@ class EmailService {
       this.sendBookingRescheduled(data),
       this.sendBookingRescheduledToOrganizer(data),
     ]);
+  }
+
+  // Send welcome email to new user
+  async sendWelcomeEmail(data: WelcomeEmailProps): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Dobrodošli na Zakazi Termin!",
+      react: createElement(WelcomeEmail, data),
+    });
   }
 }
 

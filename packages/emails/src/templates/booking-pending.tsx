@@ -65,9 +65,11 @@ export function BookingPendingEmail(props: BookingEmailData) {
         )}
       </Section>
 
-      <Text style={{ ...text, backgroundColor: "#fef3c7", padding: "12px 48px", borderRadius: "4px" }}>
-        <strong>Status:</strong> Čeka potvrdu
-      </Text>
+      <Section style={{ ...infoBox, backgroundColor: "#fef3c7" }}>
+        <Text style={{ ...infoRow, margin: 0 }}>
+          <strong>Status:</strong> Čeka potvrdu
+        </Text>
+      </Section>
 
       <Text style={{ ...text, marginTop: "24px" }}>
         Dobićete email obaveštenje kada Vaš zahtev bude odobren ili odbijen.
@@ -81,3 +83,21 @@ export function BookingPendingEmail(props: BookingEmailData) {
     </BaseEmail>
   );
 }
+
+// Preview props for React Email dev server
+BookingPendingEmail.PreviewProps = {
+  bookingUid: "abc12345-test-uid",
+  bookingTitle: "Šišanje sa Marko Marković",
+  startTime: new Date("2024-12-25T10:00:00"),
+  endTime: new Date("2024-12-25T10:30:00"),
+  location: "Bulevar Kralja Aleksandra 123, Beograd",
+  eventTypeTitle: "Šišanje",
+  eventTypeDuration: 30,
+  organizerName: "Marko Marković",
+  organizerEmail: "marko@example.com",
+  attendeeName: "Petar Petrović",
+  attendeeEmail: "petar@example.com",
+  attendeeNotes: "Molim vas da me podsetite dan ranije",
+} as BookingEmailData;
+
+export default BookingPendingEmail;

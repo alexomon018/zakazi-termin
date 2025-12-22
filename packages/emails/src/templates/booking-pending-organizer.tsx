@@ -98,7 +98,7 @@ export function BookingPendingOrganizerEmail(props: BookingEmailData) {
         Referentni broj: <strong>{bookingUid.slice(0, 8).toUpperCase()}</strong>
       </Text>
 
-      <Section style={{ padding: "0 48px", marginTop: "24px" }}>
+      <Section style={{ padding: "0", marginTop: "24px" }}>
         <Link href={dashboardUrl} style={button}>
           Pregledaj zahteve
         </Link>
@@ -110,3 +110,22 @@ export function BookingPendingOrganizerEmail(props: BookingEmailData) {
     </BaseEmail>
   );
 }
+
+// Preview props for React Email dev server
+BookingPendingOrganizerEmail.PreviewProps = {
+  bookingUid: "abc12345-test-uid",
+  bookingTitle: "Šišanje sa Petar Petrović",
+  startTime: new Date("2024-12-25T10:00:00"),
+  endTime: new Date("2024-12-25T10:30:00"),
+  location: "Bulevar Kralja Aleksandra 123, Beograd",
+  eventTypeTitle: "Šišanje",
+  eventTypeDuration: 30,
+  organizerName: "Marko Marković",
+  organizerEmail: "marko@example.com",
+  attendeeName: "Petar Petrović",
+  attendeeEmail: "petar@example.com",
+  attendeePhone: "+381641234567",
+  attendeeNotes: "Molim vas da me podsetite dan ranije",
+} as BookingEmailData;
+
+export default BookingPendingOrganizerEmail;

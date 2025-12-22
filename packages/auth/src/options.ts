@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@zakazi-termin/prisma";
+import { emailService } from "@zakazi-termin/emails";
 import { ZakaziTerminAdapter } from "./adapter";
 import { verifyPassword } from "./password";
 import { ErrorCode } from "./error-codes";
@@ -194,18 +195,31 @@ export const authOptions: NextAuthOptions = {
 
         // Create new user with Google
         const username = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+        const generatedUsername = await generateUniqueUsername(username);
 
         await prisma.user.create({
           data: {
             email,
             name: user.name,
-            username: await generateUniqueUsername(username),
+            username: generatedUsername,
             avatarUrl: user.image,
             emailVerified: new Date(),
             identityProvider: "GOOGLE",
             identityProviderId: account.providerAccountId,
           },
         });
+
+        // Send welcome email to new user
+        try {
+          await emailService.sendWelcomeEmail({
+            userName: user.name || "Korisnik",
+            userEmail: email,
+            username: generatedUsername,
+          });
+        } catch (error) {
+          console.error("Failed to send welcome email:", error);
+          // Don't block sign-in if email fails
+        }
 
         return true;
       }
