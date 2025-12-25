@@ -9,7 +9,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import * as React from "react";
+import type * as React from "react";
 
 interface BaseEmailProps {
   preview: string;
@@ -39,9 +39,7 @@ export function BaseEmail({ preview, heading, children }: BaseEmailProps) {
           <Heading style={h1}>{heading}</Heading>
           {children}
           <Hr style={hr} />
-          <Text style={footer}>
-            Zakazi Termin - Vaš partner za zakazivanje termina
-          </Text>
+          <Text style={footer}>Zakazi Termin - Vaš partner za zakazivanje termina</Text>
           <Text style={footerLinks}>
             © {new Date().getFullYear()} Zakazi Termin. Sva prava zadržana.
           </Text>

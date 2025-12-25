@@ -1,8 +1,8 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
-import { TRPCProvider } from "@/lib/trpc/provider";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { TRPCProvider } from "@/lib/trpc/provider";
+import { SessionProvider } from "next-auth/react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

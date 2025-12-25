@@ -1,5 +1,5 @@
-import { execSync } from "child_process";
-import path from "path";
+import { execSync } from "node:child_process";
+import path from "node:path";
 import dotenv from "dotenv";
 
 async function globalSetup() {
@@ -32,12 +32,10 @@ async function globalSetup() {
       retries++;
       if (retries >= maxRetries) {
         console.error("❌ Failed to connect to database after maximum retries");
-        console.error(
-          "Make sure the test database is running: yarn test:db:start"
-        );
+        console.error("Make sure the test database is running: yarn test:db:start");
         throw error;
       }
-      console.log(`⏳ Database not ready, waiting 2 seconds...`);
+      console.log("⏳ Database not ready, waiting 2 seconds...");
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }

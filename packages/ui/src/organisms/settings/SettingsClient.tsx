@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
-import { Calendar, Check, Trash2, ExternalLink, AlertCircle } from "lucide-react";
+import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 type Connection = RouterOutputs["calendar"]["listConnections"][number];
 
@@ -73,8 +73,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
           <span className="text-red-800 dark:text-red-300">
             {errorParam === "google_auth_denied" && "Odbili ste pristup Google Calendar-u."}
             {errorParam === "google_auth_failed" && "Greška pri povezivanju sa Google Calendar-om."}
-            {errorParam === "google_not_configured" &&
-              "Google Calendar integracija nije podešena."}
+            {errorParam === "google_not_configured" && "Google Calendar integracija nije podešena."}
             {errorParam === "missing_code" && "Nedostaje autorizacioni kod."}
           </span>
         </div>
@@ -104,7 +103,12 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center">
-                      <svg className="w-6 h-6" viewBox="0 0 24 24">
+                      <svg
+                        className="w-6 h-6"
+                        viewBox="0 0 24 24"
+                        role="img"
+                        aria-label="Google Calendar logo"
+                      >
                         <path
                           fill="#4285F4"
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -156,7 +160,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
 
           {/* Connect Button */}
           <Button onClick={handleConnectGoogle} disabled={connectingCalendar} className="w-full">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" role="img" aria-label="Google logo">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -221,31 +225,38 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
             <div className="text-gray-500 dark:text-gray-400 text-center py-4">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
-              {calendars?.map((cal: { externalId: string; selected: boolean; name: string; primary: boolean }) => (
-                <label
-                  key={cal.externalId}
-                  className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={cal.selected}
-                    onChange={() =>
-                      toggleSelection.mutate({
-                        credentialId,
-                        externalId: cal.externalId,
-                        selected: !cal.selected,
-                      })
-                    }
-                    className="rounded border-gray-300 dark:border-gray-600"
-                  />
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
-                    {cal.primary && (
-                      <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
-                    )}
-                  </div>
-                </label>
-              ))}
+              {calendars?.map(
+                (cal: {
+                  externalId: string;
+                  selected: boolean;
+                  name: string;
+                  primary: boolean;
+                }) => (
+                  <label
+                    key={cal.externalId}
+                    className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={cal.selected}
+                      onChange={() =>
+                        toggleSelection.mutate({
+                          credentialId,
+                          externalId: cal.externalId,
+                          selected: !cal.selected,
+                        })
+                      }
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
+                      {cal.primary && (
+                        <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
+                      )}
+                    </div>
+                  </label>
+                )
+              )}
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
-import { Section, Text, Link, Button } from "@react-email/components";
+import { Button, Link, Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label, button } from "./base-email";
 import type { BookingEmailData } from "../types";
+import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingConfirmedEmail(props: BookingEmailData) {
   const {
@@ -30,14 +30,10 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
   const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/booking/${bookingUid}`;
 
   return (
-    <BaseEmail
-      preview={`Vaš termin "${eventTypeTitle}" je potvrđen`}
-      heading="Termin je potvrđen!"
-    >
+    <BaseEmail preview={`Vaš termin "${eventTypeTitle}" je potvrđen`} heading="Termin je potvrđen!">
       <Text style={text}>Poštovani/a {attendeeName},</Text>
       <Text style={text}>
-        Vaš termin je uspešno zakazan. U nastavku se nalaze detalji Vaše
-        rezervacije.
+        Vaš termin je uspešno zakazan. U nastavku se nalaze detalji Vaše rezervacije.
       </Text>
 
       <Section style={infoBox}>
@@ -69,8 +65,7 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
       </Section>
 
       <Text style={text}>
-        Referentni broj rezervacije:{" "}
-        <strong>{bookingUid.slice(0, 8).toUpperCase()}</strong>
+        Referentni broj rezervacije: <strong>{bookingUid.slice(0, 8).toUpperCase()}</strong>
       </Text>
 
       <Section style={{ padding: "0", marginTop: "24px" }}>
@@ -80,8 +75,8 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
       </Section>
 
       <Text style={{ ...text, marginTop: "24px" }}>
-        Ako želite da otkažete ili promenite termin, kliknite na dugme iznad ili
-        nas kontaktirajte direktno.
+        Ako želite da otkažete ili promenite termin, kliknite na dugme iznad ili nas kontaktirajte
+        direktno.
       </Text>
 
       <Text style={text}>

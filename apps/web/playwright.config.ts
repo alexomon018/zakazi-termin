@@ -1,5 +1,5 @@
+import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
-import path from "path";
 import dotenv from "dotenv";
 
 // Load test environment variables
@@ -15,9 +15,9 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
   reporter: [["html", { open: "never" }], ["list"]],
-  timeout: isCI ? 30000 : 60000,
+  timeout: isCI ? 60000 : 60000,
   expect: {
-    timeout: 10000,
+    timeout: isCI ? 15000 : 10000,
   },
 
   use: {

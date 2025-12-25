@@ -1,14 +1,16 @@
 import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
 
 export const outOfOfficeRouter = router({
   // List out of office entries for current user
   list: protectedProcedure
     .input(
-      z.object({
-        cursor: z.number().optional(),
-        limit: z.number().min(1).max(100).default(20),
-      }).optional()
+      z
+        .object({
+          cursor: z.number().optional(),
+          limit: z.number().min(1).max(100).default(20),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const limit = input?.limit ?? 20;
@@ -56,25 +58,23 @@ export const outOfOfficeRouter = router({
   }),
 
   // Get a single entry
-  get: protectedProcedure
-    .input(z.object({ uuid: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const entry = await ctx.prisma.outOfOffice.findFirst({
-        where: {
-          uuid: input.uuid,
-          userId: ctx.session.user.id,
-        },
-        include: {
-          reason: true,
-        },
-      });
+  get: protectedProcedure.input(z.object({ uuid: z.string() })).query(async ({ ctx, input }) => {
+    const entry = await ctx.prisma.outOfOffice.findFirst({
+      where: {
+        uuid: input.uuid,
+        userId: ctx.session.user.id,
+      },
+      include: {
+        reason: true,
+      },
+    });
 
-      if (!entry) {
-        throw new Error("Unos nije pronađen.");
-      }
+    if (!entry) {
+      throw new Error("Unos nije pronađen.");
+    }
 
-      return entry;
-    }),
+    return entry;
+  }),
 
   // Create or update an out of office entry
   createOrUpdate: protectedProcedure
@@ -129,22 +129,21 @@ export const outOfOfficeRouter = router({
           },
         });
         return entry;
-      } else {
-        // Create new entry
-        const entry = await ctx.prisma.outOfOffice.create({
-          data: {
-            userId: ctx.session.user.id,
-            start: input.startDate,
-            end: input.endDate,
-            reasonId: input.reasonId,
-            notes: input.notes,
-          },
-          include: {
-            reason: true,
-          },
-        });
-        return entry;
       }
+      // Create new entry
+      const entry = await ctx.prisma.outOfOffice.create({
+        data: {
+          userId: ctx.session.user.id,
+          start: input.startDate,
+          end: input.endDate,
+          reasonId: input.reasonId,
+          notes: input.notes,
+        },
+        include: {
+          reason: true,
+        },
+      });
+      return entry;
     }),
 
   // Delete an out of office entry

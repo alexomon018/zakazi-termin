@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { ROUTES } from "../lib/constants";
 import { generateTestEmail } from "../lib/helpers";
 
@@ -13,9 +13,7 @@ test.describe("Forgot Password", () => {
     // Check page title/header
     await expect(page.locator("text=Zaboravljena lozinka")).toBeVisible();
     await expect(
-      page.locator(
-        "text=Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke"
-      )
+      page.locator("text=Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke")
     ).toBeVisible();
   });
 
@@ -27,10 +25,7 @@ test.describe("Forgot Password", () => {
     await expect(emailInput).toHaveAttribute("required", "");
   });
 
-  test("should show success message after submitting valid email", async ({
-    page,
-    users,
-  }) => {
+  test("should show success message after submitting valid email", async ({ page, users }) => {
     // Create a user to have a valid email
     const user = await users.create();
 
@@ -46,15 +41,11 @@ test.describe("Forgot Password", () => {
     await expect(page.locator("text=Proverite email")).toBeVisible({
       timeout: 10000,
     });
-    await expect(
-      page.locator(`text=Ako nalog sa email adresom`)
-    ).toBeVisible();
+    await expect(page.locator("text=Ako nalog sa email adresom")).toBeVisible();
     await expect(page.locator(`strong:has-text("${user.email}")`)).toBeVisible();
   });
 
-  test("should show success message even for non-existent email", async ({
-    page,
-  }) => {
+  test("should show success message even for non-existent email", async ({ page }) => {
     // This is a security best practice - don't reveal if email exists
     await page.goto(ROUTES.FORGOT_PASSWORD);
 
@@ -70,9 +61,7 @@ test.describe("Forgot Password", () => {
     });
   });
 
-  test("should have back to login button after submission", async ({
-    page,
-  }) => {
+  test("should have back to login button after submission", async ({ page }) => {
     await page.goto(ROUTES.FORGOT_PASSWORD);
 
     // Fill in email and submit

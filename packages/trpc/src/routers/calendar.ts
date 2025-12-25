@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { router, protectedProcedure } from "../trpc";
 import {
   GoogleCalendarService,
-  googleCredentialSchema,
   type GoogleCredential,
+  googleCredentialSchema,
 } from "@zakazi-termin/calendar";
+import { z } from "zod";
+import { protectedProcedure, router } from "../trpc";
 
 export const calendarRouter = router({
   // List connected calendars (credentials)
@@ -215,9 +215,7 @@ export const calendarRouter = router({
             });
           }
 
-          const selectedCalendarIds = credential.selectedCalendars.map(
-            (sc) => sc.externalId
-          );
+          const selectedCalendarIds = credential.selectedCalendars.map((sc) => sc.externalId);
 
           const busyTimes = await service.getAvailability(
             input.dateFrom.toISOString(),
@@ -227,10 +225,7 @@ export const calendarRouter = router({
 
           allBusyTimes.push(...busyTimes);
         } catch (error) {
-          console.error(
-            `Failed to get busy times from credential ${credential.id}:`,
-            error
-          );
+          console.error(`Failed to get busy times from credential ${credential.id}:`, error);
           // Mark credential as invalid
           await ctx.prisma.credential.update({
             where: { id: credential.id },

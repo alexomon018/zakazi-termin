@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
 import { trpc } from "@/lib/trpc/client";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import Link from "next/link";
+import { useState } from "react";
 
 interface Attendee {
   id: number;
@@ -113,11 +113,7 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
             </div>
             {hasMore && (
               <div className="mt-4 text-center">
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isLoadingMore}
-                >
+                <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
                   {isLoadingMore ? "Učitavanje..." : "Vidi još"}
                 </Button>
               </div>

@@ -1,14 +1,7 @@
-import * as React from "react";
-import Link from "next/link";
 import { Card, CardContent } from "@zakazi-termin/ui";
-import {
-  Clock,
-  MapPin,
-  Calendar,
-  CheckCircle,
-  CalendarPlus,
-  Download,
-} from "lucide-react";
+import { Calendar, CalendarPlus, CheckCircle, Clock, Download, MapPin } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 interface CalendarLink {
   id: string;
@@ -75,9 +68,7 @@ export function BookingConfirmation({
           </p>
 
           <div className="p-4 mb-6 text-left bg-gray-50 rounded-lg dark:bg-gray-800">
-            <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">
-              {eventTitle}
-            </h3>
+            <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">{eventTitle}</h3>
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex gap-2 items-center">
                 <Calendar className="w-4 h-4" />

@@ -1,7 +1,16 @@
-import { Section, Text, Link } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label, button, buttonSuccess, buttonDanger } from "./base-email";
 import type { BookingEmailData } from "../types";
+import {
+  BaseEmail,
+  button,
+  buttonDanger,
+  buttonSuccess,
+  infoBox,
+  infoRow,
+  label,
+  text,
+} from "./base-email";
 
 export function BookingPendingOrganizerEmail(props: BookingEmailData) {
   const {
@@ -37,9 +46,7 @@ export function BookingPendingOrganizerEmail(props: BookingEmailData) {
       heading="Novi zahtev za termin"
     >
       <Text style={text}>Poštovani/a {organizerName},</Text>
-      <Text style={text}>
-        Imate novi zahtev za termin koji čeka Vašu potvrdu.
-      </Text>
+      <Text style={text}>Imate novi zahtev za termin koji čeka Vašu potvrdu.</Text>
 
       <Section style={{ ...infoBox, backgroundColor: "#fef3c7" }}>
         <Text style={{ ...infoRow, fontWeight: "600", color: "#92400e" }}>
@@ -48,9 +55,7 @@ export function BookingPendingOrganizerEmail(props: BookingEmailData) {
       </Section>
 
       <Section style={infoBox}>
-        <Text style={{ ...infoRow, fontWeight: "600", marginBottom: "8px" }}>
-          Detalji termina
-        </Text>
+        <Text style={{ ...infoRow, fontWeight: "600", marginBottom: "8px" }}>Detalji termina</Text>
         <Text style={infoRow}>
           <span style={label}>Usluga:</span> {eventTypeTitle}
         </Text>

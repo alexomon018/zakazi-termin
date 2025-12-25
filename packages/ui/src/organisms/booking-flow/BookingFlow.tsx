@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent } from "@zakazi-termin/ui";
 import { m } from "framer-motion";
-import { FramerMotionProvider } from "./framer-features";
-import { useBookingStore } from "./store";
-import { useBookingResizeAnimation } from "./hooks/useBookingResizeAnimation";
-import { getCalendarLinks } from "./utils/getCalendarLinks";
-import { BookingEventHeader } from "../../molecules/booking/BookingEventHeader";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { BookingCalendar } from "../../molecules/booking/BookingCalendar";
-import { TimeSlotsList } from "../../molecules/booking/TimeSlotsList";
+import { BookingConfirmation } from "../../molecules/booking/BookingConfirmation";
 import {
   BookingDetailsForm,
   type BookingDetailsFormData,
 } from "../../molecules/booking/BookingDetailsForm";
-import { BookingConfirmation } from "../../molecules/booking/BookingConfirmation";
+import { BookingEventHeader } from "../../molecules/booking/BookingEventHeader";
 import { RescheduleBanner } from "../../molecules/booking/RescheduleBanner";
+import { TimeSlotsList } from "../../molecules/booking/TimeSlotsList";
+import { FramerMotionProvider } from "./framer-features";
+import { useBookingResizeAnimation } from "./hooks/useBookingResizeAnimation";
+import { useBookingStore } from "./store";
+import { getCalendarLinks } from "./utils/getCalendarLinks";
 
 type BookingStep = "select-time" | "enter-details" | "confirmation";
 
@@ -43,11 +43,7 @@ type BookingFlowProps = {
   eventSlug: string;
 };
 
-export function BookingFlow({
-  eventType,
-  username,
-  eventSlug,
-}: BookingFlowProps) {
+export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps) {
   const searchParams = useSearchParams();
   const rescheduleUid = searchParams.get("rescheduleUid");
 
@@ -82,15 +78,14 @@ export function BookingFlow({
   });
 
   // Fetch existing booking if rescheduling
-  const { data: existingBooking, isLoading: existingBookingLoading } =
-    trpc.booking.byUid.useQuery(
-      { uid: rescheduleUid! },
-      { enabled: !!rescheduleUid }
-    );
+  const { data: existingBooking, isLoading: existingBookingLoading } = trpc.booking.byUid.useQuery(
+    { uid: rescheduleUid! },
+    { enabled: !!rescheduleUid }
+  );
 
   // Pre-fill form data from existing booking
   useEffect(() => {
-    if (existingBooking && existingBooking.attendees[0]) {
+    if (existingBooking?.attendees[0]) {
       const attendee = existingBooking.attendees[0];
       setFormData({
         name: attendee.name,
@@ -99,38 +94,26 @@ export function BookingFlow({
         notes: existingBooking.description || "",
       });
     }
-  }, [existingBooking]);
+  }, [existingBooking, setFormData]);
 
   // Calculate date range for slots query
   const dateRange = useMemo(() => {
-    const start = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth(),
-      1
-    );
-    const end = new Date(
-      currentMonth.getFullYear(),
-      currentMonth.getMonth() + 1,
-      0,
-      23,
-      59,
-      59
-    );
+    const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0, 23, 59, 59);
     return { start, end };
   }, [currentMonth]);
 
   // Fetch available slots
-  const { data: slotsData, isLoading: slotsLoading } =
-    trpc.availability.getSlots.useQuery(
-      {
-        eventTypeId: eventType.id,
-        dateFrom: dateRange.start,
-        dateTo: dateRange.end,
-      },
-      {
-        enabled: !!eventType.id,
-      }
-    );
+  const { data: slotsData, isLoading: slotsLoading } = trpc.availability.getSlots.useQuery(
+    {
+      eventTypeId: eventType.id,
+      dateFrom: dateRange.start,
+      dateTo: dateRange.end,
+    },
+    {
+      enabled: !!eventType.id,
+    }
+  );
 
   // Create booking mutation
   const createBooking = trpc.booking.create.useMutation({
@@ -140,9 +123,7 @@ export function BookingFlow({
     },
     onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
-        setServerError(
-          "Izabrani termin više nije dostupan. Molimo izaberite drugi."
-        );
+        setServerError("Izabrani termin više nije dostupan. Molimo izaberite drugi.");
         setTentativeSlot(null);
         setCurrentStep("select-time");
       } else {
@@ -159,9 +140,7 @@ export function BookingFlow({
     },
     onError: (error: { message: string }) => {
       if (error.message.includes("nije dostupan")) {
-        setServerError(
-          "Izabrani termin nije dostupan. Molimo izaberite drugi."
-        );
+        setServerError("Izabrani termin nije dostupan. Molimo izaberite drugi.");
         setTentativeSlot(null);
         setCurrentStep("select-time");
       } else {
@@ -174,11 +153,11 @@ export function BookingFlow({
   const slotsByDate = useMemo(() => {
     if (!slotsData?.slots) return {};
     const grouped: Record<string, string[]> = {};
-    slotsData.slots.forEach((slot: { time: string }) => {
+    for (const slot of slotsData.slots) {
       const date = new Date(slot.time).toDateString();
       if (!grouped[date]) grouped[date] = [];
       grouped[date].push(slot.time);
-    });
+    }
     return grouped;
   }, [slotsData]);
 
@@ -213,9 +192,7 @@ export function BookingFlow({
     if (!eventType || !selectedSlot) return;
 
     const startTime = new Date(selectedSlot);
-    const endTime = new Date(
-      startTime.getTime() + eventType.length * 60 * 1000
-    );
+    const endTime = new Date(startTime.getTime() + eventType.length * 60 * 1000);
 
     // If rescheduling, use reschedule mutation
     if (rescheduleUid) {
@@ -240,17 +217,13 @@ export function BookingFlow({
 
   const goToPreviousMonth = () => {
     setMonthDirection("prev");
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
     setSelectedDateStore(null);
   };
 
   const goToNextMonth = () => {
     setMonthDirection("next");
-    setCurrentMonth(
-      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
-    );
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
     setSelectedDateStore(null);
   };
 
@@ -270,9 +243,7 @@ export function BookingFlow({
   const calendarLinks = selectedSlot
     ? getCalendarLinks({
         startTime: new Date(selectedSlot),
-        endTime: new Date(
-          new Date(selectedSlot).getTime() + eventType.length * 60 * 1000
-        ),
+        endTime: new Date(new Date(selectedSlot).getTime() + eventType.length * 60 * 1000),
         title: eventType.title,
         description: eventType.description,
         location: (eventType.locations as { address?: string }[])?.[0]?.address,
@@ -286,9 +257,7 @@ export function BookingFlow({
         bookingUid={bookingUid}
         eventTitle={eventType.title}
         eventLength={eventType.length}
-        eventLocation={
-          (eventType.locations as { address?: string }[])?.[0]?.address
-        }
+        eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
         selectedSlot={selectedSlot}
         isRescheduling={isRescheduling}
         requiresConfirmation={eventType.requiresConfirmation}
@@ -311,9 +280,7 @@ export function BookingFlow({
             eventTitle={eventType.title}
             eventDescription={eventType.description}
             eventLength={eventType.length}
-            eventLocation={
-              (eventType.locations as { address?: string }[])?.[0]?.address
-            }
+            eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
             userName={eventType.user?.name}
             userAvatarUrl={eventType.user?.avatarUrl}
             isRescheduling={isRescheduling}
@@ -343,13 +310,9 @@ export function BookingFlow({
 
                     {/* Time slots */}
                     <TimeSlotsList
-                      key={selectedDate?.toISOString() || 'no-date'}
+                      key={selectedDate?.toISOString() || "no-date"}
                       selectedDate={selectedDate}
-                      slots={
-                        selectedDate
-                          ? slotsByDate[selectedDate.toDateString()] || []
-                          : []
-                      }
+                      slots={selectedDate ? slotsByDate[selectedDate.toDateString()] || [] : []}
                       tentativeSlot={tentativeSlot}
                       selectedSlot={selectedSlot}
                       bookingState={bookingState}
@@ -377,10 +340,7 @@ export function BookingFlow({
           {/* Footer */}
           <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
             Pokreće{" "}
-            <Link
-              href="/"
-              className="text-blue-600 dark:text-blue-400 hover:underline"
-            >
+            <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
               Zakazi Termin
             </Link>
           </div>

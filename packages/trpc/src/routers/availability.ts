@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
-import { getAvailability, getBookingBusyTimes } from "@zakazi-termin/scheduling";
 import { GoogleCalendarService, googleCredentialSchema } from "@zakazi-termin/calendar";
+import { getAvailability, getBookingBusyTimes } from "@zakazi-termin/scheduling";
+import { z } from "zod";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const availabilityRouter = router({
   // List user's schedules
@@ -242,8 +242,8 @@ export const availabilityRouter = router({
           scheduleId: input.scheduleId,
           date: input.date,
           days: [],
-          startTime: new Date(`1970-01-01T00:00:00Z`),
-          endTime: new Date(`1970-01-01T00:00:00Z`),
+          startTime: new Date("1970-01-01T00:00:00Z"),
+          endTime: new Date("1970-01-01T00:00:00Z"),
         },
       });
 
@@ -388,7 +388,7 @@ export const availabilityRouter = router({
               }))
             );
           } catch (error) {
-            console.error(`Failed to get calendar busy times:`, error);
+            console.error("Failed to get calendar busy times:", error);
           }
         }
       }

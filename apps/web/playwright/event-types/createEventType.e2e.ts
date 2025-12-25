@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { CreateEventTypePage } from "../pages";
 
 test.describe("Create Event Type", () => {
@@ -28,9 +28,7 @@ test.describe("Create Event Type", () => {
     await createPage.expectSlugValue("konsultacija");
   });
 
-  test("should handle Serbian characters in slug generation", async ({
-    page,
-  }) => {
+  test("should handle Serbian characters in slug generation", async ({ page }) => {
     const createPage = new CreateEventTypePage(page);
     await createPage.goto();
 
@@ -41,9 +39,7 @@ test.describe("Create Event Type", () => {
     await createPage.expectSlugValue("ciscenje-zuba");
   });
 
-  test("should show validation errors for empty required fields", async ({
-    page,
-  }) => {
+  test("should show validation errors for empty required fields", async ({ page }) => {
     const createPage = new CreateEventTypePage(page);
     await createPage.goto();
 
@@ -54,9 +50,7 @@ test.describe("Create Event Type", () => {
     await createPage.expectValidationError("Naziv je obavezan");
   });
 
-  test("should show error when address is required but empty", async ({
-    page,
-  }) => {
+  test("should show error when address is required but empty", async ({ page }) => {
     const createPage = new CreateEventTypePage(page);
     await createPage.goto();
 

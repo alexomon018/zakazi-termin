@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const eventTypeRouter = router({
   // List user's event types
@@ -12,24 +12,22 @@ export const eventTypeRouter = router({
   }),
 
   // Get single event type by ID
-  byId: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const eventType = await ctx.prisma.eventType.findFirst({
-        where: {
-          id: input.id,
-          userId: ctx.session.user.id,
-        },
-        include: {
-          schedule: {
-            include: {
-              availability: true,
-            },
+  byId: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+    const eventType = await ctx.prisma.eventType.findFirst({
+      where: {
+        id: input.id,
+        userId: ctx.session.user.id,
+      },
+      include: {
+        schedule: {
+          include: {
+            availability: true,
           },
         },
-      });
-      return eventType;
-    }),
+      },
+    });
+    return eventType;
+  }),
 
   // Get public event type by username and slug
   getPublic: publicProcedure

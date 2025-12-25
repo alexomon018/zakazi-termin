@@ -8,12 +8,7 @@ export function PricingSection() {
       price: "1.500",
       period: "RSD/mes",
       description: "Savršeno za male salone",
-      features: [
-        "1 zaposleni",
-        "100 termina mesečno",
-        "SMS podsetnici",
-        "Mobilna aplikacija",
-      ],
+      features: ["1 zaposleni", "100 termina mesečno", "SMS podsetnici", "Mobilna aplikacija"],
       buttonText: "Probaj besplatno",
       buttonVariant: "outline" as const,
       highlighted: false,
@@ -66,9 +61,9 @@ export function PricingSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <PricingCard
-              key={index}
+              key={plan.plan}
               plan={plan.plan}
               price={plan.price}
               period={plan.period}

@@ -1,10 +1,10 @@
 import { router } from "../trpc";
-import { userRouter } from "./user";
-import { eventTypeRouter } from "./eventType";
-import { bookingRouter } from "./booking";
 import { availabilityRouter } from "./availability";
+import { bookingRouter } from "./booking";
 import { calendarRouter } from "./calendar";
+import { eventTypeRouter } from "./eventType";
 import { outOfOfficeRouter } from "./outOfOffice";
+import { userRouter } from "./user";
 
 export const appRouter = router({
   user: userRouter,

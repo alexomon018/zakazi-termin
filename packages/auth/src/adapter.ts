@@ -1,9 +1,9 @@
-import type { Adapter, AdapterUser, AdapterAccount } from "next-auth/adapters";
-import type { PrismaClient, User, Account } from "@zakazi-termin/prisma";
+import type { Account, PrismaClient, User } from "@zakazi-termin/prisma";
+import type { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 
 function parseIntSafe(value: string | number | undefined): number {
   if (typeof value === "number") return value;
-  if (typeof value === "string") return parseInt(value, 10);
+  if (typeof value === "string") return Number.parseInt(value, 10);
   throw new Error("Invalid ID type");
 }
 
@@ -111,7 +111,10 @@ export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
       return toAdapterAccount(createdAccount);
     },
 
-    async unlinkAccount({ providerAccountId, provider }: { providerAccountId: string; provider: string }) {
+    async unlinkAccount({
+      providerAccountId,
+      provider,
+    }: { providerAccountId: string; provider: string }) {
       const deletedAccount = await prisma.account.delete({
         where: {
           provider_providerAccountId: { provider, providerAccountId },

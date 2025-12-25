@@ -1,5 +1,5 @@
+import type { LucideIcon } from "lucide-react";
 import * as React from "react";
-import { LucideIcon } from "lucide-react";
 import { Card } from "../../atoms/Card";
 import { cn } from "../../utils";
 
@@ -26,10 +26,7 @@ export function FeatureCard({
       >
         <Icon
           aria-hidden="true"
-          className={cn(
-            "w-6 h-6",
-            variant === "primary" ? "text-primary" : "text-accent"
-          )}
+          className={cn("w-6 h-6", variant === "primary" ? "text-primary" : "text-accent")}
         />
       </div>
       <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>

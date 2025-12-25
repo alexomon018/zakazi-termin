@@ -1,6 +1,6 @@
-import { test, expect } from "../fixtures";
-import { BookingsPage, BookingDetailsPage } from "../pages";
+import { expect, test } from "../fixtures";
 import { ROUTES } from "../lib/constants";
+import { BookingDetailsPage, BookingsPage } from "../pages";
 
 test.describe("Cancel Booking", () => {
   test("should allow cancelling a booking", async ({ page, users, prisma }) => {
@@ -62,11 +62,7 @@ test.describe("Cancel Booking", () => {
     }
   });
 
-  test("should show booking confirmation page", async ({
-    page,
-    users,
-    prisma,
-  }) => {
+  test("should show booking confirmation page", async ({ page, users, prisma }) => {
     // Create user with schedule and event type
     const user = await users.create({ withSchedule: true, withEventType: true });
 

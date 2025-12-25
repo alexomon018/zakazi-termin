@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { trpc } from "@/lib/trpc/client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
-import { Check, AlertCircle, Plus, Trash2, Edit2, X, CalendarDays } from "lucide-react";
 import { cn } from "@zakazi-termin/ui";
+import { AlertCircle, CalendarDays, Check, Edit2, Plus, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const outOfOfficeSchema = z.object({
   startDate: z.string().min(1, "Datum početka je obavezan"),
@@ -249,6 +249,7 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                 {editingUuid ? "Izmeni period odsustva" : "Dodaj period odsustva"}
               </h3>
               <button
+                type="button"
                 onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
@@ -297,7 +298,10 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                         key={reason.id}
                         type="button"
                         onClick={() =>
-                          setValue("reasonId", selectedReasonId === reason.id ? undefined : reason.id)
+                          setValue(
+                            "reasonId",
+                            selectedReasonId === reason.id ? undefined : reason.id
+                          )
                         }
                         className={cn(
                           "flex items-center gap-2 p-3 rounded-lg border text-left transition-colors",

@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { LucideIcon } from "lucide-react";
 import { cn } from "@zakazi-termin/ui/utils";
+import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 
 interface MobileNavItemProps {
   href: string;
@@ -12,7 +12,12 @@ interface MobileNavItemProps {
   isActive: boolean;
 }
 
-export const MobileNavItem = React.memo(function MobileNavItem({ href, label, icon: Icon, isActive }: MobileNavItemProps) {
+export const MobileNavItem = React.memo(function MobileNavItem({
+  href,
+  label,
+  icon: Icon,
+  isActive,
+}: MobileNavItemProps) {
   return (
     <Link
       href={href}

@@ -1,19 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useTheme } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { useTheme } from "@/lib/theme-provider";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Label,
-} from "@zakazi-termin/ui";
-import { Check, AlertCircle, Sun, Moon, Monitor } from "lucide-react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Label } from "@zakazi-termin/ui";
 import { cn } from "@zakazi-termin/ui";
+import { AlertCircle, Check, Monitor, Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | null;
 type User = NonNullable<RouterOutputs["user"]["me"]>;
@@ -24,15 +17,9 @@ type AppearanceClientProps = {
 
 export function AppearanceClient({ initialUser }: AppearanceClientProps) {
   const [saved, setSaved] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<Theme>(
-    initialUser?.theme as Theme
-  );
-  const [brandColor, setBrandColor] = useState(
-    initialUser?.brandColor || "#292929"
-  );
-  const [darkBrandColor, setDarkBrandColor] = useState(
-    initialUser?.darkBrandColor || "#fafafa"
-  );
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(initialUser?.theme as Theme);
+  const [brandColor, setBrandColor] = useState(initialUser?.brandColor || "#292929");
+  const [darkBrandColor, setDarkBrandColor] = useState(initialUser?.darkBrandColor || "#fafafa");
 
   const utils = trpc.useUtils();
   const { setTheme } = useTheme();
@@ -83,9 +70,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Izgled
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Izgled</h1>
         <p className="mt-1 text-gray-600 dark:text-gray-400">
           Prilagodite izgled vaše stranice za zakazivanje
         </p>
@@ -94,18 +79,14 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
       {saved && (
         <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <span className="text-green-800 dark:text-green-300">
-            Izgled je uspešno sačuvan!
-          </span>
+          <span className="text-green-800 dark:text-green-300">Izgled je uspešno sačuvan!</span>
         </div>
       )}
 
       {updateAppearance.error && (
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">
-            {updateAppearance.error.message}
-          </span>
+          <span className="text-red-800 dark:text-red-300">{updateAppearance.error.message}</span>
         </div>
       )}
 
@@ -151,16 +132,12 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Prilagodite boje vaše stranice za zakazivanje da odgovaraju vašem
-            brendu.
+            Prilagodite boje vaše stranice za zakazivanje da odgovaraju vašem brendu.
           </p>
 
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-3">
-              <Label
-                htmlFor="brandColor"
-                className="text-gray-900 dark:text-white"
-              >
+              <Label htmlFor="brandColor" className="text-gray-900 dark:text-white">
                 Boja za svetlu temu
               </Label>
               <div className="flex gap-3 items-center">
@@ -182,9 +159,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
                 </div>
               </div>
               <div className="flex gap-2 items-center">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Pregled:
-                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Pregled:</span>
                 <button
                   type="button"
                   className="px-4 py-2 text-sm font-medium text-white rounded-md"
@@ -196,10 +171,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
             </div>
 
             <div className="space-y-3">
-              <Label
-                htmlFor="darkBrandColor"
-                className="text-gray-900 dark:text-white"
-              >
+              <Label htmlFor="darkBrandColor" className="text-gray-900 dark:text-white">
                 Boja za tamnu temu
               </Label>
               <div className="flex gap-3 items-center">
@@ -242,12 +214,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
         </CardHeader>
         <CardContent>
           <div className="overflow-hidden rounded-lg border">
-            <div
-              className={cn(
-                "p-6",
-                selectedTheme === "dark" ? "bg-gray-900" : "bg-white"
-              )}
-            >
+            <div className={cn("p-6", selectedTheme === "dark" ? "bg-gray-900" : "bg-white")}>
               <div className="mx-auto space-y-4 max-w-md">
                 <div className="text-center">
                   <div
@@ -269,9 +236,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
                   <p
                     className={cn(
                       "text-sm",
-                      selectedTheme === "dark"
-                        ? "text-gray-400"
-                        : "text-gray-500"
+                      selectedTheme === "dark" ? "text-gray-400" : "text-gray-500"
                     )}
                   >
                     {user?.bio || "Kratak opis"}
@@ -296,9 +261,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
                   <p
                     className={cn(
                       "text-sm",
-                      selectedTheme === "dark"
-                        ? "text-gray-400"
-                        : "text-gray-500"
+                      selectedTheme === "dark" ? "text-gray-400" : "text-gray-500"
                     )}
                   >
                     30 minuta
@@ -308,8 +271,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
                   type="button"
                   className="py-2 w-full text-sm font-medium rounded-md transition-colors"
                   style={{
-                    backgroundColor:
-                      selectedTheme === "dark" ? darkBrandColor : brandColor,
+                    backgroundColor: selectedTheme === "dark" ? darkBrandColor : brandColor,
                     color: selectedTheme === "dark" ? "#111" : "#fff",
                   }}
                 >
@@ -323,10 +285,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || updateAppearance.isPending}
-        >
+        <Button onClick={handleSave} disabled={!hasChanges || updateAppearance.isPending}>
           {updateAppearance.isPending ? "Čuvanje..." : "Sačuvaj promene"}
         </Button>
       </div>
@@ -367,16 +326,12 @@ function ThemeOption({
       <p
         className={cn(
           "text-sm font-medium",
-          selected
-            ? "text-blue-700 dark:text-blue-400"
-            : "text-gray-900 dark:text-white"
+          selected ? "text-blue-700 dark:text-blue-400" : "text-gray-900 dark:text-white"
         )}
       >
         {label}
       </p>
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        {description}
-      </p>
+      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{description}</p>
     </button>
   );
 }

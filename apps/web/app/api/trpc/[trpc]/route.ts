@@ -1,6 +1,6 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter, createTRPCContext, type Context } from "@zakazi-termin/trpc";
 import { getSession } from "@/lib/auth";
+import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { type Context, appRouter, createTRPCContext } from "@zakazi-termin/trpc";
 
 const handler = async (req: Request) => {
   const session = await getSession();

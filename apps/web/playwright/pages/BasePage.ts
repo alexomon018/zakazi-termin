@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from "@playwright/test";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { TIMEOUTS } from "../lib/constants";
 
 /**
@@ -85,16 +85,12 @@ export abstract class BasePage {
   /**
    * Wait for API response with specific endpoint pattern
    */
-  protected async waitForApiResponse(
-    urlPattern: string | RegExp,
-    method: string = "POST"
-  ): Promise<void> {
+  protected async waitForApiResponse(urlPattern: string | RegExp, method = "POST"): Promise<void> {
     await this.page.waitForResponse(
       (response) =>
         (typeof urlPattern === "string"
           ? response.url().includes(urlPattern)
-          : urlPattern.test(response.url())) &&
-        response.request().method() === method
+          : urlPattern.test(response.url())) && response.request().method() === method
     );
   }
 
@@ -104,9 +100,7 @@ export abstract class BasePage {
   protected async waitForMutation(action: () => Promise<void>): Promise<void> {
     await Promise.all([
       this.page.waitForResponse(
-        (response) =>
-          response.url().includes("/api/trpc") &&
-          response.request().method() === "POST"
+        (response) => response.url().includes("/api/trpc") && response.request().method() === "POST"
       ),
       action(),
     ]);

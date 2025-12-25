@@ -1,5 +1,5 @@
-import { test, expect } from "../fixtures";
-import { PublicProfilePage, EventTypeBookingPage } from "../pages";
+import { expect, test } from "../fixtures";
+import { EventTypeBookingPage, PublicProfilePage } from "../pages";
 
 test.describe("Create Booking", () => {
   test("should display public booking page", async ({ page, users }) => {
@@ -14,10 +14,7 @@ test.describe("Create Booking", () => {
     await profilePage.expectEventTypeVisible("30 Minute Meeting");
   });
 
-  test("should navigate to specific event type booking", async ({
-    page,
-    users,
-  }) => {
+  test("should navigate to specific event type booking", async ({ page, users }) => {
     // Create a user with schedule and event type
     const user = await users.create({ withSchedule: true, withEventType: true });
 
@@ -29,9 +26,7 @@ test.describe("Create Booking", () => {
     await profilePage.selectEventType("30 Minute Meeting");
 
     // Should navigate to event type booking page
-    await expect(page).toHaveURL(
-      new RegExp(`/${user.username}/30-minute-meeting`)
-    );
+    await expect(page).toHaveURL(new RegExp(`/${user.username}/30-minute-meeting`));
   });
 
   test("should display calendar for booking", async ({ page, users }) => {
@@ -57,10 +52,7 @@ test.describe("Create Booking", () => {
     expect(hasDayNames || hasEventTitle).toBeTruthy();
   });
 
-  test("should show user profile info on booking page", async ({
-    page,
-    users,
-  }) => {
+  test("should show user profile info on booking page", async ({ page, users }) => {
     // Create a user with schedule and event type
     const user = await users.create({ withSchedule: true, withEventType: true });
 

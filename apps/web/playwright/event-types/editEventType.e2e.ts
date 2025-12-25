@@ -1,12 +1,8 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { EditEventTypePage } from "../pages";
 
 test.describe("Edit Event Type", () => {
-  test("should display edit form with existing data", async ({
-    page,
-    users,
-    prisma,
-  }) => {
+  test("should display edit form with existing data", async ({ page, users, prisma }) => {
     // Create user with schedule and event type
     const user = await users.create({ withSchedule: true, withEventType: true });
     await users.login(user);
@@ -28,11 +24,7 @@ test.describe("Edit Event Type", () => {
     });
   });
 
-  test("should update event type successfully", async ({
-    page,
-    users,
-    prisma,
-  }) => {
+  test("should update event type successfully", async ({ page, users, prisma }) => {
     // Create user with schedule and event type
     const user = await users.create({ withSchedule: true, withEventType: true });
     await users.login(user);
@@ -64,11 +56,7 @@ test.describe("Edit Event Type", () => {
     expect(updatedEventType?.title).toBe(newTitle);
   });
 
-  test("should show error for duplicate slug", async ({
-    page,
-    users,
-    prisma,
-  }) => {
+  test("should show error for duplicate slug", async ({ page, users, prisma }) => {
     // Create user with schedule
     const user = await users.create({ withSchedule: true });
     await users.login(user);

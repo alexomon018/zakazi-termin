@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
-import { ArrowLeft, Clock, MapPin, Settings, Calendar, Trash2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Eye, EyeOff, MapPin, Settings, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type LocationType = "inPerson" | "phone" | "link";
 
@@ -131,7 +131,9 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
   };
 
   const handleDelete = () => {
-    if (confirm("Da li ste sigurni da želite da obrišete ovaj tip termina? Ova akcija je nepovratna.")) {
+    if (
+      confirm("Da li ste sigurni da želite da obrišete ovaj tip termina? Ova akcija je nepovratna.")
+    ) {
       deleteEventType.mutate({ id: eventType.id });
     }
   };
@@ -305,7 +307,10 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                     max="480"
                     value={formData.length}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, length: parseInt(e.target.value) || 30 }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        length: Number.parseInt(e.target.value) || 30,
+                      }))
                     }
                     className="w-20"
                   />
@@ -334,7 +339,9 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                 id="locationAddress"
                 placeholder="npr. Knez Mihailova 10, Beograd"
                 value={formData.locationAddress}
-                onChange={(e) => setFormData((prev) => ({ ...prev, locationAddress: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, locationAddress: e.target.value }))
+                }
                 className={errors.locationAddress ? "border-red-500" : ""}
               />
               {errors.locationAddress && (
@@ -363,7 +370,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    scheduleId: e.target.value ? parseInt(e.target.value) : null,
+                    scheduleId: e.target.value ? Number.parseInt(e.target.value) : null,
                   }))
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -400,7 +407,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    minimumBookingNotice: parseInt(e.target.value),
+                    minimumBookingNotice: Number.parseInt(e.target.value),
                   }))
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -424,7 +431,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      beforeEventBuffer: parseInt(e.target.value),
+                      beforeEventBuffer: Number.parseInt(e.target.value),
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -443,7 +450,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      afterEventBuffer: parseInt(e.target.value),
+                      afterEventBuffer: Number.parseInt(e.target.value),
                     }))
                   }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

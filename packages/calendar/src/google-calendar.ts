@@ -1,4 +1,4 @@
-import { calendar as googleCalendar, calendar_v3 } from "@googleapis/calendar";
+import { type calendar_v3, calendar as googleCalendar } from "@googleapis/calendar";
 import { OAuth2Client } from "googleapis-common";
 import { z } from "zod";
 
@@ -42,11 +42,7 @@ export class GoogleCalendarService {
   private credential: CredentialWithKey;
   private oAuth2Client: OAuth2Client;
 
-  constructor(
-    credential: CredentialWithKey,
-    clientId: string,
-    clientSecret: string
-  ) {
+  constructor(credential: CredentialWithKey, clientId: string, clientSecret: string) {
     this.credential = credential;
     this.oAuth2Client = new OAuth2Client(clientId, clientSecret);
     this.oAuth2Client.setCredentials({
@@ -101,9 +97,7 @@ export class GoogleCalendarService {
 
     // If no calendars selected, get primary calendar
     const calendarIds =
-      selectedCalendarIds.length > 0
-        ? selectedCalendarIds
-        : await this.getPrimaryCalendarId();
+      selectedCalendarIds.length > 0 ? selectedCalendarIds : await this.getPrimaryCalendarId();
 
     if (calendarIds.length === 0) {
       return [];
@@ -114,9 +108,7 @@ export class GoogleCalendarService {
       const busyTimes: EventBusyDate[] = [];
       const fromDate = new Date(dateFrom);
       const toDate = new Date(dateTo);
-      const diffDays = Math.ceil(
-        (toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const diffDays = Math.ceil((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays <= 90) {
         const result = await this.fetchFreeBusy(calendar, dateFrom, dateTo, calendarIds);

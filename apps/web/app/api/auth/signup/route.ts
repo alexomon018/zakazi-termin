@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@zakazi-termin/prisma";
 import { hashPassword } from "@zakazi-termin/auth";
 import { emailService } from "@zakazi-termin/emails";
+import { prisma } from "@zakazi-termin/prisma";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const signupSchema = z.object({
@@ -26,10 +26,7 @@ export async function POST(request: Request) {
     const result = signupSchema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json(
-        { message: result.error.errors[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: result.error.errors[0].message }, { status: 400 });
     }
 
     const { name, email, username, password, organizationName, organizationSlug } = result.data;
@@ -40,10 +37,7 @@ export async function POST(request: Request) {
     });
 
     if (existingEmail) {
-      return NextResponse.json(
-        { message: "Email adresa je već registrovana" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Email adresa je već registrovana" }, { status: 400 });
     }
 
     // Check if username already exists
@@ -52,10 +46,7 @@ export async function POST(request: Request) {
     });
 
     if (existingUsername) {
-      return NextResponse.json(
-        { message: "Korisničko ime je zauzeto" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Korisničko ime je zauzeto" }, { status: 400 });
     }
 
     // Check if organization slug already exists (if creating org)
@@ -65,10 +56,7 @@ export async function POST(request: Request) {
       });
 
       if (existingOrg) {
-        return NextResponse.json(
-          { message: "Slug organizacije je već zauzet" },
-          { status: 400 }
-        );
+        return NextResponse.json({ message: "Slug organizacije je već zauzet" }, { status: 400 });
       }
     }
 
@@ -164,9 +152,6 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Signup error:", error);
-    return NextResponse.json(
-      { message: "Došlo je do greške pri registraciji" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Došlo je do greške pri registraciji" }, { status: 500 });
   }
 }

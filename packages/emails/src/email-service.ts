@@ -1,14 +1,14 @@
-import { Resend } from "resend";
 import { createElement } from "react";
-import type { BookingEmailData } from "./types";
-import { BookingConfirmedEmail } from "./templates/booking-confirmed";
-import { BookingPendingEmail } from "./templates/booking-pending";
+import { Resend } from "resend";
 import { BookingCancelledEmail } from "./templates/booking-cancelled";
-import { BookingRejectedEmail } from "./templates/booking-rejected";
+import { BookingConfirmedEmail } from "./templates/booking-confirmed";
 import { BookingConfirmedOrganizerEmail } from "./templates/booking-confirmed-organizer";
+import { BookingPendingEmail } from "./templates/booking-pending";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
+import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
+import type { BookingEmailData } from "./types";
 
 export interface SendEmailOptions {
   to: string;
@@ -18,7 +18,7 @@ export interface SendEmailOptions {
 
 class EmailService {
   private resend: Resend | null = null;
-  private fromEmail: string = "Zakazi Termin <noreply@zakazi-termin.rs>";
+  private fromEmail = "Zakazi Termin <noreply@zakazi-termin.rs>";
 
   private getResend(): Resend {
     if (!this.resend) {
@@ -138,10 +138,7 @@ class EmailService {
   // Convenience method to send all notifications for a new booking
   async sendNewBookingEmails(data: BookingEmailData, isPending: boolean): Promise<void> {
     if (isPending) {
-      await Promise.all([
-        this.sendBookingPending(data),
-        this.sendBookingPendingToOrganizer(data),
-      ]);
+      await Promise.all([this.sendBookingPending(data), this.sendBookingPendingToOrganizer(data)]);
     } else {
       await Promise.all([
         this.sendBookingConfirmed(data),

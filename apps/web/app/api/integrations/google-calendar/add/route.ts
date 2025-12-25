@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getGoogleAuthUrl } from "@zakazi-termin/calendar";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const session = await getSession();
@@ -13,10 +13,7 @@ export async function GET(request: Request) {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.json(
-      { error: "Google Calendar not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Google Calendar not configured" }, { status: 500 });
   }
 
   const { searchParams } = new URL(request.url);

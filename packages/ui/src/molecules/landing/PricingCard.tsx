@@ -1,7 +1,7 @@
-import * as React from "react";
 import { Check } from "lucide-react";
-import { Card } from "../../atoms/Card";
+import * as React from "react";
 import { Button } from "../../atoms/Button";
+import { Card } from "../../atoms/Card";
 import { cn } from "../../utils";
 
 interface PricingCardProps {
@@ -46,8 +46,8 @@ export function PricingCard({
       </div>
       <p className="text-sm text-muted-foreground mb-6">{description}</p>
       <ul className="space-y-3 mb-8">
-        {features.map((feature, index) => (
-          <li key={index} className="flex items-start gap-2">
+        {features.map((feature) => (
+          <li key={feature} className="flex items-start gap-2">
             <Check aria-hidden="true" className="w-5 h-5 text-primary mt-0.5 shrink-0" />
             <span className="text-sm text-foreground">{feature}</span>
           </li>

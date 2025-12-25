@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
 import { Calendar } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 import { Button } from "../../atoms/Button";
 import { NavLink } from "../../molecules/landing/NavLink";
 
@@ -16,9 +16,7 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Calendar aria-hidden="true" className="w-8 h-8 text-primary" />
-          <span className="text-2xl font-bold text-foreground">
-            Zakaži Termin
-          </span>
+          <span className="text-2xl font-bold text-foreground">Zakaži Termin</span>
         </div>
         <nav className="hidden md:flex items-center gap-6">
           <NavLink href="#funkcije" label="Funkcije" />

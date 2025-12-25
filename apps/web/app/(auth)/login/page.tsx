@@ -1,23 +1,15 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type ErrorCode, errorMessages } from "@zakazi-termin/auth";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import {
-  Button,
-  Input,
-  Label,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@zakazi-termin/ui";
-import { ErrorCode, errorMessages } from "@zakazi-termin/auth";
 
-import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
+import { type LoginFormData, loginSchema } from "@/lib/validations/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,9 +18,7 @@ export default function LoginPage() {
   const errorParam = searchParams.get("error");
 
   const [serverError, setServerError] = useState<string | null>(
-    errorParam
-      ? errorMessages[errorParam as ErrorCode] || "Greška pri prijavi"
-      : null
+    errorParam ? errorMessages[errorParam as ErrorCode] || "Greška pri prijavi" : null
   );
 
   const {
@@ -51,9 +41,7 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setServerError(
-          errorMessages[result.error as ErrorCode] || "Greška pri prijavi"
-        );
+        setServerError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
@@ -76,10 +64,7 @@ export default function LoginPage() {
         >
           Zakazi Termin
         </CardTitle>
-        <p
-          data-testid="login-subtitle"
-          className="mt-2 text-gray-600 dark:text-gray-400"
-        >
+        <p data-testid="login-subtitle" className="mt-2 text-gray-600 dark:text-gray-400">
           Prijavite se na vaš nalog
         </p>
       </CardHeader>
@@ -107,10 +92,7 @@ export default function LoginPage() {
               {...register("email")}
             />
             {errors.email && (
-              <p
-                data-testid="login-email-error"
-                className="text-sm text-red-600 dark:text-red-400"
-              >
+              <p data-testid="login-email-error" className="text-sm text-red-600 dark:text-red-400">
                 {errors.email.message}
               </p>
             )}
@@ -163,9 +145,7 @@ export default function LoginPage() {
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div className="flex relative justify-center text-sm">
-            <span className="px-2 text-gray-500 bg-card dark:text-gray-400">
-              ili
-            </span>
+            <span className="px-2 text-gray-500 bg-card dark:text-gray-400">ili</span>
           </div>
         </div>
 
@@ -177,7 +157,7 @@ export default function LoginPage() {
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
         >
-          <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24">
+          <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
             <path
               fill="currentColor"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

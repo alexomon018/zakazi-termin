@@ -1,8 +1,8 @@
+import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@zakazi-termin/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
 import { Calendar, Clock, Users } from "lucide-react";
-import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -104,10 +104,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Upcoming bookings */}
-      <UpcomingBookings
-        initialBookings={bookings}
-        totalBookings={upcomingBookings}
-      />
+      <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
 
       {/* Quick links */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">

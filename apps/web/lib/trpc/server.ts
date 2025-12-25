@@ -1,14 +1,14 @@
 import "server-only";
 
-import { cache } from "react";
+import { authOptions } from "@zakazi-termin/auth";
 import {
+  type Session,
   appRouter,
   createCallerFactory,
   createContextInner,
-  type Session,
 } from "@zakazi-termin/trpc";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@zakazi-termin/auth";
+import { cache } from "react";
 
 /**
  * Create a server-side tRPC caller

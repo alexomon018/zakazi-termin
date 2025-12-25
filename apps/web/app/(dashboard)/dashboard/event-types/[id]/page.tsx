@@ -1,7 +1,7 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import { createServerCaller } from "@/lib/trpc/server";
-import { EditEventTypeClient, Button } from "@zakazi-termin/ui";
+import { Button, EditEventTypeClient } from "@zakazi-termin/ui";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -9,9 +9,9 @@ type Props = {
 
 export default async function EditEventTypePage({ params }: Props) {
   const { id } = await params;
-  const eventTypeId = parseInt(id);
+  const eventTypeId = Number.parseInt(id);
 
-  if (isNaN(eventTypeId)) {
+  if (Number.isNaN(eventTypeId)) {
     notFound();
   }
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
-import { useSession } from "next-auth/react";
 import { trpc } from "@/lib/trpc/client";
+import { useSession } from "next-auth/react";
+import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes";
 import { useEffect } from "react";
 
 function ThemeSyncer() {

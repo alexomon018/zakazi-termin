@@ -1,13 +1,13 @@
 "use client";
 
-import * as React from "react";
 import { Button } from "@zakazi-termin/ui";
-import { m, AnimatePresence } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
+import * as React from "react";
 import {
+  confirmButtonAnimation,
   fadeInLeft,
   staggerContainer,
   staggerItem,
-  confirmButtonAnimation,
 } from "../../organisms/booking-flow/animation-config";
 
 interface TimeSlotsListProps {

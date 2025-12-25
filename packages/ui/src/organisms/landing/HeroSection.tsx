@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 import { Button } from "../../atoms/Button";
 import { Card } from "../../atoms/Card";
 import { TrialBadge } from "../../molecules/landing/TrialBadge";
@@ -15,12 +15,7 @@ interface HeroSectionProps {
   onDemoClick?: () => void;
 }
 
-export function HeroSection({
-  imageSrc,
-  imageAlt,
-  onStartClick,
-  onDemoClick,
-}: HeroSectionProps) {
+export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: HeroSectionProps) {
   return (
     <section className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -31,9 +26,8 @@ export function HeroSection({
               Olakšajte zakazivanje termina vašim klijentima
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground mb-8 text-pretty leading-relaxed">
-              Prestanite da gubite vreme na telefonske pozive. Omogućite
-              klijentima da samostalno zakazuju termine online - 24/7, sa bilo
-              kog uređaja.
+              Prestanite da gubite vreme na telefonske pozive. Omogućite klijentima da samostalno
+              zakazuju termine online - 24/7, sa bilo kog uređaja.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               {onStartClick ? (

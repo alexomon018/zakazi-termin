@@ -1,7 +1,7 @@
-import { Section, Text, Link } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label, button } from "./base-email";
 import type { BookingEmailData } from "../types";
+import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingRejectedEmail(props: BookingEmailData) {
   const {
@@ -32,9 +32,7 @@ export function BookingRejectedEmail(props: BookingEmailData) {
       heading="Zahtev za termin je odbijen"
     >
       <Text style={text}>Poštovani/a {attendeeName},</Text>
-      <Text style={text}>
-        Nažalost, Vaš zahtev za termin nije mogao biti odobren.
-      </Text>
+      <Text style={text}>Nažalost, Vaš zahtev za termin nije mogao biti odobren.</Text>
 
       <Section style={infoBox}>
         <Text style={infoRow}>
@@ -64,15 +62,12 @@ export function BookingRejectedEmail(props: BookingEmailData) {
           <Text style={{ ...text, padding: 0 }}>
             <span style={label}>Razlog:</span>
           </Text>
-          <Text style={{ ...text, padding: 0, fontStyle: "italic" }}>
-            "{rejectionReason}"
-          </Text>
+          <Text style={{ ...text, padding: 0, fontStyle: "italic" }}>"{rejectionReason}"</Text>
         </Section>
       )}
 
       <Text style={{ ...text, marginTop: "24px" }}>
-        Molimo Vas da izaberete drugi termin ili nas kontaktirajte za više
-        informacija.
+        Molimo Vas da izaberete drugi termin ili nas kontaktirajte za više informacija.
       </Text>
 
       <Text style={text}>

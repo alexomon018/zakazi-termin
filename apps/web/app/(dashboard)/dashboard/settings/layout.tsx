@@ -1,9 +1,9 @@
 "use client";
 
+import { cn } from "@zakazi-termin/ui";
+import { Calendar, CalendarOff, Palette, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@zakazi-termin/ui";
-import { User, Palette, CalendarOff, Calendar } from "lucide-react";
 
 const settingsNavItems = [
   {

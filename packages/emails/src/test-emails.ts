@@ -1,6 +1,6 @@
 import { emailService } from "./email-service";
-import type { BookingEmailData } from "./types";
 import type { WelcomeEmailProps } from "./templates/welcome";
+import type { BookingEmailData } from "./types";
 
 const TEST_EMAIL = "zakaziterm@gmail.com";
 

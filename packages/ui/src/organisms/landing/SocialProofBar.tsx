@@ -13,8 +13,8 @@ export function SocialProofBar() {
     <section className="py-12 border-y border-border bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-          {stats.map((stat, index) => (
-            <StatDisplay key={index} value={stat.value} label={stat.label} />
+          {stats.map((stat) => (
+            <StatDisplay key={stat.label} value={stat.value} label={stat.label} />
           ))}
         </div>
       </div>

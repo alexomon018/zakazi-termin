@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Bookings list page
@@ -17,11 +17,23 @@ export class BookingsPage extends BasePage {
     super(page);
 
     // Use data-testid selectors with fallbacks
-    this.pageTitle = page.locator('[data-testid="bookings-title"]').or(page.locator('h1:has-text("Termini")')).first();
-    this.upcomingTab = page.locator('[data-testid="bookings-tab-upcoming"]').or(page.getByText(/predstoje/i)).first();
-    this.pastTab = page.locator('[data-testid="bookings-tab-past"]').or(page.getByText(/prošli/i)).first();
+    this.pageTitle = page
+      .locator('[data-testid="bookings-title"]')
+      .or(page.locator('h1:has-text("Termini")'))
+      .first();
+    this.upcomingTab = page
+      .locator('[data-testid="bookings-tab-upcoming"]')
+      .or(page.getByText(/predstoje/i))
+      .first();
+    this.pastTab = page
+      .locator('[data-testid="bookings-tab-past"]')
+      .or(page.getByText(/prošli/i))
+      .first();
     this.cancelledTab = page.locator('[data-testid="bookings-tab-cancelled"]');
-    this.emptyState = page.locator('[data-testid="bookings-empty-state"]').or(page.getByText(/nema|prazno/i)).first();
+    this.emptyState = page
+      .locator('[data-testid="bookings-empty-state"]')
+      .or(page.getByText(/nema|prazno/i))
+      .first();
     this.bookingsList = page.locator('[data-testid="bookings-list"]');
   }
 

@@ -1,7 +1,7 @@
 import { Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label } from "./base-email";
 import type { BookingEmailData } from "../types";
+import { BaseEmail, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingPendingEmail(props: BookingEmailData) {
   const {
@@ -33,8 +33,7 @@ export function BookingPendingEmail(props: BookingEmailData) {
     >
       <Text style={text}>Poštovani/a {attendeeName},</Text>
       <Text style={text}>
-        Vaš zahtev za termin je primljen i čeka potvrdu. Obavestićemo Vas čim
-        bude odobren.
+        Vaš zahtev za termin je primljen i čeka potvrdu. Obavestićemo Vas čim bude odobren.
       </Text>
 
       <Section style={infoBox}>

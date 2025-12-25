@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
 import Link from "next/link";
-import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import { useState } from "react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -40,11 +40,14 @@ export default function ForgotPasswordPage() {
     return (
       <Card>
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Proverite email</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+            Proverite email
+          </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Ako nalog sa email adresom <strong className="text-gray-900 dark:text-white">{email}</strong> postoji, poslaćemo
+            Ako nalog sa email adresom{" "}
+            <strong className="text-gray-900 dark:text-white">{email}</strong> postoji, poslaćemo
             vam link za resetovanje lozinke.
           </p>
           <Link href="/login">
@@ -60,7 +63,9 @@ export default function ForgotPasswordPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zaboravljena lozinka</CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          Zaboravljena lozinka
+        </CardTitle>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke
         </p>
@@ -74,7 +79,9 @@ export default function ForgotPasswordPage() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -93,7 +100,10 @@ export default function ForgotPasswordPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Setili ste se lozinke?{" "}
-          <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+          <Link
+            href="/login"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
             Prijavite se
           </Link>
         </p>

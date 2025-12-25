@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth";
 import { authOptions } from "@zakazi-termin/auth";
+import { getServerSession } from "next-auth";
 
 export async function getSession() {
   return getServerSession(authOptions);
