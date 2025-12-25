@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@zakazi-termin/ui";
-import { m, AnimatePresence } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
 import { createMonthTransition, scaleOnHover } from "../../organisms/booking-flow/animation-config";
 
 interface BookingCalendarProps {
@@ -14,7 +14,7 @@ interface BookingCalendarProps {
   onDateSelect: (date: Date) => void;
   onPreviousMonth: () => void;
   onNextMonth: () => void;
-  monthDirection?: 'next' | 'prev';
+  monthDirection?: "next" | "prev";
 }
 
 export function BookingCalendar({
@@ -25,7 +25,7 @@ export function BookingCalendar({
   onDateSelect,
   onPreviousMonth,
   onNextMonth,
-  monthDirection = 'next',
+  monthDirection = "next",
 }: BookingCalendarProps) {
   const calendarDays = React.useMemo(() => {
     const year = currentMonth.getFullYear();
@@ -77,12 +77,7 @@ export function BookingCalendar({
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onNextMonth}
-            className="p-0 w-9 h-9"
-          >
+          <Button variant="ghost" size="sm" onClick={onNextMonth} className="p-0 w-9 h-9">
             <ChevronRight className="w-5 h-5" />
           </Button>
         </div>
@@ -112,7 +107,7 @@ export function BookingCalendar({
         >
           {calendarDays.map((date, index) => {
             if (!date) {
-              return <div key={`empty-${index}`} className="p-2" />;
+              return <div key={`empty-${currentMonth.getMonth()}-${index}`} className="p-2" />;
             }
 
             const isSelected = selectedDate?.toDateString() === date.toDateString();

@@ -5,7 +5,14 @@ export { cn } from "./utils";
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
 export { Label } from "./atoms/Label";
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from "./atoms/Card";
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./atoms/Card";
 export {
   Dialog,
   DialogPortal,
@@ -85,7 +92,10 @@ export { RescheduleBanner } from "./molecules/booking/RescheduleBanner";
 // Organisms - Booking Flow
 export { BookingFlow, EventNotFound } from "./organisms/booking-flow/BookingFlow";
 export { UserProfileClient, UserNotFound } from "./organisms/booking-flow/UserProfileClient";
-export { BookingDetailsClient, BookingNotFound } from "./organisms/booking-flow/BookingDetailsClient";
+export {
+  BookingDetailsClient,
+  BookingNotFound,
+} from "./organisms/booking-flow/BookingDetailsClient";
 
 // Organisms - Landing
 export { LandingHeader } from "./organisms/landing/LandingHeader";

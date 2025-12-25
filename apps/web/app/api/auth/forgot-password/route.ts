@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 import { prisma } from "@zakazi-termin/prisma";
-import { randomBytes } from "crypto";
+import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const schema = z.object({
@@ -13,10 +13,7 @@ export async function POST(request: Request) {
     const result = schema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json(
-        { message: "Nevažeća email adresa" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Nevažeća email adresa" }, { status: 400 });
     }
 
     const { email } = result.data;
@@ -69,9 +66,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "OK" });
   } catch (error) {
     console.error("Forgot password error:", error);
-    return NextResponse.json(
-      { message: "Došlo je do greške" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Došlo je do greške" }, { status: 500 });
   }
 }

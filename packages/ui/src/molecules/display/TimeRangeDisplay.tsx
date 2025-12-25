@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Clock } from "lucide-react";
+import * as React from "react";
 
 interface TimeRangeDisplayProps {
   startTime: Date;
@@ -7,11 +7,7 @@ interface TimeRangeDisplayProps {
   locale?: string;
 }
 
-export function TimeRangeDisplay({
-  startTime,
-  endTime,
-  locale = "sr-RS",
-}: TimeRangeDisplayProps) {
+export function TimeRangeDisplay({ startTime, endTime, locale = "sr-RS" }: TimeRangeDisplayProps) {
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString(locale, {
       hour: "2-digit",

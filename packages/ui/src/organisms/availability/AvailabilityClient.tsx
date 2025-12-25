@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
-import { Plus, Trash2, Check, Clock } from "lucide-react";
+import { Check, Clock, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const DAYS_OF_WEEK = [
   { value: 0, label: "Nedelja", short: "Ned" },
@@ -30,7 +30,10 @@ type AvailabilityClientProps = {
   currentUser: User;
 };
 
-export function AvailabilityClient({ initialSchedules, currentUser: initialUser }: AvailabilityClientProps) {
+export function AvailabilityClient({
+  initialSchedules,
+  currentUser: initialUser,
+}: AvailabilityClientProps) {
   const [newScheduleName, setNewScheduleName] = useState("");
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([
@@ -176,9 +179,10 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
             {/* Schedule list */}
             <div className="space-y-2">
               {schedules?.map((schedule: Schedule) => (
-                <div
+                <button
+                  type="button"
                   key={schedule.id}
-                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`w-full flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedScheduleId === schedule.id
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
@@ -187,7 +191,9 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
                 >
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                    <span className="font-medium text-gray-900 dark:text-white">{schedule.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {schedule.name}
+                    </span>
                     {currentUser?.defaultScheduleId === schedule.id && (
                       <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
                         Podrazumevani
@@ -206,7 +212,7 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
                   >
                     <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </Button>
-                </div>
+                </button>
               ))}
 
               {schedules?.length === 0 && (
@@ -232,7 +238,7 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
                 <div className="space-y-4">
                   {availability.map((entry, entryIndex) => (
                     <div
-                      key={entryIndex}
+                      key={`${entry.days.join("-")}-${entry.startTime}-${entryIndex}`}
                       className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4"
                     >
                       {/* Days selector */}
@@ -302,7 +308,10 @@ export function AvailabilityClient({ initialSchedules, currentUser: initialUser 
                     <Check className="w-4 h-4 mr-2" />
                     Postavi kao podrazumevani
                   </Button>
-                  <Button onClick={handleSaveAvailability} disabled={setScheduleAvailability.isPending}>
+                  <Button
+                    onClick={handleSaveAvailability}
+                    disabled={setScheduleAvailability.isPending}
+                  >
                     {setScheduleAvailability.isPending ? "Čuvanje..." : "Sačuvaj promene"}
                   </Button>
                 </div>

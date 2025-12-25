@@ -1,4 +1,4 @@
-import { dayjs, type Dayjs } from "@zakazi-termin/config";
+import { type Dayjs, dayjs } from "@zakazi-termin/config";
 import type { DateRange } from "./date-ranges";
 
 export type GetSlotsInput = {
@@ -44,13 +44,17 @@ function getCorrectedSlotStartTime({
 
   if (extraMinutesAvailable >= minutesRequiredToMoveToNextSlot) {
     return slotStartTime.add(minutesRequiredToMoveToNextSlot, "minute");
-  } else if (extraMinutesAvailable >= minutesRequiredToMoveTo15MinSlot) {
+  }
+  if (extraMinutesAvailable >= minutesRequiredToMoveTo15MinSlot) {
     return slotStartTime.add(minutesRequiredToMoveTo15MinSlot, "minute");
-  } else if (extraMinutesAvailable >= minutesRequiredToMoveTo5MinSlot) {
+  }
+  if (extraMinutesAvailable >= minutesRequiredToMoveTo5MinSlot) {
     return slotStartTime.add(minutesRequiredToMoveTo5MinSlot, "minute");
   }
 
-  return slotStartTime.startOf("hour").add(Math.ceil(slotStartTime.minute() / interval) * interval, "minute");
+  return slotStartTime
+    .startOf("hour")
+    .add(Math.ceil(slotStartTime.minute() / interval) * interval, "minute");
 }
 
 /**
@@ -142,7 +146,9 @@ function buildSlotsWithDateRanges({
     }
 
     // Generate slots within this range
-    while (!slotStartTime.add(eventLength, "minutes").subtract(1, "second").utc().isAfter(range.end)) {
+    while (
+      !slotStartTime.add(eventLength, "minutes").subtract(1, "second").utc().isAfter(range.end)
+    ) {
       const slotKey = slotStartTime.toISOString();
 
       if (slots.has(slotKey)) {

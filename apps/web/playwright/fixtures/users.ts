@@ -1,4 +1,4 @@
-import { test as base, Page } from "@playwright/test";
+import { type Page, test as base } from "@playwright/test";
 import { PrismaClient } from "@zakazi-termin/prisma";
 import { hash } from "bcryptjs";
 
@@ -52,11 +52,9 @@ export const test = base.extend<UsersFixtureType>({
         userCounter++;
         const timestamp = Date.now();
         const random = Math.random().toString(36).substring(2, 10);
-        const email =
-          options.email || `test-user-${timestamp}-${userCounter}-${random}@test.com`;
+        const email = options.email || `test-user-${timestamp}-${userCounter}-${random}@test.com`;
         const password = options.password || "TestPassword123!";
-        const username =
-          options.username || `testuser${timestamp}${userCounter}${random}`;
+        const username = options.username || `testuser${timestamp}${userCounter}${random}`;
         const name = options.name || `Test User ${userCounter}`;
 
         // Hash password

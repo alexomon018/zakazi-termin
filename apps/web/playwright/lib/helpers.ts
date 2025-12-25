@@ -1,4 +1,4 @@
-import { Page, expect } from "@playwright/test";
+import { type Page, expect } from "@playwright/test";
 import { ROUTES, SELECTORS, TIMEOUTS } from "./constants";
 
 /**
@@ -29,11 +29,7 @@ export async function navigateTo(page: Page, route: string): Promise<void> {
 /**
  * Fill a form field by selector
  */
-export async function fillField(
-  page: Page,
-  selector: string,
-  value: string
-): Promise<void> {
+export async function fillField(page: Page, selector: string, value: string): Promise<void> {
   const field = page.locator(selector);
   await field.waitFor({ state: "visible" });
   await field.fill(value);
@@ -42,10 +38,7 @@ export async function fillField(
 /**
  * Click a button and wait for any loading to complete
  */
-export async function clickButton(
-  page: Page,
-  selector: string
-): Promise<void> {
+export async function clickButton(page: Page, selector: string): Promise<void> {
   const button = page.locator(selector);
   await button.waitFor({ state: "visible" });
   await button.click();
@@ -133,29 +126,23 @@ export async function waitForUrl(
 /**
  * Check if element exists on page
  */
-export async function elementExists(
-  page: Page,
-  selector: string
-): Promise<boolean> {
-  return await page.locator(selector).isVisible().catch(() => false);
+export async function elementExists(page: Page, selector: string): Promise<boolean> {
+  return await page
+    .locator(selector)
+    .isVisible()
+    .catch(() => false);
 }
 
 /**
  * Scroll element into view
  */
-export async function scrollIntoView(
-  page: Page,
-  selector: string
-): Promise<void> {
+export async function scrollIntoView(page: Page, selector: string): Promise<void> {
   await page.locator(selector).scrollIntoViewIfNeeded();
 }
 
 /**
  * Take a screenshot for debugging
  */
-export async function takeDebugScreenshot(
-  page: Page,
-  name: string
-): Promise<void> {
+export async function takeDebugScreenshot(page: Page, name: string): Promise<void> {
   await page.screenshot({ path: `test-results/debug-${name}.png` });
 }

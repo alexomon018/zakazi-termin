@@ -23,13 +23,7 @@ export default async function PublicBookingPage({ params }: Props) {
       return <EventNotFound />;
     }
 
-    return (
-      <BookingFlow
-        eventType={eventType}
-        username={username}
-        eventSlug={eventSlug}
-      />
-    );
+    return <BookingFlow eventType={eventType} username={username} eventSlug={eventSlug} />;
   } catch {
     return <EventNotFound />;
   }

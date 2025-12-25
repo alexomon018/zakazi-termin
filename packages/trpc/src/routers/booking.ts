@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
-import { emailService, type BookingEmailData } from "@zakazi-termin/emails";
+import { type BookingEmailData, emailService } from "@zakazi-termin/emails";
+import { z } from "zod";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 // Helper to extract location from event type
 function getLocationString(locations: unknown): string | null {
@@ -72,10 +72,12 @@ export const bookingRouter = router({
   // Get upcoming bookings with pagination
   upcoming: protectedProcedure
     .input(
-      z.object({
-        skip: z.number().default(0),
-        take: z.number().default(5),
-      }).optional()
+      z
+        .object({
+          skip: z.number().default(0),
+          take: z.number().default(5),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const skip = input?.skip ?? 0;
@@ -115,11 +117,13 @@ export const bookingRouter = router({
   // List bookings for current user
   list: protectedProcedure
     .input(
-      z.object({
-        status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),
-        dateFrom: z.date().optional(),
-        dateTo: z.date().optional(),
-      }).optional()
+      z
+        .object({
+          status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),
+          dateFrom: z.date().optional(),
+          dateTo: z.date().optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       const bookings = await ctx.prisma.booking.findMany({
@@ -179,27 +183,25 @@ export const bookingRouter = router({
     }),
 
   // Get single booking
-  byUid: publicProcedure
-    .input(z.object({ uid: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const booking = await ctx.prisma.booking.findUnique({
-        where: { uid: input.uid },
-        include: {
-          eventType: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              username: true,
-              timeZone: true,
-            },
+  byUid: publicProcedure.input(z.object({ uid: z.string() })).query(async ({ ctx, input }) => {
+    const booking = await ctx.prisma.booking.findUnique({
+      where: { uid: input.uid },
+      include: {
+        eventType: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            username: true,
+            timeZone: true,
           },
-          attendees: true,
         },
-      });
-      return booking;
-    }),
+        attendees: true,
+      },
+    });
+    return booking;
+  }),
 
   // Create a new booking (public - for attendees)
   create: publicProcedure

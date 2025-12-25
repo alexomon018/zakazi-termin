@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Login page

@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { AvailabilityPage } from "../pages";
 
 test.describe("Schedule Management", () => {

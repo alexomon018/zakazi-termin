@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
 import { trpc } from "@/lib/trpc/client";
 import {
   Button,
+  CancelBookingDialog,
   Card,
   CardContent,
-  StatusBadge,
   DateTimeDisplay,
-  TimeRangeDisplay,
   LocationDisplay,
+  RejectBookingDialog,
+  StatusBadge,
+  TabFilter,
+  TimeRangeDisplay,
   UserAvatar,
   UserInfoDisplay,
-  TabFilter,
-  CancelBookingDialog,
-  RejectBookingDialog,
 } from "@zakazi-termin/ui";
 import { Calendar, Check, X } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 
@@ -62,7 +62,7 @@ export function BookingsClient({
   const utils = trpc.useUtils();
 
   // Get query params for a specific filter
-  const getQueryParams = useCallback((filterType: BookingFilter, skip: number = 0) => {
+  const getQueryParams = useCallback((filterType: BookingFilter, skip = 0) => {
     const now = new Date();
     switch (filterType) {
       case "upcoming":
@@ -108,11 +108,11 @@ export function BookingsClient({
     try {
       const result = await utils.booking.listPaginated.fetch(getQueryParams(newFilter, 0));
       if (result) {
-        setBookingsPerFilter(prev => ({
+        setBookingsPerFilter((prev) => ({
           ...prev,
           [newFilter]: result.bookings,
         }));
-        setTotalsPerFilter(prev => ({
+        setTotalsPerFilter((prev) => ({
           ...prev,
           [newFilter]: result.total,
         }));
@@ -129,11 +129,11 @@ export function BookingsClient({
         getQueryParams(filter, currentBookings.length)
       );
       if (result) {
-        setBookingsPerFilter(prev => ({
+        setBookingsPerFilter((prev) => ({
           ...prev,
           [filter]: [...prev[filter], ...result.bookings],
         }));
-        setTotalsPerFilter(prev => ({
+        setTotalsPerFilter((prev) => ({
           ...prev,
           [filter]: result.total,
         }));
@@ -149,17 +149,17 @@ export function BookingsClient({
     try {
       const result = await utils.booking.listPaginated.fetch(getQueryParams(filter, 0));
       if (result) {
-        setBookingsPerFilter(prev => ({
+        setBookingsPerFilter((prev) => ({
           ...prev,
           [filter]: result.bookings,
         }));
-        setTotalsPerFilter(prev => ({
+        setTotalsPerFilter((prev) => ({
           ...prev,
           [filter]: result.total,
         }));
       }
       // Clear other filters so they refresh on next visit
-      setBookingsPerFilter(prev => {
+      setBookingsPerFilter((prev) => {
         const updated = { ...prev };
         for (const key of Object.keys(updated) as BookingFilter[]) {
           if (key !== filter) {
@@ -168,7 +168,7 @@ export function BookingsClient({
         }
         return updated;
       });
-      setTotalsPerFilter(prev => {
+      setTotalsPerFilter((prev) => {
         const updated = { ...prev };
         for (const key of Object.keys(updated) as BookingFilter[]) {
           if (key !== filter) {
@@ -252,12 +252,8 @@ export function BookingsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Termini
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Upravljajte zakazanim terminima
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
         </div>
 
         {/* Filters */}
@@ -282,12 +278,8 @@ export function BookingsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Termini
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Upravljajte zakazanim terminima
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
       </div>
 
       {/* Filters */}
@@ -307,9 +299,7 @@ export function BookingsClient({
         <Card>
           <CardContent className="py-12 text-center">
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-            <p className="text-gray-500 dark:text-gray-400">
-              {getEmptyMessage()}
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">{getEmptyMessage()}</p>
           </CardContent>
         </Card>
       ) : (
@@ -327,11 +317,7 @@ export function BookingsClient({
                         </h3>
                         <StatusBadge
                           status={
-                            booking.status as
-                              | "PENDING"
-                              | "ACCEPTED"
-                              | "CANCELLED"
-                              | "REJECTED"
+                            booking.status as "PENDING" | "ACCEPTED" | "CANCELLED" | "REJECTED"
                           }
                         />
                       </div>
@@ -346,13 +332,8 @@ export function BookingsClient({
                       {/* Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <DateTimeDisplay date={booking.startTime} />
-                        <TimeRangeDisplay
-                          startTime={booking.startTime}
-                          endTime={booking.endTime}
-                        />
-                        {booking.location && (
-                          <LocationDisplay location={booking.location} />
-                        )}
+                        <TimeRangeDisplay startTime={booking.startTime} endTime={booking.endTime} />
+                        {booking.location && <LocationDisplay location={booking.location} />}
                       </div>
 
                       {/* Attendees */}
@@ -368,15 +349,9 @@ export function BookingsClient({
                               email: string;
                               phoneNumber: string | null;
                             }) => (
-                              <div
-                                key={attendee.id}
-                                className="flex items-center gap-2"
-                              >
+                              <div key={attendee.id} className="flex items-center gap-2">
                                 <UserAvatar name={attendee.name} />
-                                <UserInfoDisplay
-                                  name={attendee.name}
-                                  email={attendee.email}
-                                />
+                                <UserInfoDisplay name={attendee.name} email={attendee.email} />
                               </div>
                             )
                           )}
@@ -447,11 +422,7 @@ export function BookingsClient({
           {/* Load more button */}
           {hasMore && (
             <div className="text-center pt-4">
-              <Button
-                variant="outline"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-              >
+              <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? "Učitavanje..." : "Vidi još"}
               </Button>
             </div>

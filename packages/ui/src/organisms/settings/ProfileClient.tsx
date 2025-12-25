@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { trpc } from "@/lib/trpc/client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
-import { Check, AlertCircle, User, ExternalLink } from "lucide-react";
+import { AlertCircle, Check, ExternalLink, User as UserIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Ime je obavezno"),
@@ -92,7 +92,8 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   const { data: usernameCheck } = trpc.user.checkUsername.useQuery(
     { username: watchedUsername },
     {
-      enabled: !!watchedUsername && watchedUsername.length >= 3 && watchedUsername !== user?.username,
+      enabled:
+        !!watchedUsername && watchedUsername.length >= 3 && watchedUsername !== user?.username,
     }
   );
 
@@ -147,7 +148,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+                  <UserIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
               <div>
@@ -204,7 +205,9 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                     </div>
                   )}
                 </div>
-                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
+                {errors.username && (
+                  <p className="text-sm text-red-600">{errors.username.message}</p>
+                )}
                 {usernameAvailable === false && (
                   <p className="text-sm text-red-600">Korisničko ime je već zauzeto</p>
                 )}

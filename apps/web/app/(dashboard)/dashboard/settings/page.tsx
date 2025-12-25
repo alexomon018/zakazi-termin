@@ -1,6 +1,6 @@
-import { Suspense } from "react";
 import { createServerCaller } from "@/lib/trpc/server";
 import { SettingsClient } from "@zakazi-termin/ui";
+import { Suspense } from "react";
 
 export default async function SettingsPage() {
   const caller = await createServerCaller();

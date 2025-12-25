@@ -1,6 +1,6 @@
 import { mergeTests } from "@playwright/test";
-import { test as prismaTest, type PrismaFixture } from "./prisma";
-import { test as usersTest, type UsersFixtureType } from "./users";
+import { type PrismaFixture, test as prismaTest } from "./prisma";
+import { type UsersFixtureType, test as usersTest } from "./users";
 
 export type { TestUser, CreateUserOptions, UsersFixture } from "./users";
 export type { PrismaFixture } from "./prisma";

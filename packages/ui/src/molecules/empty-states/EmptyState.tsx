@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Card, CardContent } from "@zakazi-termin/ui";
+import type * as React from "react";
 
 interface EmptyStateProps {
   icon: React.ComponentType<{ className?: string }>;

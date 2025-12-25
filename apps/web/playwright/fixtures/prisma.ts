@@ -15,7 +15,7 @@ function getPrismaClient(): PrismaClient {
 }
 
 export const test = base.extend<PrismaFixture>({
-  prisma: async ({}, use) => {
+  prisma: async (_fixtures, use) => {
     const prisma = getPrismaClient();
     await use(prisma);
   },

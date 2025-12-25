@@ -1,15 +1,15 @@
-import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import {
-  LandingHeader,
-  HeroSection,
-  SocialProofBar,
-  FeaturesSection,
-  ProcessSection,
-  PricingSection,
   CtaBanner,
+  FeaturesSection,
+  HeroSection,
   LandingFooter,
+  LandingHeader,
+  PricingSection,
+  ProcessSection,
+  SocialProofBar,
 } from "@zakazi-termin/ui";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const session = await getSession();
@@ -21,10 +21,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       <LandingHeader />
-      <HeroSection
-        imageSrc="/images/hero-dashboard.png"
-        imageAlt="Zakaži Termin Dashboard"
-      />
+      <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Zakaži Termin Dashboard" />
       <SocialProofBar />
       <FeaturesSection />
       <ProcessSection />

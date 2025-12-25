@@ -1,11 +1,11 @@
+import { emailService } from "@zakazi-termin/emails";
+import { prisma } from "@zakazi-termin/prisma";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { prisma } from "@zakazi-termin/prisma";
-import { emailService } from "@zakazi-termin/emails";
 import { ZakaziTerminAdapter } from "./adapter";
-import { verifyPassword } from "./password";
 import { ErrorCode } from "./error-codes";
+import { verifyPassword } from "./password";
 
 declare module "next-auth" {
   interface Session {
@@ -79,10 +79,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error(ErrorCode.WrongProvider);
         }
 
-        const isValid = await verifyPassword(
-          credentials.password,
-          user.password.hash
-        );
+        const isValid = await verifyPassword(credentials.password, user.password.hash);
 
         if (!isValid) {
           throw new Error(ErrorCode.IncorrectEmailPassword);
@@ -194,7 +191,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Create new user with Google
-        const username = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+        const username = email
+          .split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
         const generatedUsername = await generateUniqueUsername(username);
 
         await prisma.user.create({
@@ -238,7 +238,7 @@ export const authOptions: NextAuthOptions = {
 };
 
 async function generateUniqueUsername(base: string): Promise<string> {
-  let username = base.slice(0, 20);
+  const username = base.slice(0, 20);
   let counter = 0;
 
   while (true) {

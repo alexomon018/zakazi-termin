@@ -7,12 +7,7 @@ interface ProcessStepProps {
   showConnector?: boolean;
 }
 
-export function ProcessStep({
-  step,
-  title,
-  description,
-  showConnector = false,
-}: ProcessStepProps) {
+export function ProcessStep({ step, title, description, showConnector = false }: ProcessStepProps) {
   return (
     <div className="relative">
       <div className="text-center">
@@ -23,7 +18,7 @@ export function ProcessStep({
         <p className="text-muted-foreground leading-relaxed">{description}</p>
       </div>
       {showConnector && (
-        <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-border"></div>
+        <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-border" />
       )}
     </div>
   );

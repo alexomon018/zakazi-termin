@@ -1,4 +1,4 @@
-import { dayjs, type Dayjs } from "@zakazi-termin/config";
+import { type Dayjs, dayjs } from "@zakazi-termin/config";
 
 export type DateRange = {
   start: Dayjs;
@@ -192,11 +192,14 @@ export function buildDateRanges({
  * Group date ranges by date string
  */
 export function groupByDate(ranges: DateRange[]): Record<string, DateRange[]> {
-  return ranges.reduce((acc, range) => {
-    const dateString = dayjs(range.start).format("YYYY-MM-DD");
-    acc[dateString] = acc[dateString] ? [...acc[dateString], range] : [range];
-    return acc;
-  }, {} as Record<string, DateRange[]>);
+  return ranges.reduce(
+    (acc, range) => {
+      const dateString = dayjs(range.start).format("YYYY-MM-DD");
+      acc[dateString] = acc[dateString] ? [...acc[dateString], range] : [range];
+      return acc;
+    },
+    {} as Record<string, DateRange[]>
+  );
 }
 
 /**
@@ -242,10 +245,7 @@ export function intersect(ranges: DateRange[][]): DateRange[] {
 /**
  * Subtract excluded ranges from source ranges
  */
-export function subtract(
-  sourceRanges: DateRange[],
-  excludedRanges: DateRange[]
-): DateRange[] {
+export function subtract(sourceRanges: DateRange[], excludedRanges: DateRange[]): DateRange[] {
   const result: DateRange[] = [];
   const sortedExcluded = [...excludedRanges].sort((a, b) => a.start.valueOf() - b.start.valueOf());
 

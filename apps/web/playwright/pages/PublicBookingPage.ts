@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Public User Profile/Booking page
@@ -160,7 +160,7 @@ export class EventTypeBookingPage extends BasePage {
   /**
    * Select a time slot
    */
-  async selectTimeSlot(index: number = 0): Promise<void> {
+  async selectTimeSlot(index = 0): Promise<void> {
     const slots = this.getTimeSlots();
     await slots.nth(index).click();
   }
@@ -221,8 +221,12 @@ export class EventTypeBookingPage extends BasePage {
    * Check if calendar is visible
    */
   async expectCalendarVisible(): Promise<void> {
-    const hasCalendar = await this.isVisible(this.calendar) ||
-      await this.page.locator('[role="grid"]').isVisible().catch(() => false);
+    const hasCalendar =
+      (await this.isVisible(this.calendar)) ||
+      (await this.page
+        .locator('[role="grid"]')
+        .isVisible()
+        .catch(() => false));
     expect(hasCalendar).toBeTruthy();
   }
 }

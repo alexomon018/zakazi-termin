@@ -1,10 +1,10 @@
-import { createEvent } from 'ics';
+import { createEvent } from "ics";
 
 export enum CalendarLinkType {
-  GOOGLE_CALENDAR = 'googleCalendar',
-  MICROSOFT_OFFICE = 'microsoftOffice',
-  MICROSOFT_OUTLOOK = 'microsoftOutlook',
-  ICS = 'ics',
+  GOOGLE_CALENDAR = "googleCalendar",
+  MICROSOFT_OFFICE = "microsoftOffice",
+  MICROSOFT_OUTLOOK = "microsoftOutlook",
+  ICS = "ics",
 }
 
 interface CalendarLinkParams {
@@ -15,7 +15,13 @@ interface CalendarLinkParams {
   location?: string | null;
 }
 
-const buildICalLink = ({ startTime, endTime, title, description, location }: CalendarLinkParams) => {
+const buildICalLink = ({
+  startTime,
+  endTime,
+  title,
+  description,
+  location,
+}: CalendarLinkParams) => {
   const durationInMinutes = Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
   const iCalEvent = createEvent({
@@ -26,7 +32,7 @@ const buildICalLink = ({ startTime, endTime, title, description, location }: Cal
       startTime.getUTCHours(),
       startTime.getUTCMinutes(),
     ],
-    startInputType: 'utc',
+    startInputType: "utc",
     title,
     duration: {
       minutes: durationInMinutes,
@@ -39,16 +45,16 @@ const buildICalLink = ({ startTime, endTime, title, description, location }: Cal
     throw iCalEvent.error;
   }
 
-  return `data:text/calendar,${encodeURIComponent(iCalEvent.value || '')}`;
+  return `data:text/calendar,${encodeURIComponent(iCalEvent.value || "")}`;
 };
 
 const formatDateTimeForGoogle = (date: Date): string => {
   const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const hours = String(date.getUTCHours()).padStart(2, '0');
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
   return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
 };
 
@@ -56,40 +62,58 @@ const formatDateTimeForMicrosoft = (date: Date): string => {
   return date.toISOString();
 };
 
-const buildGoogleCalendarLink = ({ startTime, endTime, title, description, location }: CalendarLinkParams) => {
+const buildGoogleCalendarLink = ({
+  startTime,
+  endTime,
+  title,
+  description,
+  location,
+}: CalendarLinkParams) => {
   const startTimeFormatted = formatDateTimeForGoogle(startTime);
   const endTimeFormatted = formatDateTimeForGoogle(endTime);
-  const locationParam = location ? encodeURIComponent(location) : '';
-  const descriptionParam = description ? encodeURIComponent(description) : '';
+  const locationParam = location ? encodeURIComponent(location) : "";
+  const descriptionParam = description ? encodeURIComponent(description) : "";
 
   return `https://calendar.google.com/calendar/r/eventedit?dates=${startTimeFormatted}/${endTimeFormatted}&text=${encodeURIComponent(
     title
-  )}&details=${descriptionParam}${locationParam ? `&location=${locationParam}` : ''}`;
+  )}&details=${descriptionParam}${locationParam ? `&location=${locationParam}` : ""}`;
 };
 
-const buildMicrosoftOfficeLink = ({ startTime, endTime, title, description, location }: CalendarLinkParams) => {
+const buildMicrosoftOfficeLink = ({
+  startTime,
+  endTime,
+  title,
+  description,
+  location,
+}: CalendarLinkParams) => {
   const startTimeFormatted = formatDateTimeForMicrosoft(startTime);
   const endTimeFormatted = formatDateTimeForMicrosoft(endTime);
-  const locationParam = location ? encodeURIComponent(location) : '';
-  const descriptionParam = description ? encodeURIComponent(description) : '';
+  const locationParam = location ? encodeURIComponent(location) : "";
+  const descriptionParam = description ? encodeURIComponent(description) : "";
 
   return `https://outlook.office.com/calendar/0/deeplink/compose?body=${descriptionParam}&enddt=${endTimeFormatted}&path=%2Fcalendar%2Faction%2Fcompose&rru=addevent&startdt=${startTimeFormatted}&subject=${encodeURIComponent(
     title
-  )}${locationParam ? `&location=${locationParam}` : ''}`;
+  )}${locationParam ? `&location=${locationParam}` : ""}`;
 };
 
-const buildMicrosoftOutlookLink = ({ startTime, endTime, title, description, location }: CalendarLinkParams) => {
+const buildMicrosoftOutlookLink = ({
+  startTime,
+  endTime,
+  title,
+  description,
+  location,
+}: CalendarLinkParams) => {
   const startTimeFormatted = formatDateTimeForMicrosoft(startTime);
   const endTimeFormatted = formatDateTimeForMicrosoft(endTime);
-  const locationParam = location ? encodeURIComponent(location) : '';
-  const descriptionParam = description ? encodeURIComponent(description) : '';
+  const locationParam = location ? encodeURIComponent(location) : "";
+  const descriptionParam = description ? encodeURIComponent(description) : "";
 
   return (
     encodeURI(
       `https://outlook.live.com/calendar/0/deeplink/compose?body=${descriptionParam}&enddt=${endTimeFormatted}&path=%2Fcalendar%2Faction%2Fcompose&rru=addevent&startdt=${startTimeFormatted}&subject=${encodeURIComponent(
         title
       )}`
-    ) + (locationParam ? `&location=${locationParam}` : '')
+    ) + (locationParam ? `&location=${locationParam}` : "")
   );
 };
 
@@ -104,31 +128,31 @@ export const getCalendarLinks = (params: CalendarLinkParams): CalendarLink[] => 
   const microsoftOfficeLink = buildMicrosoftOfficeLink(params);
   const microsoftOutlookLink = buildMicrosoftOutlookLink(params);
 
-  let icsFileLink = '';
+  let icsFileLink = "";
   try {
     icsFileLink = buildICalLink(params);
   } catch (error) {
-    console.error('Error generating ICS file', error);
+    console.error("Error generating ICS file", error);
   }
 
   return [
     {
-      label: 'Google Calendar',
+      label: "Google Calendar",
       id: CalendarLinkType.GOOGLE_CALENDAR,
       link: googleCalendarLink,
     },
     {
-      label: 'Microsoft Office',
+      label: "Microsoft Office",
       id: CalendarLinkType.MICROSOFT_OFFICE,
       link: microsoftOfficeLink,
     },
     {
-      label: 'Microsoft Outlook',
+      label: "Microsoft Outlook",
       id: CalendarLinkType.MICROSOFT_OUTLOOK,
       link: microsoftOutlookLink,
     },
     {
-      label: 'Apple Calendar',
+      label: "Apple Calendar",
       id: CalendarLinkType.ICS,
       link: icsFileLink,
     },

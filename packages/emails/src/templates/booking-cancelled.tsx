@@ -1,7 +1,7 @@
 import { Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label } from "./base-email";
 import type { BookingEmailData } from "../types";
+import { BaseEmail, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingCancelledEmail(props: BookingEmailData) {
   const {
@@ -27,14 +27,9 @@ export function BookingCancelledEmail(props: BookingEmailData) {
   });
 
   return (
-    <BaseEmail
-      preview={`Termin "${eventTypeTitle}" je otkazan`}
-      heading="Termin je otkazan"
-    >
+    <BaseEmail preview={`Termin "${eventTypeTitle}" je otkazan`} heading="Termin je otkazan">
       <Text style={text}>Poštovani/a {attendeeName},</Text>
-      <Text style={text}>
-        Obaveštavamo Vas da je sledeći termin otkazan.
-      </Text>
+      <Text style={text}>Obaveštavamo Vas da je sledeći termin otkazan.</Text>
 
       <Section style={infoBox}>
         <Text style={infoRow}>
@@ -64,15 +59,12 @@ export function BookingCancelledEmail(props: BookingEmailData) {
           <Text style={{ ...text, padding: 0 }}>
             <span style={label}>Razlog otkazivanja:</span>
           </Text>
-          <Text style={{ ...text, padding: 0, fontStyle: "italic" }}>
-            "{cancellationReason}"
-          </Text>
+          <Text style={{ ...text, padding: 0, fontStyle: "italic" }}>"{cancellationReason}"</Text>
         </Section>
       )}
 
       <Text style={{ ...text, marginTop: "24px" }}>
-        Ako želite da zakažete novi termin, posetite našu stranicu za
-        zakazivanje.
+        Ako želite da zakažete novi termin, posetite našu stranicu za zakazivanje.
       </Text>
 
       <Text style={text}>

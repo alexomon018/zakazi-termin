@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { Card, CardContent } from "@zakazi-termin/ui";
-import { Clock, MapPin, User, ArrowRight } from "lucide-react";
+import { ArrowRight, Clock, MapPin, User } from "lucide-react";
+import Link from "next/link";
 
 type EventType = {
   id: number;
@@ -85,12 +85,12 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
                               : `${eventType.length / 60}h`}
                           </span>
                           {eventType.locations &&
-                            (eventType.locations as { address?: string }[])[0]?.address ? (
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5" />
-                                Uživo
-                              </span>
-                            ) : null}
+                          (eventType.locations as { address?: string }[])[0]?.address ? (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5" />
+                              Uživo
+                            </span>
+                          ) : null}
                         </div>
                       </div>
 

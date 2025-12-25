@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Clock, MapPin } from "lucide-react";
+import * as React from "react";
 import { UserAvatar } from "../user/UserAvatar";
 
 interface BookingEventHeaderProps {
@@ -27,9 +27,7 @@ export function BookingEventHeader({
         <UserAvatar name={userName || ""} image={userAvatarUrl || undefined} size="lg" />
         {userName && (
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              {userName}
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{userName}</h1>
           </div>
         )}
       </div>
@@ -37,9 +35,7 @@ export function BookingEventHeader({
         {isRescheduling ? `Promena termina: ${eventTitle}` : eventTitle}
       </h2>
       {eventDescription && (
-        <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">
-          {eventDescription}
-        </p>
+        <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">{eventDescription}</p>
       )}
       <div className="flex gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
         <span className="flex gap-1 items-center">

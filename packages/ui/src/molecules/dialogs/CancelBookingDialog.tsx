@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "../../atoms/Button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../atoms/Dialog";
-import { Button } from "../../atoms/Button";
 import { Input } from "../../atoms/Input";
 import { Label } from "../../atoms/Label";
 
@@ -60,11 +60,7 @@ export function CancelBookingDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
             Odustani
           </Button>
           <Button

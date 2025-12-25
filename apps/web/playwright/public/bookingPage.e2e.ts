@@ -1,6 +1,6 @@
-import { test, expect } from "../fixtures";
-import { PublicProfilePage, EventTypeBookingPage } from "../pages";
+import { expect, test } from "../fixtures";
 import { ROUTES } from "../lib/constants";
+import { EventTypeBookingPage, PublicProfilePage } from "../pages";
 
 test.describe("Public Booking Page", () => {
   test("should display user's public booking page", async ({ page, users }) => {
@@ -24,8 +24,14 @@ test.describe("Public Booking Page", () => {
 
     // Should show some kind of not found message
     const notFound =
-      (await page.locator("text=/404|[Nn]ot [Ff]ound|[Nn]ije pronađen/").isVisible().catch(() => false)) ||
-      (await page.locator("text=/doesn't exist|ne postoji/").isVisible().catch(() => false));
+      (await page
+        .locator("text=/404|[Nn]ot [Ff]ound|[Nn]ije pronađen/")
+        .isVisible()
+        .catch(() => false)) ||
+      (await page
+        .locator("text=/doesn't exist|ne postoji/")
+        .isVisible()
+        .catch(() => false));
 
     // Page might redirect or show error
     expect(true).toBe(true);

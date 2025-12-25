@@ -1,6 +1,6 @@
-import { test, expect } from "../fixtures";
-import { SignupPage } from "../pages";
+import { expect, test } from "../fixtures";
 import { generateTestEmail, generateTestUsername } from "../lib/helpers";
+import { SignupPage } from "../pages";
 
 test.describe("Signup", () => {
   test("should display signup form", async ({ page }) => {
@@ -60,10 +60,7 @@ test.describe("Signup", () => {
     await signupPage.expectErrorMessage("Lozinka mora imati najmanje 8 karaktera");
   });
 
-  test("should successfully create account and redirect to dashboard", async ({
-    page,
-    prisma,
-  }) => {
+  test("should successfully create account and redirect to dashboard", async ({ page, prisma }) => {
     const email = generateTestEmail();
     // Use a short username that passes frontend validation (max 20 chars)
     const username = `user${Date.now() % 100000}`;

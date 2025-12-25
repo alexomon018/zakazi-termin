@@ -19,8 +19,7 @@ export const ROUTES = {
 
   // Public booking routes
   publicBookingPage: (username: string) => `/${username}`,
-  publicEventType: (username: string, eventSlug: string) =>
-    `/${username}/${eventSlug}`,
+  publicEventType: (username: string, eventSlug: string) => `/${username}/${eventSlug}`,
   eventTypeEdit: (id: number | string) => `/dashboard/event-types/${id}`,
   bookingDetails: (uid: string) => `/booking/${uid}`,
 } as const;

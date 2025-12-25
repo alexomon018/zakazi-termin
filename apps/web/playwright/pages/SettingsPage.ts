@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Profile Settings page
@@ -17,12 +17,28 @@ export class ProfileSettingsPage extends BasePage {
     super(page);
 
     // Use data-testid selectors with fallbacks
-    this.pageTitle = page.locator('[data-testid="profile-settings-title"], h1:has-text("Moj profil")').first();
-    this.nameInput = page.locator('[data-testid="profile-name-input"], input[name="name"], input[id="name"]').first();
-    this.usernameInput = page.locator('[data-testid="profile-username-input"], input[name="username"], input[id="username"]').first();
-    this.bioInput = page.locator('[data-testid="profile-bio-input"], textarea[name="bio"], textarea[id="bio"]').first();
-    this.timezoneSelect = page.locator('[data-testid="profile-timezone-select"], select[name="timeZone"]').first();
-    this.saveButton = page.locator('[data-testid="profile-save-button"], button[type="submit"], button:has-text("Sačuvaj"), button:has-text("Save")').first();
+    this.pageTitle = page
+      .locator('[data-testid="profile-settings-title"], h1:has-text("Moj profil")')
+      .first();
+    this.nameInput = page
+      .locator('[data-testid="profile-name-input"], input[name="name"], input[id="name"]')
+      .first();
+    this.usernameInput = page
+      .locator(
+        '[data-testid="profile-username-input"], input[name="username"], input[id="username"]'
+      )
+      .first();
+    this.bioInput = page
+      .locator('[data-testid="profile-bio-input"], textarea[name="bio"], textarea[id="bio"]')
+      .first();
+    this.timezoneSelect = page
+      .locator('[data-testid="profile-timezone-select"], select[name="timeZone"]')
+      .first();
+    this.saveButton = page
+      .locator(
+        '[data-testid="profile-save-button"], button[type="submit"], button:has-text("Sačuvaj"), button:has-text("Save")'
+      )
+      .first();
   }
 
   async goto(): Promise<void> {
@@ -67,9 +83,11 @@ export class ProfileSettingsPage extends BasePage {
     await this.save();
     // Wait for success indication (toast or visual feedback)
     const successToast = this.page.getByTestId("toast-success");
-    await expect(successToast).toBeVisible({ timeout: 5000 }).catch(() => {
-      // Toast might not appear, that's okay - we'll verify by reload
-    });
+    await expect(successToast)
+      .toBeVisible({ timeout: 5000 })
+      .catch(() => {
+        // Toast might not appear, that's okay - we'll verify by reload
+      });
   }
 
   /**
@@ -131,12 +149,26 @@ export class AppearanceSettingsPage extends BasePage {
     super(page);
 
     // Use data-testid selectors with fallbacks
-    this.pageTitle = page.locator('[data-testid="appearance-settings-title"], h1:has-text("Izgled")').first();
-    this.lightThemeButton = page.locator('[data-testid="theme-light"], button:has-text("Svetla"), button:has-text("Light")').first();
-    this.darkThemeButton = page.locator('[data-testid="theme-dark"], button:has-text("Tamna"), button:has-text("Dark")').first();
-    this.systemThemeButton = page.locator('[data-testid="theme-system"], button:has-text("Sistemska")').first();
-    this.brandColorInput = page.locator('[data-testid="brand-color-input"], input[type="color"], input[name="brandColor"]').first();
-    this.saveButton = page.locator('[data-testid="appearance-save-button"], button[type="submit"], button:has-text("Sačuvaj"), button:has-text("Save")').first();
+    this.pageTitle = page
+      .locator('[data-testid="appearance-settings-title"], h1:has-text("Izgled")')
+      .first();
+    this.lightThemeButton = page
+      .locator('[data-testid="theme-light"], button:has-text("Svetla"), button:has-text("Light")')
+      .first();
+    this.darkThemeButton = page
+      .locator('[data-testid="theme-dark"], button:has-text("Tamna"), button:has-text("Dark")')
+      .first();
+    this.systemThemeButton = page
+      .locator('[data-testid="theme-system"], button:has-text("Sistemska")')
+      .first();
+    this.brandColorInput = page
+      .locator('[data-testid="brand-color-input"], input[type="color"], input[name="brandColor"]')
+      .first();
+    this.saveButton = page
+      .locator(
+        '[data-testid="appearance-save-button"], button[type="submit"], button:has-text("Sačuvaj"), button:has-text("Save")'
+      )
+      .first();
   }
 
   async goto(): Promise<void> {

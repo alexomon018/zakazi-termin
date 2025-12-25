@@ -1,7 +1,7 @@
-import { Section, Text, Link } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label, button } from "./base-email";
 import type { BookingEmailData } from "../types";
+import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingConfirmedOrganizerEmail(props: BookingEmailData) {
   const {
@@ -37,14 +37,10 @@ export function BookingConfirmedOrganizerEmail(props: BookingEmailData) {
       heading="Nova rezervacija!"
     >
       <Text style={text}>Poštovani/a {organizerName},</Text>
-      <Text style={text}>
-        Imate novu potvrđenu rezervaciju. Detalji su u nastavku.
-      </Text>
+      <Text style={text}>Imate novu potvrđenu rezervaciju. Detalji su u nastavku.</Text>
 
       <Section style={infoBox}>
-        <Text style={{ ...infoRow, fontWeight: "600", marginBottom: "8px" }}>
-          Detalji termina
-        </Text>
+        <Text style={{ ...infoRow, fontWeight: "600", marginBottom: "8px" }}>Detalji termina</Text>
         <Text style={infoRow}>
           <span style={label}>Usluga:</span> {eventTypeTitle}
         </Text>

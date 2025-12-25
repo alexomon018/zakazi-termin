@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { EventTypesListPage } from "../pages";
 
 test.describe("Delete Event Type", () => {
@@ -18,10 +18,7 @@ test.describe("Delete Event Type", () => {
     await listPage.expectEventTypeVisible("30 Minute Meeting");
   });
 
-  test("should show empty state when no event types", async ({
-    page,
-    users,
-  }) => {
+  test("should show empty state when no event types", async ({ page, users }) => {
     // Create user without event type
     const user = await users.create({ withSchedule: true });
     await users.login(user);

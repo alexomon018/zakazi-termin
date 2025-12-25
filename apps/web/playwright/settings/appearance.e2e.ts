@@ -1,6 +1,6 @@
-import { test, expect } from "../fixtures";
-import { AppearanceSettingsPage } from "../pages";
+import { expect, test } from "../fixtures";
 import { ROUTES } from "../lib/constants";
+import { AppearanceSettingsPage } from "../pages";
 
 test.describe("Appearance Settings", () => {
   test.beforeEach(async ({ users }) => {

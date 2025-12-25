@@ -1,37 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@zakazi-termin/trpc";
 import { Button, Card, CardContent } from "@zakazi-termin/ui";
-import {
-  Plus,
-  Clock,
-  MapPin,
-  Eye,
-  EyeOff,
-  Trash2,
-  Copy,
-  ExternalLink,
-  Pencil,
-} from "lucide-react";
+import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type EventType = RouterOutputs["eventType"]["list"][number];
-type User = Pick<
-  NonNullable<RouterOutputs["user"]["me"]>,
-  "id" | "username" | "name"
->;
+type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "username" | "name">;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
   currentUser: User | null;
 };
 
-export function EventTypesClient({
-  initialEventTypes,
-  currentUser,
-}: EventTypesClientProps) {
+export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<number | null>(null);
   const utils = trpc.useUtils();
 
@@ -60,9 +44,7 @@ export function EventTypesClient({
     try {
       await navigator.clipboard.writeText(link);
       setCopySuccess(
-        eventTypes?.findIndex(
-          (e: { slug: string }) => e.slug === eventType.slug
-        ) ?? null
+        eventTypes?.findIndex((e: { slug: string }) => e.slug === eventType.slug) ?? null
       );
       setTimeout(() => setCopySuccess(null), 2000);
     } catch (err) {
@@ -89,17 +71,13 @@ export function EventTypesClient({
   };
 
   const baseUrl =
-    typeof window !== "undefined"
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_APP_URL || "";
+    typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || "";
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Tipovi termina
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tipovi termina</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
@@ -121,8 +99,7 @@ export function EventTypesClient({
                 Nemate tipove termina
               </h3>
               <p className="mb-4 text-gray-500 dark:text-gray-400">
-                Kreirajte svoj prvi tip termina da biste omogućili klijentima da
-                zakazuju.
+                Kreirajte svoj prvi tip termina da biste omogućili klijentima da zakazuju.
               </p>
               <Link href="/dashboard/event-types/new">
                 <Button>
@@ -147,9 +124,7 @@ export function EventTypesClient({
                     <div
                       className="w-1 h-12 rounded-full"
                       style={{
-                        backgroundColor: eventType.hidden
-                          ? "#9CA3AF"
-                          : "#3B82F6",
+                        backgroundColor: eventType.hidden ? "#9CA3AF" : "#3B82F6",
                       }}
                     />
                     <div>
@@ -200,15 +175,11 @@ export function EventTypesClient({
                       className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       {copySuccess === index ? (
-                        <span className="text-xs text-green-600">
-                          Kopirano!
-                        </span>
+                        <span className="text-xs text-green-600">Kopirano!</span>
                       ) : (
                         <>
                           <Copy className="mr-1 w-4 h-4" />
-                          <span className="hidden text-xs sm:inline">
-                            Kopiraj link
-                          </span>
+                          <span className="hidden text-xs sm:inline">Kopiraj link</span>
                         </>
                       )}
                     </Button>
@@ -226,9 +197,7 @@ export function EventTypesClient({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        handleToggleVisibility(eventType.id, eventType.hidden)
-                      }
+                      onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
                       className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                       {eventType.hidden ? (
@@ -277,13 +246,10 @@ export function EventTypesClient({
       {/* Help section */}
       {eventTypes && eventTypes.length > 0 && (
         <div className="p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-          <h4 className="mb-1 font-medium text-blue-900 dark:text-blue-300">
-            Kako funkcioniše?
-          </h4>
+          <h4 className="mb-1 font-medium text-blue-900 dark:text-blue-300">Kako funkcioniše?</h4>
           <p className="text-sm text-blue-700 dark:text-blue-400">
-            Podelite link za zakazivanje sa klijentima. Oni mogu izabrati
-            slobodan termin iz vaše dostupnosti, a vi ćete dobiti obaveštenje o
-            novom terminu.
+            Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše
+            dostupnosti, a vi ćete dobiti obaveštenje o novom terminu.
           </p>
         </div>
       )}

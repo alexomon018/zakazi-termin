@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 import { Button } from "../../atoms/Button";
 
 interface CtaBannerProps {
@@ -18,17 +18,12 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
           Spremni da preuzmete kontrolu nad terminima?
         </h2>
         <p className="text-lg sm:text-xl mb-8 text-primary-foreground/90 text-pretty">
-          Pridružite se stotinama zadovoljnih vlasnika salona koji štede vreme
-          i povećavaju prihode sa Zakaži Termin platformom.
+          Pridružite se stotinama zadovoljnih vlasnika salona koji štede vreme i povećavaju prihode
+          sa Zakaži Termin platformom.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {onStartClick ? (
-            <Button
-              size="lg"
-              variant="secondary"
-              className="text-base"
-              onClick={onStartClick}
-            >
+            <Button size="lg" variant="secondary" className="text-base" onClick={onStartClick}>
               Započnite besplatno probno razdoblje
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>

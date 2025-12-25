@@ -1,6 +1,6 @@
-import * as React from "react";
-import { MapPin } from "lucide-react";
 import { cn } from "@zakazi-termin/ui/utils";
+import { MapPin } from "lucide-react";
+import * as React from "react";
 
 interface LocationDisplayProps {
   location: string;

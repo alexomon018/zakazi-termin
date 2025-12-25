@@ -1,6 +1,6 @@
-import { Section, Text, Link, Button } from "@react-email/components";
+import { Button, Link, Section, Text } from "@react-email/components";
 import * as React from "react";
-import { BaseEmail, text, infoBox, infoRow, label, button } from "./base-email";
+import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export interface WelcomeEmailProps {
   userName: string;
@@ -22,8 +22,8 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
     >
       <Text style={text}>Poštovani/a {userName},</Text>
       <Text style={text}>
-        Hvala Vam što ste se registrovali na Zakazi Termin! Vaš nalog je uspešno
-        kreiran i spremni ste da počnete sa zakazivanjem termina.
+        Hvala Vam što ste se registrovali na Zakazi Termin! Vaš nalog je uspešno kreiran i spremni
+        ste da počnete sa zakazivanjem termina.
       </Text>
 
       <Section style={infoBox}>
@@ -52,21 +52,15 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
       <Section style={stepsBox}>
         <Text style={stepItem}>
           <span style={stepNumber}>1</span>
-          <span style={stepText}>
-            Kreirajte tipove termina - definišite usluge koje nudite
-          </span>
+          <span style={stepText}>Kreirajte tipove termina - definišite usluge koje nudite</span>
         </Text>
         <Text style={stepItem}>
           <span style={stepNumber}>2</span>
-          <span style={stepText}>
-            Podesite dostupnost - odredite kada ste slobodni
-          </span>
+          <span style={stepText}>Podesite dostupnost - odredite kada ste slobodni</span>
         </Text>
         <Text style={stepItem}>
           <span style={stepNumber}>3</span>
-          <span style={stepText}>
-            Podelite link - omogućite klijentima da zakažu termine
-          </span>
+          <span style={stepText}>Podelite link - omogućite klijentima da zakažu termine</span>
         </Text>
       </Section>
 
@@ -77,8 +71,7 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
       </Section>
 
       <Text style={{ ...text, marginTop: "24px" }}>
-        Ako imate bilo kakvih pitanja ili Vam je potrebna pomoć, slobodno nas
-        kontaktirajte.
+        Ako imate bilo kakvih pitanja ili Vam je potrebna pomoć, slobodno nas kontaktirajte.
       </Text>
 
       <Text style={text}>

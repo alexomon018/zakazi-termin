@@ -6,22 +6,19 @@ export function ProcessSection() {
     {
       step: 1,
       title: "Napravite nalog",
-      description:
-        "Registrujte se besplatno i dodajte osnovne informacije o vašem salonu.",
+      description: "Registrujte se besplatno i dodajte osnovne informacije o vašem salonu.",
       showConnector: true,
     },
     {
       step: 2,
       title: "Podesite usluge",
-      description:
-        "Unesite vaše usluge, cene, zaposlene i radno vreme salona.",
+      description: "Unesite vaše usluge, cene, zaposlene i radno vreme salona.",
       showConnector: true,
     },
     {
       step: 3,
       title: "Podelite link",
-      description:
-        "Podelite vaš jedinstveni link sa klijentima i počnite da primate termine!",
+      description: "Podelite vaš jedinstveni link sa klijentima i počnite da primate termine!",
       showConnector: false,
     },
   ];

@@ -1,6 +1,12 @@
-import { dayjs, type Dayjs } from "@zakazi-termin/config";
-import { buildDateRanges, subtract, type DateRange, type WorkingHours, type DateOverride } from "./date-ranges";
-import { getSlots, type Slot } from "./slots";
+import { type Dayjs, dayjs } from "@zakazi-termin/config";
+import {
+  type DateOverride,
+  type DateRange,
+  type WorkingHours,
+  buildDateRanges,
+  subtract,
+} from "./date-ranges";
+import { type Slot, getSlots } from "./slots";
 
 export type AvailabilityInput = {
   availability: (WorkingHours | DateOverride)[];

@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Signup page
@@ -161,7 +161,9 @@ export class SignupPage extends BasePage {
   /**
    * Check for field-specific validation errors
    */
-  async expectFieldError(field: "name" | "email" | "username" | "password" | "confirmPassword"): Promise<Locator> {
+  async expectFieldError(
+    field: "name" | "email" | "username" | "password" | "confirmPassword"
+  ): Promise<Locator> {
     const errorLocator = this.page.getByTestId(`signup-${field}-error`);
     await expect(errorLocator).toBeVisible();
     return errorLocator;

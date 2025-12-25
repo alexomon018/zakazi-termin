@@ -1,22 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label } from "@zakazi-termin/ui";
-import {
-  Clock,
-  Calendar,
-  ChevronLeft,
-  User,
-  Mail,
-  Phone,
-  FileText,
-} from "lucide-react";
-import {
-  bookingDetailsSchema,
-  type BookingDetailsFormData,
-} from "../../lib/validations/booking";
+import { Calendar, ChevronLeft, Clock, FileText, Mail, Phone, User } from "lucide-react";
+import * as React from "react";
+import { useForm } from "react-hook-form";
+import { type BookingDetailsFormData, bookingDetailsSchema } from "../../lib/validations/booking";
 
 interface BookingDetailsFormProps {
   selectedSlot: string | null;
@@ -114,9 +103,7 @@ export function BookingDetailsForm({
             className={errors.name ? "border-red-500" : ""}
           />
           {errors.name && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.name.message}
-            </p>
+            <p className="text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
           )}
         </div>
 
@@ -134,9 +121,7 @@ export function BookingDetailsForm({
             className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              {errors.email.message}
-            </p>
+            <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
           )}
         </div>
 

@@ -1,6 +1,6 @@
-import { Page, Locator, expect } from "@playwright/test";
-import { BasePage } from "./BasePage";
+import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES } from "../lib/constants";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object for the Event Types list page
@@ -43,9 +43,7 @@ export class EventTypesListPage extends BasePage {
    * Get an event type card by title
    */
   getEventTypeCard(title: string): Locator {
-    return this.page.getByTestId(
-      `event-type-card-${title.toLowerCase().replace(/\s+/g, "-")}`
-    );
+    return this.page.getByTestId(`event-type-card-${title.toLowerCase().replace(/\s+/g, "-")}`);
   }
 
   /**
@@ -76,13 +74,9 @@ export class EventTypesListPage extends BasePage {
       .locator("..")
       .locator("..")
       .locator("..");
-    const deleteButton = cardContainingTitle
-      .locator('[data-testid^="delete-event-type-"]')
-      .first();
+    const deleteButton = cardContainingTitle.locator('[data-testid^="delete-event-type-"]').first();
 
-    const deleteButtonVisible = await deleteButton
-      .isVisible()
-      .catch(() => false);
+    const deleteButtonVisible = await deleteButton.isVisible().catch(() => false);
 
     if (!deleteButtonVisible) {
       throw new Error(`Could not find delete button for event type: ${title}`);
@@ -398,12 +392,8 @@ export class EditEventTypePage extends BasePage {
       .locator('[data-testid="event-type-save-button"]')
       .or(page.locator('button:has-text("Sačuvaj izmene")'))
       .first();
-    this.cancelButton = page.locator(
-      '[data-testid="event-type-cancel-button"]'
-    );
-    this.deleteButton = page.locator(
-      '[data-testid="event-type-delete-button"]'
-    );
+    this.cancelButton = page.locator('[data-testid="event-type-cancel-button"]');
+    this.deleteButton = page.locator('[data-testid="event-type-delete-button"]');
   }
 
   async goto(eventTypeId: number | string): Promise<void> {
@@ -471,9 +461,7 @@ export class EditEventTypePage extends BasePage {
    * Expect duplicate slug error
    */
   async expectDuplicateSlugError(): Promise<void> {
-    await expect(this.page.locator("text=/Ovaj slug već postoji/")).toBeVisible(
-      { timeout: 10000 }
-    );
+    await expect(this.page.locator("text=/Ovaj slug već postoji/")).toBeVisible({ timeout: 10000 });
   }
 
   /**

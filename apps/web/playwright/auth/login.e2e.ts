@@ -1,4 +1,4 @@
-import { test, expect } from "../fixtures";
+import { expect, test } from "../fixtures";
 import { LoginPage } from "../pages";
 
 test.describe("Login", () => {
@@ -36,10 +36,7 @@ test.describe("Login", () => {
     await loginPage.expectError("Pogrešan email ili lozinka");
   });
 
-  test("should successfully login with valid credentials", async ({
-    page,
-    users,
-  }) => {
+  test("should successfully login with valid credentials", async ({ page, users }) => {
     // Create a test user
     const user = await users.create();
 
@@ -50,10 +47,7 @@ test.describe("Login", () => {
     await loginPage.loginAndExpectSuccess(user.email, user.password);
   });
 
-  test("should redirect authenticated users from login to dashboard", async ({
-    page,
-    users,
-  }) => {
+  test("should redirect authenticated users from login to dashboard", async ({ page, users }) => {
     // Create and login user
     const user = await users.create();
     await users.login(user);
