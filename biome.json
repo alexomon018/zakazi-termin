@@ -21,7 +21,8 @@
       "packages/prisma/generated",
       "*.config.js",
       "*.config.mjs",
-      "next-env.d.ts"
+      "next-env.d.ts",
+      "package.json"
     ]
   },
   "formatter": {

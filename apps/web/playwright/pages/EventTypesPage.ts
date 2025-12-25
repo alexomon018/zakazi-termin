@@ -57,13 +57,6 @@ export class EventTypesListPage extends BasePage {
    * Delete an event type by title using the delete button
    */
   async deleteEventType(title: string): Promise<void> {
-    // Set up dialog handler BEFORE clicking (native browser confirm)
-    let dialogAccepted = false;
-    this.page.once("dialog", async (dialog) => {
-      await dialog.accept();
-      dialogAccepted = true;
-    });
-
     // Find the event type card by title, then find the delete button with data-testid within it
     const titleLocator = this.page.locator(`text=${title}`).first();
 
@@ -82,30 +75,48 @@ export class EventTypesListPage extends BasePage {
       throw new Error(`Could not find delete button for event type: ${title}`);
     }
 
+    // Set up dialog handler BEFORE clicking (native browser confirm)
+    // Use Promise.all to handle both the dialog and the API response
+    const dialogPromise = this.page.waitForEvent("dialog").then(async (dialog) => {
+      await dialog.accept();
+      return true;
+    });
+
+    // Set up response waiter for the delete mutation
+    const responsePromise = this.page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/trpc") &&
+        response.request().method() === "POST" &&
+        (response.url().includes("eventType.delete") ||
+          (response.request().postData()?.includes("eventType.delete") ?? false)),
+      { timeout: 30000 }
+    );
+
+    // Click the delete button
     await deleteButton.click();
 
-    // Wait a bit to see if dialog appears
-    await this.page.waitForTimeout(500);
+    // Wait for native dialog (with short timeout in case it's a custom dialog)
+    const dialogHandled = await dialogPromise.catch(() => false);
 
-    // Check for custom confirm dialog (fallback)
-    const confirmButton = this.page.locator('button:has-text("Potvrdi")');
-    const confirmButtonVisible = await confirmButton
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
+    if (!dialogHandled) {
+      // Check for custom confirm dialog (fallback)
+      const confirmButton = this.page.locator('button:has-text("Potvrdi")');
+      const confirmButtonVisible = await confirmButton
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
 
-    if (confirmButtonVisible) {
-      await this.waitForMutation(async () => {
+      if (confirmButtonVisible) {
         await confirmButton.click();
-      });
-    } else if (dialogAccepted) {
-      // Wait for mutation to complete after native dialog was accepted
-      await this.page.waitForResponse(
-        (response) =>
-          response.url().includes("/api/trpc") &&
-          response.request().method() === "POST" &&
-          response.url().includes("eventType.delete")
-      );
+      }
     }
+
+    // Wait for the delete response to complete
+    await responsePromise.catch(() => {
+      // Response might have already completed, that's ok
+    });
+
+    // Give the UI a moment to update
+    await this.page.waitForTimeout(500);
   }
 
   /**
