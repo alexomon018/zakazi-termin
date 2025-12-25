@@ -1,0 +1,50 @@
+{"location":"deleteEventType.e2e.ts:49","message":"test started","data":{},"timestamp":1766662005423,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:58","message":"eventType found","data":{"id":180,"title":"30 Minute Meeting"},"timestamp":1766662010971,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:63","message":"navigated to event types list","data":{"url":"http://localhost:3000/dashboard/event-types"},"timestamp":1766662012641,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:53","message":"deleteEventType called","data":{"title":"30 Minute Meeting"},"timestamp":1766662012641,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:68","message":"deleteButton visibility check","data":{"visible":false},"timestamp":1766662012659,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:73","message":"deleteButton not visible, trying alternative selectors","data":{},"timestamp":1766662012660,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:76","message":"moreButton visibility check","data":{"visible":false},"timestamp":1766662012666,"sessionId":"debug-session","runId":"run1","hypothesisId":"B"}
+{"location":"EventTypesPage.ts:82","message":"moreButton not visible, trying trash icon button","data":{},"timestamp":1766662012668,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"EventTypesPage.ts:87","message":"found buttons count","data":{"count":6},"timestamp":1766662012675,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"EventTypesPage.ts:92","message":"trash button visibility check","data":{"visible":false},"timestamp":1766662012682,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"EventTypesPage.ts:105","message":"checking for custom confirm dialog","data":{"dialogAccepted":false},"timestamp":1766662013185,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:108","message":"confirmButton visibility check","data":{"visible":false},"timestamp":1766662013188,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:125","message":"deleteEventType completed","data":{},"timestamp":1766662013188,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"deleteEventType.e2e.ts:67","message":"deleteEventType call completed","data":{},"timestamp":1766662013188,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"deleteEventType.e2e.ts:49","message":"test started","data":{},"timestamp":1766662085141,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:58","message":"eventType found","data":{"id":182,"title":"30 Minute Meeting"},"timestamp":1766662090540,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:63","message":"navigated to event types list","data":{"url":"http://localhost:3000/dashboard/event-types"},"timestamp":1766662092220,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:53","message":"deleteEventType called","data":{"title":"30 Minute Meeting"},"timestamp":1766662092221,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:68","message":"deleteButton visibility check","data":{"visible":false},"timestamp":1766662092232,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:73","message":"deleteButton not visible, trying alternative selectors","data":{},"timestamp":1766662092232,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:85","message":"found buttons in flex container","data":{"count":0},"timestamp":1766662092238,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"EventTypesPage.ts:105","message":"trash button visibility check","data":{"visible":false,"buttonCount":0},"timestamp":1766662092245,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"EventTypesPage.ts:127","message":"ERROR: Could not find delete button","data":{"title":"30 Minute Meeting","buttonCount":0},"timestamp":1766662092245,"sessionId":"debug-session","runId":"run1","hypothesisId":"D"}
+{"location":"deleteEventType.e2e.ts:49","message":"test started","data":{},"timestamp":1766662238748,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:58","message":"eventType found","data":{"id":184,"title":"30 Minute Meeting"},"timestamp":1766662244202,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:63","message":"navigated to event types list","data":{"url":"http://localhost:3000/dashboard/event-types"},"timestamp":1766662245801,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:53","message":"deleteEventType called","data":{"title":"30 Minute Meeting"},"timestamp":1766662245801,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:68","message":"deleteButton visibility check","data":{"visible":true},"timestamp":1766662245813,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:99","message":"deleteButton visible, clicking","data":{},"timestamp":1766662245814,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:60","message":"native dialog detected","data":{"type":"confirm","message":"Da li ste sigurni da želite da obrišete ovaj tip termina?"},"timestamp":1766662245833,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:65","message":"dialog accepted","data":{},"timestamp":1766662245837,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:105","message":"checking for custom confirm dialog","data":{"dialogAccepted":true},"timestamp":1766662246347,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:108","message":"confirmButton visibility check","data":{"visible":false},"timestamp":1766662246351,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:115","message":"waiting for mutation after dialog accept","data":{},"timestamp":1766662246351,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"deleteEventType.e2e.ts:49","message":"test started","data":{},"timestamp":1766662294962,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:58","message":"eventType found","data":{"id":186,"title":"30 Minute Meeting"},"timestamp":1766662300942,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"deleteEventType.e2e.ts:63","message":"navigated to event types list","data":{"url":"http://localhost:3000/dashboard/event-types"},"timestamp":1766662302557,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:53","message":"deleteEventType called","data":{"title":"30 Minute Meeting"},"timestamp":1766662302558,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:68","message":"deleteButton visibility check","data":{"visible":true},"timestamp":1766662302576,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:99","message":"deleteButton visible, clicking","data":{},"timestamp":1766662302576,"sessionId":"debug-session","runId":"run1","hypothesisId":"A"}
+{"location":"EventTypesPage.ts:60","message":"native dialog detected","data":{"type":"confirm","message":"Da li ste sigurni da želite da obrišete ovaj tip termina?"},"timestamp":1766662302619,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:65","message":"dialog accepted","data":{},"timestamp":1766662302627,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:105","message":"checking for custom confirm dialog","data":{"dialogAccepted":true},"timestamp":1766662303133,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:108","message":"confirmButton visibility check","data":{"visible":false},"timestamp":1766662303137,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:115","message":"waiting for mutation after dialog accept","data":{},"timestamp":1766662303137,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:122","message":"mutation response received","data":{},"timestamp":1766662303270,"sessionId":"debug-session","runId":"run1","hypothesisId":"C"}
+{"location":"EventTypesPage.ts:125","message":"deleteEventType completed","data":{},"timestamp":1766662303271,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"deleteEventType.e2e.ts:67","message":"deleteEventType call completed","data":{},"timestamp":1766662303271,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"deleteEventType.e2e.ts:71","message":"expectEventTypeHidden completed","data":{},"timestamp":1766662303380,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}
+{"location":"deleteEventType.e2e.ts:77","message":"database check completed","data":{"deleted":true},"timestamp":1766662303382,"sessionId":"debug-session","runId":"run1","hypothesisId":"E"}

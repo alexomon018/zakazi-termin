@@ -69,92 +69,156 @@ export default function SignupPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Zakazi Termin</CardTitle>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Kreirajte vaš nalog</p>
+        <CardTitle
+          data-testid="signup-title"
+          className="text-2xl font-bold text-gray-900 dark:text-white"
+        >
+          Zakazi Termin
+        </CardTitle>
+        <p
+          data-testid="signup-subtitle"
+          className="text-gray-600 dark:text-gray-400 mt-2"
+        >
+          Kreirajte vaš nalog
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {serverError && (
-            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
+            <div
+              data-testid="signup-error-message"
+              className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md"
+            >
               {serverError}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-900 dark:text-white">Ime i prezime</Label>
+            <Label htmlFor="name" className="text-gray-900 dark:text-white">
+              Ime i prezime
+            </Label>
             <Input
               id="name"
+              data-testid="signup-name-input"
               type="text"
               placeholder="Marko Marković"
               disabled={isSubmitting}
               {...register("name")}
             />
             {errors.name && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
+              <p
+                data-testid="signup-name-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {errors.name.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-900 dark:text-white">Email</Label>
+            <Label htmlFor="email" className="text-gray-900 dark:text-white">
+              Email
+            </Label>
             <Input
               id="email"
+              data-testid="signup-email-input"
               type="text"
               placeholder="vas@email.com"
               disabled={isSubmitting}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+              <p
+                data-testid="signup-email-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {errors.email.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-gray-900 dark:text-white">Korisničko ime</Label>
+            <Label htmlFor="username" className="text-gray-900 dark:text-white">
+              Korisničko ime
+            </Label>
             <Input
               id="username"
+              data-testid="signup-username-input"
               type="text"
               placeholder="marko"
               disabled={isSubmitting}
               {...register("username")}
             />
             {errors.username ? (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.username.message}</p>
+              <p
+                data-testid="signup-username-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {errors.username.message}
+              </p>
             ) : (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p
+                data-testid="signup-username-preview"
+                className="text-xs text-gray-500 dark:text-gray-400"
+              >
                 Vaš profil: zakazi-termin.rs/{username || "korisnickoime"}
               </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-900 dark:text-white">Lozinka</Label>
+            <Label htmlFor="password" className="text-gray-900 dark:text-white">
+              Lozinka
+            </Label>
             <Input
               id="password"
+              data-testid="signup-password-input"
               type="password"
               placeholder="Najmanje 8 karaktera"
               disabled={isSubmitting}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+              <p
+                data-testid="signup-password-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-white">Potvrdite lozinku</Label>
+            <Label
+              htmlFor="confirmPassword"
+              className="text-gray-900 dark:text-white"
+            >
+              Potvrdite lozinku
+            </Label>
             <Input
               id="confirmPassword"
+              data-testid="signup-confirm-password-input"
               type="password"
               placeholder="Ponovite lozinku"
               disabled={isSubmitting}
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
+              <p
+                data-testid="signup-confirmPassword-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            data-testid="signup-submit-button"
+            className="w-full"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Kreiranje naloga..." : "Registrujte se"}
           </Button>
         </form>
@@ -164,13 +228,16 @@ export default function SignupPage() {
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-card text-gray-500 dark:text-gray-400">ili</span>
+            <span className="px-2 bg-card text-gray-500 dark:text-gray-400">
+              ili
+            </span>
           </div>
         </div>
 
         <Button
           type="button"
           variant="outline"
+          data-testid="signup-google-button"
           className="w-full"
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
@@ -198,7 +265,11 @@ export default function SignupPage() {
 
         <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
           Već imate nalog?{" "}
-          <Link href="/login" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
+          <Link
+            href="/login"
+            data-testid="signup-login-link"
+            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+          >
             Prijavite se
           </Link>
         </p>

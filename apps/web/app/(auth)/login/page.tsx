@@ -70,17 +70,26 @@ export default function LoginPage() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+        <CardTitle
+          data-testid="login-title"
+          className="text-2xl font-bold text-gray-900 dark:text-white"
+        >
           Zakazi Termin
         </CardTitle>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p
+          data-testid="login-subtitle"
+          className="mt-2 text-gray-600 dark:text-gray-400"
+        >
           Prijavite se na vaš nalog
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {serverError && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md dark:text-red-400 dark:bg-red-900/20">
+            <div
+              data-testid="login-error-message"
+              className="p-3 text-sm text-red-600 bg-red-50 rounded-md dark:text-red-400 dark:bg-red-900/20"
+            >
               {serverError}
             </div>
           )}
@@ -91,13 +100,17 @@ export default function LoginPage() {
             </Label>
             <Input
               id="email"
+              data-testid="login-email-input"
               type="text"
               placeholder="vas@email.com"
               disabled={isSubmitting}
               {...register("email")}
             />
             {errors.email && (
-              <p className="text-sm text-red-600 dark:text-red-400">
+              <p
+                data-testid="login-email-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
                 {errors.email.message}
               </p>
             )}
@@ -109,13 +122,17 @@ export default function LoginPage() {
             </Label>
             <Input
               id="password"
+              data-testid="login-password-input"
               type="password"
               placeholder="Vaša lozinka"
               disabled={isSubmitting}
               {...register("password")}
             />
             {errors.password && (
-              <p className="text-sm text-red-600 dark:text-red-400">
+              <p
+                data-testid="login-password-error"
+                className="text-sm text-red-600 dark:text-red-400"
+              >
                 {errors.password.message}
               </p>
             )}
@@ -124,13 +141,19 @@ export default function LoginPage() {
           <div className="flex justify-end">
             <Link
               href="/forgot-password"
+              data-testid="login-forgot-password-link"
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
               Zaboravili ste lozinku?
             </Link>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            data-testid="login-submit-button"
+            className="w-full"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Prijavljivanje..." : "Prijavite se"}
           </Button>
         </form>
@@ -149,6 +172,7 @@ export default function LoginPage() {
         <Button
           type="button"
           variant="outline"
+          data-testid="login-google-button"
           className="w-full"
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
@@ -178,6 +202,7 @@ export default function LoginPage() {
           Nemate nalog?{" "}
           <Link
             href="/signup"
+            data-testid="login-signup-link"
             className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             Registrujte se
