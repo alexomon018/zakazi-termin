@@ -15,7 +15,8 @@ function getPrismaClient(): PrismaClient {
 }
 
 export const test = base.extend<PrismaFixture>({
-  prisma: async (_fixtures, use) => {
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require object destructuring syntax
+  prisma: async ({}, use) => {
     const prisma = getPrismaClient();
     await use(prisma);
   },
