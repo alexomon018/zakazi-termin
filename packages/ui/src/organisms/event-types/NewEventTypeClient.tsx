@@ -142,13 +142,18 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/event-types">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" data-testid="event-type-back-button">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Nazad
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Novi tip termina</h1>
+          <h1
+            data-testid="create-event-type-title"
+            className="text-2xl font-bold text-gray-900 dark:text-white"
+          >
+            Novi tip termina
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Kreirajte novu vrstu termina za vaše klijente
           </p>
@@ -157,7 +162,10 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {errors.form && (
-          <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg">
+          <div
+            data-testid="event-type-error-message"
+            className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg"
+          >
             {errors.form}
           </div>
         )}
@@ -178,6 +186,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                 </Label>
                 <Input
                   id="title"
+                  data-testid="event-type-title-input"
                   placeholder="npr. Konsultacija"
                   value={formData.title}
                   onChange={(e) => handleTitleChange(e.target.value)}
@@ -193,13 +202,18 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                   <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">/</span>
                   <Input
                     id="slug"
+                    data-testid="event-type-slug-input"
                     placeholder="konsultacija"
                     value={formData.slug}
                     onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
                     className={errors.slug ? "border-red-500" : ""}
                   />
                 </div>
-                {errors.slug && <p className="text-sm text-red-500">{errors.slug}</p>}
+                {errors.slug && (
+                  <p data-testid="event-type-slug-error" className="text-sm text-red-500">
+                    {errors.slug}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -209,6 +223,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
               </Label>
               <textarea
                 id="description"
+                data-testid="event-type-description-input"
                 rows={3}
                 placeholder="Opišite šta klijent može očekivati od ovog termina..."
                 value={formData.description}
@@ -224,6 +239,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                   <button
                     key={duration}
                     type="button"
+                    data-testid={`duration-${duration}`}
                     onClick={() => setFormData((prev) => ({ ...prev, length: duration }))}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       formData.length === duration
@@ -237,6 +253,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                 <div className="flex items-center gap-2">
                   <Input
                     type="number"
+                    data-testid="event-type-duration-input"
                     min="5"
                     max="480"
                     value={formData.length}
@@ -268,6 +285,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
               </Label>
               <Input
                 id="locationAddress"
+                data-testid="event-type-location-address-input"
                 placeholder="npr. Knez Mihailova 10, Beograd"
                 value={formData.locationAddress}
                 onChange={(e) => setFormData((prev) => ({ ...prev, locationAddress: e.target.value }))}
@@ -425,11 +443,15 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {/* Submit */}
         <div className="flex items-center justify-end gap-4">
           <Link href="/dashboard/event-types">
-            <Button variant="outline" type="button">
+            <Button variant="outline" type="button" data-testid="event-type-cancel-button">
               Otkaži
             </Button>
           </Link>
-          <Button type="submit" disabled={createEventType.isPending}>
+          <Button
+            type="submit"
+            data-testid="event-type-submit-button"
+            disabled={createEventType.isPending}
+          >
             {createEventType.isPending ? "Kreiranje..." : "Kreiraj tip termina"}
           </Button>
         </div>
