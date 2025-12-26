@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": ["ENABLE_EXPERIMENTAL_COREPACK"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -11,7 +12,10 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "RESEND_API_KEY",
-        "EMAIL_FROM"
+        "EMAIL_FROM",
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT"
       ]
     },
     "dev": {
