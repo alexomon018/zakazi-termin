@@ -9,9 +9,9 @@ function getEnvironment(): string {
   // Allow override via NEXT_PUBLIC_SENTRY_ENVIRONMENT env var (client-side)
   if (
     typeof window !== "undefined" &&
-    (window as { __SENTRY_ENV__?: string }).__SENTRY_ENV__
+    (window as unknown as { __SENTRY_ENV__?: string }).__SENTRY_ENV__
   ) {
-    return (window as { __SENTRY_ENV__: string }).__SENTRY_ENV__;
+    return (window as unknown as { __SENTRY_ENV__: string }).__SENTRY_ENV__;
   }
 
   // Use public env var for client-side

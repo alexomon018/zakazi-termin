@@ -52,7 +52,7 @@ export default function Page() {
           Click the button below, and view the sample error on the Sentry{" "}
           <a
             target="_blank"
-            rel="noopener"
+            rel="noreferrer noopener"
             href="https://tukumsolutions.sentry.io/issues/?project=4510600571322448"
           >
             Issues Page
@@ -60,7 +60,7 @@ export default function Page() {
           . For more details about setting up Sentry,{" "}
           <a
             target="_blank"
-            rel="noopener"
+            rel="noreferrer noopener"
             href="https://docs.sentry.io/platforms/javascript/guides/nextjs/"
           >
             read our docs
@@ -82,10 +82,10 @@ export default function Page() {
                 if (!res.ok) {
                   setHasSentError(true);
                 }
-              },
+              }
             );
             throw new SentryExampleFrontendError(
-              "This error is raised on the frontend of the example page.",
+              "This error is raised on the frontend of the example page."
             );
           }}
           disabled={!isConnected}
@@ -98,9 +98,8 @@ export default function Page() {
         ) : !isConnected ? (
           <div className="connectivity-error">
             <p>
-              It looks like network requests to Sentry are being blocked, which
-              will prevent errors from being captured. Try disabling your
-              ad-blocker to complete the test.
+              It looks like network requests to Sentry are being blocked, which will prevent errors
+              from being captured. Try disabling your ad-blocker to complete the test.
             </p>
           </div>
         ) : (
