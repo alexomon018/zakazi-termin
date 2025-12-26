@@ -1,14 +1,8 @@
-import { Logger } from "@logtail/next";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest, event: NextFetchEvent) {
-  // Log request to Better Stack
-  const logger = new Logger({ source: "middleware" });
-  await logger.middleware(req, { logRequestDetails: ["nextUrl"] });
-  event.waitUntil(logger.flush());
-
   const token = await getToken({ req });
   const { pathname } = req.nextUrl;
 
@@ -35,6 +29,5 @@ export async function middleware(req: NextRequest, event: NextFetchEvent) {
 }
 
 export const config = {
-  // Note: /_betterstack/* is intentionally NOT matched to allow Better Stack telemetry proxy
   matcher: ["/dashboard/:path*", "/login", "/signup", "/forgot-password"],
 };
