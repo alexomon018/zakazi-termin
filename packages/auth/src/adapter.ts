@@ -1,4 +1,4 @@
-import type { Account, PrismaClient, User } from "@zakazi-termin/prisma";
+import type { Account, PrismaClient, User } from "@salonko/prisma";
 import type { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 
 function parseIntSafe(value: string | number | undefined): number {
@@ -33,7 +33,7 @@ function toAdapterAccount(account: Account): AdapterAccount {
   };
 }
 
-export function ZakaziTerminAdapter(prisma: PrismaClient): Adapter {
+export function SalonkoAdapter(prisma: PrismaClient): Adapter {
   return {
     async createUser(data: AdapterUser) {
       const user = await prisma.user.create({

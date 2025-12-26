@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import Link from "next/link";
 import { useState } from "react";
 

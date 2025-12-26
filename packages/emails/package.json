@@ -1,5 +1,5 @@
 {
-  "name": "@zakazi-termin/emails",
+  "name": "@salonko/emails",
   "version": "1.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@react-email/components": "0.5.5",
-    "@zakazi-termin/config": "workspace:*",
+    "@salonko/config": "workspace:*",
     "react": "^ 19.1.0",
     "react-dom": "^19.1.0",
     "resend": "^4.0.0"

@@ -1,5 +1,5 @@
 import { test as base } from "@playwright/test";
-import { PrismaClient } from "@zakazi-termin/prisma";
+import { PrismaClient } from "@salonko/prisma";
 
 export type PrismaFixture = {
   prisma: PrismaClient;

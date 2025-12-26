@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { BookingsClient } from "@zakazi-termin/ui";
+import { BookingsClient } from "@salonko/ui";
 
 export default async function BookingsPage() {
   const caller = await createServerCaller();

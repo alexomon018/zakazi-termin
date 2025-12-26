@@ -7,7 +7,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: "Zakazi Termin",
+  title: "Salonko",
   description: "Zakazivanje termina - jednostavno i brzo",
 };
 

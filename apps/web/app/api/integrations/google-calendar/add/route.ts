@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/auth";
-import { getGoogleAuthUrl } from "@zakazi-termin/calendar";
+import { getGoogleAuthUrl } from "@salonko/calendar";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

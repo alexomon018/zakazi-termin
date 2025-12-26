@@ -1,4 +1,4 @@
-import { type Dayjs, dayjs } from "@zakazi-termin/config";
+import { type Dayjs, dayjs } from "@salonko/config";
 
 export type DateRange = {
   start: Dayjs;

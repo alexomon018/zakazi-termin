@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { Button, EditEventTypeClient } from "@zakazi-termin/ui";
+import { Button, EditEventTypeClient } from "@salonko/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

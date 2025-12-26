@@ -2,7 +2,7 @@
 
 import { type SignupFormData, signupSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -73,7 +73,7 @@ export default function SignupPage() {
           data-testid="signup-title"
           className="text-2xl font-bold text-gray-900 dark:text-white"
         >
-          Zakazi Termin
+          Salonko
         </CardTitle>
         <p data-testid="signup-subtitle" className="text-gray-600 dark:text-gray-400 mt-2">
           Kreirajte vaš nalog
@@ -155,7 +155,7 @@ export default function SignupPage() {
                 data-testid="signup-username-preview"
                 className="text-xs text-gray-500 dark:text-gray-400"
               >
-                Vaš profil: zakazi-termin.rs/{username || "korisnickoime"}
+                Vaš profil: salonko.rs/{username || "korisnickoime"}
               </p>
             )}
           </div>

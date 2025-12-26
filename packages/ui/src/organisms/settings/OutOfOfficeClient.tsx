@@ -2,9 +2,9 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
-import { cn } from "@zakazi-termin/ui";
+import type { RouterOutputs } from "@salonko/trpc";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import { cn } from "@salonko/ui";
 import { AlertCircle, CalendarDays, Check, Edit2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";

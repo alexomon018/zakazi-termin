@@ -1,4 +1,4 @@
-import { authOptions } from "@zakazi-termin/auth";
+import { authOptions } from "@salonko/auth";
 import NextAuth from "next-auth";
 
 const handler = NextAuth(authOptions);

@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { SettingsClient } from "@zakazi-termin/ui";
+import { SettingsClient } from "@salonko/ui";
 import { Suspense } from "react";
 
 export default async function SettingsPage() {

@@ -10,14 +10,11 @@ export interface PasswordResetEmailProps {
 
 export function PasswordResetEmail({ userName, userEmail, resetUrl }: PasswordResetEmailProps) {
   return (
-    <BaseEmail
-      preview="Resetujte vašu lozinku na Zakazi Termin"
-      heading="Zahtev za resetovanje lozinke"
-    >
+    <BaseEmail preview="Resetujte vašu lozinku na Salonko" heading="Zahtev za resetovanje lozinke">
       <Text style={text}>Poštovani/a {userName},</Text>
       <Text style={text}>
-        Primili smo zahtev za resetovanje lozinke za vaš nalog na Zakazi Termin. Ako niste vi
-        zatražili ovu promenu, slobodno ignorišite ovaj email.
+        Primili smo zahtev za resetovanje lozinke za vaš nalog na Salonko. Ako niste vi zatražili
+        ovu promenu, slobodno ignorišite ovaj email.
       </Text>
 
       <Section style={infoBox}>
@@ -44,7 +41,7 @@ export function PasswordResetEmail({ userName, userEmail, resetUrl }: PasswordRe
       <Text style={text}>
         Srdačan pozdrav,
         <br />
-        Tim Zakazi Termin
+        Tim Salonko
       </Text>
     </BaseEmail>
   );

@@ -3,9 +3,9 @@ import {
   GoogleCalendarService,
   type GoogleCredential,
   exchangeCodeForTokens,
-} from "@zakazi-termin/calendar";
-import { logger } from "@zakazi-termin/config";
-import { prisma } from "@zakazi-termin/prisma";
+} from "@salonko/calendar";
+import { logger } from "@salonko/config";
+import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {

@@ -181,6 +181,6 @@ export class SignupPage extends BasePage {
    * Check username preview contains text
    */
   async expectUsernamePreviewContains(username: string): Promise<void> {
-    await expect(this.page.locator(`text=zakazi-termin.rs/${username}`)).toBeVisible();
+    await expect(this.page.locator(`text=salonko.rs/${username}`)).toBeVisible();
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label } from "@zakazi-termin/ui";
+import { Button, Input, Label } from "@salonko/ui";
 import { Calendar, ChevronLeft, Clock, FileText, Mail, Phone, User } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";

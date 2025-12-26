@@ -1,5 +1,5 @@
+import { prisma } from "@salonko/prisma";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import { prisma } from "@zakazi-termin/prisma";
 
 export type Session = {
   user: {

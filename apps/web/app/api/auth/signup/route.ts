@@ -1,7 +1,7 @@
-import { hashPassword } from "@zakazi-termin/auth";
-import { logger } from "@zakazi-termin/config";
-import { emailService } from "@zakazi-termin/emails";
-import { prisma } from "@zakazi-termin/prisma";
+import { hashPassword } from "@salonko/auth";
+import { logger } from "@salonko/config";
+import { emailService } from "@salonko/emails";
+import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 

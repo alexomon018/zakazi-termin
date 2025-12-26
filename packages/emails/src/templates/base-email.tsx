@@ -30,7 +30,7 @@ export function BaseEmail({ preview, heading, children }: BaseEmailProps) {
               <tr>
                 <td style={{ textAlign: "center" }}>
                   <span style={calendarIcon}>📅</span>
-                  <span style={logoText}>Zakazi Termin</span>
+                  <span style={logoText}>Salonko</span>
                 </td>
               </tr>
             </table>
@@ -39,10 +39,8 @@ export function BaseEmail({ preview, heading, children }: BaseEmailProps) {
           <Heading style={h1}>{heading}</Heading>
           {children}
           <Hr style={hr} />
-          <Text style={footer}>Zakazi Termin - Vaš partner za zakazivanje termina</Text>
-          <Text style={footerLinks}>
-            © {new Date().getFullYear()} Zakazi Termin. Sva prava zadržana.
-          </Text>
+          <Text style={footer}>Salonko - Vaš partner za zakazivanje termina</Text>
+          <Text style={footerLinks}>© {new Date().getFullYear()} Salonko. Sva prava zadržana.</Text>
         </Container>
       </Body>
     </Html>

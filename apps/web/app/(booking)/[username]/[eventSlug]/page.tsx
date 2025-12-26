@@ -1,5 +1,5 @@
 import { createPublicServerCaller } from "@/lib/trpc/server";
-import { BookingFlow, EventNotFound } from "@zakazi-termin/ui";
+import { BookingFlow, EventNotFound } from "@salonko/ui";
 
 type Props = {
   params: Promise<{

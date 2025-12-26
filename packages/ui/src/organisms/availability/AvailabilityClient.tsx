@@ -1,8 +1,8 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import type { RouterOutputs } from "@salonko/trpc";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { Check, Clock, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 

@@ -1,6 +1,6 @@
-import { GoogleCalendarService, googleCredentialSchema } from "@zakazi-termin/calendar";
-import { logger } from "@zakazi-termin/config";
-import { getAvailability, getBookingBusyTimes } from "@zakazi-termin/scheduling";
+import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
+import { logger } from "@salonko/config";
+import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 

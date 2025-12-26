@@ -1,7 +1,7 @@
 import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@zakazi-termin/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import { prisma } from "@salonko/prisma";
+import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { Calendar, Clock, Users } from "lucide-react";
 
 export default async function DashboardPage() {
