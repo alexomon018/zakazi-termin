@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { logger } from "@zakazi-termin/config";
 import { type BookingEmailData, emailService } from "@zakazi-termin/emails";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -294,7 +295,7 @@ export const bookingRouter = router({
         const emailData = buildEmailData(booking);
         await emailService.sendNewBookingEmails(emailData, status === "PENDING");
       } catch (error) {
-        console.error("Failed to send booking emails:", error);
+        logger.error("Failed to send booking emails", { error, bookingUid: booking.uid });
         // Don't throw - booking was created successfully
       }
 
@@ -330,7 +331,7 @@ export const bookingRouter = router({
         const emailData = buildEmailData(booking);
         await emailService.sendBookingConfirmed(emailData);
       } catch (error) {
-        console.error("Failed to send confirmation email:", error);
+        logger.error("Failed to send confirmation email", { error, bookingUid: booking.uid });
       }
 
       return booking;
@@ -371,7 +372,7 @@ export const bookingRouter = router({
         const emailData = buildEmailData(booking);
         await emailService.sendBookingRejected(emailData);
       } catch (error) {
-        console.error("Failed to send rejection email:", error);
+        logger.error("Failed to send rejection email", { error, bookingUid: booking.uid });
       }
 
       return booking;
@@ -409,7 +410,7 @@ export const bookingRouter = router({
         const emailData = buildEmailData(booking);
         await emailService.sendBookingCancellationEmails(emailData);
       } catch (error) {
-        console.error("Failed to send cancellation emails:", error);
+        logger.error("Failed to send cancellation emails", { error, bookingUid: booking.uid });
       }
 
       return booking;
@@ -500,7 +501,7 @@ export const bookingRouter = router({
         const emailData = buildEmailData(updatedBooking, originalStartTime);
         await emailService.sendBookingRescheduleEmails(emailData);
       } catch (error) {
-        console.error("Failed to send reschedule emails:", error);
+        logger.error("Failed to send reschedule emails", { error, bookingUid: updatedBooking.uid });
       }
 
       return updatedBooking;

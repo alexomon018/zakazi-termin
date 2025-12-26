@@ -1,4 +1,5 @@
 import { type calendar_v3, calendar as googleCalendar } from "@googleapis/calendar";
+import { logger } from "@zakazi-termin/config";
 import { OAuth2Client } from "googleapis-common";
 import { z } from "zod";
 
@@ -78,7 +79,10 @@ export class GoogleCalendarService {
         this.oAuth2Client.setCredentials(credentials);
         return newKey;
       } catch (error) {
-        console.error("Failed to refresh Google Calendar token:", error);
+        logger.error("Failed to refresh Google Calendar token", {
+          error,
+          credentialId: this.credential.id,
+        });
         return null;
       }
     }
@@ -135,7 +139,10 @@ export class GoogleCalendarService {
 
       return busyTimes;
     } catch (error) {
-      console.error("Error fetching Google Calendar availability:", error);
+      logger.error("Error fetching Google Calendar availability", {
+        error,
+        credentialId: this.credential.id,
+      });
       throw error;
     }
   }
@@ -205,7 +212,7 @@ export class GoogleCalendarService {
         email: cal.id ?? "",
       }));
     } catch (error) {
-      console.error("Error listing Google Calendars:", error);
+      logger.error("Error listing Google Calendars", { error, credentialId: this.credential.id });
       throw error;
     }
   }
@@ -225,7 +232,7 @@ export class GoogleCalendarService {
         timeZone: response.data.timeZone || "UTC",
       };
     } catch (error) {
-      console.error("Error getting primary calendar:", error);
+      logger.error("Error getting primary calendar", { error, credentialId: this.credential.id });
       return null;
     }
   }
@@ -261,7 +268,10 @@ export class GoogleCalendarService {
         htmlLink: response.data.htmlLink || "",
       };
     } catch (error) {
-      console.error("Error creating Google Calendar event:", error);
+      logger.error("Error creating Google Calendar event", {
+        error,
+        credentialId: this.credential.id,
+      });
       throw error;
     }
   }
@@ -282,7 +292,11 @@ export class GoogleCalendarService {
       // Ignore 404/410 errors (event already deleted)
       const err = error as { code?: number };
       if (err.code === 404 || err.code === 410) return;
-      console.error("Error deleting Google Calendar event:", error);
+      logger.error("Error deleting Google Calendar event", {
+        error,
+        eventId,
+        credentialId: this.credential.id,
+      });
       throw error;
     }
   }

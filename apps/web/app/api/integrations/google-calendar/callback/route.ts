@@ -4,6 +4,7 @@ import {
   type GoogleCredential,
   exchangeCodeForTokens,
 } from "@zakazi-termin/calendar";
+import { logger } from "@zakazi-termin/config";
 import { prisma } from "@zakazi-termin/prisma";
 import { NextResponse } from "next/server";
 
@@ -125,7 +126,7 @@ export async function GET(request: Request) {
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
   } catch (err) {
-    console.error("Google Calendar OAuth error:", err);
+    logger.error("Google Calendar OAuth error", { error: err, userId: session.user.id });
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
   }
 }

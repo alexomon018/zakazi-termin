@@ -1,3 +1,4 @@
+import { logger } from "@zakazi-termin/config";
 import { createElement } from "react";
 import { Resend } from "resend";
 import { BookingCancelledEmail } from "./templates/booking-cancelled";
@@ -7,6 +8,7 @@ import { BookingPendingEmail } from "./templates/booking-pending";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 import type { BookingEmailData } from "./types";
 
@@ -42,14 +44,14 @@ class EmailService {
       });
 
       if (error) {
-        console.error("Failed to send email:", error);
+        logger.error("Failed to send email", { error, to: options.to, subject: options.subject });
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      console.error("Email service error:", errorMessage);
+      logger.error("Email service error", { error: err, to: options.to, subject: options.subject });
       return { success: false, error: errorMessage };
     }
   }
@@ -174,6 +176,15 @@ class EmailService {
       to: data.userEmail,
       subject: "Dobrodošli na Zakazi Termin!",
       react: createElement(WelcomeEmail, data),
+    });
+  }
+
+  // Send password reset email
+  async sendPasswordResetEmail(data: PasswordResetEmailProps): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Resetujte vašu lozinku - Zakazi Termin",
+      react: createElement(PasswordResetEmail, data),
     });
   }
 }
