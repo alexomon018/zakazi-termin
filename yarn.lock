@@ -3185,6 +3185,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@zakazi-termin/config@workspace:packages/config"
   dependencies:
+    "@sentry/nextjs": "npm:^10"
     dayjs: "npm:^1.11.13"
   languageName: unknown
   linkType: soft
