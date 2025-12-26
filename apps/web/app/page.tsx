@@ -8,7 +8,7 @@ import {
   PricingSection,
   ProcessSection,
   SocialProofBar,
-} from "@zakazi-termin/ui";
+} from "@salonko/ui";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
@@ -21,7 +21,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       <LandingHeader />
-      <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Zakaži Termin Dashboard" />
+      <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Salonko Dashboard" />
       <SocialProofBar />
       <FeaturesSection />
       <ProcessSection />

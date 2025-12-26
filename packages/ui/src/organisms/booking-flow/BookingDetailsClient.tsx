@@ -1,8 +1,8 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { Button, Card, CardContent } from "@zakazi-termin/ui";
+import type { RouterOutputs } from "@salonko/trpc";
+import { Button, Card, CardContent } from "@salonko/ui";
 import {
   AlertCircle,
   ArrowLeft,
@@ -319,7 +319,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
         <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
           Pokreće{" "}
           <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
-            Zakazi Termin
+            Salonko
           </Link>
         </div>
       </div>

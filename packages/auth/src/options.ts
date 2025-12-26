@@ -1,10 +1,10 @@
-import { logger } from "@zakazi-termin/config";
-import { emailService } from "@zakazi-termin/emails";
-import { prisma } from "@zakazi-termin/prisma";
+import { logger } from "@salonko/config";
+import { emailService } from "@salonko/emails";
+import { prisma } from "@salonko/prisma";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { ZakaziTerminAdapter } from "./adapter";
+import { SalonkoAdapter } from "./adapter";
 import { ErrorCode } from "./error-codes";
 import { verifyPassword } from "./password";
 
@@ -44,7 +44,7 @@ declare module "next-auth/jwt" {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: ZakaziTerminAdapter(prisma),
+  adapter: SalonkoAdapter(prisma),
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days

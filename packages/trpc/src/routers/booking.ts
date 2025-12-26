@@ -1,6 +1,6 @@
+import { logger } from "@salonko/config";
+import { type BookingEmailData, emailService } from "@salonko/emails";
 import { TRPCError } from "@trpc/server";
-import { logger } from "@zakazi-termin/config";
-import { type BookingEmailData, emailService } from "@zakazi-termin/emails";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 

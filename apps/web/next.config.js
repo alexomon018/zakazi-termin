@@ -7,12 +7,12 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: [
-    "@zakazi-termin/auth",
-    "@zakazi-termin/prisma",
-    "@zakazi-termin/ui",
-    "@zakazi-termin/trpc",
-    "@zakazi-termin/scheduling",
-    "@zakazi-termin/config",
+    "@salonko/auth",
+    "@salonko/prisma",
+    "@salonko/ui",
+    "@salonko/trpc",
+    "@salonko/scheduling",
+    "@salonko/config",
   ],
   async headers() {
     return [

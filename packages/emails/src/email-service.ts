@@ -1,4 +1,4 @@
-import { logger } from "@zakazi-termin/config";
+import { logger } from "@salonko/config";
 import { createElement } from "react";
 import { Resend } from "resend";
 import { BookingCancelledEmail } from "./templates/booking-cancelled";
@@ -20,7 +20,7 @@ export interface SendEmailOptions {
 
 class EmailService {
   private resend: Resend | null = null;
-  private fromEmail = "Zakazi Termin <noreply@zakazi-termin.rs>";
+  private fromEmail = "Salonko <noreply@salonko.rs>";
 
   private getResend(): Resend {
     if (!this.resend) {
@@ -174,7 +174,7 @@ class EmailService {
   async sendWelcomeEmail(data: WelcomeEmailProps): Promise<void> {
     await this.send({
       to: data.userEmail,
-      subject: "Dobrodošli na Zakazi Termin!",
+      subject: "Dobrodošli na Salonko!",
       react: createElement(WelcomeEmail, data),
     });
   }
@@ -183,7 +183,7 @@ class EmailService {
   async sendPasswordResetEmail(data: PasswordResetEmailProps): Promise<void> {
     await this.send({
       to: data.userEmail,
-      subject: "Resetujte vašu lozinku - Zakazi Termin",
+      subject: "Resetujte vašu lozinku - Salonko",
       react: createElement(PasswordResetEmail, data),
     });
   }

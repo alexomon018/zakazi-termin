@@ -1,5 +1,5 @@
 import { createPublicServerCaller } from "@/lib/trpc/server";
-import { UserNotFound, UserProfileClient } from "@zakazi-termin/ui";
+import { UserNotFound, UserProfileClient } from "@salonko/ui";
 
 type Props = {
   params: Promise<{ username: string }>;

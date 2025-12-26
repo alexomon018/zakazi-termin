@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@zakazi-termin/ui/utils";
+import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";

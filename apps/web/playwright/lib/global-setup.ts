@@ -17,7 +17,7 @@ async function globalSetup() {
       console.log(`📦 Checking database connection (attempt ${retries + 1}/${maxRetries})...`);
 
       // Run Prisma db push to sync schema with test database
-      execSync("yarn workspace @zakazi-termin/prisma db:push --skip-generate", {
+      execSync("yarn workspace @salonko/prisma db:push --skip-generate", {
         stdio: "inherit",
         env: {
           ...process.env,

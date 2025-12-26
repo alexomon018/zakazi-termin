@@ -1,5 +1,5 @@
 {
-  "name": "@zakazi-termin/config",
+  "name": "@salonko/config",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",

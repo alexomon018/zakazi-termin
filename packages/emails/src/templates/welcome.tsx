@@ -17,13 +17,13 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
 
   return (
     <BaseEmail
-      preview="Dobrodošli na Zakazi Termin - Vaš nalog je kreiran!"
-      heading="Dobrodošli na Zakazi Termin!"
+      preview="Dobrodošli na Salonko - Vaš nalog je kreiran!"
+      heading="Dobrodošli na Salonko!"
     >
       <Text style={text}>Poštovani/a {userName},</Text>
       <Text style={text}>
-        Hvala Vam što ste se registrovali na Zakazi Termin! Vaš nalog je uspešno kreiran i spremni
-        ste da počnete sa zakazivanjem termina.
+        Hvala Vam što ste se registrovali na Salonko! Vaš nalog je uspešno kreiran i spremni ste da
+        počnete sa zakazivanjem termina.
       </Text>
 
       <Section style={infoBox}>
@@ -77,7 +77,7 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
       <Text style={text}>
         Srdačan pozdrav,
         <br />
-        Tim Zakazi Termin
+        Tim Salonko
       </Text>
     </BaseEmail>
   );

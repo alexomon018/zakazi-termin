@@ -2,9 +2,9 @@
 
 import { useTheme } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc/client";
-import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Label } from "@zakazi-termin/ui";
-import { cn } from "@zakazi-termin/ui";
+import type { RouterOutputs } from "@salonko/trpc";
+import { Button, Card, CardContent, CardHeader, CardTitle, Label } from "@salonko/ui";
+import { cn } from "@salonko/ui";
 import { AlertCircle, Check, Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 

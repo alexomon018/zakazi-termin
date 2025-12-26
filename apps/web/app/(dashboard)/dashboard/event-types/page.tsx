@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { EventTypesClient } from "@zakazi-termin/ui";
+import { EventTypesClient } from "@salonko/ui";
 
 export default async function EventTypesPage() {
   const caller = await createServerCaller();

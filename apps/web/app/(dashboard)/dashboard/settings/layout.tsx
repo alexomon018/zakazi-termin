@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@zakazi-termin/ui";
+import { cn } from "@salonko/ui";
 import { Calendar, CalendarOff, Palette, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

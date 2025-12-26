@@ -2,8 +2,8 @@ import {
   GoogleCalendarService,
   type GoogleCredential,
   googleCredentialSchema,
-} from "@zakazi-termin/calendar";
-import { logger } from "@zakazi-termin/config";
+} from "@salonko/calendar";
+import { logger } from "@salonko/config";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 

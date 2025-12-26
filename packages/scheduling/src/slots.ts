@@ -1,4 +1,4 @@
-import { type Dayjs, dayjs } from "@zakazi-termin/config";
+import { type Dayjs, dayjs } from "@salonko/config";
 import type { DateRange } from "./date-ranges";
 
 export type GetSlotsInput = {

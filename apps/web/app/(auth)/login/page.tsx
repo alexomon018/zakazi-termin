@@ -1,8 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ErrorCode, errorMessages } from "@zakazi-termin/auth";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import { type ErrorCode, errorMessages } from "@salonko/auth";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -23,9 +23,7 @@ function LoginSkeleton() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-          Zakazi Termin
-        </CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Salonko</CardTitle>
         <p className="mt-2 text-gray-600 dark:text-gray-400">Prijavite se na vaš nalog</p>
       </CardHeader>
       <CardContent>
@@ -90,7 +88,7 @@ function LoginForm() {
           data-testid="login-title"
           className="text-2xl font-bold text-gray-900 dark:text-white"
         >
-          Zakazi Termin
+          Salonko
         </CardTitle>
         <p data-testid="login-subtitle" className="mt-2 text-gray-600 dark:text-gray-400">
           Prijavite se na vaš nalog

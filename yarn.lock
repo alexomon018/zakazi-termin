@@ -2590,6 +2590,172 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@salonko/auth@workspace:*, @salonko/auth@workspace:packages/auth":
+  version: 0.0.0-use.local
+  resolution: "@salonko/auth@workspace:packages/auth"
+  dependencies:
+    "@salonko/config": "workspace:*"
+    "@salonko/prisma": "workspace:*"
+    "@types/bcryptjs": "npm:^2.4.6"
+    bcryptjs: "npm:^2.4.3"
+    next-auth: "npm:^4.24.10"
+    typescript: "npm:^5.7.2"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/calendar@workspace:*, @salonko/calendar@workspace:packages/calendar":
+  version: 0.0.0-use.local
+  resolution: "@salonko/calendar@workspace:packages/calendar"
+  dependencies:
+    "@googleapis/calendar": "npm:^9.7.9"
+    "@salonko/config": "workspace:*"
+    "@salonko/prisma": "workspace:*"
+    googleapis-common: "npm:^7.2.0"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/config@workspace:*, @salonko/config@workspace:packages/config":
+  version: 0.0.0-use.local
+  resolution: "@salonko/config@workspace:packages/config"
+  dependencies:
+    "@sentry/nextjs": "npm:^10"
+    dayjs: "npm:^1.11.13"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/emails@workspace:*, @salonko/emails@workspace:packages/emails":
+  version: 0.0.0-use.local
+  resolution: "@salonko/emails@workspace:packages/emails"
+  dependencies:
+    "@react-email/components": "npm:0.5.5"
+    "@react-email/preview-server": "npm:5.0.8"
+    "@salonko/config": "workspace:*"
+    "@types/react": "npm:^ 19.1.0"
+    "@types/react-dom": "npm:^19.1.0"
+    react: "npm:^ 19.1.0"
+    react-dom: "npm:^19.1.0"
+    react-email: "npm:5.0.8"
+    resend: "npm:^4.0.0"
+    typescript: "npm:^5.0.0"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/prisma@workspace:*, @salonko/prisma@workspace:packages/prisma":
+  version: 0.0.0-use.local
+  resolution: "@salonko/prisma@workspace:packages/prisma"
+  dependencies:
+    "@prisma/client": "npm:^5.22.0"
+    prisma: "npm:^5.22.0"
+    tsx: "npm:^4.19.0"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/scheduling@workspace:*, @salonko/scheduling@workspace:packages/scheduling":
+  version: 0.0.0-use.local
+  resolution: "@salonko/scheduling@workspace:packages/scheduling"
+  dependencies:
+    "@salonko/config": "workspace:*"
+    "@salonko/prisma": "workspace:*"
+    dayjs: "npm:^1.11.13"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/trpc@workspace:*, @salonko/trpc@workspace:packages/trpc":
+  version: 0.0.0-use.local
+  resolution: "@salonko/trpc@workspace:packages/trpc"
+  dependencies:
+    "@salonko/calendar": "workspace:*"
+    "@salonko/config": "workspace:*"
+    "@salonko/emails": "workspace:*"
+    "@salonko/prisma": "workspace:*"
+    "@salonko/scheduling": "workspace:*"
+    "@trpc/server": "npm:^11.0.0-rc.660"
+    superjson: "npm:^2.2.1"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
+"@salonko/ui@workspace:*, @salonko/ui@workspace:packages/ui":
+  version: 0.0.0-use.local
+  resolution: "@salonko/ui@workspace:packages/ui"
+  dependencies:
+    "@hookform/resolvers": "npm:^5.2.2"
+    "@radix-ui/react-dialog": "npm:^1.1.15"
+    "@radix-ui/react-label": "npm:^2.1.8"
+    "@radix-ui/react-slot": "npm:^1.2.4"
+    "@types/react": "npm:^19.0.1"
+    "@types/react-dom": "npm:^19.0.1"
+    class-variance-authority: "npm:^0.7.1"
+    clsx: "npm:^2.1.1"
+    framer-motion: "npm:^12.23.26"
+    ics: "npm:^3.8.1"
+    lucide-react: "npm:^0.562.0"
+    react-hook-form: "npm:^7.68.0"
+    tailwind-merge: "npm:^2.5.5"
+    typescript: "npm:^5.7.2"
+    zod: "npm:^3.23.8"
+    zustand: "npm:^5.0.9"
+  peerDependencies:
+    react: ^19.0.0
+    react-dom: ^19.0.0
+  languageName: unknown
+  linkType: soft
+
+"@salonko/web@workspace:apps/web":
+  version: 0.0.0-use.local
+  resolution: "@salonko/web@workspace:apps/web"
+  dependencies:
+    "@hookform/resolvers": "npm:^5.2.2"
+    "@playwright/test": "npm:^1.57.0"
+    "@radix-ui/react-dialog": "npm:^1.1.15"
+    "@radix-ui/react-label": "npm:^2.1.8"
+    "@radix-ui/react-slot": "npm:^1.2.4"
+    "@salonko/auth": "workspace:*"
+    "@salonko/calendar": "workspace:*"
+    "@salonko/config": "workspace:*"
+    "@salonko/prisma": "workspace:*"
+    "@salonko/scheduling": "workspace:*"
+    "@salonko/trpc": "workspace:*"
+    "@salonko/ui": "workspace:*"
+    "@sentry/nextjs": "npm:^10"
+    "@tanstack/react-query": "npm:^5.62.0"
+    "@trpc/client": "npm:^11.0.0-rc.660"
+    "@trpc/react-query": "npm:^11.0.0-rc.660"
+    "@trpc/server": "npm:^11.0.0-rc.660"
+    "@types/bcryptjs": "npm:^2.4.6"
+    "@types/node": "npm:^22.10.1"
+    "@types/react": "npm:^19.0.1"
+    "@types/react-dom": "npm:^19.0.1"
+    "@vercel/analytics": "npm:^1.6.1"
+    autoprefixer: "npm:^10.4.20"
+    bcryptjs: "npm:^2.4.3"
+    class-variance-authority: "npm:^0.7.1"
+    clsx: "npm:^2.1.1"
+    dayjs: "npm:^1.11.13"
+    dotenv: "npm:^17.2.3"
+    i18next: "npm:^24.0.5"
+    lucide-react: "npm:^0.562.0"
+    next: "npm:15.1.11"
+    next-auth: "npm:^4.24.10"
+    next-i18next: "npm:^15.3.1"
+    next-themes: "npm:^0.4.6"
+    postcss: "npm:^8.4.49"
+    react: "npm:^19.0.0"
+    react-dom: "npm:^19.0.0"
+    react-hook-form: "npm:^7.68.0"
+    react-i18next: "npm:^15.1.3"
+    server-only: "npm:^0.0.1"
+    superjson: "npm:^2.2.1"
+    tailwind-merge: "npm:^3.4.0"
+    tailwindcss: "npm:^3.4.16"
+    tailwindcss-animate: "npm:^1.0.7"
+    typescript: "npm:^5.7.2"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
 "@selderee/plugin-htmlparser2@npm:^0.11.0":
   version: 0.11.0
   resolution: "@selderee/plugin-htmlparser2@npm:0.11.0"
@@ -3154,172 +3320,6 @@ __metadata:
   checksum: 10c0/df39ec419299b43350ad80a06fe835502f22f71c32d21d58855ac39ef352d3478b8922e44375dbc5b0c02ceae04a9d23b32579eb517a602656f6460c90f5802a
   languageName: node
   linkType: hard
-
-"@zakazi-termin/auth@workspace:*, @zakazi-termin/auth@workspace:packages/auth":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/auth@workspace:packages/auth"
-  dependencies:
-    "@types/bcryptjs": "npm:^2.4.6"
-    "@zakazi-termin/config": "workspace:*"
-    "@zakazi-termin/prisma": "workspace:*"
-    bcryptjs: "npm:^2.4.3"
-    next-auth: "npm:^4.24.10"
-    typescript: "npm:^5.7.2"
-    zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/calendar@workspace:*, @zakazi-termin/calendar@workspace:packages/calendar":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/calendar@workspace:packages/calendar"
-  dependencies:
-    "@googleapis/calendar": "npm:^9.7.9"
-    "@zakazi-termin/config": "workspace:*"
-    "@zakazi-termin/prisma": "workspace:*"
-    googleapis-common: "npm:^7.2.0"
-    zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/config@workspace:*, @zakazi-termin/config@workspace:packages/config":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/config@workspace:packages/config"
-  dependencies:
-    "@sentry/nextjs": "npm:^10"
-    dayjs: "npm:^1.11.13"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/emails@workspace:*, @zakazi-termin/emails@workspace:packages/emails":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/emails@workspace:packages/emails"
-  dependencies:
-    "@react-email/components": "npm:0.5.5"
-    "@react-email/preview-server": "npm:5.0.8"
-    "@types/react": "npm:^ 19.1.0"
-    "@types/react-dom": "npm:^19.1.0"
-    "@zakazi-termin/config": "workspace:*"
-    react: "npm:^ 19.1.0"
-    react-dom: "npm:^19.1.0"
-    react-email: "npm:5.0.8"
-    resend: "npm:^4.0.0"
-    typescript: "npm:^5.0.0"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/prisma@workspace:*, @zakazi-termin/prisma@workspace:packages/prisma":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/prisma@workspace:packages/prisma"
-  dependencies:
-    "@prisma/client": "npm:^5.22.0"
-    prisma: "npm:^5.22.0"
-    tsx: "npm:^4.19.0"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/scheduling@workspace:*, @zakazi-termin/scheduling@workspace:packages/scheduling":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/scheduling@workspace:packages/scheduling"
-  dependencies:
-    "@zakazi-termin/config": "workspace:*"
-    "@zakazi-termin/prisma": "workspace:*"
-    dayjs: "npm:^1.11.13"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/trpc@workspace:*, @zakazi-termin/trpc@workspace:packages/trpc":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/trpc@workspace:packages/trpc"
-  dependencies:
-    "@trpc/server": "npm:^11.0.0-rc.660"
-    "@zakazi-termin/calendar": "workspace:*"
-    "@zakazi-termin/config": "workspace:*"
-    "@zakazi-termin/emails": "workspace:*"
-    "@zakazi-termin/prisma": "workspace:*"
-    "@zakazi-termin/scheduling": "workspace:*"
-    superjson: "npm:^2.2.1"
-    zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/ui@workspace:*, @zakazi-termin/ui@workspace:packages/ui":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/ui@workspace:packages/ui"
-  dependencies:
-    "@hookform/resolvers": "npm:^5.2.2"
-    "@radix-ui/react-dialog": "npm:^1.1.15"
-    "@radix-ui/react-label": "npm:^2.1.8"
-    "@radix-ui/react-slot": "npm:^1.2.4"
-    "@types/react": "npm:^19.0.1"
-    "@types/react-dom": "npm:^19.0.1"
-    class-variance-authority: "npm:^0.7.1"
-    clsx: "npm:^2.1.1"
-    framer-motion: "npm:^12.23.26"
-    ics: "npm:^3.8.1"
-    lucide-react: "npm:^0.562.0"
-    react-hook-form: "npm:^7.68.0"
-    tailwind-merge: "npm:^2.5.5"
-    typescript: "npm:^5.7.2"
-    zod: "npm:^3.23.8"
-    zustand: "npm:^5.0.9"
-  peerDependencies:
-    react: ^19.0.0
-    react-dom: ^19.0.0
-  languageName: unknown
-  linkType: soft
-
-"@zakazi-termin/web@workspace:apps/web":
-  version: 0.0.0-use.local
-  resolution: "@zakazi-termin/web@workspace:apps/web"
-  dependencies:
-    "@hookform/resolvers": "npm:^5.2.2"
-    "@playwright/test": "npm:^1.57.0"
-    "@radix-ui/react-dialog": "npm:^1.1.15"
-    "@radix-ui/react-label": "npm:^2.1.8"
-    "@radix-ui/react-slot": "npm:^1.2.4"
-    "@sentry/nextjs": "npm:^10"
-    "@tanstack/react-query": "npm:^5.62.0"
-    "@trpc/client": "npm:^11.0.0-rc.660"
-    "@trpc/react-query": "npm:^11.0.0-rc.660"
-    "@trpc/server": "npm:^11.0.0-rc.660"
-    "@types/bcryptjs": "npm:^2.4.6"
-    "@types/node": "npm:^22.10.1"
-    "@types/react": "npm:^19.0.1"
-    "@types/react-dom": "npm:^19.0.1"
-    "@vercel/analytics": "npm:^1.6.1"
-    "@zakazi-termin/auth": "workspace:*"
-    "@zakazi-termin/calendar": "workspace:*"
-    "@zakazi-termin/config": "workspace:*"
-    "@zakazi-termin/prisma": "workspace:*"
-    "@zakazi-termin/scheduling": "workspace:*"
-    "@zakazi-termin/trpc": "workspace:*"
-    "@zakazi-termin/ui": "workspace:*"
-    autoprefixer: "npm:^10.4.20"
-    bcryptjs: "npm:^2.4.3"
-    class-variance-authority: "npm:^0.7.1"
-    clsx: "npm:^2.1.1"
-    dayjs: "npm:^1.11.13"
-    dotenv: "npm:^17.2.3"
-    i18next: "npm:^24.0.5"
-    lucide-react: "npm:^0.562.0"
-    next: "npm:15.1.11"
-    next-auth: "npm:^4.24.10"
-    next-i18next: "npm:^15.3.1"
-    next-themes: "npm:^0.4.6"
-    postcss: "npm:^8.4.49"
-    react: "npm:^19.0.0"
-    react-dom: "npm:^19.0.0"
-    react-hook-form: "npm:^7.68.0"
-    react-i18next: "npm:^15.1.3"
-    server-only: "npm:^0.0.1"
-    superjson: "npm:^2.2.1"
-    tailwind-merge: "npm:^3.4.0"
-    tailwindcss: "npm:^3.4.16"
-    tailwindcss-animate: "npm:^1.0.7"
-    typescript: "npm:^5.7.2"
-    zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
 
 "abbrev@npm:^4.0.0":
   version: 4.0.0
@@ -6721,6 +6721,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"salonko@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "salonko@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:^1.9.4"
+    turbo: "npm:^2.3.0"
+    typescript: "npm:^5.7.2"
+  languageName: unknown
+  linkType: soft
+
 "scheduler@npm:^0.27.0":
   version: 0.27.0
   resolution: "scheduler@npm:0.27.0"
@@ -7816,16 +7826,6 @@ __metadata:
   checksum: 10c0/76b8c7fc2ba467a346935d027a25c067f9653bb0413cd60fbe0518e3d62637a56dbfca49979c4bab1a93d8e9a50843ca73d90bdc271e2f5bce1effa7734e5f28
   languageName: node
   linkType: hard
-
-"zakazi-termin@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "zakazi-termin@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:^1.9.4"
-    turbo: "npm:^2.3.0"
-    typescript: "npm:^5.7.2"
-  languageName: unknown
-  linkType: soft
 
 "zod@npm:^3.23.8":
   version: 3.25.76

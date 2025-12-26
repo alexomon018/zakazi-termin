@@ -1,4 +1,4 @@
-export const APP_NAME = "Zakazi Termin";
+export const APP_NAME = "Salonko";
 export const DEFAULT_TIMEZONE = "Europe/Belgrade";
 export const DEFAULT_LOCALE = "sr";
 export const DEFAULT_WEEK_START = "Monday";

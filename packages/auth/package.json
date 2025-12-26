@@ -1,5 +1,5 @@
 {
-  "name": "@zakazi-termin/auth",
+  "name": "@salonko/auth",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
@@ -10,8 +10,8 @@
     "./options": "./src/options.ts"
   },
   "dependencies": {
-    "@zakazi-termin/config": "workspace:*",
-    "@zakazi-termin/prisma": "workspace:*",
+    "@salonko/config": "workspace:*",
+    "@salonko/prisma": "workspace:*",
     "bcryptjs": "^2.4.3",
     "next-auth": "^4.24.10",
     "zod": "^3.23.8"

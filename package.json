@@ -1,5 +1,5 @@
 {
-  "name": "zakazi-termin",
+  "name": "salonko",
   "version": "0.1.0",
   "private": true,
   "packageManager": "yarn@4.12.0",
@@ -17,11 +17,11 @@
     "db:generate": "turbo run db:generate",
     "db:push": "turbo run db:push",
     "db:migrate": "turbo run db:migrate",
-    "db:studio": "yarn workspace @zakazi-termin/prisma db:studio",
+    "db:studio": "yarn workspace @salonko/prisma db:studio",
     "clean": "turbo run clean && rm -rf node_modules",
-    "test:e2e": "yarn workspace @zakazi-termin/web test:e2e",
-    "test:e2e:ui": "yarn workspace @zakazi-termin/web test:e2e:ui",
-    "test:e2e:ci": "yarn workspace @zakazi-termin/web test:e2e:ci",
+    "test:e2e": "yarn workspace @salonko/web test:e2e",
+    "test:e2e:ui": "yarn workspace @salonko/web test:e2e:ui",
+    "test:e2e:ci": "yarn workspace @salonko/web test:e2e:ci",
     "test:db:start": "docker compose -f docker-compose.test.yml up -d",
     "test:db:stop": "docker compose -f docker-compose.test.yml down"
   },
