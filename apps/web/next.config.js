@@ -6,6 +6,7 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: "standalone",
   transpilePackages: [
     "@salonko/auth",
     "@salonko/prisma",
