@@ -2742,6 +2742,7 @@ __metadata:
     next-i18next: "npm:^15.3.1"
     next-themes: "npm:^0.4.6"
     postcss: "npm:^8.4.49"
+    prisma: "npm:^5.22.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     react-hook-form: "npm:^7.68.0"
