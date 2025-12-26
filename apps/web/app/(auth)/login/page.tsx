@@ -26,15 +26,13 @@ function LoginSkeleton() {
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
           Zakazi Termin
         </CardTitle>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Prijavite se na vaš nalog
-        </p>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">Prijavite se na vaš nalog</p>
       </CardHeader>
       <CardContent>
         <div className="space-y-4 animate-pulse">
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
-          <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-10 bg-gray-200 rounded dark:bg-gray-700" />
+          <div className="h-10 bg-gray-200 rounded dark:bg-gray-700" />
+          <div className="h-10 bg-gray-200 rounded dark:bg-gray-700" />
         </div>
       </CardContent>
     </Card>
