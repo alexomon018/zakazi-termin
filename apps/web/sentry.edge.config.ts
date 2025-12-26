@@ -5,14 +5,19 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-// Determine environment: local, development, or production
+// Determine environment: local, preview, or production
 function getEnvironment(): string {
   // Allow override via SENTRY_ENVIRONMENT env var
   if (process.env.SENTRY_ENVIRONMENT) {
     return process.env.SENTRY_ENVIRONMENT;
   }
 
-  // Default based on NODE_ENV
+  // Use VERCEL_ENV if available (production, preview, or development)
+  if (process.env.VERCEL_ENV) {
+    return process.env.VERCEL_ENV;
+  }
+
+  // Default based on NODE_ENV for non-Vercel environments
   if (process.env.NODE_ENV === "production") {
     return "production";
   }
@@ -28,6 +33,8 @@ function getEnvironment(): string {
 const environment = getEnvironment();
 
 // Adjust sampling rates based on environment
+// Production: lower sampling to reduce costs
+// Preview/Development/Local: higher sampling for better debugging
 const tracesSampleRate = environment === "production" ? 0.1 : 1.0;
 
 Sentry.init({
