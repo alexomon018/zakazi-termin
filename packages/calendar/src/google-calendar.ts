@@ -1,5 +1,5 @@
 import { type calendar_v3, calendar as googleCalendar } from "@googleapis/calendar";
-import { logger } from "@zakazi-termin/config";
+import { logger } from "@salonko/config";
 import { OAuth2Client } from "googleapis-common";
 import { z } from "zod";
 

@@ -29,7 +29,7 @@ export function LandingFooter() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Calendar aria-hidden="true" className="w-6 h-6 text-primary" />
-              <span className="text-lg font-bold text-foreground">Zakaži Termin</span>
+              <span className="text-lg font-bold text-foreground">Salonko</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Moderna platforma za zakazivanje termina za frizerske, kozmetičke i beauty salone.
@@ -40,7 +40,7 @@ export function LandingFooter() {
           <FooterColumn title="Pravno" links={legalLinks} />
         </div>
         <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © 2025 Zakaži Termin. Sva prava zadržana.
+          © 2025 Salonko. Sva prava zadržana.
         </div>
       </div>
     </footer>

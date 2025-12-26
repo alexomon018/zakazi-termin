@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@zakazi-termin/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import Link from "next/link";
 import { useState } from "react";
 

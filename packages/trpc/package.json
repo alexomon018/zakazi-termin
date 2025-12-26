@@ -1,16 +1,16 @@
 {
-  "name": "@zakazi-termin/trpc",
+  "name": "@salonko/trpc",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "@salonko/calendar": "workspace:*",
+    "@salonko/config": "workspace:*",
+    "@salonko/emails": "workspace:*",
+    "@salonko/prisma": "workspace:*",
+    "@salonko/scheduling": "workspace:*",
     "@trpc/server": "^11.0.0-rc.660",
-    "@zakazi-termin/calendar": "workspace:*",
-    "@zakazi-termin/config": "workspace:*",
-    "@zakazi-termin/emails": "workspace:*",
-    "@zakazi-termin/prisma": "workspace:*",
-    "@zakazi-termin/scheduling": "workspace:*",
     "superjson": "^2.2.1",
     "zod": "^3.23.8"
   }

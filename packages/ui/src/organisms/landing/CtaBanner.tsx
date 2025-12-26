@@ -19,7 +19,7 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
         </h2>
         <p className="text-lg sm:text-xl mb-8 text-primary-foreground/90 text-pretty">
           Pridružite se stotinama zadovoljnih vlasnika salona koji štede vreme i povećavaju prihode
-          sa Zakaži Termin platformom.
+          sa Salonko platformom.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {onStartClick ? (

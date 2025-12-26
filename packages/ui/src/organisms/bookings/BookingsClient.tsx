@@ -14,11 +14,11 @@ import {
   TimeRangeDisplay,
   UserAvatar,
   UserInfoDisplay,
-} from "@zakazi-termin/ui";
+} from "@salonko/ui";
 import { Calendar, Check, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
-import type { RouterOutputs } from "@zakazi-termin/trpc";
+import type { RouterOutputs } from "@salonko/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
 type Booking = RouterOutputs["booking"]["list"][number];

@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Card, CardContent } from "@zakazi-termin/ui";
+import { Card, CardContent } from "@salonko/ui";
 import { m } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -341,7 +341,7 @@ export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps
           <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
             Pokreće{" "}
             <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
-              Zakazi Termin
+              Salonko
             </Link>
           </div>
         </div>

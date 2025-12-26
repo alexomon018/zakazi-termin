@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { ProfileClient } from "@zakazi-termin/ui";
+import { ProfileClient } from "@salonko/ui";
 
 export default async function ProfileSettingsPage() {
   const caller = await createServerCaller();

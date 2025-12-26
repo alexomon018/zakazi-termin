@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { AppearanceClient } from "@zakazi-termin/ui";
+import { AppearanceClient } from "@salonko/ui";
 
 export default async function AppearanceSettingsPage() {
   const caller = await createServerCaller();

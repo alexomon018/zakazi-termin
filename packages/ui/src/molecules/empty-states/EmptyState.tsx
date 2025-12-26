@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@zakazi-termin/ui";
+import { Card, CardContent } from "@salonko/ui";
 import type * as React from "react";
 
 interface EmptyStateProps {

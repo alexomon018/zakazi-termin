@@ -2,8 +2,8 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { RouterOutputs } from "@zakazi-termin/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import type { RouterOutputs } from "@salonko/trpc";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { AlertCircle, Check, ExternalLink, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -220,7 +220,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                       rel="noopener noreferrer"
                       className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
                     >
-                      zakazi-termin.rs/{user.username}
+                      salonko.rs/{user.username}
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </p>

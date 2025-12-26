@@ -1,4 +1,4 @@
-import { cn } from "@zakazi-termin/ui/utils";
+import { cn } from "@salonko/ui/utils";
 import { MapPin } from "lucide-react";
 import * as React from "react";
 

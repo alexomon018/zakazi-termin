@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@zakazi-termin/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { ArrowLeft, Calendar, Clock, MapPin, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

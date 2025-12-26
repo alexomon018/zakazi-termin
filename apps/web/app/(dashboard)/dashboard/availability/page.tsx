@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { AvailabilityClient } from "@zakazi-termin/ui";
+import { AvailabilityClient } from "@salonko/ui";
 
 export default async function AvailabilityPage() {
   const caller = await createServerCaller();

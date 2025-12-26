@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@zakazi-termin/ui";
+import { Card, CardContent } from "@salonko/ui";
 import { ArrowRight, Clock, MapPin, User } from "lucide-react";
 import Link from "next/link";
 
@@ -108,7 +108,7 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
         <div className="text-center mt-8 text-sm text-gray-500">
           Pokreće{" "}
           <Link href="/" className="text-blue-600 hover:underline">
-            Zakazi Termin
+            Salonko
           </Link>
         </div>
       </div>

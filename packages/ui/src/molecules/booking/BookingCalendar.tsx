@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@zakazi-termin/ui";
+import { Button } from "@salonko/ui";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";

@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@zakazi-termin/ui";
-import { NavItem } from "@zakazi-termin/ui";
-import { MobileNavItem } from "@zakazi-termin/ui";
-import { UserInfoDisplay } from "@zakazi-termin/ui";
+import { Button } from "@salonko/ui";
+import { NavItem } from "@salonko/ui";
+import { MobileNavItem } from "@salonko/ui";
+import { UserInfoDisplay } from "@salonko/ui";
 import { Calendar, Clock, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -57,7 +57,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center flex-shrink-0">
             <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
-              Zakazi Termin
+              Salonko
             </span>
           </Link>
 

@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/auth";
-import { DashboardNav } from "@zakazi-termin/ui";
+import { DashboardNav } from "@salonko/ui";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({

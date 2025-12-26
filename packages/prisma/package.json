@@ -1,5 +1,5 @@
 {
-  "name": "@zakazi-termin/prisma",
+  "name": "@salonko/prisma",
   "version": "0.1.0",
   "private": true,
   "main": "./src/index.ts",
