@@ -1,4 +1,5 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@zakazi-termin/calendar";
+import { logger } from "@zakazi-termin/config";
 import { getAvailability, getBookingBusyTimes } from "@zakazi-termin/scheduling";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -388,7 +389,10 @@ export const availabilityRouter = router({
               }))
             );
           } catch (error) {
-            console.error("Failed to get calendar busy times:", error);
+            logger.error("Failed to get calendar busy times", {
+              error,
+              credentialId: credential.id,
+            });
           }
         }
       }

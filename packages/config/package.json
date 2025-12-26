@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "@logtail/next": "^0.2.1",
     "dayjs": "^1.11.13"
   }
 }

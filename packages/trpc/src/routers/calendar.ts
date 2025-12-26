@@ -3,6 +3,7 @@ import {
   type GoogleCredential,
   googleCredentialSchema,
 } from "@zakazi-termin/calendar";
+import { logger } from "@zakazi-termin/config";
 import { z } from "zod";
 import { protectedProcedure, router } from "../trpc";
 
@@ -225,7 +226,10 @@ export const calendarRouter = router({
 
           allBusyTimes.push(...busyTimes);
         } catch (error) {
-          console.error(`Failed to get busy times from credential ${credential.id}:`, error);
+          logger.error("Failed to get busy times from credential", {
+            error,
+            credentialId: credential.id,
+          });
           // Mark credential as invalid
           await ctx.prisma.credential.update({
             where: { id: credential.id },

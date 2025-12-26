@@ -1,4 +1,6 @@
 import { randomBytes } from "node:crypto";
+import { logger } from "@zakazi-termin/config";
+import { emailService } from "@zakazi-termin/emails";
 import { prisma } from "@zakazi-termin/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -56,16 +58,24 @@ export async function POST(request: Request) {
       },
     });
 
-    // TODO: Send email with reset link
-    // For now, just log the token (remove in production)
-    console.log(`Password reset token for ${email}: ${token}`);
+    // Send password reset email
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const resetUrl = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`;
 
-    // In production, send email:
-    // await sendPasswordResetEmail(email, token);
+    try {
+      await emailService.sendPasswordResetEmail({
+        userName: user.name || "Korisnik",
+        userEmail: email.toLowerCase(),
+        resetUrl,
+      });
+    } catch (error) {
+      logger.error("Failed to send password reset email", { error, email: email.toLowerCase() });
+      // Don't expose email sending failures to prevent enumeration
+    }
 
     return NextResponse.json({ message: "OK" });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    logger.error("Forgot password error", { error });
     return NextResponse.json({ message: "Došlo je do greške" }, { status: 500 });
   }
 }

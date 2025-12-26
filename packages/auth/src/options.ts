@@ -1,3 +1,4 @@
+import { logger } from "@zakazi-termin/config";
 import { emailService } from "@zakazi-termin/emails";
 import { prisma } from "@zakazi-termin/prisma";
 import type { NextAuthOptions } from "next-auth";
@@ -100,7 +101,6 @@ export const authOptions: NextAuthOptions = {
           GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            allowDangerousEmailAccountLinking: true,
           }),
         ]
       : []),
@@ -217,7 +217,7 @@ export const authOptions: NextAuthOptions = {
             username: generatedUsername,
           });
         } catch (error) {
-          console.error("Failed to send welcome email:", error);
+          logger.error("Failed to send welcome email", { error, email });
           // Don't block sign-in if email fails
         }
 
@@ -237,11 +237,13 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
+const MAX_USERNAME_ATTEMPTS = 100;
+
 async function generateUniqueUsername(base: string): Promise<string> {
   const username = base.slice(0, 20);
   let counter = 0;
 
-  while (true) {
+  while (counter < MAX_USERNAME_ATTEMPTS) {
     const candidate = counter === 0 ? username : `${username}${counter}`;
     const existing = await prisma.user.findUnique({
       where: { username: candidate },
@@ -249,4 +251,8 @@ async function generateUniqueUsername(base: string): Promise<string> {
     if (!existing) return candidate;
     counter++;
   }
+
+  // Fallback: append random string if too many attempts
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  return `${username.slice(0, 14)}${randomSuffix}`;
 }

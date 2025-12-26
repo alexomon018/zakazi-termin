@@ -1,4 +1,5 @@
 import { hashPassword } from "@zakazi-termin/auth";
+import { logger } from "@zakazi-termin/config";
 import { emailService } from "@zakazi-termin/emails";
 import { prisma } from "@zakazi-termin/prisma";
 import { NextResponse } from "next/server";
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
         username: username.toLowerCase(),
       });
     } catch (error) {
-      console.error("Failed to send welcome email:", error);
+      logger.error("Failed to send welcome email", { error, email: email.toLowerCase() });
       // Don't block signup if email fails
     }
 
@@ -151,7 +152,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Signup error:", error);
+    logger.error("Signup error", { error });
     return NextResponse.json({ message: "Došlo je do greške pri registraciji" }, { status: 500 });
   }
 }

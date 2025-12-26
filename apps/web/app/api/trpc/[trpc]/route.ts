@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
+import { logger } from "@zakazi-termin/config";
 import { type Context, appRouter, createTRPCContext } from "@zakazi-termin/trpc";
 
 const handler = async (req: Request) => {
@@ -29,7 +30,7 @@ const handler = async (req: Request) => {
       });
     },
     onError: ({ error, path }) => {
-      console.error(`tRPC Error on '${path}':`, error);
+      logger.error("tRPC error", { path, error, code: error.code });
     },
   });
 };

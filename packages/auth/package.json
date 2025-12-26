@@ -10,6 +10,7 @@
     "./options": "./src/options.ts"
   },
   "dependencies": {
+    "@zakazi-termin/config": "workspace:*",
     "@zakazi-termin/prisma": "workspace:*",
     "bcryptjs": "^2.4.3",
     "next-auth": "^4.24.10",
