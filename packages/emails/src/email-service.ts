@@ -22,9 +22,25 @@ class EmailService {
   private resend: Resend | null = null;
   private fromEmail = "Salonko <noreply@salonko.rs>";
 
+  private isDevEnvironment(): boolean {
+    // Local development
+    if (process.env.NODE_ENV === "development") {
+      return true;
+    }
+    // Vercel preview deployments
+    if (process.env.VERCEL_ENV === "preview") {
+      return true;
+    }
+    return false;
+  }
+
   private getResend(): Resend {
     if (!this.resend) {
-      const apiKey = process.env.RESEND_API_KEY;
+      const isDev = this.isDevEnvironment();
+      const apiKey = isDev
+        ? process.env.RESEND_API_KEY_DEV || process.env.RESEND_API_KEY
+        : process.env.RESEND_API_KEY;
+
       if (!apiKey) {
         throw new Error("RESEND_API_KEY environment variable is not set");
       }
@@ -33,11 +49,19 @@ class EmailService {
     return this.resend;
   }
 
+  private getFromEmail(): string {
+    const isDev = this.isDevEnvironment();
+    if (isDev) {
+      return process.env.EMAIL_FROM_DEV || process.env.EMAIL_FROM || this.fromEmail;
+    }
+    return process.env.EMAIL_FROM || this.fromEmail;
+  }
+
   async send(options: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
     try {
       const resend = this.getResend();
       const { error } = await resend.emails.send({
-        from: process.env.EMAIL_FROM || this.fromEmail,
+        from: this.getFromEmail(),
         to: options.to,
         subject: options.subject,
         react: options.react,
