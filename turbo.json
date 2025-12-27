@@ -13,7 +13,9 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "RESEND_API_KEY",
+        "RESEND_API_KEY_DEV",
         "EMAIL_FROM",
+        "EMAIL_FROM_DEV",
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",
         "SENTRY_PROJECT"
@@ -29,7 +31,9 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "RESEND_API_KEY",
+        "RESEND_API_KEY_DEV",
         "EMAIL_FROM",
+        "EMAIL_FROM_DEV",
         "NEXT_PUBLIC_*"
       ]
     },

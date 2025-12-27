@@ -73,13 +73,20 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
     },
 
     async updateUser(data) {
+      // Get existing user to preserve fields that shouldn't be overwritten
+      const existingUser = await prisma.user.findUnique({
+        where: { id: parseIntSafe(data.id) },
+      });
+
       const user = await prisma.user.update({
         where: { id: parseIntSafe(data.id) },
         data: {
-          name: data.name,
+          // Only update name if user doesn't already have one
+          name: existingUser?.name || data.name,
           email: data.email,
           emailVerified: data.emailVerified,
-          avatarUrl: data.image,
+          // Only update avatar if user doesn't already have one
+          avatarUrl: existingUser?.avatarUrl || data.image,
         },
       });
       return toAdapterUser(user);
