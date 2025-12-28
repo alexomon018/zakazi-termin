@@ -6,8 +6,7 @@ export const metadata: Metadata = {
     "Kreirajte besplatan Salonko nalog i pocnite da primate online rezervacije za vas salon.",
   openGraph: {
     title: "Registracija | Salonko",
-    description:
-      "Kreirajte besplatan Salonko nalog i pocnite da primate online rezervacije.",
+    description: "Kreirajte besplatan Salonko nalog i pocnite da primate online rezervacije.",
     url: "https://salonko.rs/signup",
     type: "website",
   },
