@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 
 export const userRouter = router({
   // Get current user profile

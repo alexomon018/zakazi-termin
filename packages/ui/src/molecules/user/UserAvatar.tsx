@@ -1,5 +1,4 @@
 import { User } from "lucide-react";
-import * as React from "react";
 
 interface UserAvatarProps {
   name?: string;

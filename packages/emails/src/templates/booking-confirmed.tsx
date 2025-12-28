@@ -1,5 +1,4 @@
 import { Button, Link, Section, Text } from "@react-email/components";
-import * as React from "react";
 import type { BookingEmailData } from "../types";
 import { getAppUrl } from "../utils";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";

@@ -5,7 +5,7 @@ import {
 } from "@salonko/calendar";
 import { logger } from "@salonko/config";
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "@salonko/trpc/trpc";
 
 export const calendarRouter = router({
   // List connected calendars (credentials)

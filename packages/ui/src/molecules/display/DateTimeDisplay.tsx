@@ -1,5 +1,4 @@
 import { Calendar } from "lucide-react";
-import * as React from "react";
 
 interface DateTimeDisplayProps {
   date: Date;

@@ -3,7 +3,7 @@
 import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
+import { memo } from "react";
 
 interface MobileNavItemProps {
   href: string;
@@ -12,7 +12,7 @@ interface MobileNavItemProps {
   isActive: boolean;
 }
 
-export const MobileNavItem = React.memo(function MobileNavItem({
+export const MobileNavItem = memo(function MobileNavItem({
   href,
   label,
   icon: Icon,

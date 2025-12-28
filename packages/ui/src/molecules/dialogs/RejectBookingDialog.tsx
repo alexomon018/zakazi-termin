@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../../atoms/Button";
+import { Button } from "@salonko/ui/atoms/Button";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../atoms/Dialog";
-import { Input } from "../../atoms/Input";
-import { Label } from "../../atoms/Label";
+} from "@salonko/ui/atoms/Dialog";
+import { Input } from "@salonko/ui/atoms/Input";
+import { Label } from "@salonko/ui/atoms/Label";
 
 interface RejectBookingDialogProps {
   open: boolean;

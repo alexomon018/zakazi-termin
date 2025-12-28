@@ -3,7 +3,7 @@
 import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
+import { memo } from "react";
 
 interface NavItemProps {
   href: string;
@@ -12,7 +12,7 @@ interface NavItemProps {
   isActive: boolean;
 }
 
-export const NavItem = React.memo(function NavItem({
+export const NavItem = memo(function NavItem({
   href,
   label,
   icon: Icon,

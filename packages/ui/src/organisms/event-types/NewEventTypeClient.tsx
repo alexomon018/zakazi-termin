@@ -18,6 +18,7 @@ import {
 import { ArrowLeft, Calendar, Clock, MapPin, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 
 type LocationType = "inPerson" | "phone" | "link";
@@ -98,7 +99,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
     setFormData((prev) => ({ ...prev, slug }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setErrors({});
 

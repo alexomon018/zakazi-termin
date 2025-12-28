@@ -3,8 +3,8 @@
 import { Button } from "@salonko/ui";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import * as React from "react";
-import { createMonthTransition, scaleOnHover } from "../../organisms/booking-flow/animation-config";
+import { useMemo } from "react";
+import { createMonthTransition, scaleOnHover } from "@salonko/ui/organisms/booking-flow/animation-config";
 
 interface BookingCalendarProps {
   currentMonth: Date;
@@ -27,7 +27,7 @@ export function BookingCalendar({
   onNextMonth,
   monthDirection = "next",
 }: BookingCalendarProps) {
-  const calendarDays = React.useMemo(() => {
+  const calendarDays = useMemo(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const firstDay = new Date(year, month, 1);

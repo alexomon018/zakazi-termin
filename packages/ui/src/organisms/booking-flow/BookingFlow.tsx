@@ -6,15 +6,15 @@ import { m } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { BookingCalendar } from "../../molecules/booking/BookingCalendar";
-import { BookingConfirmation } from "../../molecules/booking/BookingConfirmation";
+import { BookingCalendar } from "@salonko/ui/molecules/booking/BookingCalendar";
+import { BookingConfirmation } from "@salonko/ui/molecules/booking/BookingConfirmation";
 import {
   BookingDetailsForm,
   type BookingDetailsFormData,
-} from "../../molecules/booking/BookingDetailsForm";
-import { BookingEventHeader } from "../../molecules/booking/BookingEventHeader";
-import { RescheduleBanner } from "../../molecules/booking/RescheduleBanner";
-import { TimeSlotsList } from "../../molecules/booking/TimeSlotsList";
+} from "@salonko/ui/molecules/booking/BookingDetailsForm";
+import { BookingEventHeader } from "@salonko/ui/molecules/booking/BookingEventHeader";
+import { RescheduleBanner } from "@salonko/ui/molecules/booking/RescheduleBanner";
+import { TimeSlotsList } from "@salonko/ui/molecules/booking/TimeSlotsList";
 import { FramerMotionProvider } from "./framer-features";
 import { useBookingResizeAnimation } from "./hooks/useBookingResizeAnimation";
 import { useBookingStore } from "./store";

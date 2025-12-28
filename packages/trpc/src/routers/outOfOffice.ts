@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, router } from "@salonko/trpc/trpc";
 
 export const outOfOfficeRouter = router({
   // List out of office entries for current user

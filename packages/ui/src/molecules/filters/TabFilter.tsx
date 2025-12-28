@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-
 interface TabFilterProps {
   label: string;
   isActive: boolean;

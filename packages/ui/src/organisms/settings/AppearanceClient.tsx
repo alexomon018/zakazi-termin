@@ -6,6 +6,7 @@ import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Label } from "@salonko/ui";
 import { cn } from "@salonko/ui";
 import { AlertCircle, Check, Monitor, Moon, Sun } from "lucide-react";
+import type { ElementType } from "react";
 import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | null;
@@ -300,7 +301,7 @@ function ThemeOption({
   selected,
   onClick,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   label: string;
   description: string;
   selected: boolean;
