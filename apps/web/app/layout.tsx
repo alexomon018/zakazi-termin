@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -7,8 +8,63 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
-  title: "Salonko",
-  description: "Zakazivanje termina - jednostavno i brzo",
+  title: {
+    default: "Salonko - Online zakazivanje termina za salone",
+    template: "%s | Salonko",
+  },
+  description:
+    "Salonko je moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7 - jednostavno i brzo.",
+  keywords: [
+    "zakazivanje termina",
+    "frizerski salon",
+    "kozmeticki salon",
+    "online rezervacija",
+    "salonko",
+    "beauty salon srbija",
+    "zakazivanje online",
+    "salon lepote",
+  ],
+  authors: [{ name: "Salonko" }],
+  creator: "Salonko",
+  metadataBase: new URL("https://salonko.rs"),
+  openGraph: {
+    type: "website",
+    locale: "sr_RS",
+    url: "https://salonko.rs",
+    siteName: "Salonko",
+    title: "Salonko - Online zakazivanje termina za salone",
+    description:
+      "Moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Salonko - Platforma za zakazivanje termina",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Salonko - Online zakazivanje termina za salone",
+    description:
+      "Moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://salonko.rs",
+  },
 };
 
 export default function RootLayout({
@@ -21,6 +77,7 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <Providers>{children}</Providers>
         <Analytics />
+        <GoogleAnalytics />
       </body>
     </html>
   );
