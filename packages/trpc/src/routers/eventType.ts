@@ -53,6 +53,9 @@ export const eventTypeRouter = router({
               username: true,
               avatarUrl: true,
               timeZone: true,
+              theme: true,
+              brandColor: true,
+              darkBrandColor: true,
             },
           },
           schedule: {

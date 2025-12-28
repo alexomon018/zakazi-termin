@@ -138,12 +138,12 @@ export function BookingCalendar({
                 whileTap={!isDisabled ? "tap" : "rest"}
                 className={`relative p-1.5 sm:p-2 md:p-3 text-sm sm:text-base rounded-lg transition-all min-h-[36px] sm:min-h-[44px] md:min-h-[56px] font-medium flex items-center justify-center ${
                   isSelected
-                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-1 sm:ring-offset-2"
+                    ? "bg-brand text-white dark:text-gray-900 shadow-md ring-2 ring-brand ring-offset-1 sm:ring-offset-2"
                     : isDisabled
                       ? "text-muted-foreground/40 cursor-not-allowed"
-                      : "text-foreground bg-secondary/50 hover:bg-primary/10 hover:shadow-sm"
+                      : "text-foreground bg-secondary/50 hover:bg-brand/10 hover:shadow-sm"
                 } ${hasSlots && !isPast ? "font-semibold" : ""} ${
-                  isToday && !isSelected ? "ring-2 ring-primary ring-offset-0" : ""
+                  isToday && !isSelected ? "ring-2 ring-brand ring-offset-0" : ""
                 }`}
               >
                 {date.getDate()}

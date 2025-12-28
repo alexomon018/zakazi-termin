@@ -51,7 +51,13 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
       <Text style={text}>Vaš termin je uspešno promenjen. U nastavku se nalaze novi detalji.</Text>
 
       {rescheduledFromDate && (
-        <Section style={{ ...infoBox, backgroundColor: "#fef2f2", textDecoration: "line-through" }}>
+        <Section
+          style={{
+            ...infoBox,
+            backgroundColor: "#fef2f2",
+            textDecoration: "line-through",
+          }}
+        >
           <Text style={{ ...infoRow, color: "#991b1b" }}>
             <span style={label}>Prethodni termin:</span>
           </Text>

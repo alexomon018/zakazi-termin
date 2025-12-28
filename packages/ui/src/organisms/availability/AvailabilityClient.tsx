@@ -179,17 +179,19 @@ export function AvailabilityClient({
             {/* Schedule list */}
             <div className="space-y-2">
               {schedules?.map((schedule: Schedule) => (
-                <button
-                  type="button"
+                <div
                   key={schedule.id}
                   className={`w-full flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedScheduleId === schedule.id
                       ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
                       : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
-                  onClick={() => handleSelectSchedule(schedule.id)}
                 >
-                  <div className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    className="flex gap-2 items-center flex-1 text-left"
+                    onClick={() => handleSelectSchedule(schedule.id)}
+                  >
                     <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <span className="font-medium text-gray-900 dark:text-white">
                       {schedule.name}
@@ -199,12 +201,11 @@ export function AvailabilityClient({
                         Podrazumevani
                       </span>
                     )}
-                  </div>
+                  </button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       if (confirm("Da li ste sigurni da želite da obrišete ovaj raspored?")) {
                         deleteSchedule.mutate({ id: schedule.id });
                       }
@@ -212,7 +213,7 @@ export function AvailabilityClient({
                   >
                     <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </Button>
-                </button>
+                </div>
               ))}
 
               {schedules?.length === 0 && (

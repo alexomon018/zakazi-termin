@@ -34,6 +34,9 @@ type EventType = {
     id: number;
     name: string | null;
     avatarUrl: string | null;
+    theme?: string | null;
+    brandColor?: string | null;
+    darkBrandColor?: string | null;
   } | null;
 };
 
@@ -266,9 +269,21 @@ export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps
     );
   }
 
+  // Get brand color based on current theme
+  const brandColor = eventType.user?.brandColor || "#292929";
+  const darkBrandColor = eventType.user?.darkBrandColor || "#fafafa";
+
   return (
     <FramerMotionProvider>
-      <div className="px-2 sm:px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div
+        className="px-2 sm:px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900"
+        style={
+          {
+            "--brand-color": brandColor,
+            "--brand-color-dark": darkBrandColor,
+          } as React.CSSProperties
+        }
+      >
         <div className="mx-auto max-w-6xl">
           {/* Reschedule banner */}
           {isRescheduling && existingBooking && (
