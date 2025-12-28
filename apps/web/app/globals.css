@@ -168,8 +168,8 @@
 }
 
 .dark .shadow-elevated {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 0 0 1px
+    rgba(255, 255, 255, 0.05);
 }
 
 .shadow-elevated-lg {
@@ -177,8 +177,8 @@
 }
 
 .dark .shadow-elevated-lg {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3),
-    0 0 20px hsl(var(--shadow-primary, 217.2 91.2% 59.8% / 0.1));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3), 0 0 20px
+    hsl(var(--shadow-primary, 217.2 91.2% 59.8% / 0.1));
 }
 
 .shadow-glow {

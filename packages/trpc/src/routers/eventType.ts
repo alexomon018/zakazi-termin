@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import { z } from "zod";
 
 export const eventTypeRouter = router({
   // List user's event types

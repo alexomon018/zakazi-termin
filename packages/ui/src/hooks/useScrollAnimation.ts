@@ -10,12 +10,7 @@ interface UseScrollAnimationOptions {
 }
 
 export function useScrollAnimation(options: UseScrollAnimationOptions = {}) {
-  const {
-    threshold = 0.1,
-    rootMargin = "0px",
-    triggerOnce = true,
-    delay = 0,
-  } = options;
+  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true, delay = 0 } = options;
 
   const [isVisible, setIsVisible] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -26,9 +21,7 @@ export function useScrollAnimation(options: UseScrollAnimationOptions = {}) {
     if (!element) return;
 
     // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     if (prefersReducedMotion) {
       setIsVisible(true);

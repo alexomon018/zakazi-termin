@@ -1,7 +1,7 @@
 "use client";
 
-import { ProcessStep } from "@salonko/ui/molecules/landing/ProcessStep";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { ProcessStep } from "@salonko/ui/molecules/landing/ProcessStep";
 import { cn } from "@salonko/ui/utils";
 
 export function ProcessSection() {

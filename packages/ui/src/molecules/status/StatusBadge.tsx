@@ -1,4 +1,3 @@
-
 interface StatusBadgeProps {
   status: "PENDING" | "ACCEPTED" | "CANCELLED" | "REJECTED";
   labels?: {

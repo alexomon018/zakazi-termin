@@ -21,4 +21,3 @@ export function useScrollPosition(threshold = 0) {
 
   return { scrollPosition, isScrolled };
 }
-

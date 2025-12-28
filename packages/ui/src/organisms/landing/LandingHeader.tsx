@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@salonko/ui/atoms/Button";
+import { useScrollPosition } from "@salonko/ui/hooks/useScrollPosition";
+import { NavLink } from "@salonko/ui/molecules/landing/NavLink";
+import { cn } from "@salonko/ui/utils";
 import { Calendar, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@salonko/ui/atoms/Button";
-import { NavLink } from "@salonko/ui/molecules/landing/NavLink";
-import { useScrollPosition } from "@salonko/ui/hooks/useScrollPosition";
-import { cn } from "@salonko/ui/utils";
 
 interface LandingHeaderProps {
   loginHref?: string;
@@ -51,11 +51,7 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
           >
-            {isMobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
@@ -68,16 +64,8 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
                 label="Funkcije"
                 onClick={() => setIsMobileMenuOpen(false)}
               />
-              <NavLink
-                href="#cene"
-                label="Cene"
-                onClick={() => setIsMobileMenuOpen(false)}
-              />
-              <NavLink
-                href="#kontakt"
-                label="Kontakt"
-                onClick={() => setIsMobileMenuOpen(false)}
-              />
+              <NavLink href="#cene" label="Cene" onClick={() => setIsMobileMenuOpen(false)} />
+              <NavLink href="#kontakt" label="Kontakt" onClick={() => setIsMobileMenuOpen(false)} />
             </div>
             <div className="pt-3 border-t border-border">
               <Link

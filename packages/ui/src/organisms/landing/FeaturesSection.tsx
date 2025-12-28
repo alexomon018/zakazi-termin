@@ -1,9 +1,9 @@
 "use client";
 
-import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
-import { FeatureCard } from "@salonko/ui/molecules/landing/FeatureCard";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { FeatureCard } from "@salonko/ui/molecules/landing/FeatureCard";
 import { cn } from "@salonko/ui/utils";
+import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
 
 export function FeaturesSection() {
   const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });

@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@salonko/ui";
-import { AnimatePresence, m } from "framer-motion";
 import {
   confirmButtonAnimation,
   fadeInLeft,
   staggerContainer,
   staggerItem,
 } from "@salonko/ui/organisms/booking-flow/animation-config";
+import { AnimatePresence, m } from "framer-motion";
 
 interface TimeSlotsListProps {
   selectedDate: Date | null;

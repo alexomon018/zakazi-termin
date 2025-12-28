@@ -1,13 +1,13 @@
 "use client";
 
+import { Button } from "@salonko/ui/atoms/Button";
+import { Card } from "@salonko/ui/atoms/Card";
+import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { TrialBadge } from "@salonko/ui/molecules/landing/TrialBadge";
+import { cn } from "@salonko/ui/utils";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@salonko/ui/atoms/Button";
-import { Card } from "@salonko/ui/atoms/Card";
-import { TrialBadge } from "@salonko/ui/molecules/landing/TrialBadge";
-import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
-import { cn } from "@salonko/ui/utils";
 
 interface HeroSectionProps {
   imageSrc: string;

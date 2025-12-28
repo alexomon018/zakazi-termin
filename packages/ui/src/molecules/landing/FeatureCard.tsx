@@ -1,9 +1,9 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
 import { Card } from "@salonko/ui/atoms/Card";
-import { cn } from "@salonko/ui/utils";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { cn } from "@salonko/ui/utils";
+import type { LucideIcon } from "lucide-react";
 
 interface FeatureCardProps {
   icon: LucideIcon;

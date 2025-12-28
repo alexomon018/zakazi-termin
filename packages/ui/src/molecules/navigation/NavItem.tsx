@@ -12,12 +12,7 @@ interface NavItemProps {
   isActive: boolean;
 }
 
-export const NavItem = memo(function NavItem({
-  href,
-  label,
-  icon: Icon,
-  isActive,
-}: NavItemProps) {
+export const NavItem = memo(function NavItem({ href, label, icon: Icon, isActive }: NavItemProps) {
   return (
     <Link
       href={href}

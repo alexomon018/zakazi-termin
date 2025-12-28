@@ -1,8 +1,8 @@
 "use client";
 
+import type { BookingState } from "@salonko/ui/organisms/booking-flow/store";
 import { useAnimate } from "framer-motion";
 import { useEffect } from "react";
-import type { BookingState } from "@salonko/ui/organisms/booking-flow/store";
 
 interface UseBookingResizeAnimationProps {
   state: BookingState;

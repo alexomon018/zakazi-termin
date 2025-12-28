@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@salonko/ui";
+import {
+  createMonthTransition,
+  scaleOnHover,
+} from "@salonko/ui/organisms/booking-flow/animation-config";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo } from "react";
-import { createMonthTransition, scaleOnHover } from "@salonko/ui/organisms/booking-flow/animation-config";
 
 interface BookingCalendarProps {
   currentMonth: Date;

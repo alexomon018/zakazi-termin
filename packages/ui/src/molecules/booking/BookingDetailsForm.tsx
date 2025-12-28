@@ -2,9 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label } from "@salonko/ui";
+import {
+  type BookingDetailsFormData,
+  bookingDetailsSchema,
+} from "@salonko/ui/lib/validations/booking";
 import { Calendar, ChevronLeft, Clock, FileText, Mail, Phone, User } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { type BookingDetailsFormData, bookingDetailsSchema } from "@salonko/ui/lib/validations/booking";
 
 interface BookingDetailsFormProps {
   selectedSlot: string | null;

@@ -1,5 +1,5 @@
-import { Clock, MapPin } from "lucide-react";
 import { UserAvatar } from "@salonko/ui/molecules/user/UserAvatar";
+import { Clock, MapPin } from "lucide-react";
 
 interface BookingEventHeaderProps {
   eventTitle: string;

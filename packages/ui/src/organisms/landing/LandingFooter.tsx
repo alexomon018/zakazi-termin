@@ -1,7 +1,7 @@
 "use client";
 
-import { Calendar } from "lucide-react";
 import { FooterColumn } from "@salonko/ui/molecules/landing/FooterColumn";
+import { Calendar } from "lucide-react";
 
 export function LandingFooter() {
   const productLinks = [

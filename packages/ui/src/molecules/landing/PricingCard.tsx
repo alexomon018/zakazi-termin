@@ -1,10 +1,10 @@
 "use client";
 
-import { Check } from "lucide-react";
 import { Button } from "@salonko/ui/atoms/Button";
 import { Card } from "@salonko/ui/atoms/Card";
-import { cn } from "@salonko/ui/utils";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { cn } from "@salonko/ui/utils";
+import { Check } from "lucide-react";
 
 interface PricingCardProps {
   plan: string;

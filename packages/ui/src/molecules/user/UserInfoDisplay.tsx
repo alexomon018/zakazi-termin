@@ -1,4 +1,3 @@
-
 interface UserInfoDisplayProps {
   name: string;
   email?: string;

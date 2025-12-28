@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@salonko/ui/atoms/Button";
 import {
   Dialog,
@@ -12,6 +11,7 @@ import {
 } from "@salonko/ui/atoms/Dialog";
 import { Input } from "@salonko/ui/atoms/Input";
 import { Label } from "@salonko/ui/atoms/Label";
+import { useState } from "react";
 
 interface CancelBookingDialogProps {
   open: boolean;

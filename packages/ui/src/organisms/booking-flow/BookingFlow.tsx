@@ -2,10 +2,6 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent } from "@salonko/ui";
-import { m } from "framer-motion";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import { BookingCalendar } from "@salonko/ui/molecules/booking/BookingCalendar";
 import { BookingConfirmation } from "@salonko/ui/molecules/booking/BookingConfirmation";
 import {
@@ -15,6 +11,10 @@ import {
 import { BookingEventHeader } from "@salonko/ui/molecules/booking/BookingEventHeader";
 import { RescheduleBanner } from "@salonko/ui/molecules/booking/RescheduleBanner";
 import { TimeSlotsList } from "@salonko/ui/molecules/booking/TimeSlotsList";
+import { m } from "framer-motion";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { FramerMotionProvider } from "./framer-features";
 import { useBookingResizeAnimation } from "./hooks/useBookingResizeAnimation";
 import { useBookingStore } from "./store";

@@ -1,7 +1,7 @@
 "use client";
 
-import { PricingCard } from "@salonko/ui/molecules/landing/PricingCard";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { PricingCard } from "@salonko/ui/molecules/landing/PricingCard";
 import { cn } from "@salonko/ui/utils";
 
 export function PricingSection() {

@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@salonko/ui/atoms/Button";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
 import { cn } from "@salonko/ui/utils";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface CtaBannerProps {
   onStartClick?: () => void;
@@ -32,8 +32,8 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
             Spremni da preuzmete kontrolu nad terminima?
           </h2>
           <p className="px-2 mb-6 text-base sm:text-lg lg:text-xl sm:mb-8 text-primary-foreground/90 text-pretty sm:px-0">
-            Pridružite se stotinama zadovoljnih vlasnika salona koji štede vreme
-            i povećavaju prihode sa Salonko platformom.
+            Pridružite se stotinama zadovoljnih vlasnika salona koji štede vreme i povećavaju
+            prihode sa Salonko platformom.
           </p>
           <div className="flex flex-col gap-3 justify-center items-stretch sm:flex-row sm:gap-4 sm:items-center">
             {onStartClick ? (
@@ -43,9 +43,7 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
                 className="px-4 w-full text-sm whitespace-normal transition-all duration-200 sm:text-base hover:scale-105 hover:shadow-elevated-lg group sm:w-auto sm:whitespace-nowrap sm:px-8"
                 onClick={onStartClick}
               >
-                <span className="text-center">
-                  Započnite besplatno probno razdoblje
-                </span>
+                <span className="text-center">Započnite besplatno probno razdoblje</span>
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 shrink-0" />
               </Button>
             ) : (
@@ -53,9 +51,7 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
                 href="/signup"
                 className="inline-flex justify-center items-center px-4 w-full h-11 text-sm font-medium whitespace-normal rounded-md transition-all duration-200 sm:text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-105 hover:shadow-elevated-lg sm:px-8 group sm:w-auto sm:whitespace-nowrap"
               >
-                <span className="text-center">
-                  Započnite besplatno probno razdoblje
-                </span>
+                <span className="text-center">Započnite besplatno probno razdoblje</span>
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1 shrink-0" />
               </Link>
             )}
