@@ -19,6 +19,9 @@ type UserProfile = {
   name: string | null;
   username: string | null;
   avatarUrl: string | null;
+  theme?: string | null;
+  brandColor?: string | null;
+  darkBrandColor?: string | null;
   eventTypes: EventType[];
 };
 
@@ -29,9 +32,19 @@ type UserProfileClientProps = {
 
 export function UserProfileClient({ user, username }: UserProfileClientProps) {
   const visibleEventTypes = user.eventTypes?.filter((et) => !et.hidden) || [];
+  const brandColor = user.brandColor || "#292929";
+  const darkBrandColor = user.darkBrandColor || "#fafafa";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4"
+      style={
+        {
+          "--brand-color": brandColor,
+          "--brand-color-dark": darkBrandColor,
+        } as React.CSSProperties
+      }
+    >
       <div className="max-w-2xl mx-auto">
         {/* User profile header */}
         <div className="text-center mb-8">
@@ -42,11 +55,11 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
               className="w-20 h-20 rounded-full mx-auto mb-4"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-              <User className="w-10 h-10 text-blue-600" />
+            <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
+              <User className="w-10 h-10 text-brand" />
             </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
         </div>
 
         {/* Event types list */}
@@ -57,27 +70,24 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {visibleEventTypes.map((eventType) => (
-              <Link key={eventType.id} href={`/${username}/${eventType.slug}`}>
+              <Link key={eventType.id} href={`/${username}/${eventType.slug}`} className="block">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-0">
-                    <div className="flex items-center p-4">
+                    <div className="flex items-stretch p-5 min-h-[88px]">
                       {/* Color indicator */}
-                      <div
-                        className="w-1 h-16 rounded-full mr-4"
-                        style={{ backgroundColor: "#3B82F6" }}
-                      />
+                      <div className="w-1 rounded-full bg-brand" />
 
                       {/* Event info */}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{eventType.title}</h3>
+                      <div className="flex-1 ml-4 flex flex-col justify-center">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{eventType.title}</h3>
                         {eventType.description && (
-                          <p className="text-sm text-gray-500 line-clamp-2 mb-2">
+                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
                             {eventType.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3.5 h-3.5" />
                             {eventType.length < 60
@@ -95,7 +105,9 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
                       </div>
 
                       {/* Arrow */}
-                      <ArrowRight className="w-5 h-5 text-gray-400" />
+                      <div className="flex items-center">
+                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

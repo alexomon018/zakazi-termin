@@ -55,6 +55,9 @@ export const userRouter = router({
           username: true,
           avatarUrl: true,
           timeZone: true,
+          theme: true,
+          brandColor: true,
+          darkBrandColor: true,
           eventTypes: {
             where: { hidden: false },
             select: {
