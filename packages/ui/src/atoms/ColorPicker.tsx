@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@salonko/ui/utils";
 import { forwardRef, useId, useRef } from "react";
 import type { ComponentProps } from "react";
-import { cn } from "@salonko/ui/utils";
 
 // Predefined brand color options
 const PRESET_COLORS = [
@@ -84,9 +84,9 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
               type="button"
               onClick={handleCustomColorClick}
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-md border-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "flex justify-center items-center w-8 h-8 rounded-md border-2 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                 isCustomColor
-                  ? "border-ring ring-2 ring-ring ring-offset-2"
+                  ? "ring-2 ring-offset-2 border-ring ring-ring"
                   : "border-dashed border-muted-foreground"
               )}
               style={{ backgroundColor: isCustomColor ? value : "transparent" }}
@@ -104,6 +104,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="text-muted-foreground"
+                  aria-hidden="true"
                 >
                   <path d="M12 5v14" />
                   <path d="M5 12h14" />
@@ -115,14 +116,14 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
               type="color"
               value={value}
               onChange={handleInputChange}
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              aria-hidden="true"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              tabIndex={-1}
             />
           </div>
         </div>
 
         {/* Hex input */}
-        <div className="flex items-center gap-2">
+        <div className="flex gap-2 items-center">
           <input
             ref={ref}
             id={inputId}
@@ -130,7 +131,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
             value={value}
             onChange={handleInputChange}
             className={cn(
-              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 font-mono text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              "flex px-3 py-1 w-full h-9 font-mono text-sm bg-transparent rounded-md border shadow-sm transition-colors border-input placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             )}
             placeholder={isDarkMode ? "#fafafa" : "#292929"}
             {...props}

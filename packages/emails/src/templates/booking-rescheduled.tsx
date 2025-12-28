@@ -46,14 +46,9 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
   const bookingUrl = `${getAppUrl()}/booking/${bookingUid}`;
 
   return (
-    <BaseEmail
-      preview={`Termin "${eventTypeTitle}" je promenjen`}
-      heading="Termin je promenjen"
-    >
+    <BaseEmail preview={`Termin "${eventTypeTitle}" je promenjen`} heading="Termin je promenjen">
       <Text style={text}>Poštovani/a {attendeeName},</Text>
-      <Text style={text}>
-        Vaš termin je uspešno promenjen. U nastavku se nalaze novi detalji.
-      </Text>
+      <Text style={text}>Vaš termin je uspešno promenjen. U nastavku se nalaze novi detalji.</Text>
 
       {rescheduledFromDate && (
         <Section
@@ -73,9 +68,7 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
       )}
 
       <Section style={{ ...infoBox, backgroundColor: "#ecfdf5" }}>
-        <Text style={{ ...infoRow, color: "#065f46", fontWeight: "600" }}>
-          Novi termin:
-        </Text>
+        <Text style={{ ...infoRow, color: "#065f46", fontWeight: "600" }}>Novi termin:</Text>
         <Text style={infoRow}>
           <span style={label}>Usluga:</span> {eventTypeTitle}
         </Text>

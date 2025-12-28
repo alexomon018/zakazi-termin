@@ -81,7 +81,9 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
 
                       {/* Event info */}
                       <div className="flex-1 ml-4 flex flex-col justify-center">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{eventType.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {eventType.title}
+                        </h3>
                         {eventType.description && (
                           <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
                             {eventType.description}

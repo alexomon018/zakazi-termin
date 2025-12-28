@@ -9,10 +9,7 @@ export type ThemeSelectorProps = {
   onThemeChange: (theme: Theme) => void;
 };
 
-export function ThemeSelector({
-  selectedTheme,
-  onThemeChange,
-}: ThemeSelectorProps) {
+export function ThemeSelector({ selectedTheme, onThemeChange }: ThemeSelectorProps) {
   return (
     <Card>
       <CardHeader>

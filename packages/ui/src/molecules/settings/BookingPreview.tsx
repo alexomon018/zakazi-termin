@@ -1,5 +1,5 @@
-import { cn } from "../../utils";
 import { Card, CardContent, CardHeader, CardTitle } from "../../atoms/Card";
+import { cn } from "../../utils";
 
 export type BookingPreviewProps = {
   previewTheme: "light" | "dark";
@@ -23,12 +23,7 @@ export function BookingPreview({
       </CardHeader>
       <CardContent>
         <div className="overflow-hidden rounded-lg border">
-          <div
-            className={cn(
-              "p-6",
-              previewTheme === "dark" ? "bg-gray-900" : "bg-white"
-            )}
-          >
+          <div className={cn("p-6", previewTheme === "dark" ? "bg-gray-900" : "bg-white")}>
             <div className="mx-auto space-y-4 max-w-md">
               <div className="text-center">
                 <div
@@ -85,8 +80,7 @@ export function BookingPreview({
                 type="button"
                 className="py-2 w-full text-sm font-medium rounded-md transition-colors"
                 style={{
-                  backgroundColor:
-                    previewTheme === "dark" ? darkBrandColor : brandColor,
+                  backgroundColor: previewTheme === "dark" ? darkBrandColor : brandColor,
                   color: previewTheme === "dark" ? "#111" : "#fff",
                 }}
               >

@@ -1,5 +1,5 @@
-import { cn } from "../../utils";
 import type { ElementType } from "react";
+import { cn } from "../../utils";
 
 export type ThemeOptionProps = {
   icon: ElementType;
@@ -37,16 +37,12 @@ export function ThemeOption({
         <p
           className={cn(
             "text-sm font-medium",
-            selected
-              ? "text-blue-700 dark:text-blue-400"
-              : "text-gray-900 dark:text-white"
+            selected ? "text-blue-700 dark:text-blue-400" : "text-gray-900 dark:text-white"
           )}
         >
           {label}
         </p>
-        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:mt-1">
-          {description}
-        </p>
+        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 sm:mt-1">{description}</p>
       </div>
     </button>
   );

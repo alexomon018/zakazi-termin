@@ -1,7 +1,7 @@
-import { cn } from "../../utils";
 import { Card, CardContent, CardHeader, CardTitle } from "../../atoms/Card";
-import { Label } from "../../atoms/Label";
 import { ColorPicker } from "../../atoms/ColorPicker";
+import { Label } from "../../atoms/Label";
+import { cn } from "../../utils";
 
 export type BrandColorSectionProps = {
   brandColor: string;
@@ -23,16 +23,12 @@ export function BrandColorSection({
       </CardHeader>
       <CardContent className="space-y-6">
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          Prilagodite boje vaše stranice za zakazivanje da odgovaraju vašem
-          brendu.
+          Prilagodite boje vaše stranice za zakazivanje da odgovaraju vašem brendu.
         </p>
 
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-3">
-            <Label
-              htmlFor="brandColor"
-              className="text-gray-900 dark:text-white"
-            >
+            <Label htmlFor="brandColor" className="text-gray-900 dark:text-white">
               Boja za svetlu temu
             </Label>
             <ColorPicker
@@ -45,10 +41,7 @@ export function BrandColorSection({
           </div>
 
           <div className="space-y-3">
-            <Label
-              htmlFor="darkBrandColor"
-              className="text-gray-900 dark:text-white"
-            >
+            <Label htmlFor="darkBrandColor" className="text-gray-900 dark:text-white">
               Boja za tamnu temu
             </Label>
             <ColorPicker
@@ -79,11 +72,7 @@ function ColorPreviewButton({
         isDark ? "bg-gray-900" : "bg-gray-50"
       )}
     >
-      <span
-        className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}
-      >
-        Pregled:
-      </span>
+      <span className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>Pregled:</span>
       <button
         type="button"
         className={cn(

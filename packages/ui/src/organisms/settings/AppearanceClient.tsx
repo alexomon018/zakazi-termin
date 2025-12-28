@@ -3,13 +3,7 @@
 import { useTheme } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import {
-  BookingPreview,
-  BrandColorSection,
-  Button,
-  ThemeSelector,
-  type Theme,
-} from "@salonko/ui";
+import { BookingPreview, BrandColorSection, Button, type Theme, ThemeSelector } from "@salonko/ui";
 import { AlertCircle, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -22,15 +16,9 @@ type AppearanceClientProps = {
 export function AppearanceClient({ initialUser }: AppearanceClientProps) {
   const [saved, setSaved] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<Theme>(
-    initialUser?.theme as Theme
-  );
-  const [brandColor, setBrandColor] = useState(
-    initialUser?.brandColor || "#292929"
-  );
-  const [darkBrandColor, setDarkBrandColor] = useState(
-    initialUser?.darkBrandColor || "#fafafa"
-  );
+  const [selectedTheme, setSelectedTheme] = useState<Theme>(initialUser?.theme as Theme);
+  const [brandColor, setBrandColor] = useState(initialUser?.brandColor || "#292929");
+  const [darkBrandColor, setDarkBrandColor] = useState(initialUser?.darkBrandColor || "#fafafa");
   const [systemPrefersDark, setSystemPrefersDark] = useState(false);
 
   const utils = trpc.useUtils();
@@ -48,11 +36,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
 
   // Compute the effective theme for preview
   const previewTheme =
-    selectedTheme === null
-      ? systemPrefersDark
-        ? "dark"
-        : "light"
-      : selectedTheme;
+    selectedTheme === null ? (systemPrefersDark ? "dark" : "light") : selectedTheme;
 
   const { data: user } = trpc.user.me.useQuery(undefined, {
     initialData: initialUser ?? undefined,
@@ -91,17 +75,13 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
 
   const hasChanges =
     selectedTheme !== (user?.theme as Theme) ||
-    brandColor.toLowerCase() !==
-      (user?.brandColor || "#292929").toLowerCase() ||
-    darkBrandColor.toLowerCase() !==
-      (user?.darkBrandColor || "#fafafa").toLowerCase();
+    brandColor.toLowerCase() !== (user?.brandColor || "#292929").toLowerCase() ||
+    darkBrandColor.toLowerCase() !== (user?.darkBrandColor || "#fafafa").toLowerCase();
 
   return (
     <div className="space-y-6 md:px-0">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Izgled
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Izgled</h1>
         <p className="mt-1 text-gray-600 dark:text-gray-400">
           Prilagodite izgled vaše stranice za zakazivanje
         </p>
@@ -110,25 +90,18 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
       {saved && (
         <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <span className="text-green-800 dark:text-green-300">
-            Izgled je uspešno sačuvan!
-          </span>
+          <span className="text-green-800 dark:text-green-300">Izgled je uspešno sačuvan!</span>
         </div>
       )}
 
       {updateAppearance.error && (
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">
-            {updateAppearance.error.message}
-          </span>
+          <span className="text-red-800 dark:text-red-300">{updateAppearance.error.message}</span>
         </div>
       )}
 
-      <ThemeSelector
-        selectedTheme={selectedTheme}
-        onThemeChange={setSelectedTheme}
-      />
+      <ThemeSelector selectedTheme={selectedTheme} onThemeChange={setSelectedTheme} />
 
       <BrandColorSection
         brandColor={brandColor}
@@ -147,10 +120,7 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
 
       {/* Submit Button */}
       <div className="flex justify-end">
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || updateAppearance.isPending}
-        >
+        <Button onClick={handleSave} disabled={!hasChanges || updateAppearance.isPending}>
           {updateAppearance.isPending ? "Čuvanje..." : "Sačuvaj promene"}
         </Button>
       </div>

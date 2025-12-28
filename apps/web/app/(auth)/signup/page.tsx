@@ -2,15 +2,7 @@
 
 import { type SignupFormData, signupSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label,
-} from "@salonko/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -85,10 +77,7 @@ export default function SignupPage() {
             Salonko
           </Link>
         </CardTitle>
-        <p
-          data-testid="signup-subtitle"
-          className="mt-2 text-gray-600 dark:text-gray-400"
-        >
+        <p data-testid="signup-subtitle" className="mt-2 text-gray-600 dark:text-gray-400">
           Kreirajte vaš nalog
         </p>
       </CardHeader>
@@ -116,10 +105,7 @@ export default function SignupPage() {
               {...register("name")}
             />
             {errors.name && (
-              <p
-                data-testid="signup-name-error"
-                className="text-sm text-red-600 dark:text-red-400"
-              >
+              <p data-testid="signup-name-error" className="text-sm text-red-600 dark:text-red-400">
                 {errors.name.message}
               </p>
             )}
@@ -199,10 +185,7 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="confirmPassword"
-              className="text-gray-900 dark:text-white"
-            >
+            <Label htmlFor="confirmPassword" className="text-gray-900 dark:text-white">
               Potvrdite lozinku
             </Label>
             <Input
@@ -238,9 +221,7 @@ export default function SignupPage() {
             <div className="w-full border-t border-gray-200 dark:border-gray-700" />
           </div>
           <div className="flex relative justify-center text-sm">
-            <span className="px-2 text-gray-500 bg-card dark:text-gray-400">
-              ili
-            </span>
+            <span className="px-2 text-gray-500 bg-card dark:text-gray-400">ili</span>
           </div>
         </div>
 
@@ -252,12 +233,7 @@ export default function SignupPage() {
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
         >
-          <svg
-            className="mr-2 w-5 h-5"
-            viewBox="0 0 24 24"
-            role="img"
-            aria-label="Google logo"
-          >
+          <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
             <path
               fill="currentColor"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

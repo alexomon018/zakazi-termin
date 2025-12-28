@@ -100,10 +100,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
       <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
         <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
-          <Link
-            href={session ? "/dashboard" : "/"}
-            className="flex flex-shrink-0 items-center"
-          >
+          <Link href={session ? "/dashboard" : "/"} className="flex flex-shrink-0 items-center">
             <span className="text-lg font-bold text-gray-900 md:text-xl dark:text-white">
               Salonko
             </span>
