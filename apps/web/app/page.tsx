@@ -1,3 +1,4 @@
+import { OrganizationSchema, WebsiteSchema } from "@/components/StructuredData";
 import { getSession } from "@/lib/auth";
 import {
   CtaBanner,
@@ -20,6 +21,8 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen">
+      <OrganizationSchema />
+      <WebsiteSchema />
       <LandingHeader />
       <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Salonko Dashboard" />
       <SocialProofBar />
