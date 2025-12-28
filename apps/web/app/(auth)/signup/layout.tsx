@@ -1,4 +1,7 @@
+import { getAppUrl } from "@/lib/utils";
 import type { Metadata } from "next";
+
+const baseUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "Registracija",
@@ -7,11 +10,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Registracija | Salonko",
     description: "Kreirajte besplatan Salonko nalog i pocnite da primate online rezervacije.",
-    url: "https://salonko.rs/signup",
+    url: `${baseUrl}/signup`,
     type: "website",
   },
   alternates: {
-    canonical: "https://salonko.rs/signup",
+    canonical: `${baseUrl}/signup`,
   },
 };
 

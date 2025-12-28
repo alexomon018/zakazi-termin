@@ -1,3 +1,7 @@
+import { getAppUrl } from "@/lib/utils";
+
+const baseUrl = getAppUrl();
+
 type OrganizationSchemaProps = {
   name?: string;
   description?: string;
@@ -7,7 +11,7 @@ type OrganizationSchemaProps = {
 export function OrganizationSchema({
   name = "Salonko",
   description = "Moderna platforma za online zakazivanje termina za frizerske, kozmeticke i beauty salone u Srbiji.",
-  url = "https://salonko.rs",
+  url = baseUrl,
 }: OrganizationSchemaProps = {}) {
   const schema = {
     "@context": "https://schema.org",
@@ -26,7 +30,7 @@ export function OrganizationSchema({
     provider: {
       "@type": "Organization",
       name: "Salonko",
-      url: "https://salonko.rs",
+      url: baseUrl,
     },
   };
 
@@ -45,7 +49,7 @@ type WebsiteSchemaProps = {
 };
 
 export function WebsiteSchema({
-  url = "https://salonko.rs",
+  url = baseUrl,
   name = "Salonko",
 }: WebsiteSchemaProps = {}) {
   const schema = {
@@ -89,10 +93,10 @@ export function LocalBusinessSchema({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name,
-    url: `https://salonko.rs/${username}`,
+    url: `${baseUrl}/${username}`,
     ...(avatarUrl && { image: avatarUrl }),
     ...(description && { description }),
-    "@id": `https://salonko.rs/${username}`,
+    "@id": `${baseUrl}/${username}`,
   };
 
   return (
@@ -129,14 +133,14 @@ export function ServiceSchema({
     provider: {
       "@type": "LocalBusiness",
       name: providerName,
-      url: `https://salonko.rs/${providerUsername}`,
+      url: `${baseUrl}/${providerUsername}`,
     },
     areaServed: {
       "@type": "Country",
       name: "Serbia",
     },
     serviceType: name,
-    url: `https://salonko.rs/${providerUsername}/${slug}`,
+    url: `${baseUrl}/${providerUsername}/${slug}`,
     additionalProperty: {
       "@type": "PropertyValue",
       name: "duration",

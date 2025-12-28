@@ -1,11 +1,14 @@
 import { BreadcrumbSchema, LocalBusinessSchema } from "@/components/StructuredData";
 import { createPublicServerCaller } from "@/lib/trpc/server";
+import { getAppUrl } from "@/lib/utils";
 import { UserNotFound, UserProfileClient } from "@salonko/ui";
 import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ username: string }>;
 };
+
+const baseUrl = getAppUrl();
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params;
@@ -29,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://salonko.rs/${username}`,
+      url: `${baseUrl}/${username}`,
       type: "profile",
       images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.name || username }] : [],
     },
@@ -40,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: user.avatarUrl ? [user.avatarUrl] : [],
     },
     alternates: {
-      canonical: `https://salonko.rs/${username}`,
+      canonical: `${baseUrl}/${username}`,
     },
   };
 }
@@ -66,8 +69,8 @@ export default async function UserBookingPage({ params }: Props) {
       />
       <BreadcrumbSchema
         items={[
-          { name: "Salonko", url: "https://salonko.rs" },
-          { name: user.name || username, url: `https://salonko.rs/${username}` },
+          { name: "Salonko", url: baseUrl },
+          { name: user.name || username, url: `${baseUrl}/${username}` },
         ]}
       />
       <UserProfileClient user={user} username={username} />

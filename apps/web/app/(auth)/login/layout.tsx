@@ -1,4 +1,7 @@
+import { getAppUrl } from "@/lib/utils";
 import type { Metadata } from "next";
+
+const baseUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "Prijava",
@@ -7,11 +10,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Prijava | Salonko",
     description: "Prijavite se na vas Salonko nalog i upravljajte terminima.",
-    url: "https://salonko.rs/login",
+    url: `${baseUrl}/login`,
     type: "website",
   },
   alternates: {
-    canonical: "https://salonko.rs/login",
+    canonical: `${baseUrl}/login`,
   },
 };
 

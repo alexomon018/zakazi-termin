@@ -1,7 +1,8 @@
+import { getAppUrl } from "@/lib/utils";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://salonko.rs";
+  const baseUrl = getAppUrl();
 
   return [
     {

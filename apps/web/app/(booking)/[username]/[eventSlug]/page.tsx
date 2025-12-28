@@ -1,5 +1,6 @@
 import { BreadcrumbSchema, ServiceSchema } from "@/components/StructuredData";
 import { createPublicServerCaller } from "@/lib/trpc/server";
+import { getAppUrl } from "@/lib/utils";
 import { BookingFlow, EventNotFound } from "@salonko/ui";
 import type { Metadata } from "next";
 
@@ -9,6 +10,8 @@ type Props = {
     eventSlug: string;
   }>;
 };
+
+const baseUrl = getAppUrl();
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username, eventSlug } = await params;
@@ -39,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title,
         description,
-        url: `https://salonko.rs/${username}/${eventSlug}`,
+        url: `${baseUrl}/${username}/${eventSlug}`,
         type: "website",
         images: eventType.user.avatarUrl
           ? [{ url: eventType.user.avatarUrl, alt: eventType.user.name || username }]
@@ -52,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: eventType.user.avatarUrl ? [eventType.user.avatarUrl] : [],
       },
       alternates: {
-        canonical: `https://salonko.rs/${username}/${eventSlug}`,
+        canonical: `${baseUrl}/${username}/${eventSlug}`,
       },
     };
   } catch {
@@ -91,9 +94,9 @@ export default async function PublicBookingPage({ params }: Props) {
         />
         <BreadcrumbSchema
           items={[
-            { name: "Salonko", url: "https://salonko.rs" },
-            { name: eventType.user.name || username, url: `https://salonko.rs/${username}` },
-            { name: eventType.title, url: `https://salonko.rs/${username}/${eventSlug}` },
+            { name: "Salonko", url: baseUrl },
+            { name: eventType.user.name || username, url: `${baseUrl}/${username}` },
+            { name: eventType.title, url: `${baseUrl}/${username}/${eventSlug}` },
           ]}
         />
         <BookingFlow eventType={eventType} username={username} eventSlug={eventSlug} />

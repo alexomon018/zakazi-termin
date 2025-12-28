@@ -1,4 +1,5 @@
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { getAppUrl } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -6,6 +7,8 @@ import { Providers } from "./providers";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"] });
+
+const baseUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: {
@@ -26,11 +29,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Salonko" }],
   creator: "Salonko",
-  metadataBase: new URL("https://salonko.rs"),
+  metadataBase: new URL(baseUrl),
   openGraph: {
     type: "website",
     locale: "sr_RS",
-    url: "https://salonko.rs",
+    url: baseUrl,
     siteName: "Salonko",
     title: "Salonko - Online zakazivanje termina za salone",
     description:
@@ -63,7 +66,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://salonko.rs",
+    canonical: baseUrl,
   },
 };
 
