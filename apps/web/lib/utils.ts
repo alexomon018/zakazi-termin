@@ -20,7 +20,12 @@ export function cn(...inputs: ClassValue[]) {
 export function getAppUrl(): string {
   // Priority 1: Use NEXT_PUBLIC_APP_URL if explicitly set (production)
   if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL;
+    const url = process.env.NEXT_PUBLIC_APP_URL;
+    // Ensure URL has a protocol
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return `https://${url}`;
+    }
+    return url;
   }
 
   // Priority 2: Server-side: Use VERCEL_URL for preview deployments
