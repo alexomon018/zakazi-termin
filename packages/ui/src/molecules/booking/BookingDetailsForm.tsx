@@ -160,7 +160,7 @@ export function BookingDetailsForm({
           </>
         )}
 
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button type="submit" className="btn-brand w-full" disabled={isPending}>
           {isPending
             ? isRescheduling
               ? "Menjam termin..."

@@ -78,10 +78,10 @@ export function TimeSlotsList({
                       whileTap={{ scale: 0.98 }}
                       className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
                         isConfirmed
-                          ? "border-primary bg-primary text-primary-foreground shadow-md"
+                          ? "border-brand bg-brand text-white dark:text-gray-900 shadow-md"
                           : isSelected
-                            ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/50"
-                            : "border-border hover:border-primary/50 hover:bg-secondary dark:text-gray-100"
+                            ? "border-brand bg-brand/10 text-brand ring-2 ring-brand/50"
+                            : "border-border hover:border-brand/50 hover:bg-secondary dark:text-gray-100"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ export function TimeSlotsList({
                           <m.span
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="text-xs px-2 py-1 bg-primary/20 rounded-full"
+                            className="text-xs px-2 py-1 bg-brand/20 rounded-full"
                           >
                             Izabrano
                           </m.span>
@@ -121,7 +121,7 @@ export function TimeSlotsList({
                 exit="exit"
                 className="overflow-hidden"
               >
-                <Button className="w-full shadow-lg" onClick={onConfirmSlot}>
+                <Button className="btn-brand w-full shadow-lg" onClick={onConfirmSlot}>
                   Potvrdi i nastavi
                 </Button>
               </m.div>

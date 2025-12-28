@@ -67,6 +67,107 @@
   .booking-container {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* Brand color utilities for booking pages */
+  .bg-brand {
+    background-color: var(--brand-color, #292929);
+  }
+
+  .dark .bg-brand {
+    background-color: var(--brand-color-dark, #fafafa);
+  }
+
+  .bg-brand\/10 {
+    background-color: color-mix(in srgb, var(--brand-color, #292929) 10%, transparent);
+  }
+
+  .dark .bg-brand\/10 {
+    background-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 10%, transparent);
+  }
+
+  .bg-brand\/20 {
+    background-color: color-mix(in srgb, var(--brand-color, #292929) 20%, transparent);
+  }
+
+  .dark .bg-brand\/20 {
+    background-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 20%, transparent);
+  }
+
+  .text-brand {
+    color: var(--brand-color, #292929);
+  }
+
+  .dark .text-brand {
+    color: var(--brand-color-dark, #fafafa);
+  }
+
+  .border-brand {
+    border-color: var(--brand-color, #292929);
+  }
+
+  .dark .border-brand {
+    border-color: var(--brand-color-dark, #fafafa);
+  }
+
+  .border-brand\/50 {
+    border-color: color-mix(in srgb, var(--brand-color, #292929) 50%, transparent);
+  }
+
+  .dark .border-brand\/50 {
+    border-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 50%, transparent);
+  }
+
+  .ring-brand {
+    --tw-ring-color: var(--brand-color, #292929);
+  }
+
+  .dark .ring-brand {
+    --tw-ring-color: var(--brand-color-dark, #fafafa);
+  }
+
+  .ring-brand\/50 {
+    --tw-ring-color: color-mix(in srgb, var(--brand-color, #292929) 50%, transparent);
+  }
+
+  .dark .ring-brand\/50 {
+    --tw-ring-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 50%, transparent);
+  }
+
+  /* Hover variants */
+  .hover\:bg-brand\/10:hover {
+    background-color: color-mix(in srgb, var(--brand-color, #292929) 10%, transparent);
+  }
+
+  .dark .hover\:bg-brand\/10:hover {
+    background-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 10%, transparent);
+  }
+
+  .hover\:border-brand\/50:hover {
+    border-color: color-mix(in srgb, var(--brand-color, #292929) 50%, transparent);
+  }
+
+  .dark .hover\:border-brand\/50:hover {
+    border-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 50%, transparent);
+  }
+
+  /* Brand button styles */
+  .btn-brand {
+    background-color: var(--brand-color, #292929) !important;
+    color: white !important;
+  }
+
+  .dark .btn-brand {
+    background-color: var(--brand-color-dark, #fafafa) !important;
+    color: #111 !important;
+  }
+
+  .btn-brand:hover {
+    background-color: color-mix(in srgb, var(--brand-color, #292929) 90%, black) !important;
+  }
+
+  .dark .btn-brand:hover {
+    background-color: color-mix(in srgb, var(--brand-color-dark, #fafafa) 90%, black) !important;
+  }
 }
 
 /* Animation Keyframes */

@@ -5,6 +5,7 @@ export { cn } from "./utils";
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
 export { Label } from "./atoms/Label";
+export { ColorPicker, PRESET_COLORS, DARK_PRESET_COLORS } from "./atoms/ColorPicker";
 export {
   Card,
   CardHeader,
@@ -63,6 +64,12 @@ export { TabFilter } from "./molecules/filters/TabFilter";
 // Molecules - Dialogs
 export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
 export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
+
+// Molecules - Settings
+export { ThemeOption } from "./molecules/settings/ThemeOption";
+export { ThemeSelector, type Theme } from "./molecules/settings/ThemeSelector";
+export { BrandColorSection } from "./molecules/settings/BrandColorSection";
+export { BookingPreview } from "./molecules/settings/BookingPreview";
 
 // Molecules - Landing
 export { FeatureCard } from "./molecules/landing/FeatureCard";

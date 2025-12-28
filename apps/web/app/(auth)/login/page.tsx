@@ -23,7 +23,11 @@ function LoginSkeleton() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Salonko</CardTitle>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            Salonko
+          </Link>
+        </CardTitle>
         <p className="mt-2 text-gray-600 dark:text-gray-400">Prijavite se na vaš nalog</p>
       </CardHeader>
       <CardContent>
@@ -88,7 +92,9 @@ function LoginForm() {
           data-testid="login-title"
           className="text-2xl font-bold text-gray-900 dark:text-white"
         >
-          Salonko
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            Salonko
+          </Link>
         </CardTitle>
         <p data-testid="login-subtitle" className="mt-2 text-gray-600 dark:text-gray-400">
           Prijavite se na vaš nalog

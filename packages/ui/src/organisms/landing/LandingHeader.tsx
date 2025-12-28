@@ -26,13 +26,13 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
       )}
     >
       <div className="flex justify-between items-center px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex gap-2 items-center">
+        <Link href="/" className="flex gap-2 items-center">
           <Calendar
             aria-hidden="true"
             className="w-8 h-8 transition-transform text-primary hover:scale-110"
           />
           <span className="text-2xl font-bold text-foreground">Salonko</span>
-        </div>
+        </Link>
         <nav className="hidden gap-6 items-center md:flex">
           <NavLink href="#funkcije" label="Funkcije" />
           <NavLink href="#cene" label="Cene" />
