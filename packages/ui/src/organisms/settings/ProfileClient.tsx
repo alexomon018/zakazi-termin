@@ -3,10 +3,23 @@
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@salonko/ui";
 import { AlertCircle, Check, ExternalLink, User as UserIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const profileSchema = z.object({
@@ -63,6 +76,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     handleSubmit,
     watch,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -113,20 +127,20 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Moj profil</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Upravljajte informacijama vašeg profila
         </p>
       </div>
 
       {saved && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
           <span className="text-green-800 dark:text-green-300">Profil je uspešno sačuvan!</span>
         </div>
       )}
 
       {updateProfile.error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">{updateProfile.error.message}</span>
         </div>
@@ -139,23 +153,23 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
             <CardTitle className="text-lg">Profilna slika</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex overflow-hidden justify-center items-center w-20 h-20 bg-gray-200 rounded-full dark:bg-gray-700 flex-shrink-0">
                 {user?.avatarUrl ? (
                   <img
                     src={user.avatarUrl}
                     alt={user.name || "Avatar"}
-                    className="w-full h-full object-cover"
+                    className="object-cover w-full h-full"
                   />
                 ) : (
                   <UserIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                 )}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Vaša profilna slika će se prikazivati na stranici za zakazivanje.
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Preporučena veličina: 256x256 piksela
                 </p>
               </div>
@@ -212,13 +226,13 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                   <p className="text-sm text-red-600">Korisničko ime je već zauzeto</p>
                 )}
                 {user?.username && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                  <p className="flex gap-1 items-center text-xs text-gray-500 dark:text-gray-400">
                     Vaš link:{" "}
                     <a
                       href={`/${user.username}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                      className="inline-flex gap-1 items-center text-blue-600 dark:text-blue-400 hover:underline"
                     >
                       salonko.rs/{user.username}
                       <ExternalLink className="w-3 h-3" />
@@ -236,7 +250,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                 id="bio"
                 {...register("bio")}
                 rows={3}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="px-3 py-2 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 resize-none dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Kratak opis o vama koji će se prikazati na stranici za zakazivanje..."
               />
               {errors.bio && <p className="text-sm text-red-600">{errors.bio.message}</p>}
@@ -254,17 +268,24 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
               <Label htmlFor="timeZone" className="text-gray-900 dark:text-white">
                 Vremenska zona
               </Label>
-              <select
-                id="timeZone"
-                {...register("timeZone")}
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {TIMEZONES.map((tz) => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="timeZone"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="timeZone" className="w-full">
+                      <SelectValue placeholder="Izaberite vremensku zonu" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Sva vremena u aplikaciji biće prikazana u ovoj vremenskoj zoni.
               </p>

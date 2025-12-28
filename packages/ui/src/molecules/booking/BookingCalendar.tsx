@@ -59,36 +59,41 @@ export function BookingCalendar({
   };
 
   return (
-    <div className="px-5 py-6 md:px-6 md:py-8 w-full md:w-[420px] lg:w-[480px]">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+    <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8 w-full md:w-[420px] lg:w-[480px]">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
           {currentMonth.toLocaleDateString("sr-RS", {
             month: "long",
             year: "numeric",
           })}
         </h3>
-        <div className="flex gap-2">
+        <div className="flex gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={onPreviousMonth}
             disabled={currentMonth <= new Date()}
-            className="p-0 w-9 h-9"
+            className="p-0 w-8 h-8 sm:w-9 sm:h-9"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={onNextMonth} className="p-0 w-9 h-9">
-            <ChevronRight className="w-5 h-5" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNextMonth}
+            className="p-0 w-8 h-8 sm:w-9 sm:h-9"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
       </div>
 
       {/* Day names */}
-      <div className="grid grid-cols-7 gap-2 mb-3">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-3">
         {["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map((day) => (
           <div
             key={day}
-            className="py-2 text-sm font-medium text-center text-gray-500 dark:text-gray-400"
+            className="py-1 sm:py-2 text-xs sm:text-sm font-medium text-center text-gray-500 dark:text-gray-400"
           >
             {day}
           </div>
@@ -103,11 +108,13 @@ export function BookingCalendar({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="grid grid-cols-7 gap-2"
+          className="grid grid-cols-7 gap-1 sm:gap-2"
         >
           {calendarDays.map((date, index) => {
             if (!date) {
-              return <div key={`empty-${currentMonth.getMonth()}-${index}`} className="p-2" />;
+              return (
+                <div key={`empty-${currentMonth.getMonth()}-${index}`} className="p-1 sm:p-2" />
+              );
             }
 
             const isSelected = selectedDate?.toDateString() === date.toDateString();
@@ -126,9 +133,9 @@ export function BookingCalendar({
                 initial="rest"
                 whileHover={!isDisabled ? "hover" : "rest"}
                 whileTap={!isDisabled ? "tap" : "rest"}
-                className={`relative p-3 text-base rounded-lg transition-all min-h-[44px] md:min-h-[56px] font-medium ${
+                className={`relative p-1.5 sm:p-2 md:p-3 text-sm sm:text-base rounded-lg transition-all min-h-[36px] sm:min-h-[44px] md:min-h-[56px] font-medium flex items-center justify-center ${
                   isSelected
-                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-2"
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary ring-offset-1 sm:ring-offset-2"
                     : isDisabled
                       ? "text-muted-foreground/40 cursor-not-allowed"
                       : "text-foreground bg-secondary/50 hover:bg-primary/10 hover:shadow-sm"

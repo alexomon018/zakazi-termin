@@ -1,7 +1,20 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@salonko/ui";
 import { ArrowLeft, Calendar, Clock, MapPin, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -44,6 +57,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
     scheduleId: null as number | null,
   });
 
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const createEventType = trpc.eventType.create.useMutation({
@@ -75,8 +89,13 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
     setFormData((prev) => ({
       ...prev,
       title,
-      slug: prev.slug || generateSlug(title),
+      slug: slugManuallyEdited ? prev.slug : generateSlug(title),
     }));
+  };
+
+  const handleSlugChange = (slug: string) => {
+    setSlugManuallyEdited(true);
+    setFormData((prev) => ({ ...prev, slug }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -139,11 +158,11 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="mx-auto space-y-6 max-w-3xl">
+      <div className="flex gap-4 items-center">
         <Link href="/dashboard/event-types">
           <Button variant="ghost" size="sm" data-testid="event-type-back-button">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="mr-2 w-4 h-4" />
             Nazad
           </Button>
         </Link>
@@ -154,7 +173,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
           >
             Novi tip termina
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
             Kreirajte novu vrstu termina za vaše klijente
           </p>
         </div>
@@ -164,7 +183,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {errors.form && (
           <div
             data-testid="event-type-error-message"
-            className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 p-4 rounded-lg"
+            className="p-4 text-red-700 bg-red-50 rounded-lg dark:bg-red-900/20 dark:text-red-400"
           >
             {errors.form}
           </div>
@@ -173,13 +192,13 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {/* Basic Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex gap-2 items-center">
               <Clock className="w-5 h-5" />
               Osnovne informacije
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="title" className="text-gray-900 dark:text-white">
                   Naziv
@@ -199,13 +218,13 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                   URL slug
                 </Label>
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">/</span>
+                  <span className="mr-1 text-sm text-gray-500 dark:text-gray-400">/</span>
                   <Input
                     id="slug"
                     data-testid="event-type-slug-input"
                     placeholder="konsultacija"
                     value={formData.slug}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                    onChange={(e) => handleSlugChange(e.target.value)}
                     className={errors.slug ? "border-red-500" : ""}
                   />
                 </div>
@@ -227,8 +246,13 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                 rows={3}
                 placeholder="Opišite šta klijent može očekivati od ovog termina..."
                 value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                className="px-3 py-2 w-full text-gray-900 bg-white rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -250,7 +274,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                     {duration < 60 ? `${duration} min` : `${duration / 60}h`}
                   </button>
                 ))}
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     type="number"
                     data-testid="event-type-duration-input"
@@ -276,7 +300,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {/* Location */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex gap-2 items-center">
               <MapPin className="w-5 h-5" />
               Lokacija
             </CardTitle>
@@ -292,7 +316,10 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                 placeholder="npr. Knez Mihailova 10, Beograd"
                 value={formData.locationAddress}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, locationAddress: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    locationAddress: e.target.value,
+                  }))
                 }
                 className={errors.locationAddress ? "border-red-500" : ""}
               />
@@ -309,7 +336,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {/* Schedule */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex gap-2 items-center">
               <Calendar className="w-5 h-5" />
               Raspored
             </CardTitle>
@@ -317,23 +344,27 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label className="text-gray-900 dark:text-white">Koristi raspored</Label>
-              <select
-                value={formData.scheduleId || ""}
-                onChange={(e) =>
+              <Select
+                value={formData.scheduleId?.toString() || "default"}
+                onValueChange={(value: string) =>
                   setFormData((prev) => ({
                     ...prev,
-                    scheduleId: e.target.value ? Number.parseInt(e.target.value) : null,
+                    scheduleId: value === "default" ? null : Number.parseInt(value),
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">Podrazumevani raspored</option>
-                {schedules?.map((schedule) => (
-                  <option key={schedule.id} value={schedule.id}>
-                    {schedule.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Podrazumevani raspored" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Podrazumevani raspored</SelectItem>
+                  {schedules?.map((schedule) => (
+                    <SelectItem key={schedule.id} value={schedule.id.toString()}>
+                      {schedule.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Izaberite koji raspored radnog vremena da koristite za ovaj tip termina
               </p>
@@ -344,7 +375,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         {/* Advanced Settings */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex gap-2 items-center">
               <Settings className="w-5 h-5" />
               Napredna podešavanja
             </CardTitle>
@@ -354,69 +385,81 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
               <Label className="text-gray-900 dark:text-white">
                 Minimalno vreme unapred za zakazivanje
               </Label>
-              <select
-                value={formData.minimumBookingNotice}
-                onChange={(e) =>
+              <Select
+                value={formData.minimumBookingNotice.toString()}
+                onValueChange={(value: string) =>
                   setFormData((prev) => ({
                     ...prev,
-                    minimumBookingNotice: Number.parseInt(e.target.value),
+                    minimumBookingNotice: Number.parseInt(value),
                   }))
                 }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {noticeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {noticeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value.toString()}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Koliko ranije klijent mora zakazati termin
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label className="text-gray-900 dark:text-white">Pauza pre termina</Label>
-                <select
-                  value={formData.beforeEventBuffer}
-                  onChange={(e) =>
+                <Select
+                  value={formData.beforeEventBuffer.toString()}
+                  onValueChange={(value: string) =>
                     setFormData((prev) => ({
                       ...prev,
-                      beforeEventBuffer: Number.parseInt(e.target.value),
+                      beforeEventBuffer: Number.parseInt(value),
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {bufferOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bufferOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label className="text-gray-900 dark:text-white">Pauza posle termina</Label>
-                <select
-                  value={formData.afterEventBuffer}
-                  onChange={(e) =>
+                <Select
+                  value={formData.afterEventBuffer.toString()}
+                  onValueChange={(value: string) =>
                     setFormData((prev) => ({
                       ...prev,
-                      afterEventBuffer: Number.parseInt(e.target.value),
+                      afterEventBuffer: Number.parseInt(value),
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  {bufferOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bufferOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value.toString()}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex justify-between items-center">
               <div>
                 <Label className="text-gray-900 dark:text-white">Zahtevaj ručnu potvrdu</Label>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -446,7 +489,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         </Card>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex gap-4 justify-end items-center">
           <Link href="/dashboard/event-types">
             <Button variant="outline" type="button" data-testid="event-type-cancel-button">
               Otkaži

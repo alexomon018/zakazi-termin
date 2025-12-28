@@ -1,6 +1,7 @@
 import { Button, Link, Section, Text } from "@react-email/components";
 import * as React from "react";
 import type { BookingEmailData } from "../types";
+import { getAppUrl } from "../utils";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingConfirmedEmail(props: BookingEmailData) {
@@ -27,7 +28,7 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
     minute: "2-digit",
   });
 
-  const bookingUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/booking/${bookingUid}`;
+  const bookingUrl = `${getAppUrl()}/booking/${bookingUid}`;
 
   return (
     <BaseEmail preview={`Vaš termin "${eventTypeTitle}" je potvrđen`} heading="Termin je potvrđen!">

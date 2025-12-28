@@ -4,11 +4,20 @@ import { Button } from "@salonko/ui";
 import { NavItem } from "@salonko/ui";
 import { MobileNavItem } from "@salonko/ui";
 import { UserInfoDisplay } from "@salonko/ui";
-import { Calendar, Clock, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+} from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface DashboardNavProps {
   user: {
@@ -31,6 +40,41 @@ const navItems = [
 export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
 
+  // Embla carousel setup for mobile navigation
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+  });
+
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCanScrollPrev(emblaApi.canScrollPrev());
+    setCanScrollNext(emblaApi.canScrollNext());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
+  }, [emblaApi, onSelect]);
+
+  const scrollPrev = useCallback(() => {
+    emblaApi?.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    emblaApi?.scrollNext();
+  }, [emblaApi]);
+
   // Memoize the callback for checking active state
   const isItemActive = useCallback(
     (href: string) => {
@@ -51,18 +95,18 @@ export function DashboardNav({ user }: DashboardNavProps) {
   }, []);
 
   return (
-    <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-        <div className="flex h-16 items-center justify-between gap-2 md:gap-4">
+    <header className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
+        <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center flex-shrink-0">
-            <span className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">
+          <Link href="/dashboard" className="flex flex-shrink-0 items-center">
+            <span className="text-lg font-bold text-gray-900 md:text-xl dark:text-white">
               Salonko
             </span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
+          <nav className="hidden items-center space-x-1 md:flex lg:space-x-2">
             {navItemsWithActiveState.map((item) => (
               <NavItem
                 key={item.href}
@@ -75,7 +119,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           </nav>
 
           {/* User menu */}
-          <div className="flex items-center space-x-2 md:space-x-3 flex-shrink-0">
+          <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
             <div className="hidden lg:block">
               <UserInfoDisplay name={user.name || ""} email={user.email} />
             </div>
@@ -92,19 +136,48 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </div>
       </div>
 
-      {/* Mobile navigation */}
-      <nav className="md:hidden border-t border-gray-200 dark:border-gray-700 px-4 py-2">
-        <div className="flex space-x-2 overflow-x-auto">
-          {navItemsWithActiveState.map((item) => (
-            <MobileNavItem
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              icon={item.icon}
-              isActive={item.isActive}
-            />
-          ))}
+      <nav className="relative py-2 border-t border-gray-200 md:hidden dark:border-gray-700">
+        {/* Left arrow */}
+        <button
+          type="button"
+          onClick={scrollPrev}
+          disabled={!canScrollPrev}
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-opacity ${
+            canScrollPrev ? "opacity-100" : "opacity-40 cursor-not-allowed"
+          }`}
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+
+        {/* Carousel viewport */}
+        <div className="overflow-hidden mx-8" ref={emblaRef}>
+          <div className="flex gap-2 px-2">
+            {navItemsWithActiveState.map((item) => (
+              <div key={item.href} className="flex-shrink-0">
+                <MobileNavItem
+                  href={item.href}
+                  label={item.label}
+                  icon={item.icon}
+                  isActive={item.isActive}
+                />
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Right arrow */}
+        <button
+          type="button"
+          onClick={scrollNext}
+          disabled={!canScrollNext}
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 transition-opacity ${
+            canScrollNext ? "opacity-100" : "opacity-40 cursor-not-allowed"
+          }`}
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
       </nav>
     </header>
   );
