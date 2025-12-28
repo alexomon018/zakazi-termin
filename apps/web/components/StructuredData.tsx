@@ -48,10 +48,7 @@ type WebsiteSchemaProps = {
   name?: string;
 };
 
-export function WebsiteSchema({
-  url = baseUrl,
-  name = "Salonko",
-}: WebsiteSchemaProps = {}) {
+export function WebsiteSchema({ url = baseUrl, name = "Salonko" }: WebsiteSchemaProps = {}) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
