@@ -2,19 +2,19 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardContent } from "@salonko/ui";
+import { BookingCalendar } from "@salonko/ui/molecules/booking/BookingCalendar";
+import { BookingConfirmation } from "@salonko/ui/molecules/booking/BookingConfirmation";
+import {
+  BookingDetailsForm,
+  type BookingDetailsFormData,
+} from "@salonko/ui/molecules/booking/BookingDetailsForm";
+import { BookingEventHeader } from "@salonko/ui/molecules/booking/BookingEventHeader";
+import { RescheduleBanner } from "@salonko/ui/molecules/booking/RescheduleBanner";
+import { TimeSlotsList } from "@salonko/ui/molecules/booking/TimeSlotsList";
 import { m } from "framer-motion";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { BookingCalendar } from "../../molecules/booking/BookingCalendar";
-import { BookingConfirmation } from "../../molecules/booking/BookingConfirmation";
-import {
-  BookingDetailsForm,
-  type BookingDetailsFormData,
-} from "../../molecules/booking/BookingDetailsForm";
-import { BookingEventHeader } from "../../molecules/booking/BookingEventHeader";
-import { RescheduleBanner } from "../../molecules/booking/RescheduleBanner";
-import { TimeSlotsList } from "../../molecules/booking/TimeSlotsList";
 import { FramerMotionProvider } from "./framer-features";
 import { useBookingResizeAnimation } from "./hooks/useBookingResizeAnimation";
 import { useBookingStore } from "./store";
@@ -268,7 +268,7 @@ export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps
 
   return (
     <FramerMotionProvider>
-      <div className="px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="px-2 sm:px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="mx-auto max-w-6xl">
           {/* Reschedule banner */}
           {isRescheduling && existingBooking && (
@@ -292,7 +292,7 @@ export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps
             className="booking-container mx-auto"
             data-state={bookingState}
           >
-            <Card className="overflow-hidden w-fit mx-auto">
+            <Card className="overflow-hidden w-full sm:w-fit mx-auto">
               <CardContent className="p-0">
                 {currentStep === "select-time" ? (
                   <div className="flex flex-col md:flex-row divide-y divide-gray-200 dark:divide-gray-700 md:divide-y-0 md:divide-x">

@@ -1,5 +1,5 @@
 import { Button, Link, Section, Text } from "@react-email/components";
-import * as React from "react";
+import { getAppUrl } from "../utils";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export interface WelcomeEmailProps {
@@ -9,7 +9,7 @@ export interface WelcomeEmailProps {
 }
 
 export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProps) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = getAppUrl();
   const dashboardUrl = `${appUrl}/dashboard`;
   const eventTypesUrl = `${appUrl}/dashboard/event-types`;
   const availabilityUrl = `${appUrl}/dashboard/availability`;

@@ -1,6 +1,6 @@
 import { Link, Section, Text } from "@react-email/components";
-import * as React from "react";
 import type { BookingEmailData } from "../types";
+import { getAppUrl } from "../utils";
 import {
   BaseEmail,
   button,
@@ -38,7 +38,7 @@ export function BookingPendingOrganizerEmail(props: BookingEmailData) {
     minute: "2-digit",
   });
 
-  const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/bookings`;
+  const dashboardUrl = `${getAppUrl()}/dashboard/bookings`;
 
   return (
     <BaseEmail

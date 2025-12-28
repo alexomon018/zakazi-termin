@@ -147,12 +147,12 @@ export function AvailabilityClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dostupnost</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Upravljajte svojim radnim vremenom i rasporedima
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Schedule List */}
         <Card>
           <CardHeader>
@@ -189,7 +189,7 @@ export function AvailabilityClient({
                   }`}
                   onClick={() => handleSelectSchedule(schedule.id)}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2 items-center">
                     <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <span className="font-medium text-gray-900 dark:text-white">
                       {schedule.name}
@@ -216,7 +216,7 @@ export function AvailabilityClient({
               ))}
 
               {schedules?.length === 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                <p className="py-4 text-sm text-center text-gray-500 dark:text-gray-400">
                   Nemate nijedan raspored. Kreirajte novi raspored iznad.
                 </p>
               )}
@@ -239,7 +239,7 @@ export function AvailabilityClient({
                   {availability.map((entry, entryIndex) => (
                     <div
                       key={`${entry.days.join("-")}-${entry.startTime}-${entryIndex}`}
-                      className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4"
+                      className="p-4 space-y-4 rounded-lg border border-gray-200 dark:border-gray-700"
                     >
                       {/* Days selector */}
                       <div className="flex flex-wrap gap-2">
@@ -260,8 +260,8 @@ export function AvailabilityClient({
                       </div>
 
                       {/* Time inputs */}
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
+                      <div className="flex gap-4 items-center">
+                        <div className="flex gap-2 items-center">
                           <Label className="text-sm text-gray-500 dark:text-gray-400">Od</Label>
                           <Input
                             type="time"
@@ -270,7 +270,7 @@ export function AvailabilityClient({
                             className="w-32"
                           />
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                           <Label className="text-sm text-gray-500 dark:text-gray-400">Do</Label>
                           <Input
                             type="time"
@@ -291,21 +291,25 @@ export function AvailabilityClient({
 
                 {/* Add entry button */}
                 <Button variant="outline" onClick={addEntry} className="w-full">
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="mr-2 w-4 h-4" />
                   Dodaj vremenski interval
                 </Button>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
                   <Button
                     variant="outline"
-                    onClick={() => setDefaultSchedule.mutate({ scheduleId: selectedScheduleId! })}
+                    onClick={() =>
+                      setDefaultSchedule.mutate({
+                        scheduleId: selectedScheduleId!,
+                      })
+                    }
                     disabled={
                       currentUser?.defaultScheduleId === selectedScheduleId ||
                       setDefaultSchedule.isPending
                     }
                   >
-                    <Check className="w-4 h-4 mr-2" />
+                    <Check className="mr-2 w-4 h-4" />
                     Postavi kao podrazumevani
                   </Button>
                   <Button
@@ -317,8 +321,8 @@ export function AvailabilityClient({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+              <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+                <Clock className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
                 <p>Izaberite raspored sa leve strane ili kreirajte novi</p>
               </div>
             )}

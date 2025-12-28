@@ -2,10 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Label } from "@salonko/ui";
+import {
+  type BookingDetailsFormData,
+  bookingDetailsSchema,
+} from "@salonko/ui/lib/validations/booking";
 import { Calendar, ChevronLeft, Clock, FileText, Mail, Phone, User } from "lucide-react";
-import * as React from "react";
 import { useForm } from "react-hook-form";
-import { type BookingDetailsFormData, bookingDetailsSchema } from "../../lib/validations/booking";
 
 interface BookingDetailsFormProps {
   selectedSlot: string | null;
@@ -58,18 +60,18 @@ export function BookingDetailsForm({
   };
 
   return (
-    <div className="p-6 w-full md:w-[420px] lg:w-[480px]">
+    <div className="p-4 sm:p-5 md:p-6 w-full md:w-[420px] lg:w-[480px]">
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center mb-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        className="flex items-center mb-4 sm:mb-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
       >
         <ChevronLeft className="mr-1 w-4 h-4" />
         Nazad na izbor termina
       </button>
 
       {/* Selected time summary */}
-      <div className="p-4 mb-6 bg-gray-50 rounded-lg dark:bg-gray-800">
+      <div className="p-3 sm:p-4 mb-4 sm:mb-6 bg-gray-50 rounded-lg dark:bg-gray-800">
         <div className="flex gap-2 items-center mb-1 text-sm text-gray-600 dark:text-gray-400">
           <Calendar className="w-4 h-4" />
           <span>{selectedSlot && formatDate(new Date(selectedSlot))}</span>

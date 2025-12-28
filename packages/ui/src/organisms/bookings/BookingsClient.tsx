@@ -257,15 +257,17 @@ export function BookingsClient({
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4">
-          {filters.map((f) => (
-            <TabFilter
-              key={f.key}
-              label={f.label}
-              isActive={filter === f.key}
-              onClick={() => handleFilterChange(f.key)}
-            />
-          ))}
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
+            {filters.map((f) => (
+              <TabFilter
+                key={f.key}
+                label={f.label}
+                isActive={filter === f.key}
+                onClick={() => handleFilterChange(f.key)}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center justify-center min-h-[400px]">
@@ -283,15 +285,17 @@ export function BookingsClient({
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4">
-        {filters.map((f) => (
-          <TabFilter
-            key={f.key}
-            label={f.label}
-            isActive={filter === f.key}
-            onClick={() => handleFilterChange(f.key)}
-          />
-        ))}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
+          {filters.map((f) => (
+            <TabFilter
+              key={f.key}
+              label={f.label}
+              isActive={filter === f.key}
+              onClick={() => handleFilterChange(f.key)}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Bookings list */}

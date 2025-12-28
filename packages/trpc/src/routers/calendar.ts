@@ -4,8 +4,8 @@ import {
   googleCredentialSchema,
 } from "@salonko/calendar";
 import { logger } from "@salonko/config";
+import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { z } from "zod";
-import { protectedProcedure, router } from "../trpc";
 
 export const calendarRouter = router({
   // List connected calendars (credentials)

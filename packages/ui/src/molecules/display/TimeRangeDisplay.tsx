@@ -1,5 +1,4 @@
 import { Clock } from "lucide-react";
-import * as React from "react";
 
 interface TimeRangeDisplayProps {
   startTime: Date;

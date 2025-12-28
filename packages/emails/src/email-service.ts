@@ -1,4 +1,5 @@
 import { logger } from "@salonko/config";
+import type { ReactElement } from "react";
 import { createElement } from "react";
 import { Resend } from "resend";
 import { BookingCancelledEmail } from "./templates/booking-cancelled";
@@ -15,7 +16,7 @@ import type { BookingEmailData } from "./types";
 export interface SendEmailOptions {
   to: string;
   subject: string;
-  react: React.ReactElement;
+  react: ReactElement;
 }
 
 class EmailService {

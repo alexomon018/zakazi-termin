@@ -1,4 +1,4 @@
-import { router } from "../trpc";
+import { router } from "@salonko/trpc/trpc";
 import { availabilityRouter } from "./availability";
 import { bookingRouter } from "./booking";
 import { calendarRouter } from "./calendar";

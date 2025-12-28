@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent } from "@salonko/ui";
+import { Button, Card, CardContent, cn } from "@salonko/ui";
 import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -36,9 +36,12 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
   });
 
   const handleCopyLink = async (eventType: { slug: string }) => {
+    // Use window.location.origin for client-side (always correct)
+    // Fall back to NEXT_PUBLIC_APP_URL for SSR
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "");
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || "";
     const link = `${baseUrl}/${currentUser?.username}/${eventType.slug}`;
 
     try {
@@ -70,20 +73,22 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     return `${hours}h ${mins}min`;
   };
 
+  // Use window.location.origin for client-side (always correct)
+  // Fall back to NEXT_PUBLIC_APP_URL for SSR
   const baseUrl =
     typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || "";
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tipovi termina</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
         </div>
-        <Link href="/dashboard/event-types/new">
-          <Button>
+        <Link href="/dashboard/event-types/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto">
             <Plus className="mr-2 w-4 h-4" />
             Novi tip termina
           </Button>
@@ -118,122 +123,124 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
               className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
             >
               <CardContent className="p-0">
-                <div className="flex justify-between items-center p-4">
-                  {/* Left section - Event info */}
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className="w-1 h-12 rounded-full"
-                      style={{
-                        backgroundColor: eventType.hidden ? "#9CA3AF" : "#3B82F6",
-                      }}
-                    />
-                    <div>
-                      <div className="flex gap-2 items-center">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
-                          {eventType.title}
-                        </h3>
-                        {eventType.hidden && (
-                          <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded">
-                            Skriveno
-                          </span>
+                <div className="p-4">
+                  {/* Mobile: Stack layout, Desktop: Row layout */}
+                  <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+                    {/* Left section - Event info */}
+                    <div className="flex items-center space-x-4 min-w-0">
+                      <div
+                        className={cn(
+                          "w-1 h-12 rounded-full flex-shrink-0",
+                          eventType.hidden ? "bg-gray-400" : "bg-blue-500"
                         )}
-                        {eventType.requiresConfirmation && (
-                          <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded">
-                            Zahteva potvrdu
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-4 items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex gap-1 items-center">
-                          <Clock className="w-3.5 h-3.5" />
-                          {formatDuration(eventType.length)}
-                        </span>
-                        {eventType.locations &&
-                        Array.isArray(eventType.locations) &&
-                        eventType.locations.length > 0 ? (
+                      />
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap gap-2 items-center">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                            {eventType.title}
+                          </h3>
+                          {eventType.hidden && (
+                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded flex-shrink-0">
+                              Skriveno
+                            </span>
+                          )}
+                          {eventType.requiresConfirmation && (
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-2 py-0.5 rounded flex-shrink-0">
+                              Zahteva potvrdu
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
                           <span className="flex gap-1 items-center">
-                            <MapPin className="w-3.5 h-3.5" />
-                            {(
-                              eventType.locations as {
-                                type: string;
-                                address?: string;
-                              }[]
-                            )[0]?.address || "Lokacija"}
+                            <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                            {formatDuration(eventType.length)}
                           </span>
-                        ) : null}
+                          {eventType.locations &&
+                          Array.isArray(eventType.locations) &&
+                          eventType.locations.length > 0 ? (
+                            <span className="flex gap-1 items-center min-w-0">
+                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span className="truncate">
+                                {(
+                                  eventType.locations as {
+                                    type: string;
+                                    address?: string;
+                                  }[]
+                                )[0]?.address || "Lokacija"}
+                              </span>
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Right section - Actions */}
-                  <div className="flex gap-2 items-center">
-                    {/* Copy link button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopyLink(eventType)}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      {copySuccess === index ? (
-                        <span className="text-xs text-green-600">Kopirano!</span>
-                      ) : (
-                        <>
-                          <Copy className="mr-1 w-4 h-4" />
-                          <span className="hidden text-xs sm:inline">Kopiraj link</span>
-                        </>
-                      )}
-                    </Button>
-
-                    {/* Preview link */}
-                    <Link
-                      href={`/${currentUser?.username}/${eventType.slug}`}
-                      target="_blank"
-                      className="p-2 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
-
-                    {/* Toggle visibility */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
-                      className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      {eventType.hidden ? (
-                        <Eye className="w-4 h-4" />
-                      ) : (
-                        <EyeOff className="w-4 h-4" />
-                      )}
-                    </Button>
-
-                    {/* Edit */}
-                    <Link href={`/dashboard/event-types/${eventType.id}`}>
+                    {/* Right section - Actions */}
+                    <div className="flex gap-1 items-center flex-shrink-0 ml-5 sm:ml-0">
+                      {/* Copy link button */}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                        onClick={() => handleCopyLink(eventType)}
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
                       >
-                        <Pencil className="w-4 h-4" />
+                        {copySuccess === index ? (
+                          <span className="text-xs text-green-600">Kopirano!</span>
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
                       </Button>
-                    </Link>
 
-                    {/* Delete */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(eventType.id)}
-                      className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
-                      data-testid={`delete-event-type-${eventType.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                      {/* Preview link */}
+                      <Link
+                        href={`/${currentUser?.username}/${eventType.slug}`}
+                        target="_blank"
+                        className="p-2 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+
+                      {/* Toggle visibility */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                      >
+                        {eventType.hidden ? (
+                          <Eye className="w-4 h-4" />
+                        ) : (
+                          <EyeOff className="w-4 h-4" />
+                        )}
+                      </Button>
+
+                      {/* Edit */}
+                      <Link href={`/dashboard/event-types/${eventType.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </Link>
+
+                      {/* Delete */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(eventType.id)}
+                        className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-2"
+                        data-testid={`delete-event-type-${eventType.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Public URL bar */}
-                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-gray-700 dark:bg-gray-800/50">
-                  <code className="text-xs text-gray-600 dark:text-gray-400">
+                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-gray-700 dark:bg-gray-800/50 overflow-hidden">
+                  <code className="text-xs text-gray-600 dark:text-gray-400 block truncate">
                     {baseUrl}/{currentUser?.username}/{eventType.slug}
                   </code>
                 </div>
