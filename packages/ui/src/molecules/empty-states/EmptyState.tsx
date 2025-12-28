@@ -1,8 +1,8 @@
 import { Card, CardContent } from "@salonko/ui";
-import type * as React from "react";
+import type { ComponentType } from "react";
 
 interface EmptyStateProps {
-  icon: React.ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
   message: string;
 }
 

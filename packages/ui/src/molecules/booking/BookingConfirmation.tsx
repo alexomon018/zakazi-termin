@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@salonko/ui";
 import { Calendar, CalendarPlus, CheckCircle, Clock, Download, MapPin } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
 
 interface CalendarLink {
   id: string;

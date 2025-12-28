@@ -1,5 +1,6 @@
-import * as React from "react";
-import { StatDisplay } from "../../molecules/landing/StatDisplay";
+"use client";
+
+import { StatDisplay } from "@salonko/ui/molecules/landing/StatDisplay";
 
 export function SocialProofBar() {
   const stats = [
@@ -10,11 +11,17 @@ export function SocialProofBar() {
   ];
 
   return (
-    <section className="py-12 border-y border-border bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 border-y border-border bg-muted/30 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border/20 to-transparent" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-          {stats.map((stat) => (
-            <StatDisplay key={stat.label} value={stat.value} label={stat.label} />
+          {stats.map((stat, index) => (
+            <StatDisplay
+              key={stat.label}
+              value={stat.value}
+              label={stat.label}
+              delay={index * 100}
+            />
           ))}
         </div>
       </div>

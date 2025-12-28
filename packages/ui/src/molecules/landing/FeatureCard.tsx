@@ -1,13 +1,16 @@
+"use client";
+
+import { Card } from "@salonko/ui/atoms/Card";
+import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
-import * as React from "react";
-import { Card } from "../../atoms/Card";
-import { cn } from "../../utils";
 
 interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
   variant?: "primary" | "accent";
+  delay?: number;
 }
 
 export function FeatureCard({
@@ -15,18 +18,38 @@ export function FeatureCard({
   title,
   description,
   variant = "primary",
+  delay = 0,
 }: FeatureCardProps) {
+  const { ref, isVisible } = useScrollAnimation({
+    threshold: 0.1,
+    triggerOnce: true,
+    delay,
+  });
+
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow">
+    <Card
+      ref={ref}
+      className={cn(
+        "p-6 transition-all duration-300 hover:shadow-elevated-lg hover:-translate-y-1 group",
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+      )}
+    >
       <div
         className={cn(
-          "w-12 h-12 rounded-lg flex items-center justify-center mb-4",
-          variant === "primary" ? "bg-primary/10" : "bg-accent/10"
+          "w-12 h-12 rounded-lg flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110",
+          variant === "primary"
+            ? "bg-primary/10 dark:bg-primary/25 group-hover:bg-primary/20 dark:group-hover:bg-primary/35"
+            : "bg-accent/10 dark:bg-accent/25 group-hover:bg-accent/20 dark:group-hover:bg-accent/35"
         )}
       >
         <Icon
           aria-hidden="true"
-          className={cn("w-6 h-6", variant === "primary" ? "text-primary" : "text-accent")}
+          className={cn(
+            "w-6 h-6 transition-transform duration-300 group-hover:scale-110",
+            variant === "primary"
+              ? "text-primary dark:text-primary"
+              : "text-accent dark:text-accent-foreground"
+          )}
         />
       </div>
       <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>

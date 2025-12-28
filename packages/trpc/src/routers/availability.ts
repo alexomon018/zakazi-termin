@@ -1,8 +1,8 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
 import { logger } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
+import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const availabilityRouter = router({
   // List user's schedules

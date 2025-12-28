@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { getAppUrl } from "@/lib/utils";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     });
 
     // Send password reset email
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appUrl = getAppUrl();
     const resetUrl = `${appUrl}/reset-password?token=${token}&email=${encodeURIComponent(email.toLowerCase())}`;
 
     try {
@@ -69,7 +70,10 @@ export async function POST(request: Request) {
         resetUrl,
       });
     } catch (error) {
-      logger.error("Failed to send password reset email", { error, email: email.toLowerCase() });
+      logger.error("Failed to send password reset email", {
+        error,
+        email: email.toLowerCase(),
+      });
       // Don't expose email sending failures to prevent enumeration
     }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import * as React from "react";
 
 interface FooterColumnProps {
   title: string;
@@ -14,7 +13,7 @@ export function FooterColumn({ title, links }: FooterColumnProps) {
       <h4 className="font-semibold text-foreground mb-4">{title}</h4>
       <ul className="space-y-2">
         {links.map((link) => (
-          <li key={link.href}>
+          <li key={`${title}-${link.label}`}>
             <Link
               href={link.href}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"

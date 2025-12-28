@@ -9,12 +9,12 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import type * as React from "react";
+import type { ReactNode } from "react";
 
 interface BaseEmailProps {
   preview: string;
   heading: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export function BaseEmail({ preview, heading, children }: BaseEmailProps) {

@@ -1,8 +1,8 @@
 import { logger } from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
+import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 // Helper to extract location from event type
 function getLocationString(locations: unknown): string | null {

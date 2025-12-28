@@ -1,6 +1,5 @@
 import { cn } from "@salonko/ui/utils";
 import { MapPin } from "lucide-react";
-import * as React from "react";
 
 interface LocationDisplayProps {
   location: string;

@@ -25,6 +25,18 @@ export {
   DialogTitle,
   DialogDescription,
 } from "./atoms/Dialog";
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+} from "./atoms/Select";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";
@@ -90,8 +102,14 @@ export { BookingConfirmation } from "./molecules/booking/BookingConfirmation";
 export { RescheduleBanner } from "./molecules/booking/RescheduleBanner";
 
 // Organisms - Booking Flow
-export { BookingFlow, EventNotFound } from "./organisms/booking-flow/BookingFlow";
-export { UserProfileClient, UserNotFound } from "./organisms/booking-flow/UserProfileClient";
+export {
+  BookingFlow,
+  EventNotFound,
+} from "./organisms/booking-flow/BookingFlow";
+export {
+  UserProfileClient,
+  UserNotFound,
+} from "./organisms/booking-flow/UserProfileClient";
 export {
   BookingDetailsClient,
   BookingNotFound,

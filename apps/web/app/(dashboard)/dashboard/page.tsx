@@ -1,5 +1,6 @@
 import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 import { getSession } from "@/lib/auth";
+import { getAppUrl } from "@/lib/utils";
 import { prisma } from "@salonko/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { Calendar, Clock, Users } from "lucide-react";
@@ -56,15 +57,15 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Dobrodošli, {session.user.name?.split(" ")[0] || "Korisniče"}!
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Evo pregleda vaših termina i aktivnosti.
         </p>
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Danas
             </CardTitle>
@@ -77,7 +78,7 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Predstojeći termini
             </CardTitle>
@@ -90,7 +91,7 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Tipovi termina
             </CardTitle>
@@ -107,13 +108,13 @@ export default async function DashboardPage() {
       <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
 
       {/* Quick links */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-        <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-2">Link za zakazivanje</h3>
-        <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
+      <div className="p-6 bg-blue-50 rounded-lg dark:bg-blue-900/20">
+        <h3 className="mb-2 font-medium text-blue-900 dark:text-blue-300">Link za zakazivanje</h3>
+        <p className="mb-3 text-sm text-blue-700 dark:text-blue-400">
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
-        <code className="bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-200 dark:border-blue-800 text-sm text-blue-900 dark:text-blue-300 block">
-          {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/{session.user.username}
+        <code className="block px-3 py-2 text-sm text-blue-900 bg-white rounded border border-blue-200 dark:bg-gray-800 dark:border-blue-800 dark:text-blue-300">
+          {getAppUrl()}/{session.user.username}
         </code>
       </div>
     </div>

@@ -1,5 +1,3 @@
-import * as React from "react";
-
 interface StatusBadgeProps {
   status: "PENDING" | "ACCEPTED" | "CANCELLED" | "REJECTED";
   labels?: {

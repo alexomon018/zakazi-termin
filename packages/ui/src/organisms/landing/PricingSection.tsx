@@ -1,7 +1,11 @@
-import * as React from "react";
-import { PricingCard } from "../../molecules/landing/PricingCard";
+"use client";
+
+import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
+import { PricingCard } from "@salonko/ui/molecules/landing/PricingCard";
+import { cn } from "@salonko/ui/utils";
 
 export function PricingSection() {
+  const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
   const plans = [
     {
       plan: "Starter",
@@ -51,7 +55,13 @@ export function PricingSection() {
   return (
     <section id="cene" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
+        <div
+          ref={headerRef.ref}
+          className={cn(
+            "text-center mb-16 transition-all duration-700 ease-out",
+            headerRef.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          )}
+        >
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance">
             Pristupačne cene za svaki biznis
           </h2>
@@ -61,7 +71,7 @@ export function PricingSection() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan) => (
+          {plans.map((plan, index) => (
             <PricingCard
               key={plan.plan}
               plan={plan.plan}
@@ -73,6 +83,7 @@ export function PricingSection() {
               buttonVariant={plan.buttonVariant}
               badge={plan.badge}
               highlighted={plan.highlighted}
+              delay={index * 100}
             />
           ))}
         </div>

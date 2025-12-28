@@ -1,5 +1,4 @@
 import { Link, Section, Text } from "@react-email/components";
-import * as React from "react";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export interface PasswordResetEmailProps {
