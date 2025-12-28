@@ -1,9 +1,52 @@
+import { BreadcrumbSchema, LocalBusinessSchema } from "@/components/StructuredData";
 import { createPublicServerCaller } from "@/lib/trpc/server";
+import { getAppUrl } from "@/lib/utils";
 import { UserNotFound, UserProfileClient } from "@salonko/ui";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ username: string }>;
 };
+
+const baseUrl = getAppUrl();
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
+  const caller = await createPublicServerCaller();
+  const user = await caller.user.getPublicProfile({ username });
+
+  if (!user) {
+    return {
+      title: "Korisnik nije pronadjen",
+      description: "Ovaj korisnik ne postoji na Salonko platformi.",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = `${user.name || username} - Zakazite termin`;
+  const description = `Zakazite termin kod ${user.name || username} online. Brzo i jednostavno zakazivanje termina putem Salonko platforme.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/${username}`,
+      type: "profile",
+      images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.name || username }] : [],
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+      images: user.avatarUrl ? [user.avatarUrl] : [],
+    },
+    alternates: {
+      canonical: `${baseUrl}/${username}`,
+    },
+  };
+}
 
 export default async function UserBookingPage({ params }: Props) {
   const { username } = await params;
@@ -17,5 +60,20 @@ export default async function UserBookingPage({ params }: Props) {
     return <UserNotFound />;
   }
 
-  return <UserProfileClient user={user} username={username} />;
+  return (
+    <>
+      <LocalBusinessSchema
+        name={user.name || username}
+        username={username}
+        avatarUrl={user.avatarUrl}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Salonko", url: baseUrl },
+          { name: user.name || username, url: `${baseUrl}/${username}` },
+        ]}
+      />
+      <UserProfileClient user={user} username={username} />
+    </>
+  );
 }

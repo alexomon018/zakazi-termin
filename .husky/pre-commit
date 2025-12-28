@@ -1,0 +1,32 @@
+#!/bin/sh
+
+echo "Running pre-commit checks..."
+
+# Run TypeScript check
+echo "Checking TypeScript..."
+yarn typecheck
+if [ $? -ne 0 ]; then
+  echo "TypeScript check failed. Please fix the errors before committing."
+  exit 1
+fi
+
+# Run lint check
+echo "Running lint check..."
+yarn lint
+if [ $? -ne 0 ]; then
+  echo "Lint check failed. Running lint:fix..."
+  yarn lint:fix
+
+  # Check if lint:fix actually fixed all issues
+  yarn lint
+  if [ $? -ne 0 ]; then
+    echo "Lint errors could not be automatically fixed. Please fix them manually."
+    exit 1
+  fi
+
+  # Add the fixed files to staging
+  git add -A
+  echo "Lint issues fixed and staged."
+fi
+
+echo "Pre-commit checks passed!"
