@@ -13,12 +13,13 @@ export function LandingFooter() {
   const supportLinks = [
     { label: "Pomoć", href: "#" },
     { label: "Kontakt", href: "#" },
-    { label: "FAQ", href: "#" },
+    { label: "FAQ", href: "/faq" },
   ];
 
   const legalLinks = [
     { label: "Uslovi korišćenja", href: "#" },
-    { label: "Privatnost", href: "#" },
+    { label: "Politika privatnosti", href: "/privacy-policy" },
+    { label: "Politika kolačića", href: "/cookies" },
   ];
 
   return (

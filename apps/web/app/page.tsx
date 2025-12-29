@@ -2,6 +2,7 @@ import { OrganizationSchema, WebsiteSchema } from "@/components/StructuredData";
 import { getSession } from "@/lib/auth";
 import {
   CtaBanner,
+  FAQSection,
   FeaturesSection,
   HeroSection,
   LandingFooter,
@@ -9,6 +10,7 @@ import {
   PricingSection,
   ProcessSection,
   SocialProofBar,
+  homepageFAQs,
 } from "@salonko/ui";
 import { redirect } from "next/navigation";
 
@@ -29,6 +31,7 @@ export default async function Home() {
       <FeaturesSection />
       <ProcessSection />
       <PricingSection />
+      <FAQSection items={homepageFAQs} showBackground />
       <CtaBanner />
       <LandingFooter />
     </div>
