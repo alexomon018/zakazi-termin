@@ -27,6 +27,12 @@ export {
   DialogDescription,
 } from "./atoms/Dialog";
 export {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "./atoms/Accordion";
+export {
   Select,
   SelectGroup,
   SelectValue,
@@ -131,3 +137,23 @@ export { ProcessSection } from "./organisms/landing/ProcessSection";
 export { PricingSection } from "./organisms/landing/PricingSection";
 export { CtaBanner } from "./organisms/landing/CtaBanner";
 export { LandingFooter } from "./organisms/landing/LandingFooter";
+
+// Organisms - Cookie Consent
+export { CookieBanner } from "./organisms/cookie-consent/CookieBanner";
+export { useCookieConsentStore } from "./organisms/cookie-consent/store";
+
+// Organisms - FAQ
+export { FAQAccordion } from "./organisms/faq/FAQAccordion";
+export { FAQSection } from "./organisms/faq/FAQSection";
+export {
+  type FAQItem,
+  type FAQCategory,
+  generalFAQs,
+  salonOwnerFAQs,
+  clientFAQs,
+  faqCategories,
+  homepageFAQs,
+} from "./organisms/faq/faq-data";
+
+// Hooks
+export { useCookieConsent } from "./hooks/useCookieConsent";
