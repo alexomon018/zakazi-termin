@@ -1,6 +1,6 @@
-import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { ConditionalAnalytics } from "@/components/ConditionalAnalytics";
 import { getAppUrl } from "@/lib/utils";
-import { Analytics } from "@vercel/analytics/react";
+import { CookieBanner } from "@salonko/ui";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "./providers";
@@ -78,9 +78,11 @@ export default function RootLayout({
   return (
     <html lang="sr" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
-        <Providers>{children}</Providers>
-        <Analytics />
-        <GoogleAnalytics />
+        <Providers>
+          {children}
+          <ConditionalAnalytics />
+        </Providers>
+        <CookieBanner />
       </body>
     </html>
   );
