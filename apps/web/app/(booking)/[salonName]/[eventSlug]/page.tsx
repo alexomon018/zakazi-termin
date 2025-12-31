@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{
-    username: string;
+    salonName: string;
     eventSlug: string;
   }>;
 };
@@ -14,12 +14,12 @@ type Props = {
 const baseUrl = getAppUrl();
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username, eventSlug } = await params;
+  const { salonName, eventSlug } = await params;
   const caller = await createPublicServerCaller();
 
   try {
     const eventType = await caller.eventType.getPublic({
-      username,
+      salonName,
       slug: eventSlug,
     });
 
@@ -31,10 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const title = `${eventType.title} - ${eventType.user.name || username}`;
+    const title = `${eventType.title} - ${eventType.user.salonName || salonName}`;
     const description =
       eventType.description ||
-      `Zakazite ${eventType.title} (${eventType.length} min) kod ${eventType.user.name || username}. Online zakazivanje termina putem Salonko platforme.`;
+      `Zakazite ${eventType.title} (${eventType.length} min) kod ${eventType.user.salonName || salonName}. Online zakazivanje termina putem Salonko platforme.`;
 
     return {
       title,
@@ -42,10 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title,
         description,
-        url: `${baseUrl}/${username}/${eventSlug}`,
+        url: `${baseUrl}/${salonName}/${eventSlug}`,
         type: "website",
         images: eventType.user.avatarUrl
-          ? [{ url: eventType.user.avatarUrl, alt: eventType.user.name || username }]
+          ? [{ url: eventType.user.avatarUrl, alt: eventType.user.salonName || salonName }]
           : [],
       },
       twitter: {
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: eventType.user.avatarUrl ? [eventType.user.avatarUrl] : [],
       },
       alternates: {
-        canonical: `${baseUrl}/${username}/${eventSlug}`,
+        canonical: `${baseUrl}/${salonName}/${eventSlug}`,
       },
     };
   } catch {
@@ -68,13 +68,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PublicBookingPage({ params }: Props) {
-  const { username, eventSlug } = await params;
+  const { salonName, eventSlug } = await params;
 
   const caller = await createPublicServerCaller();
 
   try {
     const eventType = await caller.eventType.getPublic({
-      username,
+      salonName,
       slug: eventSlug,
     });
 
@@ -88,18 +88,18 @@ export default async function PublicBookingPage({ params }: Props) {
           name={eventType.title}
           description={eventType.description}
           duration={eventType.length}
-          providerName={eventType.user.name || username}
-          providerUsername={username}
+          providerName={eventType.user.salonName || salonName}
+          providerSalonName={salonName}
           slug={eventSlug}
         />
         <BreadcrumbSchema
           items={[
             { name: "Salonko", url: baseUrl },
-            { name: eventType.user.name || username, url: `${baseUrl}/${username}` },
-            { name: eventType.title, url: `${baseUrl}/${username}/${eventSlug}` },
+            { name: eventType.user.salonName || salonName, url: `${baseUrl}/${salonName}` },
+            { name: eventType.title, url: `${baseUrl}/${salonName}/${eventSlug}` },
           ]}
         />
-        <BookingFlow eventType={eventType} username={username} eventSlug={eventSlug} />
+        <BookingFlow eventType={eventType} salonName={salonName} eventSlug={eventSlug} />
       </>
     );
   } catch {

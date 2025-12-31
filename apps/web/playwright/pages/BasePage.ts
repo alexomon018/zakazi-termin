@@ -22,7 +22,28 @@ export abstract class BasePage {
    * Wait for the page to be fully loaded
    */
   async waitForPageLoad(): Promise<void> {
-    await this.page.waitForLoadState("networkidle");
+    // Use domcontentloaded as primary wait, with networkidle as a timeout-limited fallback
+    await this.page.waitForLoadState("domcontentloaded");
+    await this.page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {
+      // Networkidle may timeout for pages with long-polling or streaming - that's ok
+    });
+    // Dismiss cookie banner if present to prevent it from blocking interactions
+    await this.dismissCookieBanner();
+  }
+
+  /**
+   * Dismiss the cookie consent banner if it's visible
+   */
+  protected async dismissCookieBanner(): Promise<void> {
+    const acceptButton = this.page.locator('button:has-text("Prihvatam sve")');
+    if (await acceptButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+      await acceptButton.click();
+      // Wait for banner to disappear
+      await this.page
+        .locator('.fixed.bottom-0:has-text("Kolacici")')
+        .waitFor({ state: "hidden", timeout: 2000 })
+        .catch(() => {});
+    }
   }
 
   /**
@@ -96,14 +117,22 @@ export abstract class BasePage {
 
   /**
    * Wait for mutation to complete by waiting for API response
+   * Handles both standard trpc calls and batched requests
    */
-  protected async waitForMutation(action: () => Promise<void>): Promise<void> {
-    await Promise.all([
-      this.page.waitForResponse(
-        (response) => response.url().includes("/api/trpc") && response.request().method() === "POST"
-      ),
-      action(),
-    ]);
+  protected async waitForMutation(action: () => Promise<void>, timeoutMs = 30000): Promise<void> {
+    // Start waiting for response before executing action to capture it
+    const responsePromise = this.page.waitForResponse(
+      (response) => {
+        const url = response.url();
+        const method = response.request().method();
+        // Match trpc endpoints (both /api/trpc and /api/trpc/batch patterns)
+        return (url.includes("/api/trpc") || url.includes("/trpc")) && method === "POST";
+      },
+      { timeout: timeoutMs }
+    );
+
+    // Execute action and wait for response in parallel
+    await Promise.all([responsePromise, action()]);
   }
 
   /**

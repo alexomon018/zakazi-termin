@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 type EventType = RouterOutputs["eventType"]["list"][number];
-type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "username" | "name">;
+type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "salonName" | "name">;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
@@ -42,7 +42,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
       typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_APP_URL || "";
-    const link = `${baseUrl}/${currentUser?.username}/${eventType.slug}`;
+    const link = `${baseUrl}/${currentUser?.salonName}/${eventType.slug}`;
 
     try {
       await navigator.clipboard.writeText(link);
@@ -192,7 +192,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
                       {/* Preview link */}
                       <Link
-                        href={`/${currentUser?.username}/${eventType.slug}`}
+                        href={`/${currentUser?.salonName}/${eventType.slug}`}
                         target="_blank"
                         className="p-2 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
@@ -241,7 +241,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                 {/* Public URL bar */}
                 <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-gray-700 dark:bg-gray-800/50 overflow-hidden">
                   <code className="text-xs text-gray-600 dark:text-gray-400 block truncate">
-                    {baseUrl}/{currentUser?.username}/{eventType.slug}
+                    {baseUrl}/{currentUser?.salonName}/{eventType.slug}
                   </code>
                 </div>
               </CardContent>

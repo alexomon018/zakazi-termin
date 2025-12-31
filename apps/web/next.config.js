@@ -7,6 +7,14 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
+  },
   transpilePackages: [
     "@salonko/auth",
     "@salonko/prisma",

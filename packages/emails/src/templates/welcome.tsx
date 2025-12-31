@@ -5,15 +5,15 @@ import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 export interface WelcomeEmailProps {
   userName: string;
   userEmail: string;
-  username?: string | null;
+  salonName?: string | null;
 }
 
-export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProps) {
+export function WelcomeEmail({ userName, userEmail, salonName }: WelcomeEmailProps) {
   const appUrl = getAppUrl();
   const dashboardUrl = `${appUrl}/dashboard`;
   const eventTypesUrl = `${appUrl}/dashboard/event-types`;
   const availabilityUrl = `${appUrl}/dashboard/availability`;
-  const publicProfileUrl = username ? `${appUrl}/${username}` : null;
+  const publicProfileUrl = salonName ? `${appUrl}/${salonName}` : null;
 
   return (
     <BaseEmail
@@ -30,9 +30,9 @@ export function WelcomeEmail({ userName, userEmail, username }: WelcomeEmailProp
         <Text style={infoRow}>
           <span style={label}>Email:</span> {userEmail}
         </Text>
-        {username && (
+        {salonName && (
           <Text style={infoRow}>
-            <span style={label}>Korisničko ime:</span> {username}
+            <span style={label}>Naziv salona:</span> {salonName}
           </Text>
         )}
         {publicProfileUrl && (
@@ -124,7 +124,7 @@ const stepText = {
 WelcomeEmail.PreviewProps = {
   userName: "Marko Marković",
   userEmail: "marko@example.com",
-  username: "marko",
+  salonName: "marko-salon",
 } as WelcomeEmailProps;
 
 export default WelcomeEmail;

@@ -8,11 +8,11 @@ import { z } from "zod";
 const signupSchema = z.object({
   name: z.string().min(2, "Ime mora imati najmanje 2 karaktera"),
   email: z.string().email("Nevažeća email adresa"),
-  username: z
+  salonName: z
     .string()
-    .min(3, "Korisničko ime mora imati najmanje 3 karaktera")
-    .max(20, "Korisničko ime može imati najviše 20 karaktera")
-    .regex(/^[a-z0-9_-]+$/, "Korisničko ime može sadržati samo mala slova, brojeve, _ i -"),
+    .min(3, "Naziv salona mora imati najmanje 3 karaktera")
+    .max(20, "Naziv salona može imati najviše 20 karaktera")
+    .regex(/^[a-z0-9_-]+$/, "Naziv salona može sadržati samo mala slova, brojeve, _ i -"),
   password: z.string().min(8, "Lozinka mora imati najmanje 8 karaktera"),
   organizationName: z.string().optional(),
   organizationSlug: z
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: result.error.errors[0].message }, { status: 400 });
     }
 
-    const { name, email, username, password, organizationName, organizationSlug } = result.data;
+    const { name, email, salonName, password, organizationName, organizationSlug } = result.data;
 
     // Check if email already exists
     const existingEmail = await prisma.user.findUnique({
@@ -41,13 +41,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Email adresa je već registrovana" }, { status: 400 });
     }
 
-    // Check if username already exists
-    const existingUsername = await prisma.user.findUnique({
-      where: { username: username.toLowerCase() },
+    // Check if salonName already exists
+    const existingSalonName = await prisma.user.findUnique({
+      where: { salonName: salonName.toLowerCase() },
     });
 
-    if (existingUsername) {
-      return NextResponse.json({ message: "Korisničko ime je zauzeto" }, { status: 400 });
+    if (existingSalonName) {
+      return NextResponse.json({ message: "Naziv salona je zauzet" }, { status: 400 });
     }
 
     // Check if organization slug already exists (if creating org)
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
         data: {
           name,
           email: email.toLowerCase(),
-          username: username.toLowerCase(),
+          salonName: salonName.toLowerCase(),
           identityProvider: "EMAIL",
           password: {
             create: {
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       await emailService.sendWelcomeEmail({
         userName: name,
         userEmail: email.toLowerCase(),
-        username: username.toLowerCase(),
+        salonName: salonName.toLowerCase(),
       });
     } catch (error) {
       logger.error("Failed to send welcome email", { error, email: email.toLowerCase() });

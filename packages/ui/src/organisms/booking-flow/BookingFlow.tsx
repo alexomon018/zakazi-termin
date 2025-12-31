@@ -33,6 +33,7 @@ type EventType = {
   user: {
     id: number;
     name: string | null;
+    salonName: string | null;
     avatarUrl: string | null;
     theme?: string | null;
     brandColor?: string | null;
@@ -42,11 +43,11 @@ type EventType = {
 
 type BookingFlowProps = {
   eventType: EventType;
-  username: string;
+  salonName: string;
   eventSlug: string;
 };
 
-export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps) {
+export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProps) {
   const searchParams = useSearchParams();
   const rescheduleUid = searchParams.get("rescheduleUid");
 
@@ -296,7 +297,7 @@ export function BookingFlow({ eventType, username, eventSlug }: BookingFlowProps
             eventDescription={eventType.description}
             eventLength={eventType.length}
             eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
-            userName={eventType.user?.name}
+            salonName={eventType.user?.salonName}
             userAvatarUrl={eventType.user?.avatarUrl}
             isRescheduling={isRescheduling}
           />

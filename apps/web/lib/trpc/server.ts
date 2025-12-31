@@ -20,7 +20,7 @@ export const createServerCaller = cache(async () => {
           id: session.user.id as number,
           email: session.user.email!,
           name: session.user.name,
-          username: (session.user as { username?: string }).username,
+          salonName: (session.user as { salonName?: string }).salonName,
         },
       }
     : null;

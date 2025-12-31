@@ -9,7 +9,7 @@ export class SignupPage extends BasePage {
   // Form elements
   readonly nameInput: Locator;
   readonly emailInput: Locator;
-  readonly usernameInput: Locator;
+  readonly salonNameInput: Locator;
   readonly passwordInput: Locator;
   readonly confirmPasswordInput: Locator;
   readonly submitButton: Locator;
@@ -17,7 +17,7 @@ export class SignupPage extends BasePage {
   readonly loginLink: Locator;
   readonly pageTitle: Locator;
   readonly pageSubtitle: Locator;
-  readonly usernamePreview: Locator;
+  readonly salonNamePreview: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -25,7 +25,7 @@ export class SignupPage extends BasePage {
     // Use data-testid selectors
     this.nameInput = page.locator('[data-testid="signup-name-input"]');
     this.emailInput = page.locator('[data-testid="signup-email-input"]');
-    this.usernameInput = page.locator('[data-testid="signup-username-input"]');
+    this.salonNameInput = page.locator('[data-testid="signup-salon-name-input"]');
     this.passwordInput = page.locator('[data-testid="signup-password-input"]');
     this.confirmPasswordInput = page.locator('[data-testid="signup-confirm-password-input"]');
     this.submitButton = page.locator('[data-testid="signup-submit-button"]');
@@ -33,7 +33,7 @@ export class SignupPage extends BasePage {
     this.loginLink = page.locator('[data-testid="signup-login-link"]');
     this.pageTitle = page.locator('[data-testid="signup-title"]');
     this.pageSubtitle = page.locator('[data-testid="signup-subtitle"]');
-    this.usernamePreview = page.locator('[data-testid="signup-username-preview"]');
+    this.salonNamePreview = page.locator('[data-testid="signup-salon-name-preview"]');
   }
 
   /**
@@ -59,10 +59,10 @@ export class SignupPage extends BasePage {
   }
 
   /**
-   * Fill the username field
+   * Fill the salonName field
    */
-  async fillUsername(username: string): Promise<void> {
-    await this.fillField(this.usernameInput, username);
+  async fillSalonName(salonName: string): Promise<void> {
+    await this.fillField(this.salonNameInput, salonName);
   }
 
   /**
@@ -92,12 +92,12 @@ export class SignupPage extends BasePage {
   async signup(data: {
     name: string;
     email: string;
-    username: string;
+    salonName: string;
     password: string;
   }): Promise<void> {
     await this.fillName(data.name);
     await this.fillEmail(data.email);
-    await this.fillUsername(data.username);
+    await this.fillSalonName(data.salonName);
     await this.fillPassword(data.password);
     await this.fillConfirmPassword(data.password);
     await this.submit();
@@ -109,7 +109,7 @@ export class SignupPage extends BasePage {
   async signupAndExpectSuccess(data: {
     name: string;
     email: string;
-    username: string;
+    salonName: string;
     password: string;
   }): Promise<void> {
     await this.signup(data);
@@ -137,18 +137,18 @@ export class SignupPage extends BasePage {
   async expectFormVisible(): Promise<void> {
     await expect(this.nameInput).toBeVisible();
     await expect(this.emailInput).toBeVisible();
-    await expect(this.usernameInput).toBeVisible();
+    await expect(this.salonNameInput).toBeVisible();
     await expect(this.passwordInput).toBeVisible();
     await expect(this.confirmPasswordInput).toBeVisible();
     await expect(this.submitButton).toBeVisible();
   }
 
   /**
-   * Check if username preview is displayed with correct URL
+   * Check if salonName preview is displayed with correct URL
    */
-  async expectUsernamePreview(username: string): Promise<void> {
-    await expect(this.usernamePreview).toBeVisible();
-    await expect(this.usernamePreview).toContainText(username);
+  async expectSalonNamePreview(salonName: string): Promise<void> {
+    await expect(this.salonNamePreview).toBeVisible();
+    await expect(this.salonNamePreview).toContainText(salonName);
   }
 
   /**
@@ -162,9 +162,10 @@ export class SignupPage extends BasePage {
    * Check for field-specific validation errors
    */
   async expectFieldError(
-    field: "name" | "email" | "username" | "password" | "confirmPassword"
+    field: "name" | "email" | "salonName" | "password" | "confirmPassword"
   ): Promise<Locator> {
-    const errorLocator = this.page.getByTestId(`signup-${field}-error`);
+    const testId = field === "salonName" ? "signup-salon-name-error" : `signup-${field}-error`;
+    const errorLocator = this.page.getByTestId(testId);
     await expect(errorLocator).toBeVisible();
     return errorLocator;
   }
@@ -178,9 +179,9 @@ export class SignupPage extends BasePage {
   }
 
   /**
-   * Check username preview contains text
+   * Check salonName preview contains text
    */
-  async expectUsernamePreviewContains(username: string): Promise<void> {
-    await expect(this.page.locator(`text=salonko.rs/${username}`)).toBeVisible();
+  async expectSalonNamePreviewContains(salonName: string): Promise<void> {
+    await expect(this.page.locator(`text=salonko.rs/${salonName}`)).toBeVisible();
   }
 }

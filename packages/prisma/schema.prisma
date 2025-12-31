@@ -77,7 +77,7 @@ model User {
   id                 Int              @id @default(autoincrement())
   email              String           @unique
   name               String?
-  username           String?          @unique
+  salonName          String?          @unique
   password           UserPassword?
   avatarUrl          String?
   bio                String?
@@ -109,7 +109,7 @@ model User {
   outOfOfficeEntries  OutOfOffice[]
 
   @@index([email])
-  @@index([username])
+  @@index([salonName])
 }
 
 model UserPassword {

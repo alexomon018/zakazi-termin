@@ -1,5 +1,5 @@
 import { expect, test } from "../fixtures";
-import { generateTestEmail, generateTestUsername } from "../lib/helpers";
+import { generateTestEmail, generateTestSalonName } from "../lib/helpers";
 import { SignupPage } from "../pages";
 
 test.describe("Signup", () => {
@@ -33,7 +33,7 @@ test.describe("Signup", () => {
     // Fill form with mismatched passwords
     await signupPage.fillName("Test User");
     await signupPage.fillEmail(generateTestEmail());
-    await signupPage.fillUsername(generateTestUsername());
+    await signupPage.fillSalonName(generateTestSalonName());
     await signupPage.fillPasswordMismatch("TestPassword123!", "DifferentPassword123!");
 
     // Submit form
@@ -50,7 +50,7 @@ test.describe("Signup", () => {
     // Fill form with weak password
     await signupPage.fillName("Test User");
     await signupPage.fillEmail(generateTestEmail());
-    await signupPage.fillUsername(generateTestUsername());
+    await signupPage.fillSalonName(generateTestSalonName());
     await signupPage.fillPasswordMismatch("weak", "weak");
 
     // Submit form
@@ -62,8 +62,8 @@ test.describe("Signup", () => {
 
   test("should successfully create account and redirect to dashboard", async ({ page, prisma }) => {
     const email = generateTestEmail();
-    // Use a short username that passes frontend validation (max 20 chars)
-    const username = `user${Date.now() % 100000}`;
+    // Use a short salonName that passes frontend validation (max 20 chars)
+    const salonName = `salon${Date.now() % 100000}`;
 
     const signupPage = new SignupPage(page);
     await signupPage.goto();
@@ -73,7 +73,7 @@ test.describe("Signup", () => {
     await signupPage.signup({
       name: "Test User",
       email,
-      username,
+      salonName,
       password: "TestPassword123!",
     });
 
@@ -85,7 +85,7 @@ test.describe("Signup", () => {
       where: { email: email.toLowerCase() },
     });
     expect(user).toBeTruthy();
-    expect(user?.username).toBe(username.toLowerCase());
+    expect(user?.salonName).toBe(salonName.toLowerCase());
 
     // Cleanup - delete the created user
     if (user) {
@@ -94,18 +94,18 @@ test.describe("Signup", () => {
   });
 
   test("should show error for duplicate email", async ({ page, users }) => {
-    // Create an existing user with a short username that passes frontend validation (max 20 chars)
-    const shortUsername = `user${Date.now() % 100000}`;
-    const existingUser = await users.create({ username: shortUsername });
+    // Create an existing user with a short salonName that passes frontend validation (max 20 chars)
+    const shortSalonName = `salon${Date.now() % 100000}`;
+    const existingUser = await users.create({ salonName: shortSalonName });
 
     const signupPage = new SignupPage(page);
     await signupPage.goto();
     await signupPage.waitForPageLoad();
 
-    // Try to register with the same email but a different valid username
+    // Try to register with the same email but a different valid salonName
     await signupPage.fillName("Test User");
     await signupPage.fillEmail(existingUser.email);
-    await signupPage.fillUsername(`new${Date.now() % 10000}`);
+    await signupPage.fillSalonName(`new${Date.now() % 10000}`);
     await signupPage.fillPassword("TestPassword123!");
     await signupPage.fillConfirmPassword("TestPassword123!");
 
@@ -116,31 +116,31 @@ test.describe("Signup", () => {
     await signupPage.expectErrorMessage("Email adresa je već registrovana");
   });
 
-  test("should show error for duplicate username", async ({ page, users }) => {
-    // Create an existing user with unique email and short username that passes frontend validation
+  test("should show error for duplicate salonName", async ({ page, users }) => {
+    // Create an existing user with unique email and short salonName that passes frontend validation
     const uniqueSuffix = `${Date.now()}${Math.random().toString(36).substring(2, 5)}`;
-    const shortUsername = `usr${uniqueSuffix.slice(-10)}`;
+    const shortSalonName = `sal${uniqueSuffix.slice(-10)}`;
     const existingUser = await users.create({
-      username: shortUsername,
-      email: `dupuser-${uniqueSuffix}@test.com`,
+      salonName: shortSalonName,
+      email: `dupsalon-${uniqueSuffix}@test.com`,
     });
 
     const signupPage = new SignupPage(page);
     await signupPage.goto();
     await signupPage.waitForPageLoad();
 
-    // Try to register with the same username (short enough to pass frontend validation)
+    // Try to register with the same salonName (short enough to pass frontend validation)
     await signupPage.fillName("Test User");
     await signupPage.fillEmail(generateTestEmail());
-    await signupPage.fillUsername(existingUser.username);
+    await signupPage.fillSalonName(existingUser.salonName);
     await signupPage.fillPassword("TestPassword123!");
     await signupPage.fillConfirmPassword("TestPassword123!");
 
     // Submit form
     await signupPage.submit();
 
-    // Should show error message about existing username (actual message from API)
-    await signupPage.expectErrorMessage("Korisničko ime je zauzeto");
+    // Should show error message about existing salonName (actual message from API)
+    await signupPage.expectErrorMessage("Naziv salona je zauzet");
   });
 
   test("should have link to login page", async ({ page }) => {
@@ -162,14 +162,14 @@ test.describe("Signup", () => {
     await expect(signupPage.googleButton).toBeVisible();
   });
 
-  test("should show username preview", async ({ page }) => {
+  test("should show salonName preview", async ({ page }) => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Fill username
-    await signupPage.fillUsername("testuser");
+    // Fill salonName
+    await signupPage.fillSalonName("testsalon");
 
     // Check preview text is visible
-    await signupPage.expectUsernamePreviewContains("testuser");
+    await signupPage.expectSalonNamePreviewContains("testsalon");
   });
 });

@@ -18,16 +18,19 @@ import {
   SelectValue,
 } from "@salonko/ui";
 import { AlertCircle, Check, ExternalLink, User as UserIcon } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Ime je obavezno"),
-  username: z
+  salonName: z
     .string()
-    .min(3, "Korisničko ime mora imati najmanje 3 karaktera")
-    .regex(/^[a-zA-Z0-9_-]+$/, "Korisničko ime može sadržati samo slova, brojeve, _ i -"),
+    .min(3, "Naziv salona mora imati najmanje 3 karaktera")
+    .max(30, "Naziv salona može imati najviše 30 karaktera")
+    .regex(/^[a-zA-Z0-9\s_-]+$/, "Naziv salona može sadržati samo slova, brojeve, razmake, _ i -")
+    .transform((val) => val.toLowerCase().replace(/\s+/g, "-")),
   bio: z.string().optional(),
   timeZone: z.string(),
 });
@@ -55,7 +58,7 @@ type ProfileClientProps = {
 
 export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [saved, setSaved] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [salonNameAvailable, setSalonNameAvailable] = useState<boolean | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -82,7 +85,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user?.name || "",
-      username: user?.username || "",
+      salonName: user?.salonName || "",
       bio: user?.bio || "",
       timeZone: user?.timeZone || "Europe/Belgrade",
     },
@@ -93,31 +96,31 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     if (user) {
       reset({
         name: user.name || "",
-        username: user.username || "",
+        salonName: user.salonName || "",
         bio: user.bio || "",
         timeZone: user.timeZone,
       });
     }
   }, [user, reset]);
 
-  const watchedUsername = watch("username");
+  const watchedSalonName = watch("salonName");
+  const salonNameSlug = watchedSalonName?.toLowerCase().replace(/\s+/g, "-") || "";
 
-  // Check username availability
-  const { data: usernameCheck } = trpc.user.checkUsername.useQuery(
-    { username: watchedUsername },
+  // Check salonName availability
+  const { data: salonNameCheck } = trpc.user.checkSalonName.useQuery(
+    { salonName: salonNameSlug },
     {
-      enabled:
-        !!watchedUsername && watchedUsername.length >= 3 && watchedUsername !== user?.username,
+      enabled: !!salonNameSlug && salonNameSlug.length >= 3 && salonNameSlug !== user?.salonName,
     }
   );
 
   useEffect(() => {
-    if (watchedUsername === user?.username) {
-      setUsernameAvailable(null);
-    } else if (usernameCheck) {
-      setUsernameAvailable(usernameCheck.available);
+    if (salonNameSlug === user?.salonName) {
+      setSalonNameAvailable(null);
+    } else if (salonNameCheck) {
+      setSalonNameAvailable(salonNameCheck.available);
     }
-  }, [usernameCheck, watchedUsername, user?.username]);
+  }, [salonNameCheck, salonNameSlug, user?.salonName]);
 
   const onSubmit = (data: ProfileFormValues) => {
     updateProfile.mutate(data);
@@ -156,9 +159,11 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <div className="flex overflow-hidden justify-center items-center w-20 h-20 bg-gray-200 rounded-full dark:bg-gray-700 flex-shrink-0">
                 {user?.avatarUrl ? (
-                  <img
+                  <Image
                     src={user.avatarUrl}
                     alt={user.name || "Avatar"}
+                    width={80}
+                    height={80}
                     className="object-cover w-full h-full"
                   />
                 ) : (
@@ -193,25 +198,25 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-gray-900 dark:text-white">
-                  Korisničko ime
+                <Label htmlFor="salonName" className="text-gray-900 dark:text-white">
+                  Naziv salona
                 </Label>
                 <div className="relative">
                   <Input
-                    id="username"
-                    {...register("username")}
-                    placeholder="marko"
+                    id="salonName"
+                    {...register("salonName")}
+                    placeholder="Moj Salon"
                     className={
-                      usernameAvailable === false
+                      salonNameAvailable === false
                         ? "border-red-500 focus:ring-red-500"
-                        : usernameAvailable === true
+                        : salonNameAvailable === true
                           ? "border-green-500 focus:ring-green-500"
                           : ""
                     }
                   />
-                  {usernameAvailable !== null && (
+                  {salonNameAvailable !== null && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      {usernameAvailable ? (
+                      {salonNameAvailable ? (
                         <Check className="w-4 h-4 text-green-500" />
                       ) : (
                         <AlertCircle className="w-4 h-4 text-red-500" />
@@ -219,26 +224,28 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                     </div>
                   )}
                 </div>
-                {errors.username && (
-                  <p className="text-sm text-red-600">{errors.username.message}</p>
+                {errors.salonName && (
+                  <p className="text-sm text-red-600">{errors.salonName.message}</p>
                 )}
-                {usernameAvailable === false && (
-                  <p className="text-sm text-red-600">Korisničko ime je već zauzeto</p>
+                {salonNameAvailable === false && (
+                  <p className="text-sm text-red-600">Naziv salona je već zauzet</p>
                 )}
-                {user?.username && (
-                  <p className="flex gap-1 items-center text-xs text-gray-500 dark:text-gray-400">
-                    Vaš link:{" "}
+                <p className="flex gap-1 items-center text-xs text-gray-500 dark:text-gray-400">
+                  Vaš link:{" "}
+                  {salonNameSlug ? (
                     <a
-                      href={`/${user.username}`}
+                      href={`/${salonNameSlug}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex gap-1 items-center text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      salonko.rs/{user.username}
+                      salonko.rs/{salonNameSlug}
                       <ExternalLink className="w-3 h-3" />
                     </a>
-                  </p>
-                )}
+                  ) : (
+                    <span>salonko.rs/naziv-salona</span>
+                  )}
+                </p>
               </div>
             </div>
 
@@ -322,7 +329,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
         <div className="flex justify-end">
           <Button
             type="submit"
-            disabled={!isDirty || updateProfile.isPending || usernameAvailable === false}
+            disabled={!isDirty || updateProfile.isPending || salonNameAvailable === false}
           >
             {updateProfile.isPending ? "Čuvanje..." : "Sačuvaj promene"}
           </Button>

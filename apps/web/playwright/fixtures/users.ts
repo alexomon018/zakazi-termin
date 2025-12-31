@@ -6,14 +6,14 @@ export interface TestUser {
   id: number;
   email: string;
   password: string;
-  username: string;
+  salonName: string;
   name: string;
 }
 
 export interface CreateUserOptions {
   email?: string;
   password?: string;
-  username?: string;
+  salonName?: string;
   name?: string;
   withSchedule?: boolean;
   withEventType?: boolean;
@@ -54,7 +54,8 @@ export const test = base.extend<UsersFixtureType>({
         const random = Math.random().toString(36).substring(2, 10);
         const email = options.email || `test-user-${timestamp}-${userCounter}-${random}@test.com`;
         const password = options.password || "TestPassword123!";
-        const username = options.username || `testuser${timestamp}${userCounter}${random}`;
+        // Limit salon name to 30 characters to pass validation
+        const salonName = options.salonName || `salon${userCounter}${random}`.slice(0, 30);
         const name = options.name || `Test User ${userCounter}`;
 
         // Hash password
@@ -64,7 +65,7 @@ export const test = base.extend<UsersFixtureType>({
         const user = await prisma.user.create({
           data: {
             email,
-            username,
+            salonName,
             name,
             identityProvider: "EMAIL",
             emailVerified: new Date(),
@@ -123,7 +124,7 @@ export const test = base.extend<UsersFixtureType>({
           id: user.id,
           email,
           password,
-          username,
+          salonName,
           name,
         };
       },
@@ -152,6 +153,21 @@ export const test = base.extend<UsersFixtureType>({
 });
 
 async function loginUser(page: Page, user: TestUser): Promise<void> {
+  // Set cookie consent before navigating to avoid banner blocking interactions
+  await page.context().addCookies([
+    {
+      name: "cookie-consent",
+      value: JSON.stringify({
+        version: 1,
+        necessary: true,
+        analytics: false,
+        timestamp: Date.now(),
+      }),
+      domain: "localhost",
+      path: "/",
+    },
+  ]);
+
   // Navigate to login page
   await page.goto("/login");
 

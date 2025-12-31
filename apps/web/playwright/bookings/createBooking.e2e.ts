@@ -8,7 +8,7 @@ test.describe("Create Booking", () => {
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Should see the user's event types
     await profilePage.expectEventTypeVisible("30 Minute Meeting");
@@ -20,13 +20,13 @@ test.describe("Create Booking", () => {
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Click on the event type
     await profilePage.selectEventType("30 Minute Meeting");
 
     // Should navigate to event type booking page
-    await expect(page).toHaveURL(new RegExp(`/${user.username}/30-minute-meeting`));
+    await expect(page).toHaveURL(new RegExp(`/${user.salonName}/30-minute-meeting`));
   });
 
   test("should display calendar for booking", async ({ page, users }) => {
@@ -35,7 +35,7 @@ test.describe("Create Booking", () => {
 
     // Navigate to the event type booking page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "30-minute-meeting");
+    await bookingPage.goto(user.salonName, "30-minute-meeting");
 
     // Look for day names in Serbian (Pon, Uto, Sre, etc.) or event type title
     const hasDayNames = await page
@@ -58,7 +58,7 @@ test.describe("Create Booking", () => {
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Should see the user's name
     await profilePage.expectUserNameVisible(user.name);
