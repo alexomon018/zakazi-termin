@@ -22,7 +22,8 @@ export default function SignupPage() {
     resolver: zodResolver(signupSchema),
   });
 
-  const username = watch("username", "");
+  const salonName = watch("salonName", "");
+  const salonNameSlug = salonName.toLowerCase().replace(/\s+/g, "-");
 
   const onSubmit = async (data: SignupFormData) => {
     setServerError(null);
@@ -34,7 +35,7 @@ export default function SignupPage() {
         body: JSON.stringify({
           name: data.name,
           email: data.email.toLowerCase(),
-          username: data.username.toLowerCase(),
+          salonName: data.salonName.toLowerCase(),
           password: data.password,
         }),
       });
@@ -134,30 +135,30 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-gray-900 dark:text-white">
-              Korisničko ime
+            <Label htmlFor="salonName" className="text-gray-900 dark:text-white">
+              Naziv salona
             </Label>
             <Input
-              id="username"
-              data-testid="signup-username-input"
+              id="salonName"
+              data-testid="signup-salon-name-input"
               type="text"
-              placeholder="marko"
+              placeholder="Moj Salon"
               disabled={isSubmitting}
-              {...register("username")}
+              {...register("salonName")}
             />
-            {errors.username ? (
+            {errors.salonName ? (
               <p
-                data-testid="signup-username-error"
+                data-testid="signup-salon-name-error"
                 className="text-sm text-red-600 dark:text-red-400"
               >
-                {errors.username.message}
+                {errors.salonName.message}
               </p>
             ) : (
               <p
-                data-testid="signup-username-preview"
+                data-testid="signup-salon-name-preview"
                 className="text-xs text-gray-500 dark:text-gray-400"
               >
-                Vaš profil: salonko.rs/{username || "korisnickoime"}
+                Vaš link: salonko.rs/{salonNameSlug || "naziv-salona"}
               </p>
             )}
           </div>

@@ -40,8 +40,12 @@ export function useCookieConsent() {
           consentTimestamp: parsed.timestamp ?? null,
         });
       } catch {
-        // Invalid cookie, ignore
+        // Invalid cookie, mark as hydrated anyway
+        store.hydrate({});
       }
+    } else {
+      // No cookie, mark as hydrated so banner can show
+      store.hydrate({});
     }
   }, [store.hydrate]);
 
@@ -60,6 +64,7 @@ export function useCookieConsent() {
 
   return {
     hasConsented: store.hasConsented,
+    isHydrated: store.isHydrated,
     analytics: store.analytics,
     necessary: store.necessary,
     acceptAll: store.acceptAll,

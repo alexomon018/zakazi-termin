@@ -1,3 +1,4 @@
+import { formatSalonName } from "@salonko/ui/lib/utils/formatSalonName";
 import { UserAvatar } from "@salonko/ui/molecules/user/UserAvatar";
 import { Clock, MapPin } from "lucide-react";
 
@@ -6,7 +7,7 @@ interface BookingEventHeaderProps {
   eventDescription?: string | null;
   eventLength: number;
   eventLocation?: string;
-  userName?: string | null;
+  salonName?: string | null;
   userAvatarUrl?: string | null;
   isRescheduling?: boolean;
 }
@@ -16,17 +17,19 @@ export function BookingEventHeader({
   eventDescription,
   eventLength,
   eventLocation,
-  userName,
+  salonName,
   userAvatarUrl,
   isRescheduling,
 }: BookingEventHeaderProps) {
   return (
     <div className="mb-8 text-center">
       <div className="flex gap-3 justify-center items-center mb-4">
-        <UserAvatar name={userName || ""} image={userAvatarUrl || undefined} size="lg" />
-        {userName && (
+        <UserAvatar name={salonName || ""} image={userAvatarUrl || undefined} size="lg" />
+        {salonName && (
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{userName}</h1>
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              {formatSalonName(salonName)}
+            </h1>
           </div>
         )}
       </div>

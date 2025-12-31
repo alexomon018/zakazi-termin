@@ -29,12 +29,12 @@ export const eventTypeRouter = router({
     return eventType;
   }),
 
-  // Get public event type by username and slug
+  // Get public event type by salonName and slug
   getPublic: publicProcedure
-    .input(z.object({ username: z.string(), slug: z.string() }))
+    .input(z.object({ salonName: z.string(), slug: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
-        where: { username: input.username },
+        where: { salonName: input.salonName },
       });
 
       if (!user) return null;
@@ -50,7 +50,7 @@ export const eventTypeRouter = router({
             select: {
               id: true,
               name: true,
-              username: true,
+              salonName: true,
               avatarUrl: true,
               timeZone: true,
               theme: true,

@@ -9,7 +9,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to public booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Should see the user's name
     await profilePage.expectUserNameVisible(user.name);
@@ -62,7 +62,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to event type page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "consultation");
+    await bookingPage.goto(user.salonName, "consultation");
 
     // Should see event type details (use heading for title to avoid strict mode violation)
     await expect(page.locator("h2:has-text('Consultation')")).toBeVisible();
@@ -79,7 +79,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to event type page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "30-minute-meeting");
+    await bookingPage.goto(user.salonName, "30-minute-meeting");
 
     // Look for time slots or calendar
     const hasCalendar = await page
@@ -104,7 +104,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to event type page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "30-minute-meeting");
+    await bookingPage.goto(user.salonName, "30-minute-meeting");
 
     // Look for next month button
     const nextButton = page.locator(
@@ -129,7 +129,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to event type page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "30-minute-meeting");
+    await bookingPage.goto(user.salonName, "30-minute-meeting");
 
     // Should see duration indication
     await bookingPage.expectDurationVisible();
@@ -160,7 +160,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to event type page using page object
     const bookingPage = new EventTypeBookingPage(page);
-    await bookingPage.goto(user.username, "in-person-meeting");
+    await bookingPage.goto(user.salonName, "in-person-meeting");
 
     // Should see location
     await bookingPage.expectLocationVisible(address);
@@ -178,7 +178,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to public booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Should see the page without being redirected to login
     await profilePage.expectNotRedirectedToLogin();
@@ -220,7 +220,7 @@ test.describe("Public Booking Page", () => {
 
     // Navigate to user's booking page using page object
     const profilePage = new PublicProfilePage(page);
-    await profilePage.goto(user.username);
+    await profilePage.goto(user.salonName);
 
     // Should see both event types
     await profilePage.expectEventTypeVisible("Quick Chat");

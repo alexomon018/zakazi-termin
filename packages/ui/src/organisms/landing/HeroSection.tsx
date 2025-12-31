@@ -87,6 +87,7 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
                 alt={imageAlt}
                 width={1088}
                 height={960}
+                sizes="(max-width: 1024px) 100vw, 50vw"
                 className="w-full h-auto rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 priority
               />

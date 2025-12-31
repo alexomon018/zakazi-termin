@@ -18,8 +18,8 @@ export class PublicProfilePage extends BasePage {
     this.eventTypesList = page.getByTestId("public-event-types-list");
   }
 
-  async goto(username: string): Promise<void> {
-    await this.page.goto(ROUTES.publicBookingPage(username));
+  async goto(salonName: string): Promise<void> {
+    await this.page.goto(ROUTES.publicBookingPage(salonName));
     await this.waitForPageLoad();
   }
 
@@ -98,8 +98,8 @@ export class EventTypeBookingPage extends BasePage {
     this.confirmButton = page.getByTestId("booking-confirm-button");
   }
 
-  async goto(username: string, eventSlug: string): Promise<void> {
-    await this.page.goto(ROUTES.publicEventType(username, eventSlug));
+  async goto(salonName: string, eventSlug: string): Promise<void> {
+    await this.page.goto(ROUTES.publicEventType(salonName, eventSlug));
     await this.waitForPageLoad();
   }
 

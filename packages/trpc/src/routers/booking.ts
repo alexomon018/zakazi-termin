@@ -194,7 +194,7 @@ export const bookingRouter = router({
             id: true,
             name: true,
             email: true,
-            username: true,
+            salonName: true,
             timeZone: true,
           },
         },
@@ -537,7 +537,7 @@ export const bookingRouter = router({
       return {
         success: true,
         message: "Zahtev za promenu termina je poslat.",
-        rescheduleUrl: `/${booking.user?.username}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`,
+        rescheduleUrl: `/${booking.user?.salonName}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`,
       };
     }),
 });

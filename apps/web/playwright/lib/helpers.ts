@@ -106,10 +106,10 @@ export function generateTestEmail(): string {
 }
 
 /**
- * Generate a unique username for testing
+ * Generate a unique salonName for testing
  */
-export function generateTestUsername(): string {
-  return `testuser${Date.now()}${Math.random().toString(36).substring(7)}`;
+export function generateTestSalonName(): string {
+  return `testsalon${Date.now()}${Math.random().toString(36).substring(7)}`;
 }
 
 /**

@@ -14,7 +14,7 @@ declare module "next-auth" {
       id: number;
       email: string;
       name?: string | null;
-      username?: string | null;
+      salonName?: string | null;
       image?: string | null;
       locale: string;
       timeZone: string;
@@ -25,7 +25,7 @@ declare module "next-auth" {
     id: number;
     email: string;
     name?: string | null;
-    username?: string | null;
+    salonName?: string | null;
     locale?: string;
     timeZone?: string;
     identityProvider?: string;
@@ -37,7 +37,7 @@ declare module "next-auth/jwt" {
     id: number;
     email: string;
     name?: string | null;
-    username?: string | null;
+    salonName?: string | null;
     locale: string;
     timeZone: string;
   }
@@ -90,7 +90,7 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          username: user.username,
+          salonName: user.salonName,
           locale: user.locale,
           timeZone: user.timeZone,
         };
@@ -113,6 +113,7 @@ export const authOptions: NextAuthOptions = {
         return {
           ...token,
           name: session.name ?? token.name,
+          salonName: session.salonName ?? token.salonName,
           locale: session.locale ?? token.locale,
         };
       }
@@ -122,7 +123,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id as number;
         token.email = user.email!;
         token.name = user.name;
-        token.username = user.username;
+        token.salonName = user.salonName;
         token.locale = user.locale ?? "sr";
         token.timeZone = user.timeZone ?? "Europe/Belgrade";
       }
@@ -135,7 +136,7 @@ export const authOptions: NextAuthOptions = {
 
         if (dbUser) {
           token.id = dbUser.id;
-          token.username = dbUser.username;
+          token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
         }
@@ -152,7 +153,7 @@ export const authOptions: NextAuthOptions = {
           id: token.id,
           email: token.email,
           name: token.name,
-          username: token.username,
+          salonName: token.salonName,
           locale: token.locale,
           timeZone: token.timeZone,
         },
@@ -192,17 +193,17 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Create new user with Google
-        const username = email
+        const salonName = email
           .split("@")[0]
           .toLowerCase()
           .replace(/[^a-z0-9]/g, "");
-        const generatedUsername = await generateUniqueUsername(username);
+        const generatedSalonName = await generateUniqueSalonName(salonName);
 
         await prisma.user.create({
           data: {
             email,
             name: user.name,
-            username: generatedUsername,
+            salonName: generatedSalonName,
             avatarUrl: user.image,
             emailVerified: new Date(),
             identityProvider: "GOOGLE",
@@ -215,7 +216,7 @@ export const authOptions: NextAuthOptions = {
           await emailService.sendWelcomeEmail({
             userName: user.name || "Korisnik",
             userEmail: email,
-            username: generatedUsername,
+            salonName: generatedSalonName,
           });
         } catch (error) {
           logger.error("Failed to send welcome email", { error, email });
@@ -238,16 +239,16 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-const MAX_USERNAME_ATTEMPTS = 100;
+const MAX_SALON_NAME_ATTEMPTS = 100;
 
-async function generateUniqueUsername(base: string): Promise<string> {
-  const username = base.slice(0, 20);
+async function generateUniqueSalonName(base: string): Promise<string> {
+  const salonName = base.slice(0, 20);
   let counter = 0;
 
-  while (counter < MAX_USERNAME_ATTEMPTS) {
-    const candidate = counter === 0 ? username : `${username}${counter}`;
+  while (counter < MAX_SALON_NAME_ATTEMPTS) {
+    const candidate = counter === 0 ? salonName : `${salonName}${counter}`;
     const existing = await prisma.user.findUnique({
-      where: { username: candidate },
+      where: { salonName: candidate },
     });
     if (!existing) return candidate;
     counter++;
@@ -255,5 +256,5 @@ async function generateUniqueUsername(base: string): Promise<string> {
 
   // Fallback: append random string if too many attempts
   const randomSuffix = Math.random().toString(36).substring(2, 8);
-  return `${username.slice(0, 14)}${randomSuffix}`;
+  return `${salonName.slice(0, 14)}${randomSuffix}`;
 }
