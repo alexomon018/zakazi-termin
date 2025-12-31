@@ -46,22 +46,22 @@ test.describe("Profile Settings", () => {
     }
   });
 
-  test("should update username", async ({ page }) => {
+  test("should update salonName", async ({ page }) => {
     const profilePage = new ProfileSettingsPage(page);
     await profilePage.goto();
 
-    const newUsername = `testuser${Date.now()}`;
+    const newSalonName = `testsalon${Date.now()}`;
 
-    // Find and update username input
-    if (await profilePage.usernameInput.isVisible().catch(() => false)) {
-      await profilePage.updateUsername(newUsername);
+    // Find and update salonName input
+    if (await profilePage.salonNameInput.isVisible().catch(() => false)) {
+      await profilePage.updateSalonName(newSalonName);
       await profilePage.save();
 
-      // Verify the username was saved
+      // Verify the salonName was saved
       await page.reload();
       await profilePage.waitForPageLoad();
 
-      await profilePage.expectUsernameValue(newUsername);
+      await profilePage.expectSalonNameValue(newSalonName);
     }
   });
 

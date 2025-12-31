@@ -6,9 +6,10 @@ import { useCookieConsent } from "../../hooks/useCookieConsent";
 import { cn } from "../../utils";
 
 export function CookieBanner() {
-  const { hasConsented, acceptAll, acceptNecessaryOnly } = useCookieConsent();
+  const { hasConsented, isHydrated, acceptAll, acceptNecessaryOnly } = useCookieConsent();
 
-  if (hasConsented) {
+  // Don't render anything until we've checked the cookie
+  if (!isHydrated || hasConsented) {
     return null;
   }
 

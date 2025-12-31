@@ -3,9 +3,9 @@
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent } from "@salonko/ui";
+import { formatSalonName } from "@salonko/ui/lib/utils/formatSalonName";
 import {
   AlertCircle,
-  ArrowLeft,
   Calendar,
   CheckCircle,
   Clock,
@@ -153,25 +153,27 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                 </div>
               )}
 
-              {/* Organizer */}
-              <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Organizator
-                </h3>
-                <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900">
-                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {booking.user?.name || "Organizator"}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.user?.email}
-                    </p>
+              {/* Salon */}
+              {booking.user?.salonName && (
+                <div className="pt-4 mt-4 border-t dark:border-gray-700">
+                  <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Salon
+                  </h3>
+                  <div className="flex gap-3 items-center">
+                    <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900">
+                      <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {formatSalonName(booking.user.salonName)}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {booking.user?.email}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Attendee */}
               {attendee && (
@@ -232,13 +234,13 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
             {/* Actions */}
             {(canReschedule || canCancel) && (
               <div className="flex flex-col gap-3 pt-6 mt-6 border-t dark:border-gray-700 sm:flex-row">
-                {canReschedule && booking.user?.username && booking.eventType?.slug && (
+                {canReschedule && booking.user?.salonName && booking.eventType?.slug && (
                   <Button
                     variant="outline"
                     className="flex-1"
                     onClick={() =>
                       router.push(
-                        `/${booking.user?.username}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
+                        `/${booking.user?.salonName}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
                       )
                     }
                   >

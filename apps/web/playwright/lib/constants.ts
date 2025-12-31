@@ -18,8 +18,8 @@ export const ROUTES = {
   SETTINGS_OUT_OF_OFFICE: "/dashboard/settings/out-of-office",
 
   // Public booking routes
-  publicBookingPage: (username: string) => `/${username}`,
-  publicEventType: (username: string, eventSlug: string) => `/${username}/${eventSlug}`,
+  publicBookingPage: (salonName: string) => `/${salonName}`,
+  publicEventType: (salonName: string, eventSlug: string) => `/${salonName}/${eventSlug}`,
   eventTypeEdit: (id: number | string) => `/dashboard/event-types/${id}`,
   bookingDetails: (uid: string) => `/booking/${uid}`,
 } as const;
@@ -37,7 +37,7 @@ export const SELECTORS = {
     EMAIL_INPUT: 'input[name="email"]',
     PASSWORD_INPUT: 'input[name="password"]',
     NAME_INPUT: 'input[name="name"]',
-    USERNAME_INPUT: 'input[name="username"]',
+    SALON_NAME_INPUT: 'input[name="salonName"]',
     SUBMIT_BUTTON: 'button[type="submit"]',
     GOOGLE_BUTTON: 'button:has-text("Google")',
     LOGIN_LINK: 'a[href="/login"]',

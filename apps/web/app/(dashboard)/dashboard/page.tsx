@@ -114,7 +114,7 @@ export default async function DashboardPage() {
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
         <code className="block px-3 py-2 text-sm text-blue-900 bg-white rounded border border-blue-200 dark:bg-gray-800 dark:border-blue-800 dark:text-blue-300">
-          {getAppUrl()}/{session.user.username}
+          {getAppUrl()}/{session.user.salonName}
         </code>
       </div>
     </div>

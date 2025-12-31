@@ -75,14 +75,14 @@ export function WebsiteSchema({ url = baseUrl, name = "Salonko" }: WebsiteSchema
 
 type LocalBusinessSchemaProps = {
   name: string;
-  username: string;
+  salonName: string;
   avatarUrl?: string | null;
   description?: string;
 };
 
 export function LocalBusinessSchema({
   name,
-  username,
+  salonName,
   avatarUrl,
   description,
 }: LocalBusinessSchemaProps) {
@@ -90,10 +90,10 @@ export function LocalBusinessSchema({
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name,
-    url: `${baseUrl}/${username}`,
+    url: `${baseUrl}/${salonName}`,
     ...(avatarUrl && { image: avatarUrl }),
     ...(description && { description }),
-    "@id": `${baseUrl}/${username}`,
+    "@id": `${baseUrl}/${salonName}`,
   };
 
   return (
@@ -110,7 +110,7 @@ type ServiceSchemaProps = {
   description?: string | null;
   duration: number;
   providerName: string;
-  providerUsername: string;
+  providerSalonName: string;
   slug: string;
 };
 
@@ -119,7 +119,7 @@ export function ServiceSchema({
   description,
   duration,
   providerName,
-  providerUsername,
+  providerSalonName,
   slug,
 }: ServiceSchemaProps) {
   const schema = {
@@ -130,14 +130,14 @@ export function ServiceSchema({
     provider: {
       "@type": "LocalBusiness",
       name: providerName,
-      url: `${baseUrl}/${providerUsername}`,
+      url: `${baseUrl}/${providerSalonName}`,
     },
     areaServed: {
       "@type": "Country",
       name: "Serbia",
     },
     serviceType: name,
-    url: `${baseUrl}/${providerUsername}/${slug}`,
+    url: `${baseUrl}/${providerSalonName}/${slug}`,
     additionalProperty: {
       "@type": "PropertyValue",
       name: "duration",

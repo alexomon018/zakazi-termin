@@ -10,7 +10,7 @@ export const userRouter = router({
         id: true,
         email: true,
         name: true,
-        username: true,
+        salonName: true,
         avatarUrl: true,
         bio: true,
         timeZone: true,
@@ -26,16 +26,16 @@ export const userRouter = router({
     return user;
   }),
 
-  // Get user by username (public profile)
-  byUsername: publicProcedure
-    .input(z.object({ username: z.string() }))
+  // Get user by salonName (public profile)
+  bySalonName: publicProcedure
+    .input(z.object({ salonName: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
-        where: { username: input.username },
+        where: { salonName: input.salonName },
         select: {
           id: true,
           name: true,
-          username: true,
+          salonName: true,
           avatarUrl: true,
           timeZone: true,
         },
@@ -45,14 +45,14 @@ export const userRouter = router({
 
   // Get public profile with event types
   getPublicProfile: publicProcedure
-    .input(z.object({ username: z.string() }))
+    .input(z.object({ salonName: z.string() }))
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
-        where: { username: input.username },
+        where: { salonName: input.salonName },
         select: {
           id: true,
           name: true,
-          username: true,
+          salonName: true,
           avatarUrl: true,
           timeZone: true,
           theme: true,
@@ -82,7 +82,7 @@ export const userRouter = router({
     .input(
       z.object({
         name: z.string().optional(),
-        username: z.string().min(3).optional(),
+        salonName: z.string().min(3).optional(),
         bio: z.string().optional(),
         avatarUrl: z.string().nullable().optional(),
         timeZone: z.string().optional(),
@@ -91,16 +91,16 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check if username is already taken (if changing)
-      if (input.username) {
+      // Check if salonName is already taken (if changing)
+      if (input.salonName) {
         const existingUser = await ctx.prisma.user.findFirst({
           where: {
-            username: input.username,
+            salonName: input.salonName,
             NOT: { id: ctx.session.user.id },
           },
         });
         if (existingUser) {
-          throw new Error("Korisničko ime je već zauzeto.");
+          throw new Error("Naziv salona je već zauzet.");
         }
       }
 
@@ -128,13 +128,13 @@ export const userRouter = router({
       return user;
     }),
 
-  // Check username availability
-  checkUsername: protectedProcedure
-    .input(z.object({ username: z.string().min(3) }))
+  // Check salonName availability
+  checkSalonName: protectedProcedure
+    .input(z.object({ salonName: z.string().min(3) }))
     .query(async ({ ctx, input }) => {
       const existingUser = await ctx.prisma.user.findFirst({
         where: {
-          username: input.username,
+          salonName: input.salonName,
           NOT: { id: ctx.session.user.id },
         },
       });

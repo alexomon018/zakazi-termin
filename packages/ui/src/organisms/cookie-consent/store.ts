@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export interface CookieConsentState {
   hasConsented: boolean;
+  isHydrated: boolean;
   necessary: boolean;
   analytics: boolean;
   consentTimestamp: number | null;
@@ -14,6 +15,7 @@ export interface CookieConsentState {
 
 export const useCookieConsentStore = create<CookieConsentState>((set) => ({
   hasConsented: false,
+  isHydrated: false,
   necessary: true,
   analytics: false,
   consentTimestamp: null,
@@ -32,7 +34,7 @@ export const useCookieConsentStore = create<CookieConsentState>((set) => ({
       consentTimestamp: Date.now(),
     }),
 
-  hydrate: (state) => set(state),
+  hydrate: (state) => set({ ...state, isHydrated: true }),
 
   resetConsent: () =>
     set({

@@ -27,7 +27,7 @@ const mockBookingData: BookingEmailData = {
 const mockWelcomeData: WelcomeEmailProps = {
   userName: "Marko Marković",
   userEmail: TEST_EMAIL,
-  username: "marko",
+  salonName: "marko-salon",
 };
 
 async function sendAllTestEmails() {

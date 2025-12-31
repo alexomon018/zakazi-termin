@@ -17,7 +17,7 @@ const handler = async (req: Request) => {
               id: Number(session.user.id),
               email: session.user.email,
               name: session.user.name,
-              username: session.user.username,
+              salonName: session.user.salonName,
             },
           }
         : null;

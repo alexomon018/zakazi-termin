@@ -5,15 +5,15 @@ import { UserNotFound, UserProfileClient } from "@salonko/ui";
 import type { Metadata } from "next";
 
 type Props = {
-  params: Promise<{ username: string }>;
+  params: Promise<{ salonName: string }>;
 };
 
 const baseUrl = getAppUrl();
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username } = await params;
+  const { salonName } = await params;
   const caller = await createPublicServerCaller();
-  const user = await caller.user.getPublicProfile({ username });
+  const user = await caller.user.getPublicProfile({ salonName });
 
   if (!user) {
     return {
@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${user.name || username} - Zakazite termin`;
-  const description = `Zakazite termin kod ${user.name || username} online. Brzo i jednostavno zakazivanje termina putem Salonko platforme.`;
+  const title = `${user.salonName || salonName} - Zakazite termin`;
+  const description = `Zakazite termin kod ${user.salonName || salonName} online. Brzo i jednostavno zakazivanje termina putem Salonko platforme.`;
 
   return {
     title,
@@ -32,9 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `${baseUrl}/${username}`,
+      url: `${baseUrl}/${salonName}`,
       type: "profile",
-      images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.name || username }] : [],
+      images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.salonName || salonName }] : [],
     },
     twitter: {
       card: "summary",
@@ -43,18 +43,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: user.avatarUrl ? [user.avatarUrl] : [],
     },
     alternates: {
-      canonical: `${baseUrl}/${username}`,
+      canonical: `${baseUrl}/${salonName}`,
     },
   };
 }
 
 export default async function UserBookingPage({ params }: Props) {
-  const { username } = await params;
+  const { salonName } = await params;
 
   const caller = await createPublicServerCaller();
 
   // Fetch user's public profile
-  const user = await caller.user.getPublicProfile({ username });
+  const user = await caller.user.getPublicProfile({ salonName });
 
   if (!user) {
     return <UserNotFound />;
@@ -63,17 +63,17 @@ export default async function UserBookingPage({ params }: Props) {
   return (
     <>
       <LocalBusinessSchema
-        name={user.name || username}
-        username={username}
+        name={user.salonName || salonName}
+        salonName={salonName}
         avatarUrl={user.avatarUrl}
       />
       <BreadcrumbSchema
         items={[
           { name: "Salonko", url: baseUrl },
-          { name: user.name || username, url: `${baseUrl}/${username}` },
+          { name: user.salonName || salonName, url: `${baseUrl}/${salonName}` },
         ]}
       />
-      <UserProfileClient user={user} username={username} />
+      <UserProfileClient user={user} salonName={salonName} />
     </>
   );
 }

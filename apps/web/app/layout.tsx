@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Salonko",
   },
   description:
-    "Salonko je moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7 - jednostavno i brzo.",
+    "Salonko je moderna platforma za online zakazivanje termina u Srbiji. Omogućite klijentima da zakažu termine 24/7 - jednostavno, brzo i besplatno. Idealno za frizerske i kozmetičke salone.",
   keywords: [
     "zakazivanje termina",
     "frizerski salon",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     siteName: "Salonko",
     title: "Salonko - Online zakazivanje termina za salone",
     description:
-      "Moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7.",
+      "Moderna platforma za online zakazivanje termina u Srbiji. Omogućite klijentima da zakažu termine 24/7 - besplatno za frizerske i kozmetičke salone.",
     images: [
       {
         url: "/og-image.png",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Salonko - Online zakazivanje termina za salone",
     description:
-      "Moderna platforma za online zakazivanje termina. Omogucite klijentima da zakazu termine 24/7.",
+      "Moderna platforma za online zakazivanje termina u Srbiji. Omogućite klijentima da zakažu termine 24/7 - besplatno za frizerske i kozmetičke salone.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -77,6 +77,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="sr" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+      </head>
       <body className={inter.className} suppressHydrationWarning>
         <Providers>
           {children}

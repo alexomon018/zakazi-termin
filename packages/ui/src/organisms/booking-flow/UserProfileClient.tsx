@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@salonko/ui";
 import { ArrowRight, Clock, MapPin, User } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 type EventType = {
@@ -17,7 +18,7 @@ type EventType = {
 type UserProfile = {
   id: number;
   name: string | null;
-  username: string | null;
+  salonName: string | null;
   avatarUrl: string | null;
   theme?: string | null;
   brandColor?: string | null;
@@ -27,10 +28,10 @@ type UserProfile = {
 
 type UserProfileClientProps = {
   user: UserProfile;
-  username: string;
+  salonName: string;
 };
 
-export function UserProfileClient({ user, username }: UserProfileClientProps) {
+export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
   const visibleEventTypes = user.eventTypes?.filter((et) => !et.hidden) || [];
   const brandColor = user.brandColor || "#292929";
   const darkBrandColor = user.darkBrandColor || "#fafafa";
@@ -49,17 +50,27 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
         {/* User profile header */}
         <div className="text-center mb-8">
           {user.avatarUrl ? (
-            <img
+            <Image
               src={user.avatarUrl}
-              alt={user.name || ""}
-              className="w-20 h-20 rounded-full mx-auto mb-4"
+              alt={user.salonName || ""}
+              width={80}
+              height={80}
+              className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
             />
           ) : (
             <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
               <User className="w-10 h-10 text-brand" />
             </div>
           )}
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
+          <h1
+            data-testid="public-profile-name"
+            className="text-2xl font-bold text-gray-900 dark:text-white"
+          >
+            {user.salonName}
+          </h1>
+          {user.name && user.name !== user.salonName && (
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{user.name}</p>
+          )}
         </div>
 
         {/* Event types list */}
@@ -72,7 +83,7 @@ export function UserProfileClient({ user, username }: UserProfileClientProps) {
         ) : (
           <div className="space-y-3">
             {visibleEventTypes.map((eventType) => (
-              <Link key={eventType.id} href={`/${username}/${eventType.slug}`} className="block">
+              <Link key={eventType.id} href={`/${salonName}/${eventType.slug}`} className="block">
                 <Card className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-0">
                     <div className="flex items-stretch p-5 min-h-[88px]">

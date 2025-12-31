@@ -24,7 +24,7 @@ interface DashboardNavProps {
     id: number;
     email: string;
     name?: string | null;
-    username?: string | null;
+    salonName?: string | null;
     image?: string | null;
   };
 }
