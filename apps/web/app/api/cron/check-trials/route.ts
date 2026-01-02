@@ -35,10 +35,7 @@ export async function POST(req: Request) {
   // Verify authorization - FAIL CLOSED if secret not configured
   if (!CRON_SECRET) {
     logger.error("CRON_SECRET not configured - cron endpoint disabled for security");
-    return NextResponse.json(
-      { error: "Cron endpoint not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Cron endpoint not configured" }, { status: 500 });
   }
 
   const authHeader = req.headers.get("authorization");
@@ -206,7 +203,9 @@ export async function POST(req: Request) {
       },
     });
 
-    logger.info("Checking dunning for past_due subscriptions", { count: pastDueSubscriptions.length });
+    logger.info("Checking dunning for past_due subscriptions", {
+      count: pastDueSubscriptions.length,
+    });
 
     for (const subscription of pastDueSubscriptions) {
       // Calculate days since last dunning email (or since status became PAST_DUE)

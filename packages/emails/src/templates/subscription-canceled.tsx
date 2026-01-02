@@ -14,14 +14,9 @@ export function SubscriptionCanceledEmail({
   });
 
   return (
-    <BaseEmail
-      preview="Vaša pretplata je otkazana"
-      heading="Pretplata otkazana"
-    >
+    <BaseEmail preview="Vaša pretplata je otkazana" heading="Pretplata otkazana">
       <Text style={text}>Poštovani {userName},</Text>
-      <Text style={text}>
-        Uspešno smo primili vaš zahtev za otkazivanje pretplate na Salonko.
-      </Text>
+      <Text style={text}>Uspešno smo primili vaš zahtev za otkazivanje pretplate na Salonko.</Text>
 
       <Section style={infoBox}>
         <Text style={{ ...text, margin: 0, fontWeight: "600" }}>Šta dalje?</Text>

@@ -20,9 +20,7 @@ const features = [
 ];
 
 export function PricingSection() {
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
-    "monthly"
-  );
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
   const cardRef = useScrollAnimation({
     threshold: 0.1,
@@ -54,9 +52,7 @@ export function PricingSection() {
           ref={headerRef.ref}
           className={cn(
             "mb-12 text-center transition-all duration-700 ease-out",
-            headerRef.isVisible
-              ? "translate-y-0 opacity-100"
-              : "translate-y-8 opacity-0"
+            headerRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           )}
         >
           <h2 className="mb-4 text-3xl font-bold text-balance text-foreground sm:text-4xl lg:text-5xl">
@@ -108,9 +104,7 @@ export function PricingSection() {
             ref={cardRef.ref}
             className={cn(
               "relative border-2 border-primary p-8 shadow-glow transition-all duration-500",
-              cardRef.isVisible
-                ? "translate-y-0 opacity-100"
-                : "translate-y-8 opacity-0"
+              cardRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             )}
           >
             {/* Badge */}
@@ -129,26 +123,18 @@ export function PricingSection() {
             )}
 
             <div className="mt-4 text-center">
-              <h3 className="mb-2 text-2xl font-bold text-foreground">
-                Salonko
-              </h3>
-              <p className="mb-6 text-muted-foreground">
-                Sve što vam treba za upravljanje salonom
-              </p>
+              <h3 className="mb-2 text-2xl font-bold text-foreground">Salonko</h3>
+              <p className="mb-6 text-muted-foreground">Sve što vam treba za upravljanje salonom</p>
 
               <div className="mb-2">
-                <span className="text-5xl font-bold text-foreground">
-                  {currentPricing.price}
-                </span>
+                <span className="text-5xl font-bold text-foreground">{currentPricing.price}</span>
                 <span className="ml-2 text-lg text-muted-foreground">
                   RSD/{billingInterval === "monthly" ? "mes" : "god"}
                 </span>
               </div>
 
               {billingInterval === "yearly" && (
-                <p className="mb-6 text-sm text-muted-foreground">
-                  {currentPricing.total}
-                </p>
+                <p className="mb-6 text-sm text-muted-foreground">{currentPricing.total}</p>
               )}
 
               <Link href="/signup" className="block">
@@ -157,9 +143,7 @@ export function PricingSection() {
                 </Button>
               </Link>
 
-              <p className="mt-3 text-xs text-muted-foreground">
-                Bez obaveza. Otkažite bilo kada.
-              </p>
+              <p className="mt-3 text-xs text-muted-foreground">Bez obaveza. Otkažite bilo kada.</p>
             </div>
 
             <hr className="my-8 border-border" />
@@ -179,9 +163,7 @@ export function PricingSection() {
         <div
           className={cn(
             "mt-12 text-center transition-all delay-300 duration-700",
-            cardRef.isVisible
-              ? "translate-y-0 opacity-100"
-              : "translate-y-4 opacity-0"
+            cardRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           )}
         >
           <p className="text-sm text-muted-foreground">

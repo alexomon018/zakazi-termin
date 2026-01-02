@@ -2,10 +2,7 @@ import { Link, Section, Text } from "@react-email/components";
 import type { PaymentFailedEmailData } from "../types";
 import { BaseEmail, button, buttonDanger, infoBox, text } from "./base-email";
 
-export function PaymentFailedEmail({
-  userName,
-  billingPortalUrl,
-}: PaymentFailedEmailData) {
+export function PaymentFailedEmail({ userName, billingPortalUrl }: PaymentFailedEmailData) {
   return (
     <BaseEmail
       preview="Vaše plaćanje nije uspelo - ažurirajte način plaćanja"

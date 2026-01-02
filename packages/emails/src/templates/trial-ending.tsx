@@ -2,11 +2,7 @@ import { Link, Section, Text } from "@react-email/components";
 import type { TrialEndingEmailData } from "../types";
 import { BaseEmail, button, buttonSuccess, infoBox, text } from "./base-email";
 
-export function TrialEndingEmail({
-  userName,
-  daysRemaining,
-  billingUrl,
-}: TrialEndingEmailData) {
+export function TrialEndingEmail({ userName, daysRemaining, billingUrl }: TrialEndingEmailData) {
   const daysText = daysRemaining === 1 ? "dan" : daysRemaining < 5 ? "dana" : "dana";
 
   return (
@@ -48,9 +44,7 @@ export function TrialEndingEmail({
         Ako se pretplatite pre isteka probnog perioda, vaši preostali dani se prenose.
       </Text>
 
-      <Text style={text}>
-        Imate pitanja? Slobodno nam se javite, tu smo da pomognemo!
-      </Text>
+      <Text style={text}>Imate pitanja? Slobodno nam se javite, tu smo da pomognemo!</Text>
 
       <Text style={text}>
         Srdačan pozdrav,

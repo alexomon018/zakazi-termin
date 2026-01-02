@@ -2,10 +2,7 @@ import { Link, Section, Text } from "@react-email/components";
 import type { SubscriptionExpiredEmailData } from "../types";
 import { BaseEmail, buttonSuccess, infoBox, text } from "./base-email";
 
-export function SubscriptionExpiredEmail({
-  userName,
-  billingUrl,
-}: SubscriptionExpiredEmailData) {
+export function SubscriptionExpiredEmail({ userName, billingUrl }: SubscriptionExpiredEmailData) {
   return (
     <BaseEmail
       preview="Vaša pretplata je istekla - ponovo aktivirajte pristup"
@@ -36,9 +33,7 @@ export function SubscriptionExpiredEmail({
         </Link>
       </Section>
 
-      <Text style={text}>
-        Imate pitanja? Tu smo da pomognemo!
-      </Text>
+      <Text style={text}>Imate pitanja? Tu smo da pomognemo!</Text>
 
       <Text style={text}>
         Srdačan pozdrav,

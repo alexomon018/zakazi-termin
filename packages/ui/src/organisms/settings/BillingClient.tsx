@@ -2,14 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@salonko/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@salonko/ui";
 import {
   AlertCircle,
   Check,
@@ -184,11 +177,15 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
       </Card>
 
       {/* Pricing Options - Show when trial (without paid subscription), expired, or no subscription */}
-      {((!status.hasPaidSubscription && status.isInTrial) || status.status === "EXPIRED" || !status.hasSubscription) && (
+      {((!status.hasPaidSubscription && status.isInTrial) ||
+        status.status === "EXPIRED" ||
+        !status.hasSubscription) && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Izaberite plan</CardTitle>
-            <CardDescription className="text-sm">Odaberite mesečnu ili godišnju pretplatu</CardDescription>
+            <CardDescription className="text-sm">
+              Odaberite mesečnu ili godišnju pretplatu
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -204,7 +201,8 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               >
                 <p className="font-semibold text-foreground">Mesečna</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {PRICES.monthly.amount} <span className="text-sm font-normal text-muted-foreground">RSD/mes</span>
+                  {PRICES.monthly.amount}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">RSD/mes</span>
                 </p>
               </button>
 
@@ -223,7 +221,8 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                 </span>
                 <p className="font-semibold text-foreground">Godišnja</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {PRICES.yearly.amount} <span className="text-sm font-normal text-muted-foreground">RSD/god</span>
+                  {PRICES.yearly.amount}{" "}
+                  <span className="text-sm font-normal text-muted-foreground">RSD/god</span>
                 </p>
               </button>
             </div>
@@ -250,7 +249,9 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Upravljanje pretplatom</CardTitle>
-            <CardDescription className="text-sm">Promenite način plaćanja ili otkažite pretplatu</CardDescription>
+            <CardDescription className="text-sm">
+              Promenite način plaćanja ili otkažite pretplatu
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button
@@ -295,7 +296,9 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Ažurirajte način plaćanja</CardTitle>
-            <CardDescription className="text-sm">Vaše plaćanje nije uspelo. Ažurirajte karticu.</CardDescription>
+            <CardDescription className="text-sm">
+              Vaše plaćanje nije uspelo. Ažurirajte karticu.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button
@@ -317,7 +320,9 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
             <FileText className="h-5 w-5" />
             Istorija plaćanja
           </CardTitle>
-          <CardDescription className="text-sm">Pregled svih vaših faktura i plaćanja</CardDescription>
+          <CardDescription className="text-sm">
+            Pregled svih vaših faktura i plaćanja
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {invoicesLoading ? (
@@ -398,10 +403,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               {/* Mobile Cards */}
               <div className="space-y-3 sm:hidden">
                 {invoicesData.invoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className="rounded-lg border bg-card p-4"
-                  >
+                  <div key={invoice.id} className="rounded-lg border bg-card p-4">
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-medium">

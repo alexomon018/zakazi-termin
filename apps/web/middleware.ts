@@ -45,9 +45,7 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     const isSubscriptionRequired = SUBSCRIPTION_REQUIRED_ROUTES.some((route) =>
       pathname.startsWith(route)
     );
-    const isAlwaysAccessible = ALWAYS_ACCESSIBLE_ROUTES.some((route) =>
-      pathname.startsWith(route)
-    );
+    const isAlwaysAccessible = ALWAYS_ACCESSIBLE_ROUTES.some((route) => pathname.startsWith(route));
 
     if (isSubscriptionRequired && !isAlwaysAccessible) {
       // Check subscription via JWT token data

@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import Stripe from "stripe";
@@ -38,10 +38,7 @@ const PRICES = {
 // Falls back to allowing requests if Redis is not configured (development)
 let checkoutRateLimiter: Ratelimit | null = null;
 
-if (
-  process.env.UPSTASH_REDIS_REST_URL &&
-  process.env.UPSTASH_REDIS_REST_TOKEN
-) {
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
   checkoutRateLimiter = new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(10, "1 h"), // 10 checkout sessions per hour
@@ -84,9 +81,7 @@ function getTrialStatus(subscription: Subscription | null): {
     return { isInTrial: false, trialDaysRemaining: 0, trialExpired: true };
   }
 
-  const daysRemaining = Math.ceil(
-    (trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return {
     isInTrial: true,
     trialDaysRemaining: daysRemaining,
@@ -119,8 +114,7 @@ export const subscriptionRouter = router({
 
     const trialInfo = getTrialStatus(subscription);
     const isActive =
-      ["TRIALING", "ACTIVE"].includes(subscription.status) &&
-      !trialInfo.trialExpired;
+      ["TRIALING", "ACTIVE"].includes(subscription.status) && !trialInfo.trialExpired;
     // User has paid subscription if they have a Stripe subscription ID
     const hasPaidSubscription = !!subscription.stripeSubscriptionId;
 
@@ -361,10 +355,7 @@ export const subscriptionRouter = router({
       where: { userId: ctx.session.user.id },
     });
 
-    if (
-      !subscription?.stripeSubscriptionId ||
-      !subscription.cancelAtPeriodEnd
-    ) {
+    if (!subscription?.stripeSubscriptionId || !subscription.cancelAtPeriodEnd) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Nema pretplate za nastavak.",

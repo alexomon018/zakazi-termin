@@ -26,10 +26,7 @@ export async function POST(req: Request) {
       hasSecretKey: !!STRIPE_SECRET_KEY,
       hasWebhookSecret: !!STRIPE_WEBHOOK_SECRET,
     });
-    return NextResponse.json(
-      { error: "Payment service not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Payment service not configured" }, { status: 500 });
   }
 
   const body = await req.text();
