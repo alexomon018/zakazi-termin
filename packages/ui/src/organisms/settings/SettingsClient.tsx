@@ -13,6 +13,16 @@ type SettingsClientProps = {
   initialConnections: Connection[];
 };
 
+/**
+ * Render the settings UI for managing the user's account and Google Calendar integrations.
+ *
+ * Renders success/error messages from URL params, the list of connected calendar credentials
+ * with controls to disconnect and open per-credential calendar selection, and a button to
+ * initiate connecting a Google Calendar credential.
+ *
+ * @param initialConnections - Initial list of calendar connection objects used as seed data for the connections query
+ * @returns The settings UI element containing integration status, connected calendars, and connect/disconnect controls
+ */
 export function SettingsClient({ initialConnections }: SettingsClientProps) {
   const searchParams = useSearchParams();
   const successParam = searchParams.get("success");
@@ -188,6 +198,15 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
   );
 }
 
+/**
+ * Renders a control for viewing and toggling calendar selections for a given credential.
+ *
+ * Opens a modal listing calendars for the provided credential where each calendar can be selected
+ * or deselected; when closed it renders a compact "Kalendari" button.
+ *
+ * @param credentialId - The credential identifier used to load and toggle calendars
+ * @returns A React element that displays a button when closed and a modal with selectable calendars when opened
+ */
 function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const utils = trpc.useUtils();

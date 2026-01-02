@@ -30,6 +30,17 @@ type AvailabilityClientProps = {
   currentUser: User;
 };
 
+/**
+ * Render a client-side component for managing user schedules and availability.
+ *
+ * Displays a list of schedules, allows creating and deleting schedules, editing time intervals
+ * (days + start/end times) for a selected schedule, and setting a schedule as the user's default.
+ * Mutations are performed via TRPC and relevant queries are invalidated on success.
+ *
+ * @param initialSchedules - Initial list of schedules used to seed the schedules query
+ * @param currentUser - Initial current user data used to determine the user's default schedule
+ * @returns The React element that renders the availability management UI
+ */
 export function AvailabilityClient({
   initialSchedules,
   currentUser: initialUser,

@@ -2,6 +2,14 @@ import { Link, Section, Text } from "@react-email/components";
 import type { SubscriptionCanceledEmailData } from "../types";
 import { BaseEmail, button, infoBox, text } from "./base-email";
 
+/**
+ * Renders an email template informing a user that their subscription has been canceled (Serbian locale).
+ *
+ * @param userName - Recipient's display name shown in the greeting.
+ * @param currentPeriodEnd - Date or date-string for the end of the current billing period; rendered as a localized day/month/year string.
+ * @param resumeUrl - Link to re-activate the subscription, used for the call-to-action button.
+ * @returns The JSX markup for the subscription canceled email.
+ */
 export function SubscriptionCanceledEmail({
   userName,
   currentPeriodEnd,

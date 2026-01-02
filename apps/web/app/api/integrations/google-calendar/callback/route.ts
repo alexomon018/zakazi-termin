@@ -8,6 +8,21 @@ import { logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
+/**
+ * Handle the Google Calendar OAuth callback and connect the authenticated user's Google Calendar to their account.
+ *
+ * This endpoint processes the OAuth `code`, optional `state`, and `error` query parameters; exchanges the code for tokens; upserts the user's Google Calendar credential; attempts to discover the user's primary calendar and upserts the selected calendar; and finally redirects back to the originating UI with a success or error indicator.
+ *
+ * Possible redirect query outcomes:
+ * - success=google_calendar_connected — OAuth completed and calendar connected
+ * - error=google_auth_denied — user denied consent (incoming `error` parameter)
+ * - error=missing_code — callback missing authorization `code`
+ * - error=google_not_configured — server missing Google client configuration
+ * - error=google_auth_failed — token exchange or downstream processing failed
+ *
+ * @param request - Incoming HTTP request containing OAuth callback query parameters (`code`, `state`, `error`)
+ * @returns A redirect response to the originating `returnTo` URL with a success or error query parameter
+ */
 export async function GET(request: Request) {
   const session = await getSession();
 

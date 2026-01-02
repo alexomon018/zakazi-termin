@@ -31,6 +31,16 @@ type BookingsClientProps = {
 
 const ITEMS_PER_PAGE = 5;
 
+/**
+ * Render a bookings management UI with filters, pagination, and actions for confirming, rejecting, and cancelling bookings.
+ *
+ * Renders a header, filter tabs (upcoming, pending, past, cancelled), a paginated list of bookings for the active filter, empty-state messaging, and dialogs for rejecting or cancelling bookings. Keeps per-filter cached results and totals, supports loading more items, and refreshes the active filter after mutations.
+ *
+ * @param initialBookings - Initial list of bookings for the component's starting filter
+ * @param initialTotal - Total number of bookings for the component's starting filter
+ * @param initialFilter - Optional initial active filter; defaults to `"upcoming"`
+ * @returns The React element that displays and manages bookings with filtering, pagination, and action dialogs
+ */
 export function BookingsClient({
   initialBookings,
   initialTotal,

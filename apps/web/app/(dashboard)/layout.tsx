@@ -4,6 +4,15 @@ import { logger } from "@salonko/config";
 import { DashboardNav, TrialBanner } from "@salonko/ui";
 import { redirect } from "next/navigation";
 
+/**
+ * Render the authenticated dashboard layout with navigation, trial banner, and the provided content.
+ *
+ * Redirects to "/login" if there is no authenticated session. For users without a subscription,
+ * the function attempts to start a trial and refresh subscription status; failures are logged but do not prevent rendering.
+ *
+ * @param children - Content to render inside the dashboard main area
+ * @returns A React element containing the dashboard navigation, trial banner, and the provided children
+ */
 export default async function DashboardLayout({
   children,
 }: {

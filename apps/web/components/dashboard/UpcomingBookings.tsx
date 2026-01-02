@@ -37,6 +37,13 @@ interface UpcomingBookingsProps {
   totalBookings: number;
 }
 
+/**
+ * Render a card displaying upcoming bookings with incremental "load more" support.
+ *
+ * @param initialBookings - Preloaded bookings used to initialize the displayed list.
+ * @param totalBookings - Total number of upcoming bookings available (used to decide pagination and "view all" affordances).
+ * @returns The JSX element for the upcoming bookings card.
+ */
 export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBookingsProps) {
   const [displayedBookings, setDisplayedBookings] = useState<Booking[]>(initialBookings);
   const [skip, setSkip] = useState(initialBookings.length);

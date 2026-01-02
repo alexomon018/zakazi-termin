@@ -19,7 +19,11 @@ const requiredEnvVars = {
   STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
 } as const;
 
-// Validate at procedure call time instead
+/**
+ * Verifies that all required Stripe environment variables are set and throws if any are missing.
+ *
+ * @throws TRPCError with code `"INTERNAL_SERVER_ERROR"` and message `"Stripe not configured: missing <VAR_NAME>"` when a required environment variable is not defined.
+ */
 function validateStripeConfig() {
   for (const [key, value] of Object.entries(requiredEnvVars)) {
     if (!value) {
@@ -56,6 +60,12 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
   });
 }
 
+/**
+ * Checks whether the user is allowed to initiate a checkout according to the configured rate limiter.
+ *
+ * @param userId - The user ID to use as the rate-limit key
+ * @returns `true` if the user is within the allowed rate (checkout permitted), `false` otherwise.
+ */
 async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)
   if (!checkoutRateLimiter) {
@@ -68,7 +78,14 @@ async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
 }
 
 /**
- * Helper to calculate trial status
+ * Determine trial progress and remaining time for a subscription.
+ *
+ * @param subscription - The subscription record to evaluate, or `null` if none exists.
+ * @returns An object with:
+ *  - `isInTrial`: `true` if the subscription is currently in a trial period, `false` otherwise.
+ *  - `trialDaysRemaining`: Whole days remaining until the trial end (0 when not in trial or if expired).
+ *  - `trialExpired`: `true` if the subscription had a trial that has ended or has no trial end timestamp, `false` otherwise.
+ *  - `totalTrialDays`: Total trial length in days; calculated from `trialStartedAt` and `trialEndsAt` when available, otherwise falls back to the configured `TRIAL_DAYS`.
  */
 function getTrialStatus(subscription: Subscription | null): {
   isInTrial: boolean;

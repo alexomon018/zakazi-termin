@@ -20,6 +20,20 @@ const stripe = STRIPE_SECRET_KEY
     })
   : null;
 
+/**
+ * Handle incoming Stripe webhook POST requests for subscription and invoice events.
+ *
+ * Verifies the Stripe webhook signature, ensures runtime Stripe configuration, records events idempotently,
+ * dispatches recognised event types to internal handlers (checkout session, subscription lifecycle, invoice payment),
+ * and updates or creates minimal subscription records as needed. Returns JSON acknowledgments suitable for Stripe:
+ * - Normal success: `{ received: true }`
+ * - Duplicate/previously-processed event: `{ received: true, skipped: true }`
+ * - Configuration or processing errors include an error message and appropriate HTTP status (400 for invalid/missing signature,
+ *   500 for server/configuration failures). Uses Prisma for persistence and may trigger notification emails on payment failures.
+ *
+ * @param req - The incoming HTTP request containing the raw Stripe webhook body and the `stripe-signature` header.
+ * @returns A JSON response acknowledging receipt or describing the error or duplicate/skipped status.
+ */
 export async function POST(req: Request) {
   // Validate environment variables at runtime - return 500 instead of crashing
   if (!stripe || !STRIPE_WEBHOOK_SECRET) {
@@ -237,6 +251,13 @@ export async function POST(req: Request) {
   }
 }
 
+/**
+ * Handles a completed Checkout Session for subscription purchases and updates the local subscription record.
+ *
+ * Fetches the Stripe subscription for the completed session (only when `session.mode === "subscription"`), maps Stripe status and billing interval to internal values, validates the assembled subscription data, and updates the corresponding Prisma subscription record identified by the Stripe customer ID.
+ *
+ * @param session - The Stripe Checkout Session payload for the completed checkout
+ */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   if (session.mode !== "subscription") return;
 
@@ -306,6 +327,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
 }
 
+/**
+ * Update the local subscription record when a Stripe subscription is created.
+ *
+ * Validates derived subscription fields (status, price, billing interval, trial dates)
+ * and updates the Prisma subscription identified by `stripeCustomerId` with the
+ * Stripe subscription ID, price ID, billing interval, status, and current period dates.
+ *
+ * @param stripeSubscription - The Stripe subscription object received from the webhook
+ * @throws Error - If validation of the derived subscription data fails
+ */
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
   const priceId = stripeSubscription.items.data[0]?.price.id;
@@ -356,6 +387,12 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
   });
 }
 
+/**
+ * Handles a Stripe `subscription.updated` event by validating the payload and applying corresponding updates to the local subscription record.
+ *
+ * @param stripeSubscription - The Stripe Subscription object received from the webhook
+ * @throws Error - If validated subscription data is invalid (throws with validation error messages)
+ */
 async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
 
@@ -438,6 +475,11 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   });
 }
 
+/**
+ * Mark the local subscription for the Stripe customer as expired and clear its Stripe subscription ID.
+ *
+ * @param stripeSubscription - The Stripe Subscription whose `customer` field identifies the `stripeCustomerId` to update
+ */
 async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
 
@@ -450,6 +492,17 @@ async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription
   });
 }
 
+/**
+ * Process a successful invoice for a subscription and transition the corresponding subscription to ACTIVE.
+ *
+ * Validates that the invoice is associated with a Stripe subscription, locates the existing subscription by
+ * Stripe customer ID, ensures required fields for ACTIVE (`stripeSubscriptionId`, `stripePriceId`, `billingInterval`)
+ * are present and valid, and updates the subscription status to `ACTIVE`. If the invoice is not for a subscription
+ * or no matching subscription is found, the function returns without error.
+ *
+ * @param invoice - The Stripe invoice payload to process
+ * @throws Error - If subscription data validation fails; the error message contains validation errors
+ */
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   // Check if this is a subscription invoice
   // In Stripe SDK v20+, subscription is accessed via invoice.parent.subscription_details
@@ -496,6 +549,16 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   });
 }
 
+/**
+ * Handle a failed invoice by marking the related subscription as PAST_DUE and notifying the user.
+ *
+ * Validates the existing subscription data, updates the subscription status to `PAST_DUE`, and attempts
+ * to send a payment-failed email to the subscription's user. If the invoice is not associated with a
+ * subscription or the subscription cannot be found, the function returns early without side effects.
+ *
+ * @param invoice - The Stripe invoice payload that triggered the payment failure webhook
+ * @throws Error - If subscription data validation fails; error message contains validation errors
+ */
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   // Check if this is a subscription invoice
   // In Stripe SDK v20+, subscription is accessed via invoice.parent.subscription_details

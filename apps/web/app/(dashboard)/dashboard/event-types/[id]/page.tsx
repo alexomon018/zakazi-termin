@@ -7,6 +7,16 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * Render the edit page for an event type identified by the route params.
+ *
+ * Fetches the event type and schedules in parallel; if the event type is not found or inaccessible,
+ * renders a not-found message with a link back to the event types list, otherwise renders the
+ * EditEventTypeClient populated with the fetched data.
+ *
+ * @param params - A promise that resolves to an object containing the `id` of the event type
+ * @returns A React element that shows either the not-found UI or the edit UI with `eventType` and `schedules`
+ */
 export default async function EditEventTypePage({ params }: Props) {
   const { id } = await params;
 

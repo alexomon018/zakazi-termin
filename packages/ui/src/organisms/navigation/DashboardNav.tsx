@@ -63,6 +63,15 @@ const navItems = [
   },
 ];
 
+/**
+ * Render the dashboard navigation header with desktop links, a mobile carousel, user info, and sign-out control.
+ *
+ * Renders desktop navigation that highlights the active route, a mobile Embla-powered horizontal nav with left/right controls, a user info display that prefers `salonName` over `name`, and a sign-out button that redirects to `/login`.
+ *
+ * @param user - User data used for display; expects `id`, `email`, and optionally `name`, `salonName`, and `image`. `salonName` is used as the primary display name when present.
+ * @param isSubscribed - Whether the current user has an active subscription; used to enable or disable navigation items that require a subscription.
+ * @returns The dashboard navigation header as a JSX element
+ */
 export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();

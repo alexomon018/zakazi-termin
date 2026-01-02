@@ -56,6 +56,16 @@ type EditEventTypeClientProps = {
   schedules: Schedule[];
 };
 
+/**
+ * Renders a form for editing an existing event type and handling update or deletion.
+ *
+ * Displays editable fields for title, slug, description, duration, location, schedule, and advanced settings,
+ * validates input, and triggers API mutations to save changes or delete the event type.
+ *
+ * @param eventType - The event type to edit, used to initialize form fields
+ * @param schedules - Available schedules to choose from for the event type
+ * @returns The UI for the edit event type form and related controls
+ */
 export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClientProps) {
   const router = useRouter();
   const utils = trpc.useUtils();

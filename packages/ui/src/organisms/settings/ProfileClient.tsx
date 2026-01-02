@@ -56,6 +56,12 @@ type ProfileClientProps = {
   initialUser: User;
 };
 
+/**
+ * Renders the profile editing UI and manages profile form state, validation, availability checks, and submission.
+ *
+ * @param initialUser - Initial user data used to populate the form's default values.
+ * @returns The ProfileClient React element containing the editable profile form.
+ */
 export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [saved, setSaved] = useState(false);
   const [salonNameAvailable, setSalonNameAvailable] = useState<boolean | null>(null);

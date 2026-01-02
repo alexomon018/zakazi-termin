@@ -17,6 +17,17 @@ const ALWAYS_ACCESSIBLE_ROUTES = [
   "/dashboard/settings/appearance",
 ];
 
+/**
+ * Enforces authentication and subscription-based access for dashboard and auth routes.
+ *
+ * Redirects authenticated users away from auth pages to /dashboard; redirects unauthenticated
+ * users trying to dashboard pages to /login with a `callbackUrl` set to the attempted path;
+ * for protected dashboard routes, redirects users without an active subscription
+ * (`subscriptionStatus` not "TRIALING" or "ACTIVE") to /dashboard/settings/billing?locked=true.
+ *
+ * @returns A NextResponse that performs the appropriate redirect when a rule matches,
+ * or the result of `NextResponse.next()` to continue the request when no redirects apply.
+ */
 export async function middleware(req: NextRequest, _event: NextFetchEvent) {
   const token = await getToken({ req });
   const { pathname } = req.nextUrl;

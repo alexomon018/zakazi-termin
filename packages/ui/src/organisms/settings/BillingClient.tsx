@@ -32,6 +32,14 @@ const PRICES = {
   },
 };
 
+/**
+ * Renders the billing interface for viewing and managing a user's subscription and invoices.
+ *
+ * Displays current subscription state (trial, active, expired, past due), optional pricing choices with checkout flow, controls to manage or cancel/resume subscriptions and payment methods, and a responsive invoice history with view/download actions.
+ *
+ * @param initialStatus - Initial subscription status used to seed the status query and populate the UI before remote data loads.
+ * @returns The BillingClient React element.
+ */
 export function BillingClient({ initialStatus }: BillingClientProps) {
   const searchParams = useSearchParams();
   const isLocked = searchParams.get("locked") === "true";
@@ -489,6 +497,12 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   );
 }
 
+/**
+ * Render a compact badge that represents an invoice's status using localized label and color.
+ *
+ * @param status - The invoice status string (examples: `"paid"`, `"open"`, `"draft"`, `"uncollectible"`, `"void"`). When `null` or unknown, the badge shows `"-"` or the raw status value.
+ * @returns A JSX element containing a styled badge that reflects the provided invoice status.
+ */
 function InvoiceStatusBadge({ status }: { status: string | null }) {
   switch (status) {
     case "paid":

@@ -5,6 +5,13 @@ import { Button } from "../../atoms/Button";
 import { useCookieConsent } from "../../hooks/useCookieConsent";
 import { cn } from "../../utils";
 
+/**
+ * Renders a bottom-anchored cookie consent banner when the user's consent state is undetermined or not yet given.
+ *
+ * The banner presents a short explanation, a link to the cookie policy, and two actions: accept only necessary cookies or accept all cookies.
+ *
+ * @returns The banner element, or `null` if the user has already consented or the consent state is not yet determined.
+ */
 export function CookieBanner() {
   const { hasConsented, isHydrated, acceptAll, acceptNecessaryOnly } = useCookieConsent();
 

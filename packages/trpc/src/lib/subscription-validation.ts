@@ -24,7 +24,10 @@ export interface ValidationResult {
 }
 
 /**
- * Validates subscription data based on status-specific requirements
+ * Validate subscription fields required for the subscription's status.
+ *
+ * @param data - Subscription data to validate; required fields depend on `data.status`.
+ * @returns A ValidationResult with `valid` set to `true` when all required fields for the status are present, and `errors` containing human-readable messages for any missing fields.
  */
 export function validateSubscriptionData(data: SubscriptionData): ValidationResult {
   const errors: string[] = [];
@@ -65,8 +68,12 @@ export function validateSubscriptionData(data: SubscriptionData): ValidationResu
 }
 
 /**
- * Validates a status transition and returns errors if the target state is invalid
- * Use this before updating subscription status
+ * Validate that applying optional updates and changing a subscription's status meets the status-specific requirements.
+ *
+ * @param currentData - The existing subscription data to use as a base for validation
+ * @param newStatus - The target subscription status to validate against
+ * @param newData - Optional partial data to merge over `currentData` before validation
+ * @returns `valid` is `true` if the merged subscription data satisfies the requirements for `newStatus`, `false` otherwise; `errors` lists human-readable validation messages
  */
 export function validateStatusTransition(
   currentData: SubscriptionData,
@@ -84,8 +91,11 @@ export function validateStatusTransition(
 }
 
 /**
- * Throws an error if subscription data is invalid
- * Use in webhook handlers and mutation handlers
+ * Validate subscription data and throw an Error when validation fails.
+ *
+ * @param data - The subscription data to validate.
+ * @param context - Optional context label included in the thrown error message as a prefix (e.g., webhook or mutation name).
+ * @throws Error when validation fails; message is prefixed by `context` if provided and lists the validation errors.
  */
 export function assertValidSubscriptionData(data: SubscriptionData, context?: string): void {
   const result = validateSubscriptionData(data);
@@ -96,8 +106,13 @@ export function assertValidSubscriptionData(data: SubscriptionData, context?: st
 }
 
 /**
- * Validates and returns whether a status transition is allowed
- * Returns detailed error for webhook retry/logging
+ * Ensure a transition to `newStatus` (optionally applying `newData`) yields valid subscription data.
+ *
+ * @param currentData - The current subscription state to base the transition on
+ * @param newStatus - The target subscription status
+ * @param newData - Partial subscription fields to apply before validation
+ * @param context - Optional context prefix included in the thrown error message
+ * @throws Error if the merged subscription data is invalid; the message is optionally prefixed with `[context] ` and lists validation errors
  */
 export function assertValidStatusTransition(
   currentData: SubscriptionData,

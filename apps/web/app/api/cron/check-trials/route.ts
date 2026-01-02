@@ -268,7 +268,12 @@ export async function POST(req: Request) {
   }
 }
 
-// Also support GET for Vercel Cron (it uses GET by default)
+/**
+ * Handle GET requests for the cron endpoint and run the same maintenance tasks as the POST handler.
+ *
+ * @param req - Incoming HTTP request for the cron check endpoint (must include the cron authorization header)
+ * @returns An HTTP Response containing a JSON object with aggregated results for expired trials, trial reminders, dunning emails, and email send/failure counts
+ */
 export async function GET(req: Request) {
   return POST(req);
 }

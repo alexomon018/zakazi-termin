@@ -27,6 +27,13 @@ type OutOfOfficeClientProps = {
   initialReasons: Reason[];
 };
 
+/**
+ * Render a client-side UI for managing out-of-office periods, including listing entries, adding or editing periods via a modal form, and deleting entries.
+ *
+ * @param initialEntries - Initial list of out-of-office entries used to seed the entries list query cache
+ * @param initialReasons - Initial list of reason options used to seed the reasons query cache
+ * @returns The rendered React element for the OutOfOffice client component
+ */
 export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOfficeClientProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingUuid, setEditingUuid] = useState<string | null>(null);

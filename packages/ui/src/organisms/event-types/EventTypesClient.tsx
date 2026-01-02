@@ -15,6 +15,19 @@ type EventTypesClientProps = {
   currentUser: User | null;
 };
 
+/**
+ * Client component that displays and manages a salon's event types.
+ *
+ * Renders a list of event type cards (or an empty state) with controls to copy the public link,
+ * preview, toggle visibility, edit, and delete each event type. Copying writes the public URL to
+ * the clipboard; deleting and toggling visibility perform mutations and invalidate the event type
+ * list query to refresh data.
+ *
+ * @param initialEventTypes - Initial array of event types used as the query's initial data.
+ * @param currentUser - Current user info (includes `id`, `salonName`, `name`) or `null`; used to
+ *   construct public URLs and links.
+ * @returns The rendered event types management UI element.
+ */
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const utils = trpc.useUtils();

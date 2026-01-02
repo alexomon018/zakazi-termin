@@ -39,6 +39,12 @@ type NewEventTypeClientProps = {
   schedules: Schedule[];
 };
 
+/**
+ * Renders a form UI for creating a new event type and handles form state, validation, and submission.
+ *
+ * @param schedules - Available schedules that can be assigned to the new event type; each schedule should contain `id` and `name`.
+ * @returns The JSX element containing the create-event-type form and related controls
+ */
 export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
   const router = useRouter();
   const utils = trpc.useUtils();
