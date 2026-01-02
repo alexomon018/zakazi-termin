@@ -2885,6 +2885,7 @@ __metadata:
     "@salonko/config": "workspace:*"
     "@salonko/prisma": "workspace:*"
     "@types/bcryptjs": "npm:^2.4.6"
+    "@upstash/redis": "npm:^1.36.0"
     bcryptjs: "npm:^2.4.3"
     next-auth: "npm:^4.24.10"
     typescript: "npm:^5.7.2"

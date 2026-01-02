@@ -18,6 +18,9 @@
   - A unique constraint covering the columns `[reason]` on the table `OutOfOfficeReason` will be added. If there are existing duplicate values, this will fail.
 
 */
+-- Ensure gen_random_uuid() is available (PostgreSQL pgcrypto extension)
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- DropForeignKey
 ALTER TABLE "Account" DROP CONSTRAINT "Account_userId_fkey";
 

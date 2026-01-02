@@ -1,3 +1,4 @@
+import { invalidateSubscriptionCache } from "@salonko/auth";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
@@ -296,7 +297,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
   }
 
-  await prisma.subscription.update({
+  const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: subscriptionId,
@@ -307,6 +308,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(updatedSub.userId);
 }
 
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
@@ -346,7 +350,7 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
     throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
   }
 
-  await prisma.subscription.update({
+  const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: stripeSubscription.id,
@@ -357,6 +361,9 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(updatedSub.userId);
 }
 
 async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
@@ -424,7 +431,7 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
     throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
   }
 
-  await prisma.subscription.update({
+  const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: stripeSubscription.id, // Set in case of out-of-order
@@ -439,18 +446,24 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
         : null,
     },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(updatedSub.userId);
 }
 
 async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
 
-  await prisma.subscription.update({
+  const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       status: "EXPIRED",
       stripeSubscriptionId: null,
     },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(updatedSub.userId);
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
@@ -493,10 +506,13 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
     throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
   }
 
-  await prisma.subscription.update({
+  const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: { status: "ACTIVE" },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(updatedSub.userId);
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
@@ -561,6 +577,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       },
     },
   });
+
+  // Invalidate subscription cache to ensure fresh status on next auth check
+  await invalidateSubscriptionCache(subscription.userId);
 
   // Send payment failed email
   try {

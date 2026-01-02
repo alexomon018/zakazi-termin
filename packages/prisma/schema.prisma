@@ -51,7 +51,7 @@ enum BillingInterval {
 // ===== ORGANIZATIONS =====
 
 model Organization {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String
   slug      String   @unique
   logoUrl   String?
@@ -66,7 +66,7 @@ model Organization {
 }
 
 model Membership {
-  id       String         @id @default(uuid())
+  id       String         @id @default(dbgenerated("gen_random_uuid()"))
   role     MembershipRole @default(MEMBER)
   accepted Boolean        @default(false)
 
@@ -87,7 +87,7 @@ model Membership {
 // ===== USERS & AUTH =====
 
 model User {
-  id                 String           @id @default(uuid())
+  id                 String           @id @default(dbgenerated("gen_random_uuid()"))
   email              String           @unique
   name               String?
   salonName          String?          @unique
@@ -172,7 +172,7 @@ model VerificationToken {
 // ===== EVENT TYPES =====
 
 model EventType {
-  id          String  @id @default(uuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()"))
   title       String
   slug        String
   description String?
@@ -228,7 +228,7 @@ model EventType {
 // ===== SCHEDULES & AVAILABILITY =====
 
 model Schedule {
-  id           String         @id @default(uuid())
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
   userId       String
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
@@ -240,7 +240,7 @@ model Schedule {
 }
 
 model Availability {
-  id          String     @id @default(uuid())
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
   userId      String?
   scheduleId  String?
   schedule    Schedule?  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
@@ -259,7 +259,7 @@ model Availability {
 // ===== CALENDAR SYNC =====
 
 model Credential {
-  id        String   @id @default(uuid())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   type      String // e.g., "google_calendar"
   key       Json // OAuth tokens (access_token, refresh_token, expiry_date, etc.)
   userId    String
@@ -290,7 +290,7 @@ model SelectedCalendar {
 }
 
 model DestinationCalendar {
-  id           String      @id @default(uuid())
+  id           String      @id @default(dbgenerated("gen_random_uuid()"))
   integration  String
   externalId   String
   credentialId String?
@@ -307,8 +307,8 @@ model DestinationCalendar {
 // ===== BOOKINGS =====
 
 model Booking {
-  id          String     @id @default(uuid())
-  uid         String     @unique @default(uuid())
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  uid         String     @unique @default(dbgenerated("gen_random_uuid()"))
   userId      String?
   user        User?      @relation("organizer", fields: [userId], references: [id], onDelete: Cascade)
   eventTypeId String?
@@ -346,7 +346,7 @@ model Booking {
 }
 
 model Attendee {
-  id          String  @id @default(uuid())
+  id          String  @id @default(dbgenerated("gen_random_uuid()"))
   email       String
   name        String
   timeZone    String  @default("Europe/Belgrade")
@@ -360,7 +360,7 @@ model Attendee {
 }
 
 model BookingReference {
-  id                 String   @id @default(uuid())
+  id                 String   @id @default(dbgenerated("gen_random_uuid()"))
   type               String // calendar type: google_calendar, etc.
   uid                String // external calendar event UID
   meetingId          String?
@@ -380,7 +380,7 @@ model BookingReference {
 // ===== OUT OF OFFICE =====
 
 model OutOfOfficeReason {
-  id           String        @id @default(uuid())
+  id           String        @id @default(dbgenerated("gen_random_uuid()"))
   emoji        String        @default("🏝️")
   reason       String        @unique
   userId       String? // null = global/system reason, userId = custom user reason
@@ -391,8 +391,8 @@ model OutOfOfficeReason {
 }
 
 model OutOfOffice {
-  id        String             @id @default(uuid())
-  uuid      String             @unique @default(uuid())
+  id        String             @id @default(dbgenerated("gen_random_uuid()"))
+  uuid      String             @unique @default(dbgenerated("gen_random_uuid()"))
   userId    String
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   start     DateTime           @db.Date
@@ -410,7 +410,7 @@ model OutOfOffice {
 // ===== SUBSCRIPTIONS =====
 
 model Subscription {
-  id                   String             @id @default(uuid())
+  id                   String             @id @default(dbgenerated("gen_random_uuid()"))
   userId               String             @unique
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -450,7 +450,7 @@ model Subscription {
 }
 
 model SubscriptionEvent {
-  id             String       @id @default(uuid())
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
   subscriptionId String
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 

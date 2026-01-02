@@ -1,6 +1,7 @@
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
+import { Redis } from "@upstash/redis";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -8,34 +9,95 @@ import { SalonkoAdapter } from "./adapter";
 import { ErrorCode } from "./error-codes";
 import { verifyPassword } from "./password";
 
-// In-memory cache for subscription status to reduce database queries
-// TTL: 5 minutes (300000ms) - balances accuracy with performance
-const SUBSCRIPTION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// =============================================================================
+// Redis-based subscription cache for multi-instance consistency
+// TTL: 300 seconds (5 minutes) - balances accuracy with performance
+// Falls back to database query if Redis is unavailable
+// =============================================================================
 
-interface CachedSubscriptionStatus {
-  status: string | null;
-  expiresAt: number;
+const SUBSCRIPTION_CACHE_TTL_SECONDS = 300; // 5 minutes
+const SUBSCRIPTION_CACHE_KEY_PREFIX = "subscription:status:";
+
+// Initialize Redis client from environment variables (Upstash)
+// Returns null if environment variables are not configured (development mode)
+let redis: Redis | null = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = Redis.fromEnv();
 }
 
-const subscriptionCache = new Map<string, CachedSubscriptionStatus>();
+/**
+ * Get cached subscription status from Redis
+ * @returns The cached status, or undefined if not cached / Redis unavailable
+ */
+async function getCachedSubscriptionStatus(userId: string): Promise<string | null | undefined> {
+  if (!redis) {
+    return undefined; // Redis not configured, skip cache
+  }
 
-function getCachedSubscriptionStatus(userId: string): string | null | undefined {
-  const cached = subscriptionCache.get(userId);
-  if (cached && Date.now() < cached.expiresAt) {
-    return cached.status;
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    const cached = await redis.get<string | null>(key);
+    // Redis returns null for non-existent keys, but we use undefined to mean "not cached"
+    // We store "null" as a string to distinguish "no subscription" from "not cached"
+    if (cached === null) {
+      return undefined; // Key doesn't exist
+    }
+    // Handle the special case where we cached "null" as a string
+    if (cached === "NULL_STATUS") {
+      return null;
+    }
+    return cached;
+  } catch (error) {
+    logger.warn("Redis cache read failed, will query database", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return undefined; // Fallback to database on error
   }
-  // Remove expired entry
-  if (cached) {
-    subscriptionCache.delete(userId);
-  }
-  return undefined;
 }
 
-function setCachedSubscriptionStatus(userId: string, status: string | null): void {
-  subscriptionCache.set(userId, {
-    status,
-    expiresAt: Date.now() + SUBSCRIPTION_CACHE_TTL,
-  });
+/**
+ * Set subscription status in Redis cache with TTL
+ */
+async function setCachedSubscriptionStatus(userId: string, status: string | null): Promise<void> {
+  if (!redis) {
+    return; // Redis not configured, skip cache
+  }
+
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    // Store "NULL_STATUS" string to represent null (distinguishes from missing key)
+    const valueToStore = status === null ? "NULL_STATUS" : status;
+    await redis.set(key, valueToStore, { ex: SUBSCRIPTION_CACHE_TTL_SECONDS });
+  } catch (error) {
+    // Log but don't block the request - caching is best-effort
+    logger.warn("Redis cache write failed", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
+ * Invalidate subscription cache for a user
+ * Call this from webhook handlers when subscription status changes
+ */
+export async function invalidateSubscriptionCache(userId: string): Promise<void> {
+  if (!redis) {
+    return; // Redis not configured, nothing to invalidate
+  }
+
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    await redis.del(key);
+    logger.info("Subscription cache invalidated", { userId });
+  } catch (error) {
+    // Log but don't throw - invalidation failure shouldn't break the webhook
+    logger.warn("Failed to invalidate subscription cache", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 declare module "next-auth" {
@@ -78,7 +140,9 @@ export const authOptions: NextAuthOptions = {
   adapter: SalonkoAdapter(prisma),
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    // Shorter JWT lifetime reduces the impact of token leakage and limits stale auth state.
+    // Subscription access is enforced server-side (DB-backed) for protected routes.
+    maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   pages: {
     signIn: "/login",
@@ -173,15 +237,16 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // Add subscription status to token (cached to reduce database queries)
+      // Add subscription status to token (cached in Redis to reduce database queries)
       // Cache TTL: 5 minutes - balances real-time trial expiry checks with performance
+      // Redis provides multi-instance consistency and webhook invalidation support
       if (token.id) {
-        // Check cache first
-        const cachedStatus = getCachedSubscriptionStatus(token.id);
+        // Check Redis cache first (returns undefined if not cached or Redis unavailable)
+        const cachedStatus = await getCachedSubscriptionStatus(token.id);
         if (cachedStatus !== undefined) {
           token.subscriptionStatus = cachedStatus;
         } else {
-          // Cache miss - query database
+          // Cache miss or Redis unavailable - query database
           const subscription = await prisma.subscription.findUnique({
             where: { userId: token.id },
             select: { status: true, trialEndsAt: true },
@@ -204,8 +269,8 @@ export const authOptions: NextAuthOptions = {
             finalStatus = null;
           }
 
-          // Cache the result
-          setCachedSubscriptionStatus(token.id, finalStatus);
+          // Cache the result in Redis (best-effort, won't block on failure)
+          await setCachedSubscriptionStatus(token.id, finalStatus);
           token.subscriptionStatus = finalStatus;
         }
       }

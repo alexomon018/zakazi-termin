@@ -1,5 +1,6 @@
 "use client";
 
+import { PRICING_CONFIG } from "@salonko/config";
 import { Button } from "@salonko/ui/atoms/Button";
 import { Card } from "@salonko/ui/atoms/Card";
 import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
@@ -28,22 +29,7 @@ export function PricingSection() {
     delay: 100,
   });
 
-  const pricing = {
-    monthly: {
-      price: "5.000",
-      period: "mesečno",
-      total: "5.000 RSD/mes",
-      savings: null,
-    },
-    yearly: {
-      price: "50.000",
-      period: "godišnje",
-      total: "~4.167 RSD/mes",
-      savings: "2 meseca besplatno",
-    },
-  };
-
-  const currentPricing = pricing[billingInterval];
+  const currentPricing = PRICING_CONFIG[billingInterval];
 
   return (
     <section id="cene" className="px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
@@ -65,10 +51,12 @@ export function PricingSection() {
 
         {/* Billing Toggle */}
         <div className="flex justify-center mb-10">
-          <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card p-1.5">
+          <fieldset className="inline-flex items-center gap-3 rounded-full border border-border bg-card p-1.5">
+            <legend className="sr-only">Billing interval</legend>
             <button
               type="button"
               onClick={() => setBillingInterval("monthly")}
+              aria-pressed={billingInterval === "monthly"}
               className={cn(
                 "rounded-full px-5 py-2 text-sm font-medium transition-all",
                 billingInterval === "monthly"
@@ -81,6 +69,7 @@ export function PricingSection() {
             <button
               type="button"
               onClick={() => setBillingInterval("yearly")}
+              aria-pressed={billingInterval === "yearly"}
               className={cn(
                 "relative rounded-full px-5 py-2 text-sm font-medium transition-all",
                 billingInterval === "yearly"
@@ -90,12 +79,15 @@ export function PricingSection() {
             >
               Godišnje
               {billingInterval === "yearly" && (
-                <span className="absolute -right-2 -top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-2 -top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white"
+                >
                   -17%
                 </span>
               )}
             </button>
-          </div>
+          </fieldset>
         </div>
 
         {/* Single Pricing Card */}

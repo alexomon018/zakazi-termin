@@ -1,5 +1,4 @@
 import { getToken } from "next-auth/jwt";
-import type { JWT } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextFetchEvent, NextRequest } from "next/server";
 
@@ -17,9 +16,6 @@ const ALWAYS_ACCESSIBLE_ROUTES = [
   "/dashboard/settings/profile",
   "/dashboard/settings/appearance",
 ];
-
-// Active subscription statuses
-const ACTIVE_SUBSCRIPTION_STATUSES = ["TRIALING", "ACTIVE"] as const;
 
 export async function middleware(req: NextRequest, _event: NextFetchEvent) {
   const token = await getToken({ req });
@@ -55,15 +51,24 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     );
 
     if (isSubscriptionRequired && !isAlwaysAccessible) {
-      // Check subscription via JWT token data
-      const subscriptionStatus = (token as JWT).subscriptionStatus;
-      const isActive =
-        subscriptionStatus &&
-        ACTIVE_SUBSCRIPTION_STATUSES.includes(
-          subscriptionStatus as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number]
-        );
+      // Do NOT trust JWT claims for subscription gating (token can be long-lived and stale).
+      // Validate against the current database state via a server (Node) API route.
+      const cookie = req.headers.get("cookie") ?? "";
+      const res = await fetch(new URL("/api/subscription/access", req.url), {
+        headers: { cookie },
+        cache: "no-store",
+      });
 
-      if (!isActive) {
+      if (res.status === 401) {
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("callbackUrl", pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      const data = (await res.json()) as { ok: boolean; canAccess?: boolean };
+      const canAccess = data.ok && data.canAccess === true;
+
+      if (!canAccess) {
         // Redirect to billing page with lock message
         const billingUrl = new URL("/dashboard/settings/billing", req.url);
         billingUrl.searchParams.set("locked", "true");

@@ -45,7 +45,7 @@ function isSubscriptionActive(subscription: Subscription | null): boolean {
     const now = new Date();
     const trialEnd = subscription.trialEndsAt;
     // Trial is active if trialEndsAt exists and hasn't passed
-    if (trialEnd && now <= trialEnd) {
+    if (trialEnd && now < trialEnd) {
       return true;
     }
     return false;
