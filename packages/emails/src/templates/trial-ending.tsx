@@ -2,6 +2,14 @@ import { Link, Section, Text } from "@react-email/components";
 import type { TrialEndingEmailData } from "../types";
 import { BaseEmail, button, buttonSuccess, infoBox, text } from "./base-email";
 
+/**
+ * Render an email template notifying a user that their trial period is ending.
+ *
+ * @param userName - Display name of the recipient used in the greeting
+ * @param daysRemaining - Number of days left in the free trial
+ * @param billingUrl - URL to the billing/subscription page used for the call-to-action link
+ * @returns The JSX email template for the trial-ending notification
+ */
 export function TrialEndingEmail({ userName, daysRemaining, billingUrl }: TrialEndingEmailData) {
   const daysText = daysRemaining === 1 ? "dan" : daysRemaining < 5 ? "dana" : "dana";
 

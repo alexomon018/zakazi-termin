@@ -15,6 +15,17 @@ type EventTypesClientProps = {
   currentUser: User | null;
 };
 
+/**
+ * Render a UI for viewing and managing a salon's event types, including creation, editing,
+ * toggling visibility, deletion, and copying/sharing public booking links.
+ *
+ * The component accepts server-provided initial data and keeps the list in sync after
+ * mutate operations. Public links are constructed using the current user's `salonName`.
+ *
+ * @param initialEventTypes - Pre-fetched list of event types used as the query's initial data
+ * @param currentUser - The current user (may be null); `salonName` is used to build public URLs
+ * @returns The React element that displays and manages event types
+ */
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const utils = trpc.useUtils();

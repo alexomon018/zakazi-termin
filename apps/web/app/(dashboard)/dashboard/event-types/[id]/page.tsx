@@ -7,6 +7,12 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * Render the Edit Event Type page for a given event type id.
+ *
+ * @param params - A promise that resolves to an object containing `id`, the event type identifier as a string.
+ * @returns The page's React element: an edit UI for the event type when it exists, or a centered "not found" message with a link back to the event types list otherwise.
+ */
 export default async function EditEventTypePage({ params }: Props) {
   const { id } = await params;
 

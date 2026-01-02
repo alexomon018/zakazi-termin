@@ -1,5 +1,10 @@
 import { prisma } from "./index";
 
+/**
+ * Seed the database with a set of default Out of Office reasons.
+ *
+ * Ensures each reason exists by upserting on the reason text: existing records have their emoji updated, and missing records are created as global entries (userId: null) with `enabled` set to true.
+ */
 async function main() {
   console.log("🌱 Seeding database...");
 

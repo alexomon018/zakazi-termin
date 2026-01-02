@@ -31,6 +31,19 @@ type BookingsClientProps = {
 
 const ITEMS_PER_PAGE = 5;
 
+/**
+ * Render a paginated, filterable list of bookings with per-filter caching, actions and confirmation dialogs.
+ *
+ * The component manages bookings and totals separately for each filter ("upcoming" | "pending" | "past" | "cancelled"),
+ * supports loading more pages, switching filters (with background fetch when needed), and provides handlers to confirm,
+ * reject (with optional reason) and cancel (with optional reason) bookings. Successful mutations refresh the active filter
+ * and clear cached data for other filters so they reload on next access.
+ *
+ * @param initialBookings - The initial list of bookings to display for the initialFilter.
+ * @param initialTotal - The total number of bookings corresponding to initialBookings.
+ * @param initialFilter - The starting filter tab; one of "upcoming", "pending", "past", or "cancelled". Defaults to "upcoming".
+ * @returns The BookingsClient React element.
+ */
 export function BookingsClient({
   initialBookings,
   initialTotal,

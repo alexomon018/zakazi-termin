@@ -5,6 +5,15 @@ import { Button } from "../../atoms/Button";
 import { useCookieConsent } from "../../hooks/useCookieConsent";
 import { cn } from "../../utils";
 
+/**
+ * Render a bottom-fixed cookie consent banner when the user hasn't set consent and hydration is complete.
+ *
+ * Renders a responsive banner containing explanatory text, a link to the cookie policy, and two actions:
+ * "Samo neophodni" to accept only necessary cookies and "Prihvatam sve" to accept all cookies.
+ * The component is not rendered until cookie state is hydrated or if the user has already given consent.
+ *
+ * @returns The banner React element, or `null` when the banner should not be shown.
+ */
 export function CookieBanner() {
   const { hasConsented, isHydrated, acceptAll, acceptNecessaryOnly } = useCookieConsent();
 

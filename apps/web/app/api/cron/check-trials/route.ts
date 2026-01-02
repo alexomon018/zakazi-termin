@@ -268,7 +268,12 @@ export async function POST(req: Request) {
   }
 }
 
-// Also support GET for Vercel Cron (it uses GET by default)
+/**
+ * Handle GET requests for the cron check-trials endpoint used by Vercel Cron.
+ *
+ * @param req - The incoming HTTP request
+ * @returns On success, an object like `{ success: true, results }` summarizing counts for expiredTrials, trialReminders, dunningEmails, emailsSent, and emailsFailed; on failure, an object like `{ error: "Cron job failed" }`.
+ */
 export async function GET(req: Request) {
   return POST(req);
 }

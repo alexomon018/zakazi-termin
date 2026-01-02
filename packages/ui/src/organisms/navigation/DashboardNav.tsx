@@ -63,6 +63,16 @@ const navItems = [
   },
 ];
 
+/**
+ * Render the dashboard navigation bar with desktop links, a mobile carousel, and user controls.
+ *
+ * Navigation items reflect an active state based on the current pathname and can be gated by
+ * subscription status; mobile navigation is presented as a horizontal carousel with scroll controls.
+ *
+ * @param user - Public user profile used for display (prefers `salonName`, falls back to `name`, and shows `email`)
+ * @param isSubscribed - Whether the user has an active subscription; subscription-only items will be gated accordingly
+ * @returns The dashboard navigation header element
+ */
 export function DashboardNav({ user, isSubscribed = true }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();

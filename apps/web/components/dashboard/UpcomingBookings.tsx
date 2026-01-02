@@ -37,6 +37,13 @@ interface UpcomingBookingsProps {
   totalBookings: number;
 }
 
+/**
+ * Render a list of upcoming bookings with incremental "load more" support and a link to view all bookings.
+ *
+ * @param initialBookings - Initial bookings to display. Each booking must include id, title, startTime, and attendees (first attendee's name/email are shown).
+ * @param totalBookings - Total number of bookings available; used to determine whether additional bookings exist and whether to show the "Vidi sve" link.
+ * @returns A React element that displays the upcoming bookings list or an empty-state message when there are no bookings.
+ */
 export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBookingsProps) {
   const [displayedBookings, setDisplayedBookings] = useState<Booking[]>(initialBookings);
   const [skip, setSkip] = useState(initialBookings.length);

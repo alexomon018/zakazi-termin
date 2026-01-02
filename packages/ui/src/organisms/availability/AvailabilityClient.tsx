@@ -30,6 +30,18 @@ type AvailabilityClientProps = {
   currentUser: User;
 };
 
+/**
+ * Render a UI for managing a user's availability schedules.
+ *
+ * The component lists existing schedules, allows creating and deleting schedules,
+ * editing time intervals (days and start/end times) for a selected schedule,
+ * saving availability to the server, and setting a schedule as the user's default.
+ * Data is loaded from and persisted to the backend via TRPC queries and mutations.
+ *
+ * @param initialSchedules - Initial schedules to seed the schedules list query.
+ * @param currentUser - Initial current user data to seed the user query.
+ * @returns The availability management UI as a React element.
+ */
 export function AvailabilityClient({
   initialSchedules,
   currentUser: initialUser,

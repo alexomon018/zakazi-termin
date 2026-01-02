@@ -2,6 +2,13 @@ import { Link, Section, Text } from "@react-email/components";
 import type { PaymentFailedEmailData } from "../types";
 import { BaseEmail, button, buttonDanger, infoBox, text } from "./base-email";
 
+/**
+ * Render an email template notifying a user that their payment failed and prompting them to update their billing method.
+ *
+ * @param userName - Recipient's display name used in the greeting
+ * @param billingPortalUrl - URL to the billing portal where the user can update their payment method
+ * @returns A JSX element representing the payment-failed email template
+ */
 export function PaymentFailedEmail({ userName, billingPortalUrl }: PaymentFailedEmailData) {
   return (
     <BaseEmail

@@ -8,6 +8,11 @@ import { logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
+/**
+ * Handle Google OAuth callback for connecting a user's Google Calendar, exchange the authorization code for tokens, persist or update the user's credential, optionally record their primary calendar as the selected calendar, and redirect back to the originating settings or dashboard URL.
+ *
+ * @returns An HTTP redirect response to the resolved return URL containing either `success=google_calendar_connected` or an `error=` query indicating the failure reason.
+ */
 export async function GET(request: Request) {
   const session = await getSession();
 

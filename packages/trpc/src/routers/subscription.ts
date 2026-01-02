@@ -48,6 +48,12 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
   });
 }
 
+/**
+ * Checks whether the user is allowed to create a checkout session under the configured rate limit.
+ *
+ * @param userId - The unique identifier for the user, used as the rate-limiter key
+ * @returns `true` if the request is allowed (rate limit not exceeded or limiter disabled), `false` otherwise.
+ */
 async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)
   if (!checkoutRateLimiter) {
@@ -60,7 +66,13 @@ async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
 }
 
 /**
- * Helper to calculate trial status
+ * Determine a subscription's trial state and how many whole days remain.
+ *
+ * @param subscription - The subscription record to evaluate, or `null` if the user has no subscription.
+ * @returns An object with:
+ *  - `isInTrial` — `true` if the subscription is currently in a trial period, `false` otherwise.
+ *  - `trialDaysRemaining` — whole days remaining until trial end (0 when not in trial).
+ *  - `trialExpired` — `true` if the subscription was in trial but the trial end has passed, `false` otherwise.
  */
 function getTrialStatus(subscription: Subscription | null): {
   isInTrial: boolean;

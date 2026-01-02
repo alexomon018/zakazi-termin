@@ -2,6 +2,13 @@ import { Link, Section, Text } from "@react-email/components";
 import type { SubscriptionExpiredEmailData } from "../types";
 import { BaseEmail, buttonSuccess, infoBox, text } from "./base-email";
 
+/**
+ * Render an email template that notifies a user their subscription has expired and prompts them to renew.
+ *
+ * @param userName - Recipient display name used in the greeting
+ * @param billingUrl - URL for the billing/renewal page used by the call-to-action button
+ * @returns The JSX for the subscription-expired email template
+ */
 export function SubscriptionExpiredEmail({ userName, billingUrl }: SubscriptionExpiredEmailData) {
   return (
     <BaseEmail

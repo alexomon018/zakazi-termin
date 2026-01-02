@@ -19,6 +19,14 @@ const features = [
   "Podrška putem emaila",
 ];
 
+/**
+ * Render the pricing section with a monthly/yearly billing toggle, a single pricing card, feature list, and trust badges.
+ *
+ * The component manages billing interval state to switch displayed prices, shows promotional badges (free trial and optional yearly savings),
+ * animates header and card into view on scroll, and provides a call-to-action link to the signup page.
+ *
+ * @returns The section element containing the billing toggle, pricing card with features, and trust badges.
+ */
 export function PricingSection() {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });

@@ -39,6 +39,17 @@ type NewEventTypeClientProps = {
   schedules: Schedule[];
 };
 
+/**
+ * Render a form for creating a new event type and handle its client-side state, validation, and submission.
+ *
+ * Renders inputs for title, slug, description, duration, location, schedule selection, and advanced settings;
+ * validates required fields and conditional fields (e.g., address for in-person location);
+ * on successful submission it creates the event type, invalidates the local event type cache, and navigates to the event types list;
+ * on error it surfaces field-specific or form-level error messages.
+ *
+ * @param schedules - Available schedules to choose from when assigning a schedule to the new event type
+ * @returns The form UI for creating a new event type
+ */
 export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
   const router = useRouter();
   const utils = trpc.useUtils();

@@ -7,7 +7,10 @@ export function parseTrialEndDate(trialEndsAt: Date | string | null): Date | nul
 }
 
 /**
- * Checks if the trial still has time remaining (hasn't expired)
+ * Determine whether the trial period has not yet expired.
+ *
+ * @param trialEndsAt - Trial end date as a `Date` object, an ISO date string, or `null`
+ * @returns `true` if the current time is before the parsed trial end date, `false` otherwise
  */
 export function hasTrialTimeRemaining(trialEndsAt: Date | string | null): boolean {
   if (!trialEndsAt) return false;
@@ -16,7 +19,20 @@ export function hasTrialTimeRemaining(trialEndsAt: Date | string | null): boolea
 }
 
 /**
- * Formats trial time remaining as days or minutes
+ * Format remaining trial time into a concise Turkish string using days or minutes.
+ *
+ * If `trialDaysRemaining` is greater than zero the result is a days string; otherwise, if `trialEndsAt`
+ * is provided and valid the result is a minutes string. If no time remains or the end date is invalid,
+ * returns `"0 dana"`.
+ *
+ * @param trialDaysRemaining - Number of whole days remaining on the trial
+ * @param trialEndsAt - Trial end date as a Date or ISO string, or null
+ * @returns A localized short string:
+ * - `"<n> dan"` when `trialDaysRemaining === 1`
+ * - `"<n> dana"` when `trialDaysRemaining > 1`
+ * - `"1 minut"` when 1 minute remains
+ * - `"<n> minuta"` when multiple minutes remain
+ * - `"0 dana"` when no time remains or the end date is invalid
  */
 export function formatTrialTimeRemaining(
   trialDaysRemaining: number,

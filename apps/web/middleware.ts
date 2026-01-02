@@ -17,6 +17,17 @@ const ALWAYS_ACCESSIBLE_ROUTES = [
   "/dashboard/settings/appearance",
 ];
 
+/**
+ * Enforces authentication and subscription-based access for auth and dashboard routes, issuing redirects when access should be blocked.
+ *
+ * Checks the request's JWT token and pathname to:
+ * - Redirect authenticated users away from auth pages to /dashboard.
+ * - Redirect unauthenticated users from dashboard pages to /login with a callbackUrl.
+ * - For protected dashboard routes, redirect users without an active subscription to /dashboard/settings/billing?locked=true.
+ *
+ * @param req - The incoming Next.js request to evaluate for authentication, pathname, and token.
+ * @returns A NextResponse that redirects to the appropriate route when access is restricted, or continues processing when access is allowed.
+ */
 export async function middleware(req: NextRequest, _event: NextFetchEvent) {
   const token = await getToken({ req });
   const { pathname } = req.nextUrl;

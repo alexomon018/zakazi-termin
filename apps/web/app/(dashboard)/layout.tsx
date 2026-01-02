@@ -3,6 +3,16 @@ import { createServerCaller } from "@/lib/trpc/server";
 import { DashboardNav, TrialBanner } from "@salonko/ui";
 import { redirect } from "next/navigation";
 
+/**
+ * Dashboard layout component that enforces authentication and ensures subscription state.
+ *
+ * If no session exists the user is redirected to "/login". Ensures a subscription status is available:
+ * if the user has no subscription, a trial is started and the status is refreshed. Renders the dashboard
+ * navigation (with subscription state), a trial banner, and the provided children inside the main content area.
+ *
+ * @param children - Content to render inside the dashboard's main area
+ * @returns The rendered dashboard layout element containing navigation, trial banner, and `children`
+ */
 export default async function DashboardLayout({
   children,
 }: {

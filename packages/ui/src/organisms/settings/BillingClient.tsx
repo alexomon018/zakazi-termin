@@ -32,6 +32,14 @@ const PRICES = {
   },
 };
 
+/**
+ * Renders the billing and subscription management UI for a user.
+ *
+ * Shows current subscription status, selectable pricing plans, actions to start checkout or open the billing portal, controls to cancel or resume a subscription, and an invoice history. After returning from checkout it briefly polls the subscription status; the component seeds its query with the provided initial status.
+ *
+ * @param initialStatus - Initial subscription status used to seed the status query
+ * @returns The billing management React element
+ */
 export function BillingClient({ initialStatus }: BillingClientProps) {
   const searchParams = useSearchParams();
   const isLocked = searchParams.get("locked") === "true";
@@ -489,6 +497,12 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   );
 }
 
+/**
+ * Render a compact colored badge representing an invoice's status.
+ *
+ * @param status - Invoice status; recognized values: `"paid"`, `"open"`, `"draft"`, `"uncollectible"`, `"void"`. Any other string is rendered as-is; `null` renders `"-"`.
+ * @returns A JSX element containing a styled badge for the given status.
+ */
 function InvoiceStatusBadge({ status }: { status: string | null }) {
   switch (status) {
     case "paid":

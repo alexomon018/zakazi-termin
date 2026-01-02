@@ -1,6 +1,12 @@
 import type { Account, PrismaClient, User } from "@salonko/prisma";
 import type { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 
+/**
+ * Convert a User record into an AdapterUser object.
+ *
+ * @param user - Source user; `avatarUrl` is mapped to `image` and the original `id` is preserved.
+ * @returns An AdapterUser with `id`, `name`, `email`, `emailVerified`, and `image`.
+ */
 function toAdapterUser(user: User): AdapterUser {
   return {
     id: user.id,
@@ -11,6 +17,12 @@ function toAdapterUser(user: User): AdapterUser {
   };
 }
 
+/**
+ * Convert a Prisma Account record into an AdapterAccount for the NextAuth adapter.
+ *
+ * @param account - The Prisma `Account` object to convert
+ * @returns An `AdapterAccount` with `userId`, `type`, `provider`, `providerAccountId`, and token/authorization fields; fields that are null in the source are set to `undefined`
+ */
 function toAdapterAccount(account: Account): AdapterAccount {
   return {
     userId: account.userId,
@@ -27,6 +39,14 @@ function toAdapterAccount(account: Account): AdapterAccount {
   };
 }
 
+/**
+ * Creates a NextAuth adapter backed by the provided Prisma client.
+ *
+ * The adapter implements persistence for users, accounts, sessions, and verification tokens
+ * using the Prisma models (user, account, session, verificationToken).
+ *
+ * @returns An Adapter that persists users, accounts, sessions, and verification tokens using the provided Prisma client
+ */
 export function SalonkoAdapter(prisma: PrismaClient): Adapter {
   return {
     async createUser(data: AdapterUser) {

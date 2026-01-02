@@ -56,6 +56,12 @@ type ProfileClientProps = {
   initialUser: User;
 };
 
+/**
+ * Renders and manages the user profile form, including validation, salon name availability checks, and submission handling.
+ *
+ * @param initialUser - Initial user data used to populate and reset the form fields
+ * @returns The profile-management React element containing editable fields (name, salon name, bio, time zone), read-only account info, salon logo preview, availability indicators, and save controls
+ */
 export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [saved, setSaved] = useState(false);
   const [salonNameAvailable, setSalonNameAvailable] = useState<boolean | null>(null);

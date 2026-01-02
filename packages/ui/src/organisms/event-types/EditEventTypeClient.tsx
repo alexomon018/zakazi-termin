@@ -56,6 +56,13 @@ type EditEventTypeClientProps = {
   schedules: Schedule[];
 };
 
+/**
+ * Render an editable form UI for updating or deleting a given event type.
+ *
+ * @param eventType - The event type to edit; its fields populate the form's initial values.
+ * @param schedules - Available schedules to choose from; each schedule's `id` is used as the select value.
+ * @returns The React element containing the edit form and related controls for the event type.
+ */
 export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClientProps) {
   const router = useRouter();
   const utils = trpc.useUtils();

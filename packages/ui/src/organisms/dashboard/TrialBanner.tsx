@@ -11,6 +11,18 @@ import { AlertCircle, Clock, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+/**
+ * Render a contextual subscription and trial banner for the dashboard based on the current subscription status.
+ *
+ * The banner is hidden while status is loading, after user dismissal, or when no banner is applicable.
+ * It conditionally displays:
+ * - a prompt to subscribe for users with no subscription,
+ * - a warning about imminent trial expiration with an option to dismiss,
+ * - an expired/locked subscription notice with a destructive subscribe action,
+ * - or a past-due payment notice with a destructive update-payment action.
+ *
+ * @returns A JSX element containing the appropriate banner when applicable, or `null` otherwise.
+ */
 export function TrialBanner() {
   const [dismissed, setDismissed] = useState(false);
 
