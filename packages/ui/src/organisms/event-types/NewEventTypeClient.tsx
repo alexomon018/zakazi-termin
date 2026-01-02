@@ -31,7 +31,7 @@ interface Location {
 }
 
 type Schedule = {
-  id: number;
+  id: string;
   name: string;
 };
 
@@ -55,7 +55,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
     afterEventBuffer: 0,
     slotInterval: null as number | null,
     requiresConfirmation: false,
-    scheduleId: null as number | null,
+    scheduleId: null as string | null,
   });
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -346,11 +346,11 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
             <div className="space-y-2">
               <Label className="text-gray-900 dark:text-white">Koristi raspored</Label>
               <Select
-                value={formData.scheduleId?.toString() || "default"}
+                value={formData.scheduleId || "default"}
                 onValueChange={(value: string) =>
                   setFormData((prev) => ({
                     ...prev,
-                    scheduleId: value === "default" ? null : Number.parseInt(value),
+                    scheduleId: value === "default" ? null : value,
                   }))
                 }
               >
@@ -360,7 +360,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
                 <SelectContent>
                   <SelectItem value="default">Podrazumevani raspored</SelectItem>
                   {schedules?.map((schedule) => (
-                    <SelectItem key={schedule.id} value={schedule.id.toString()}>
+                    <SelectItem key={schedule.id} value={schedule.id}>
                       {schedule.name}
                     </SelectItem>
                   ))}

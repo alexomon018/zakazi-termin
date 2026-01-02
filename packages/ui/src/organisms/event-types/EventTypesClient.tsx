@@ -16,7 +16,7 @@ type EventTypesClientProps = {
 };
 
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
-  const [copySuccess, setCopySuccess] = useState<number | null>(null);
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
   const { data: eventTypes } = trpc.eventType.list.useQuery(undefined, {
@@ -35,7 +35,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     },
   });
 
-  const handleCopyLink = async (eventType: { slug: string }) => {
+  const handleCopyLink = async (eventType: { id: string; slug: string }) => {
     // Use window.location.origin for client-side (always correct)
     // Fall back to NEXT_PUBLIC_APP_URL for SSR
     const baseUrl =
@@ -46,22 +46,20 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
     try {
       await navigator.clipboard.writeText(link);
-      setCopySuccess(
-        eventTypes?.findIndex((e: { slug: string }) => e.slug === eventType.slug) ?? null
-      );
+      setCopySuccess(eventType.id);
       setTimeout(() => setCopySuccess(null), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Da li ste sigurni da želite da obrišete ovaj tip termina?")) {
       deleteEventType.mutate({ id });
     }
   };
 
-  const handleToggleVisibility = (id: number, currentHidden: boolean) => {
+  const handleToggleVisibility = (id: string, currentHidden: boolean) => {
     toggleHidden.mutate({ id, hidden: !currentHidden });
   };
 
@@ -183,7 +181,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         onClick={() => handleCopyLink(eventType)}
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
                       >
-                        {copySuccess === index ? (
+                        {copySuccess === eventType.id ? (
                           <span className="text-xs text-green-600">Kopirano!</span>
                         ) : (
                           <Copy className="w-4 h-4" />

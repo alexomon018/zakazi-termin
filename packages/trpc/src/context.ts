@@ -3,7 +3,7 @@ import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 
 export type Session = {
   user: {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;

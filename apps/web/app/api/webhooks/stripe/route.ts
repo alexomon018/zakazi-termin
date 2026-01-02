@@ -26,7 +26,10 @@ export async function POST(req: Request) {
       hasSecretKey: !!STRIPE_SECRET_KEY,
       hasWebhookSecret: !!STRIPE_WEBHOOK_SECRET,
     });
-    return NextResponse.json({ error: "Payment service not configured" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Payment service not configured" },
+      { status: 500 }
+    );
   }
 
   const body = await req.text();
@@ -40,7 +43,11 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      STRIPE_WEBHOOK_SECRET
+    );
   } catch (err) {
     logger.error("Webhook signature verification failed", { error: err });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -75,7 +82,10 @@ export async function POST(req: Request) {
         });
       } catch (createErr) {
         // If unique constraint violation, event was already processed
-        if (createErr instanceof PrismaClientKnownRequestError && createErr.code === "P2002") {
+        if (
+          createErr instanceof PrismaClientKnownRequestError &&
+          createErr.code === "P2002"
+        ) {
           logger.info("Event already processed (duplicate), skipping", {
             eventId: event.id,
             eventType: event.type,
@@ -90,23 +100,33 @@ export async function POST(req: Request) {
     // Process the event (we've already claimed it via the insert above)
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        await handleCheckoutCompleted(
+          event.data.object as Stripe.Checkout.Session
+        );
         break;
 
       case "customer.subscription.created":
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
+        await handleSubscriptionCreated(
+          event.data.object as Stripe.Subscription
+        );
         break;
 
       case "customer.subscription.updated":
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        await handleSubscriptionUpdated(
+          event.data.object as Stripe.Subscription
+        );
         break;
 
       case "customer.subscription.deleted":
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        await handleSubscriptionDeleted(
+          event.data.object as Stripe.Subscription
+        );
         break;
 
       case "invoice.payment_succeeded":
-        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
+        await handleInvoicePaymentSucceeded(
+          event.data.object as Stripe.Invoice
+        );
         break;
 
       case "invoice.payment_failed":
@@ -128,7 +148,10 @@ export async function POST(req: Request) {
           eventId: event.id,
           error: err.message,
         });
-        return NextResponse.json({ received: true, warning: "subscription_not_found" });
+        return NextResponse.json({
+          received: true,
+          warning: "subscription_not_found",
+        });
       }
       if (err.code === "P2002") {
         // Unique constraint violation (duplicate event) - don't retry
@@ -143,7 +166,10 @@ export async function POST(req: Request) {
       eventType: event.type,
       eventId: event.id,
     });
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
   }
 }
 
@@ -153,16 +179,52 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const customerId = session.customer as string;
   const subscriptionId = session.subscription as string;
 
+  // Fetch the actual subscription from Stripe to get its status
+  // (it might be "trialing" if user subscribed during their free trial)
+  const stripeSubscription =
+    await stripe!.subscriptions.retrieve(subscriptionId);
+
+  // Map Stripe status to our status
+  const statusMap: Record<
+    string,
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"
+  > = {
+    active: "ACTIVE",
+    trialing: "TRIALING",
+    past_due: "PAST_DUE",
+    canceled: "CANCELED",
+    incomplete: "EXPIRED",
+    incomplete_expired: "EXPIRED",
+    unpaid: "PAST_DUE",
+  };
+
+  const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
+  const priceId = stripeSubscription.items.data[0]?.price.id;
+
+  // Access period dates from the subscription object
+  const subscriptionData = stripeSubscription as unknown as {
+    current_period_start?: number;
+    current_period_end?: number;
+  };
+  const periodStart = subscriptionData.current_period_start;
+  const periodEnd = subscriptionData.current_period_end;
+
   await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: subscriptionId,
-      status: "ACTIVE",
+      stripePriceId: priceId,
+      billingInterval: interval === "year" ? "YEAR" : "MONTH",
+      status: statusMap[stripeSubscription.status] || "ACTIVE",
+      currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
+      currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     },
   });
 }
 
-async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
+async function handleSubscriptionCreated(
+  stripeSubscription: Stripe.Subscription
+) {
   const customerId = stripeSubscription.customer as string;
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
@@ -189,7 +251,9 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
   });
 }
 
-async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(
+  stripeSubscription: Stripe.Subscription
+) {
   const customerId = stripeSubscription.customer as string;
 
   // Check if subscription exists - handle out-of-order events
@@ -198,7 +262,10 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   });
 
   if (!existing) {
-    logger.warn("Subscription not found for update, may be out-of-order event", { customerId });
+    logger.warn(
+      "Subscription not found for update, may be out-of-order event",
+      { customerId }
+    );
     // If subscription doesn't exist, this might be an out-of-order event
     // We could call handleSubscriptionCreated here, but it's safer to just log and skip
     return;
@@ -213,7 +280,10 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
     });
   }
 
-  const statusMap: Record<string, "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"> = {
+  const statusMap: Record<
+    string,
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"
+  > = {
     active: "ACTIVE",
     trialing: "TRIALING",
     past_due: "PAST_DUE",
@@ -253,7 +323,9 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   });
 }
 
-async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(
+  stripeSubscription: Stripe.Subscription
+) {
   const customerId = stripeSubscription.customer as string;
 
   await prisma.subscription.update({
@@ -311,8 +383,14 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       salonName: subscription.user.salonName,
       billingPortalUrl: `${APP_URL}/dashboard/settings/billing`,
     });
-    logger.info("Payment failed email sent", { customerId, userEmail: subscription.user.email });
+    logger.info("Payment failed email sent", {
+      customerId,
+      userEmail: subscription.user.email,
+    });
   } catch (emailError) {
-    logger.error("Failed to send payment failed email", { error: emailError, customerId });
+    logger.error("Failed to send payment failed email", {
+      error: emailError,
+      customerId,
+    });
   }
 }

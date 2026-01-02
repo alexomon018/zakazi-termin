@@ -208,7 +208,7 @@ export const bookingRouter = router({
   create: publicProcedure
     .input(
       z.object({
-        eventTypeId: z.number(),
+        eventTypeId: z.string(),
         startTime: z.date(),
         endTime: z.date(),
         name: z.string().min(1),

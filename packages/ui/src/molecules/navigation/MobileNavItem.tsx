@@ -10,6 +10,8 @@ interface MobileNavItemProps {
   label: string;
   icon: LucideIcon;
   isActive: boolean;
+  requiresSubscription?: boolean;
+  isSubscribed?: boolean;
 }
 
 export const MobileNavItem = memo(function MobileNavItem({
@@ -17,7 +19,25 @@ export const MobileNavItem = memo(function MobileNavItem({
   label,
   icon: Icon,
   isActive,
+  requiresSubscription = false,
+  isSubscribed = true,
 }: MobileNavItemProps) {
+  const isLocked = requiresSubscription && !isSubscribed;
+
+  if (isLocked) {
+    return (
+      <div
+        className={cn(
+          "flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap",
+          "text-gray-400 dark:text-gray-500 blur-[1px] pointer-events-none select-none"
+        )}
+      >
+        <Icon className="w-4 h-4 mr-1" />
+        {label}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}

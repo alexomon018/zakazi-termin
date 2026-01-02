@@ -28,7 +28,11 @@ const stripe = new Stripe(requiredEnvVars.STRIPE_SECRET_KEY!, {
   maxNetworkRetries: 2, // Add retry logic for transient network issues
 });
 
-const TRIAL_DAYS = 30;
+const TRIAL_PERIOD_MINUTES = parseInt(
+  process.env.TRIAL_PERIOD_MINUTES || "43200",
+  10
+); // Default 30 days
+const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
 const PRICES = {
   monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
   yearly: requiredEnvVars.STRIPE_PRICE_YEARLY,
@@ -38,7 +42,10 @@ const PRICES = {
 // Falls back to allowing requests if Redis is not configured (development)
 let checkoutRateLimiter: Ratelimit | null = null;
 
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+if (
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN
+) {
   checkoutRateLimiter = new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(10, "1 h"), // 10 checkout sessions per hour
@@ -47,7 +54,7 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
   });
 }
 
-async function checkCheckoutRateLimit(userId: number): Promise<boolean> {
+async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)
   if (!checkoutRateLimiter) {
     return true;
@@ -81,7 +88,10 @@ function getTrialStatus(subscription: Subscription | null): {
     return { isInTrial: false, trialDaysRemaining: 0, trialExpired: true };
   }
 
-  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  // Use Math.floor to match Stripe's calculation (days until trial_end timestamp)
+  const daysRemaining = Math.floor(
+    (trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  );
   return {
     isInTrial: true,
     trialDaysRemaining: daysRemaining,
@@ -106,15 +116,18 @@ export const subscriptionRouter = router({
         isActive: false,
         isInTrial: false,
         trialDaysRemaining: 0,
+        trialEndsAt: null,
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
         billingInterval: null,
+        needsSubscription: true, // User has never subscribed
       };
     }
 
     const trialInfo = getTrialStatus(subscription);
     const isActive =
-      ["TRIALING", "ACTIVE"].includes(subscription.status) && !trialInfo.trialExpired;
+      ["TRIALING", "ACTIVE"].includes(subscription.status) &&
+      !trialInfo.trialExpired;
     // User has paid subscription if they have a Stripe subscription ID
     const hasPaidSubscription = !!subscription.stripeSubscriptionId;
 
@@ -125,26 +138,33 @@ export const subscriptionRouter = router({
       isActive,
       isInTrial: trialInfo.isInTrial,
       trialDaysRemaining: trialInfo.trialDaysRemaining,
+      trialEndsAt: subscription.trialEndsAt,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       billingInterval: subscription.billingInterval,
+      needsSubscription: false, // User has a subscription record
     };
   }),
 
   /**
    * Start free trial - creates Stripe customer and subscription record
    * Called on first dashboard visit
+   * Uses upsert to handle race conditions from concurrent requests
    */
   startTrial: protectedProcedure.mutation(async ({ ctx }) => {
+    // Check if subscription already exists first
     const existingSubscription = await ctx.prisma.subscription.findUnique({
       where: { userId: ctx.session.user.id },
     });
 
+    // If subscription already exists, return success with existing data
     if (existingSubscription) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Već imate pretplatu ili probni period.",
-      });
+      const trialInfo = getTrialStatus(existingSubscription);
+      return {
+        success: true,
+        trialEndsAt: existingSubscription.trialEndsAt,
+        trialDaysRemaining: trialInfo.trialDaysRemaining,
+      };
     }
 
     // Get user details for Stripe customer
@@ -169,26 +189,47 @@ export const subscriptionRouter = router({
       },
     });
 
-    // Calculate trial end date
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DAYS);
+    // Calculate trial end date using minutes for precision
+    const trialEndsAt = new Date(Date.now() + TRIAL_PERIOD_MINUTES * 60 * 1000);
 
-    // Create subscription record
-    const subscription = await ctx.prisma.subscription.create({
-      data: {
-        userId: ctx.session.user.id,
-        stripeCustomerId: customer.id,
-        status: "TRIALING",
-        trialStartedAt: new Date(),
-        trialEndsAt,
-      },
-    });
+    try {
+      // Create subscription record
+      const subscription = await ctx.prisma.subscription.create({
+        data: {
+          userId: ctx.session.user.id,
+          stripeCustomerId: customer.id,
+          status: "TRIALING",
+          trialStartedAt: new Date(),
+          trialEndsAt,
+        },
+      });
 
-    return {
-      success: true,
-      trialEndsAt: subscription.trialEndsAt,
-      trialDaysRemaining: TRIAL_DAYS,
-    };
+      return {
+        success: true,
+        trialEndsAt: subscription.trialEndsAt,
+        trialDaysRemaining: TRIAL_DAYS,
+      };
+    } catch (error) {
+      // Handle race condition - if another request created the subscription
+      // while we were creating the Stripe customer, return the existing one
+      if (
+        error instanceof Error &&
+        error.message.includes("Unique constraint failed")
+      ) {
+        const existingSub = await ctx.prisma.subscription.findUnique({
+          where: { userId: ctx.session.user.id },
+        });
+        if (existingSub) {
+          const trialInfo = getTrialStatus(existingSub);
+          return {
+            success: true,
+            trialEndsAt: existingSub.trialEndsAt,
+            trialDaysRemaining: trialInfo.trialDaysRemaining,
+          };
+        }
+      }
+      throw error;
+    }
   }),
 
   /**
@@ -221,12 +262,24 @@ export const subscriptionRouter = router({
         });
       }
 
-      // Calculate remaining trial days for Stripe
+      // Calculate trial end for Stripe
+      // Monthly: If user is in trial, delay billing until trial ends
+      // Yearly: Charge immediately (discount of 2 months is already applied in price)
+      // If trial expired, omit trial_end to charge immediately
       const trialInfo = getTrialStatus(subscription);
-      const trialEndTimestamp =
-        trialInfo.isInTrial && subscription.trialEndsAt
-          ? Math.floor(subscription.trialEndsAt.getTime() / 1000)
-          : undefined;
+      let trialEndTimestamp: number | null = null;
+
+      // Only apply remaining trial for monthly subscriptions
+      if (
+        input.interval === "monthly" &&
+        trialInfo.isInTrial &&
+        subscription.trialEndsAt
+      ) {
+        trialEndTimestamp = Math.floor(
+          subscription.trialEndsAt.getTime() / 1000
+        );
+      }
+      // Yearly subscriptions charge immediately (no trial_end)
 
       const session = await stripe.checkout.sessions.create({
         customer: subscription.stripeCustomerId,
@@ -239,7 +292,8 @@ export const subscriptionRouter = router({
           },
         ],
         subscription_data: {
-          trial_end: trialEndTimestamp,
+          // Include trial_end only if user is in trial, otherwise omit to charge immediately
+          ...(trialEndTimestamp !== null && { trial_end: trialEndTimestamp }),
           metadata: {
             userId: String(ctx.session.user.id),
           },
@@ -355,7 +409,10 @@ export const subscriptionRouter = router({
       where: { userId: ctx.session.user.id },
     });
 
-    if (!subscription?.stripeSubscriptionId || !subscription.cancelAtPeriodEnd) {
+    if (
+      !subscription?.stripeSubscriptionId ||
+      !subscription.cancelAtPeriodEnd
+    ) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Nema pretplate za nastavak.",

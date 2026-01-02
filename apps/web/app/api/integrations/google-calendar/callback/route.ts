@@ -32,18 +32,24 @@ export async function GET(request: Request) {
   }
 
   if (error) {
-    return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_denied`, request.url));
+    return NextResponse.redirect(
+      new URL(`${returnTo}?error=google_auth_denied`, request.url)
+    );
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL(`${returnTo}?error=missing_code`, request.url));
+    return NextResponse.redirect(
+      new URL(`${returnTo}?error=missing_code`, request.url)
+    );
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(new URL(`${returnTo}?error=google_not_configured`, request.url));
+    return NextResponse.redirect(
+      new URL(`${returnTo}?error=google_not_configured`, request.url)
+    );
   }
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -51,7 +57,12 @@ export async function GET(request: Request) {
 
   try {
     // Exchange code for tokens
-    const tokens = await exchangeCodeForTokens(code, clientId, clientSecret, redirectUri);
+    const tokens = await exchangeCodeForTokens(
+      code,
+      clientId,
+      clientSecret,
+      redirectUri
+    );
 
     // Check if user already has a Google Calendar credential
     const existingCredential = await prisma.credential.findFirst({
@@ -61,7 +72,7 @@ export async function GET(request: Request) {
       },
     });
 
-    let credentialId: number;
+    let credentialId: string;
 
     if (existingCredential) {
       // Update existing credential
@@ -126,7 +137,12 @@ export async function GET(request: Request) {
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
   } catch (err) {
-    logger.error("Google Calendar OAuth error", { error: err, userId: session.user.id });
-    return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
+    logger.error("Google Calendar OAuth error", {
+      error: err,
+      userId: session.user.id,
+    });
+    return NextResponse.redirect(
+      new URL(`${returnTo}?error=google_auth_failed`, request.url)
+    );
   }
 }

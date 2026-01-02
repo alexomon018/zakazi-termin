@@ -12,7 +12,7 @@ export const eventTypeRouter = router({
   }),
 
   // Get single event type by ID
-  byId: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+  byId: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const eventType = await ctx.prisma.eventType.findFirst({
       where: {
         id: input.id,
@@ -82,7 +82,7 @@ export const eventTypeRouter = router({
         afterEventBuffer: z.number().optional(),
         slotInterval: z.number().optional(),
         requiresConfirmation: z.boolean().optional(),
-        scheduleId: z.number().optional(),
+        scheduleId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -99,7 +99,7 @@ export const eventTypeRouter = router({
   update: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         title: z.string().min(1).optional(),
         slug: z.string().min(1).optional(),
         description: z.string().optional(),
@@ -111,7 +111,7 @@ export const eventTypeRouter = router({
         afterEventBuffer: z.number().optional(),
         slotInterval: z.number().optional(),
         requiresConfirmation: z.boolean().optional(),
-        scheduleId: z.number().optional(),
+        scheduleId: z.string().nullable().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -128,7 +128,7 @@ export const eventTypeRouter = router({
 
   // Delete event type
   delete: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.eventType.delete({
         where: {

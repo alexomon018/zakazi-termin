@@ -31,12 +31,12 @@ interface Location {
 }
 
 type Schedule = {
-  id: number;
+  id: string;
   name: string;
 };
 
 type EventType = {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   description: string | null;
@@ -47,7 +47,7 @@ type EventType = {
   beforeEventBuffer: number;
   afterEventBuffer: number;
   slotInterval: number | null;
-  scheduleId: number | null;
+  scheduleId: string | null;
   locations: unknown;
 };
 
@@ -391,11 +391,11 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
             <div className="space-y-2">
               <Label className="text-gray-900 dark:text-white">Koristi raspored</Label>
               <Select
-                value={formData.scheduleId?.toString() || "default"}
+                value={formData.scheduleId || "default"}
                 onValueChange={(value) =>
                   setFormData((prev) => ({
                     ...prev,
-                    scheduleId: value === "default" ? null : Number.parseInt(value),
+                    scheduleId: value === "default" ? null : value,
                   }))
                 }
               >
@@ -405,7 +405,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
                 <SelectContent>
                   <SelectItem value="default">Podrazumevani raspored</SelectItem>
                   {schedules?.map((schedule) => (
-                    <SelectItem key={schedule.id} value={schedule.id.toString()}>
+                    <SelectItem key={schedule.id} value={schedule.id}>
                       {schedule.name}
                     </SelectItem>
                   ))}

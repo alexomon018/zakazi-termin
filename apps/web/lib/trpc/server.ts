@@ -1,7 +1,12 @@
 import "server-only";
 
 import { authOptions } from "@salonko/auth";
-import { type Session, appRouter, createCallerFactory, createContextInner } from "@salonko/trpc";
+import {
+  type Session,
+  appRouter,
+  createCallerFactory,
+  createContextInner,
+} from "@salonko/trpc";
 import { getServerSession } from "next-auth";
 import { cache } from "react";
 
@@ -17,7 +22,7 @@ export const createServerCaller = cache(async () => {
   const trpcSession: Session = session?.user
     ? {
         user: {
-          id: session.user.id as number,
+          id: session.user.id as string,
           email: session.user.email!,
           name: session.user.name,
           salonName: (session.user as { salonName?: string }).salonName,

@@ -18,7 +18,7 @@ export const availabilityRouter = router({
 
   // Get schedule by ID
   getSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const schedule = await ctx.prisma.schedule.findFirst({
         where: {
@@ -55,7 +55,7 @@ export const availabilityRouter = router({
   updateSchedule: protectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string().min(1).optional(),
         timeZone: z.string().optional(),
       })
@@ -74,7 +74,7 @@ export const availabilityRouter = router({
 
   // Delete schedule
   deleteSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.schedule.delete({
         where: {
@@ -89,7 +89,7 @@ export const availabilityRouter = router({
   setAvailability: protectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         availability: z.array(
           z.object({
             days: z.array(z.number().min(0).max(6)),
@@ -136,7 +136,7 @@ export const availabilityRouter = router({
   addDateOverride: protectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
         startTime: z.string(), // HH:mm format
         endTime: z.string(),
@@ -181,7 +181,7 @@ export const availabilityRouter = router({
   removeDateOverride: protectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -212,7 +212,7 @@ export const availabilityRouter = router({
   blockDate: protectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -255,7 +255,7 @@ export const availabilityRouter = router({
   getDateOverrides: protectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         dateFrom: z.date().optional(),
         dateTo: z.date().optional(),
       })
@@ -285,7 +285,7 @@ export const availabilityRouter = router({
   getSlots: publicProcedure
     .input(
       z.object({
-        eventTypeId: z.number(),
+        eventTypeId: z.string(),
         dateFrom: z.date(),
         dateTo: z.date(),
         timeZone: z.string().default("Europe/Belgrade"),

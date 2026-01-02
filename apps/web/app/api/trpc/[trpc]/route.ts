@@ -14,7 +14,7 @@ const handler = async (req: Request) => {
       const trpcSession = session
         ? {
             user: {
-              id: Number(session.user.id),
+              id: session.user.id,
               email: session.user.email,
               name: session.user.name,
               salonName: session.user.salonName,

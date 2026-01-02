@@ -6,13 +6,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 interface Attendee {
-  id: number;
+  id: string;
   name: string;
   email: string;
 }
 
 interface Booking {
-  id: number;
+  id: string;
   title: string;
   startTime: Date;
   attendees: Attendee[];
@@ -20,27 +20,33 @@ interface Booking {
 
 interface UpcomingBookingsProps {
   initialBookings: Array<{
-    id: number;
+    id: string;
     title: string;
     startTime: Date;
     attendees: Array<{
-      id: number;
+      id: string;
       name: string;
       email: string;
       timeZone: string;
       phoneNumber: string | null;
       locale: string;
-      bookingId: number;
+      bookingId: string;
     }>;
     [key: string]: unknown;
   }>;
   totalBookings: number;
 }
 
-export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBookingsProps) {
-  const [displayedBookings, setDisplayedBookings] = useState<Booking[]>(initialBookings);
+export function UpcomingBookings({
+  initialBookings,
+  totalBookings,
+}: UpcomingBookingsProps) {
+  const [displayedBookings, setDisplayedBookings] =
+    useState<Booking[]>(initialBookings);
   const [skip, setSkip] = useState(initialBookings.length);
-  const [hasMore, setHasMore] = useState(initialBookings.length < totalBookings);
+  const [hasMore, setHasMore] = useState(
+    initialBookings.length < totalBookings
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { refetch } = trpc.booking.upcoming.useQuery(
@@ -67,7 +73,7 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Predstojeći termini</CardTitle>
         {totalBookings > 0 && (
           <Link href="/dashboard/bookings">
@@ -79,18 +85,24 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
       </CardHeader>
       <CardContent>
         {displayedBookings.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+          <p className="py-8 text-center text-gray-500 dark:text-gray-400">
             Nemate zakazanih termina.
           </p>
         ) : (
           <>
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {displayedBookings.map((booking) => (
-                <div key={booking.id} className="py-4 flex items-center justify-between">
+                <div
+                  key={booking.id}
+                  className="flex justify-between items-center py-4"
+                >
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.title}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {booking.title}
+                    </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
+                      {booking.attendees[0]?.name} (
+                      {booking.attendees[0]?.email})
                     </p>
                   </div>
                   <div className="text-right">
@@ -113,7 +125,11 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
             </div>
             {hasMore && (
               <div className="mt-4 text-center">
-                <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                >
                   {isLoadingMore ? "Učitavanje..." : "Vidi još"}
                 </Button>
               </div>

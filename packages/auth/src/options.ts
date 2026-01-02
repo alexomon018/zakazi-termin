@@ -11,7 +11,7 @@ import { verifyPassword } from "./password";
 declare module "next-auth" {
   interface Session {
     user: {
-      id: number;
+      id: string;
       email: string;
       name?: string | null;
       salonName?: string | null;
@@ -22,7 +22,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
@@ -34,7 +34,7 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
@@ -121,7 +121,7 @@ export const authOptions: NextAuthOptions = {
 
       // Initial sign in
       if (user) {
-        token.id = user.id as number;
+        token.id = user.id;
         token.email = user.email!;
         token.name = user.name;
         token.salonName = user.salonName;

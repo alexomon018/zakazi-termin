@@ -7,7 +7,7 @@ export const outOfOfficeRouter = router({
     .input(
       z
         .object({
-          cursor: z.number().optional(),
+          cursor: z.string().optional(),
           limit: z.number().min(1).max(100).default(20),
         })
         .optional()
@@ -83,7 +83,7 @@ export const outOfOfficeRouter = router({
         uuid: z.string().optional(),
         startDate: z.date(),
         endDate: z.date(),
-        reasonId: z.number().optional(),
+        reasonId: z.string().optional(),
         notes: z.string().optional(),
       })
     )
