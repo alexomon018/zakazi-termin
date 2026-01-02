@@ -105,18 +105,14 @@ export function DashboardNav({ user, isSubscribed = true }: DashboardNavProps) {
   // Memoize the callback for checking active state
   const isItemActive = useCallback(
     (href: string) => {
-      return (
-        pathname === href ||
-        (href !== "/dashboard" && pathname.startsWith(href))
-      );
+      return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
     },
     [pathname]
   );
 
   // Memoize nav items with their active states
   const navItemsWithActiveState = useMemo(
-    () =>
-      navItems.map((item) => ({ ...item, isActive: isItemActive(item.href) })),
+    () => navItems.map((item) => ({ ...item, isActive: isItemActive(item.href) })),
     [isItemActive]
   );
 
@@ -130,10 +126,7 @@ export function DashboardNav({ user, isSubscribed = true }: DashboardNavProps) {
       <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
         <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
-          <Link
-            href={session ? "/dashboard" : "/"}
-            className="flex flex-shrink-0 items-center"
-          >
+          <Link href={session ? "/dashboard" : "/"} className="flex flex-shrink-0 items-center">
             <span className="text-lg font-bold text-gray-900 md:text-xl dark:text-white">
               Salonko
             </span>
@@ -157,10 +150,7 @@ export function DashboardNav({ user, isSubscribed = true }: DashboardNavProps) {
           {/* User menu */}
           <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
             <div className="hidden lg:block">
-              <UserInfoDisplay
-                name={user.salonName || user.name || ""}
-                email={user.email}
-              />
+              <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
             </div>
             <Button
               variant="outline"

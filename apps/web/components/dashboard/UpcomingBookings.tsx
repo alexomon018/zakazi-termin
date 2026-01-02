@@ -37,16 +37,10 @@ interface UpcomingBookingsProps {
   totalBookings: number;
 }
 
-export function UpcomingBookings({
-  initialBookings,
-  totalBookings,
-}: UpcomingBookingsProps) {
-  const [displayedBookings, setDisplayedBookings] =
-    useState<Booking[]>(initialBookings);
+export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBookingsProps) {
+  const [displayedBookings, setDisplayedBookings] = useState<Booking[]>(initialBookings);
   const [skip, setSkip] = useState(initialBookings.length);
-  const [hasMore, setHasMore] = useState(
-    initialBookings.length < totalBookings
-  );
+  const [hasMore, setHasMore] = useState(initialBookings.length < totalBookings);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { refetch } = trpc.booking.upcoming.useQuery(
@@ -92,17 +86,11 @@ export function UpcomingBookings({
           <>
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
               {displayedBookings.map((booking) => (
-                <div
-                  key={booking.id}
-                  className="flex justify-between items-center py-4"
-                >
+                <div key={booking.id} className="flex justify-between items-center py-4">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {booking.title}
-                    </p>
+                    <p className="font-medium text-gray-900 dark:text-white">{booking.title}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {booking.attendees[0]?.name} (
-                      {booking.attendees[0]?.email})
+                      {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
                     </p>
                   </div>
                   <div className="text-right">
@@ -125,11 +113,7 @@ export function UpcomingBookings({
             </div>
             {hasMore && (
               <div className="mt-4 text-center">
-                <Button
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isLoadingMore}
-                >
+                <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
                   {isLoadingMore ? "Učitavanje..." : "Vidi još"}
                 </Button>
               </div>

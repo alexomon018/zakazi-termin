@@ -3,25 +3,9 @@
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RouterOutputs } from "@salonko/trpc";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label,
-} from "@salonko/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { cn } from "@salonko/ui";
-import {
-  AlertCircle,
-  CalendarDays,
-  Check,
-  Edit2,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertCircle, CalendarDays, Check, Edit2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -43,10 +27,7 @@ type OutOfOfficeClientProps = {
   initialReasons: Reason[];
 };
 
-export function OutOfOfficeClient({
-  initialEntries,
-  initialReasons,
-}: OutOfOfficeClientProps) {
+export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOfficeClientProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -151,9 +132,7 @@ export function OutOfOfficeClient({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Van kancelarije
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Van kancelarije</h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
             Upravljajte periodima kada niste dostupni za zakazivanje
           </p>
@@ -167,18 +146,14 @@ export function OutOfOfficeClient({
       {saved && (
         <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
-          <span className="text-green-800 dark:text-green-300">
-            Uspešno sačuvano!
-          </span>
+          <span className="text-green-800 dark:text-green-300">Uspešno sačuvano!</span>
         </div>
       )}
 
       {createOrUpdate.error && (
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">
-            {createOrUpdate.error.message}
-          </span>
+          <span className="text-red-800 dark:text-red-300">{createOrUpdate.error.message}</span>
         </div>
       )}
 
@@ -216,8 +191,7 @@ export function OutOfOfficeClient({
                       <div>
                         <div className="flex gap-2 items-center">
                           <p className="font-medium text-gray-900 dark:text-white">
-                            {formatDateDisplay(entry.start)} -{" "}
-                            {formatDateDisplay(entry.end)}
+                            {formatDateDisplay(entry.start)} - {formatDateDisplay(entry.end)}
                           </p>
                           {isActive && new Date(entry.start) <= new Date() && (
                             <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full">
@@ -238,11 +212,7 @@ export function OutOfOfficeClient({
                       </div>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(entry)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(entry)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
                       <Button
@@ -261,9 +231,7 @@ export function OutOfOfficeClient({
           ) : (
             <div className="py-12 text-center">
               <CalendarDays className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
-              <p className="mb-2 text-gray-500 dark:text-gray-400">
-                Nemate zakazanih odsustva
-              </p>
+              <p className="mb-2 text-gray-500 dark:text-gray-400">Nemate zakazanih odsustva</p>
               <p className="text-sm text-gray-400 dark:text-gray-500">
                 Dodajte period kada nećete biti dostupni za zakazivanje termina.
               </p>
@@ -278,9 +246,7 @@ export function OutOfOfficeClient({
           <div className="w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {editingUuid
-                  ? "Izmeni period odsustva"
-                  : "Dodaj period odsustva"}
+                {editingUuid ? "Izmeni period odsustva" : "Dodaj period odsustva"}
               </h3>
               <button
                 type="button"
@@ -294,10 +260,7 @@ export function OutOfOfficeClient({
             <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="startDate"
-                    className="text-gray-900 dark:text-white"
-                  >
+                  <Label htmlFor="startDate" className="text-gray-900 dark:text-white">
                     Od
                   </Label>
                   <Input
@@ -307,16 +270,11 @@ export function OutOfOfficeClient({
                     min={formatDateForInput(new Date())}
                   />
                   {errors.startDate && (
-                    <p className="text-sm text-red-600">
-                      {errors.startDate.message}
-                    </p>
+                    <p className="text-sm text-red-600">{errors.startDate.message}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="endDate"
-                    className="text-gray-900 dark:text-white"
-                  >
+                  <Label htmlFor="endDate" className="text-gray-900 dark:text-white">
                     Do
                   </Label>
                   <Input
@@ -326,18 +284,14 @@ export function OutOfOfficeClient({
                     min={watch("startDate") || formatDateForInput(new Date())}
                   />
                   {errors.endDate && (
-                    <p className="text-sm text-red-600">
-                      {errors.endDate.message}
-                    </p>
+                    <p className="text-sm text-red-600">{errors.endDate.message}</p>
                   )}
                 </div>
               </div>
 
               {reasons && reasons.length > 0 && (
                 <div className="space-y-2">
-                  <Label className="text-gray-900 dark:text-white">
-                    Razlog (opciono)
-                  </Label>
+                  <Label className="text-gray-900 dark:text-white">Razlog (opciono)</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {reasons.map((reason: Reason) => (
                       <button
@@ -346,9 +300,7 @@ export function OutOfOfficeClient({
                         onClick={() =>
                           setValue(
                             "reasonId",
-                            selectedReasonId === reason.id
-                              ? undefined
-                              : reason.id
+                            selectedReasonId === reason.id ? undefined : reason.id
                           )
                         }
                         className={cn(
@@ -369,10 +321,7 @@ export function OutOfOfficeClient({
               )}
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="notes"
-                  className="text-gray-900 dark:text-white"
-                >
+                <Label htmlFor="notes" className="text-gray-900 dark:text-white">
                   Napomena (opciono)
                 </Label>
                 <textarea
@@ -385,11 +334,7 @@ export function OutOfOfficeClient({
               </div>
 
               <div className="flex gap-3 justify-end pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCloseModal}
-                >
+                <Button type="button" variant="outline" onClick={handleCloseModal}>
                   Otkaži
                 </Button>
                 <Button type="submit" disabled={createOrUpdate.isPending}>

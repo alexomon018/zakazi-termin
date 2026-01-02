@@ -52,13 +52,10 @@ export const test = base.extend<UsersFixtureType>({
         userCounter++;
         const timestamp = Date.now();
         const random = Math.random().toString(36).substring(2, 10);
-        const email =
-          options.email ||
-          `test-user-${timestamp}-${userCounter}-${random}@test.com`;
+        const email = options.email || `test-user-${timestamp}-${userCounter}-${random}@test.com`;
         const password = options.password || "TestPassword123!";
         // Limit salon name to 30 characters to pass validation
-        const salonName =
-          options.salonName || `salon${userCounter}${random}`.slice(0, 30);
+        const salonName = options.salonName || `salon${userCounter}${random}`.slice(0, 30);
         const name = options.name || `Test User ${userCounter}`;
 
         // Hash password

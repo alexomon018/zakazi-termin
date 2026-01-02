@@ -26,10 +26,7 @@ export async function POST(req: Request) {
       hasSecretKey: !!STRIPE_SECRET_KEY,
       hasWebhookSecret: !!STRIPE_WEBHOOK_SECRET,
     });
-    return NextResponse.json(
-      { error: "Payment service not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Payment service not configured" }, { status: 500 });
   }
 
   const body = await req.text();
@@ -43,11 +40,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(body, signature, STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     logger.error("Webhook signature verification failed", { error: err });
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -82,10 +75,7 @@ export async function POST(req: Request) {
         });
       } catch (createErr) {
         // If unique constraint violation, event was already processed
-        if (
-          createErr instanceof PrismaClientKnownRequestError &&
-          createErr.code === "P2002"
-        ) {
+        if (createErr instanceof PrismaClientKnownRequestError && createErr.code === "P2002") {
           logger.info("Event already processed (duplicate), skipping", {
             eventId: event.id,
             eventType: event.type,
@@ -100,33 +90,23 @@ export async function POST(req: Request) {
     // Process the event (we've already claimed it via the insert above)
     switch (event.type) {
       case "checkout.session.completed":
-        await handleCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session
-        );
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
 
       case "customer.subscription.created":
-        await handleSubscriptionCreated(
-          event.data.object as Stripe.Subscription
-        );
+        await handleSubscriptionCreated(event.data.object as Stripe.Subscription);
         break;
 
       case "customer.subscription.updated":
-        await handleSubscriptionUpdated(
-          event.data.object as Stripe.Subscription
-        );
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
         break;
 
       case "customer.subscription.deleted":
-        await handleSubscriptionDeleted(
-          event.data.object as Stripe.Subscription
-        );
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
 
       case "invoice.payment_succeeded":
-        await handleInvoicePaymentSucceeded(
-          event.data.object as Stripe.Invoice
-        );
+        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice);
         break;
 
       case "invoice.payment_failed":
@@ -166,10 +146,7 @@ export async function POST(req: Request) {
       eventType: event.type,
       eventId: event.id,
     });
-    return NextResponse.json(
-      { error: "Webhook processing failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 }
 
@@ -181,14 +158,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Fetch the actual subscription from Stripe to get its status
   // (it might be "trialing" if user subscribed during their free trial)
-  const stripeSubscription =
-    await stripe!.subscriptions.retrieve(subscriptionId);
+  const stripeSubscription = await stripe!.subscriptions.retrieve(subscriptionId);
 
   // Map Stripe status to our status
-  const statusMap: Record<
-    string,
-    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"
-  > = {
+  const statusMap: Record<string, "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"> = {
     active: "ACTIVE",
     trialing: "TRIALING",
     past_due: "PAST_DUE",
@@ -222,9 +195,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
 }
 
-async function handleSubscriptionCreated(
-  stripeSubscription: Stripe.Subscription
-) {
+async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
@@ -251,9 +222,7 @@ async function handleSubscriptionCreated(
   });
 }
 
-async function handleSubscriptionUpdated(
-  stripeSubscription: Stripe.Subscription
-) {
+async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
 
   // Check if subscription exists - handle out-of-order events
@@ -262,10 +231,7 @@ async function handleSubscriptionUpdated(
   });
 
   if (!existing) {
-    logger.warn(
-      "Subscription not found for update, may be out-of-order event",
-      { customerId }
-    );
+    logger.warn("Subscription not found for update, may be out-of-order event", { customerId });
     // If subscription doesn't exist, this might be an out-of-order event
     // We could call handleSubscriptionCreated here, but it's safer to just log and skip
     return;
@@ -280,10 +246,7 @@ async function handleSubscriptionUpdated(
     });
   }
 
-  const statusMap: Record<
-    string,
-    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"
-  > = {
+  const statusMap: Record<string, "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"> = {
     active: "ACTIVE",
     trialing: "TRIALING",
     past_due: "PAST_DUE",
@@ -323,9 +286,7 @@ async function handleSubscriptionUpdated(
   });
 }
 
-async function handleSubscriptionDeleted(
-  stripeSubscription: Stripe.Subscription
-) {
+async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
   const customerId = stripeSubscription.customer as string;
 
   await prisma.subscription.update({

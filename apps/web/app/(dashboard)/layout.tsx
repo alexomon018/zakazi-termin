@@ -25,16 +25,13 @@ export default async function DashboardLayout({
     subscriptionStatus = await caller.subscription.getStatus();
   }
 
-  const isSubscribed =
-    subscriptionStatus.isActive || subscriptionStatus.isInTrial;
+  const isSubscribed = subscriptionStatus.isActive || subscriptionStatus.isInTrial;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardNav user={session.user} isSubscribed={isSubscribed} />
       <TrialBanner />
-      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        {children}
-      </main>
+      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</main>
     </div>
   );
 }

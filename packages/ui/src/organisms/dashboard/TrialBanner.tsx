@@ -1,12 +1,12 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { Button } from "@salonko/ui";
 import {
   formatTrialTimeRemaining,
   hasTrialTimeRemaining,
   parseTrialEndDate,
 } from "@salonko/ui/lib/utils/formatTrialTime";
-import { Button } from "@salonko/ui";
 import { AlertCircle, Clock, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,12 +14,9 @@ import { useState } from "react";
 export function TrialBanner() {
   const [dismissed, setDismissed] = useState(false);
 
-  const { data: status, isLoading } = trpc.subscription.getStatus.useQuery(
-    undefined,
-    {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    }
-  );
+  const { data: status, isLoading } = trpc.subscription.getStatus.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
   // Don't show if loading, dismissed, or no subscription data
   if (isLoading || dismissed || !status) return null;
@@ -65,10 +62,7 @@ export function TrialBanner() {
               <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                 Vaš probni period ističe za{" "}
                 <strong>
-                  {formatTrialTimeRemaining(
-                    status.trialDaysRemaining,
-                    status.trialEndsAt
-                  )}
+                  {formatTrialTimeRemaining(status.trialDaysRemaining, status.trialEndsAt)}
                 </strong>
               </p>
             </div>
@@ -107,8 +101,8 @@ export function TrialBanner() {
             <div className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
               <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                Vaša pretplata je istekla. Pretplatite se da biste nastavili da
-                koristite sve funkcije.
+                Vaša pretplata je istekla. Pretplatite se da biste nastavili da koristite sve
+                funkcije.
               </p>
             </div>
             <Link href="/dashboard/settings/billing">

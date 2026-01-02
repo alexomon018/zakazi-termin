@@ -28,10 +28,7 @@ const stripe = new Stripe(requiredEnvVars.STRIPE_SECRET_KEY!, {
   maxNetworkRetries: 2, // Add retry logic for transient network issues
 });
 
-const TRIAL_PERIOD_MINUTES = parseInt(
-  process.env.TRIAL_PERIOD_MINUTES || "43200",
-  10
-); // Default 30 days
+const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
 const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
 const PRICES = {
   monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
@@ -42,10 +39,7 @@ const PRICES = {
 // Falls back to allowing requests if Redis is not configured (development)
 let checkoutRateLimiter: Ratelimit | null = null;
 
-if (
-  process.env.UPSTASH_REDIS_REST_URL &&
-  process.env.UPSTASH_REDIS_REST_TOKEN
-) {
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
   checkoutRateLimiter = new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(10, "1 h"), // 10 checkout sessions per hour
@@ -89,9 +83,7 @@ function getTrialStatus(subscription: Subscription | null): {
   }
 
   // Use Math.floor to match Stripe's calculation (days until trial_end timestamp)
-  const daysRemaining = Math.floor(
-    (trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const daysRemaining = Math.floor((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return {
     isInTrial: true,
     trialDaysRemaining: daysRemaining,
@@ -126,8 +118,7 @@ export const subscriptionRouter = router({
 
     const trialInfo = getTrialStatus(subscription);
     const isActive =
-      ["TRIALING", "ACTIVE"].includes(subscription.status) &&
-      !trialInfo.trialExpired;
+      ["TRIALING", "ACTIVE"].includes(subscription.status) && !trialInfo.trialExpired;
     // User has paid subscription if they have a Stripe subscription ID
     const hasPaidSubscription = !!subscription.stripeSubscriptionId;
 
@@ -212,10 +203,7 @@ export const subscriptionRouter = router({
     } catch (error) {
       // Handle race condition - if another request created the subscription
       // while we were creating the Stripe customer, return the existing one
-      if (
-        error instanceof Error &&
-        error.message.includes("Unique constraint failed")
-      ) {
+      if (error instanceof Error && error.message.includes("Unique constraint failed")) {
         const existingSub = await ctx.prisma.subscription.findUnique({
           where: { userId: ctx.session.user.id },
         });
@@ -270,14 +258,8 @@ export const subscriptionRouter = router({
       let trialEndTimestamp: number | null = null;
 
       // Only apply remaining trial for monthly subscriptions
-      if (
-        input.interval === "monthly" &&
-        trialInfo.isInTrial &&
-        subscription.trialEndsAt
-      ) {
-        trialEndTimestamp = Math.floor(
-          subscription.trialEndsAt.getTime() / 1000
-        );
+      if (input.interval === "monthly" && trialInfo.isInTrial && subscription.trialEndsAt) {
+        trialEndTimestamp = Math.floor(subscription.trialEndsAt.getTime() / 1000);
       }
       // Yearly subscriptions charge immediately (no trial_end)
 
@@ -409,10 +391,7 @@ export const subscriptionRouter = router({
       where: { userId: ctx.session.user.id },
     });
 
-    if (
-      !subscription?.stripeSubscriptionId ||
-      !subscription.cancelAtPeriodEnd
-    ) {
+    if (!subscription?.stripeSubscriptionId || !subscription.cancelAtPeriodEnd) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Nema pretplate za nastavak.",

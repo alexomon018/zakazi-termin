@@ -1,16 +1,9 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { formatTrialTimeRemaining } from "@salonko/ui/lib/utils/formatTrialTime";
 import type { RouterOutputs } from "@salonko/trpc";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@salonko/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@salonko/ui";
+import { formatTrialTimeRemaining } from "@salonko/ui/lib/utils/formatTrialTime";
 import {
   AlertCircle,
   Check,
@@ -45,18 +38,13 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
 
-  const [selectedInterval, setSelectedInterval] = useState<
-    "monthly" | "yearly"
-  >("monthly");
+  const [selectedInterval, setSelectedInterval] = useState<"monthly" | "yearly">("monthly");
 
   const utils = trpc.useUtils();
 
-  const { data: status, refetch } = trpc.subscription.getStatus.useQuery(
-    undefined,
-    {
-      initialData: initialStatus,
-    }
-  );
+  const { data: status, refetch } = trpc.subscription.getStatus.useQuery(undefined, {
+    initialData: initialStatus,
+  });
 
   // Refetch status when returning from Stripe checkout
   useEffect(() => {
@@ -124,12 +112,8 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Naplata
-        </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          Upravljajte svojom pretplatom
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Naplata</h1>
+        <p className="mt-1 text-gray-600 dark:text-gray-400">Upravljajte svojom pretplatom</p>
       </div>
 
       {/* Lock Warning */}
@@ -137,8 +121,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         <div className="flex gap-3 items-center p-4 bg-amber-50 rounded-lg border border-amber-200 dark:border-amber-800 dark:bg-amber-900/20">
           <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           <span className="text-amber-800 dark:text-amber-300">
-            Vaša pretplata je istekla. Pretplatite se da biste nastavili da
-            koristite sve funkcije.
+            Vaša pretplata je istekla. Pretplatite se da biste nastavili da koristite sve funkcije.
           </span>
         </div>
       )}
@@ -157,9 +140,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
       {canceled && (
         <div className="flex gap-3 items-center p-4 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
           <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <span className="text-gray-800 dark:text-gray-300">
-            Plaćanje je otkazano.
-          </span>
+          <span className="text-gray-800 dark:text-gray-300">Plaćanje je otkazano.</span>
         </div>
       )}
 
@@ -180,10 +161,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Imate još{" "}
                 <strong>
-                  {formatTrialTimeRemaining(
-                    status.trialDaysRemaining,
-                    status.trialEndsAt
-                  )}
+                  {formatTrialTimeRemaining(status.trialDaysRemaining, status.trialEndsAt)}
                 </strong>{" "}
                 besplatnog pristupa.
               </p>
@@ -194,22 +172,17 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                 Aktivna pretplata
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {status.billingInterval === "YEAR" ? "Godišnja" : "Mesečna"}{" "}
-                pretplata
-                {status.cancelAtPeriodEnd &&
-                  " (otkazana, aktivna do kraja perioda)"}
+                {status.billingInterval === "YEAR" ? "Godišnja" : "Mesečna"} pretplata
+                {status.cancelAtPeriodEnd && " (otkazana, aktivna do kraja perioda)"}
               </p>
               {status.currentPeriodEnd && (
                 <p className="text-xs text-gray-500">
                   Sledeća naplata:{" "}
-                  {new Date(status.currentPeriodEnd).toLocaleDateString(
-                    "sr-RS",
-                    {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    }
-                  )}
+                  {new Date(status.currentPeriodEnd).toLocaleDateString("sr-RS", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </p>
               )}
             </div>
@@ -225,9 +198,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
           ) : (
             <div className="space-y-1">
               <p className="text-base font-semibold text-red-600 dark:text-red-400">
-                {status.status === "PAST_DUE"
-                  ? "Plaćanje neuspešno"
-                  : "Pretplata istekla"}
+                {status.status === "PAST_DUE" ? "Plaćanje neuspešno" : "Pretplata istekla"}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {status.status === "PAST_DUE"
@@ -263,9 +234,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                 <p className="font-semibold text-foreground">Mesečna</p>
                 <p className="text-2xl font-bold text-foreground">
                   {PRICES.monthly.amount}{" "}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    RSD/mes
-                  </span>
+                  <span className="text-sm font-normal text-muted-foreground">RSD/mes</span>
                 </p>
               </button>
 
@@ -285,17 +254,13 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                 <p className="font-semibold text-foreground">Godišnja</p>
                 <p className="text-2xl font-bold text-foreground">
                   {PRICES.yearly.amount}{" "}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    RSD/god
-                  </span>
+                  <span className="text-sm font-normal text-muted-foreground">RSD/god</span>
                 </p>
               </button>
             </div>
 
             <Button
-              onClick={() =>
-                createCheckout.mutate({ interval: selectedInterval })
-              }
+              onClick={() => createCheckout.mutate({ interval: selectedInterval })}
               disabled={createCheckout.isPending}
               className="w-full"
               size="lg"
@@ -312,68 +277,51 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
       )}
 
       {/* Manage Subscription - Show when user has a paid subscription */}
-      {status.hasPaidSubscription &&
-        (status.status === "ACTIVE" || status.isInTrial) && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Upravljanje pretplatom</CardTitle>
-              <CardDescription className="text-sm">
-                Promenite način plaćanja ili otkažite pretplatu
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
+      {status.hasPaidSubscription && (status.status === "ACTIVE" || status.isInTrial) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Upravljanje pretplatom</CardTitle>
+            <CardDescription className="text-sm">
+              Promenite način plaćanja ili otkažite pretplatu
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              onClick={() => createPortal.mutate()}
+              disabled={createPortal.isPending}
+            >
+              {createPortal.isPending && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+              {createPortal.isPending ? "Učitavanje..." : "Upravljaj načinom plaćanja"}
+            </Button>
+
+            {status.cancelAtPeriodEnd ? (
               <Button
                 variant="outline"
-                onClick={() => createPortal.mutate()}
-                disabled={createPortal.isPending}
+                onClick={() => resumeSubscription.mutate()}
+                disabled={resumeSubscription.isPending}
               >
-                {createPortal.isPending && (
-                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                )}
-                {createPortal.isPending
-                  ? "Učitavanje..."
-                  : "Upravljaj načinom plaćanja"}
+                {resumeSubscription.isPending && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+                {resumeSubscription.isPending ? "Učitavanje..." : "Nastavi pretplatu"}
               </Button>
-
-              {status.cancelAtPeriodEnd ? (
-                <Button
-                  variant="outline"
-                  onClick={() => resumeSubscription.mutate()}
-                  disabled={resumeSubscription.isPending}
-                >
-                  {resumeSubscription.isPending && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  {resumeSubscription.isPending
-                    ? "Učitavanje..."
-                    : "Nastavi pretplatu"}
-                </Button>
-              ) : (
-                <Button
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Da li ste sigurni da želite da otkažete pretplatu?"
-                      )
-                    ) {
-                      cancelSubscription.mutate();
-                    }
-                  }}
-                  disabled={cancelSubscription.isPending}
-                >
-                  {cancelSubscription.isPending && (
-                    <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                  )}
-                  {cancelSubscription.isPending
-                    ? "Učitavanje..."
-                    : "Otkaži pretplatu"}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => {
+                  if (confirm("Da li ste sigurni da želite da otkažete pretplatu?")) {
+                    cancelSubscription.mutate();
+                  }
+                }}
+                disabled={cancelSubscription.isPending}
+              >
+                {cancelSubscription.isPending && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+                {cancelSubscription.isPending ? "Učitavanje..." : "Otkaži pretplatu"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Past Due - Show manage payment */}
       {status.status === "PAST_DUE" && (
@@ -390,12 +338,8 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               onClick={() => createPortal.mutate()}
               disabled={createPortal.isPending}
             >
-              {createPortal.isPending && (
-                <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-              )}
-              {createPortal.isPending
-                ? "Učitavanje..."
-                : "Ažuriraj način plaćanja"}
+              {createPortal.isPending && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+              {createPortal.isPending ? "Učitavanje..." : "Ažuriraj način plaćanja"}
             </Button>
           </CardContent>
         </Card>
@@ -439,21 +383,17 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                     {invoicesData.invoices.map((invoice) => (
                       <tr key={invoice.id} className="text-sm">
                         <td className="py-3">
-                          {new Date(invoice.created * 1000).toLocaleDateString(
-                            "sr-RS",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            }
-                          )}
+                          {new Date(invoice.created * 1000).toLocaleDateString("sr-RS", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
                         </td>
                         <td className="py-3 font-mono text-muted-foreground">
                           {invoice.number || "-"}
                         </td>
                         <td className="py-3 font-medium">
-                          {(invoice.amountPaid / 100).toLocaleString("sr-RS")}{" "}
-                          RSD
+                          {(invoice.amountPaid / 100).toLocaleString("sr-RS")} RSD
                         </td>
                         <td className="py-3">
                           <InvoiceStatusBadge status={invoice.status} />
@@ -495,25 +435,18 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               {/* Mobile Cards */}
               <div className="space-y-3 sm:hidden">
                 {invoicesData.invoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className="p-4 rounded-lg border bg-card"
-                  >
+                  <div key={invoice.id} className="p-4 rounded-lg border bg-card">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="font-medium">
-                          {(invoice.amountPaid / 100).toLocaleString("sr-RS")}{" "}
-                          RSD
+                          {(invoice.amountPaid / 100).toLocaleString("sr-RS")} RSD
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(invoice.created * 1000).toLocaleDateString(
-                            "sr-RS",
-                            {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            }
-                          )}
+                          {new Date(invoice.created * 1000).toLocaleDateString("sr-RS", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
                       <InvoiceStatusBadge status={invoice.status} />

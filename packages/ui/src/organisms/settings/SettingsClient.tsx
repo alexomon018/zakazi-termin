@@ -3,13 +3,7 @@
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
-import {
-  AlertCircle,
-  Calendar,
-  Check,
-  ExternalLink,
-  Trash2,
-} from "lucide-react";
+import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
@@ -28,12 +22,9 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
 
   const utils = trpc.useUtils();
 
-  const { data: connections } = trpc.calendar.listConnections.useQuery(
-    undefined,
-    {
-      initialData: initialConnections,
-    }
-  );
+  const { data: connections } = trpc.calendar.listConnections.useQuery(undefined, {
+    initialData: initialConnections,
+  });
 
   const disconnectCalendar = trpc.calendar.disconnect.useMutation({
     onSuccess: () => {
@@ -60,9 +51,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Podešavanja
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Podešavanja</h1>
         <p className="mt-1 text-gray-600 dark:text-gray-400">
           Upravljajte svojim nalogom i integracijama
         </p>
@@ -82,12 +71,9 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">
-            {errorParam === "google_auth_denied" &&
-              "Odbili ste pristup Google Calendar-u."}
-            {errorParam === "google_auth_failed" &&
-              "Greška pri povezivanju sa Google Calendar-om."}
-            {errorParam === "google_not_configured" &&
-              "Google Calendar integracija nije podešena."}
+            {errorParam === "google_auth_denied" && "Odbili ste pristup Google Calendar-u."}
+            {errorParam === "google_auth_failed" && "Greška pri povezivanju sa Google Calendar-om."}
+            {errorParam === "google_not_configured" && "Google Calendar integracija nije podešena."}
             {errorParam === "missing_code" && "Nedostaje autorizacioni kod."}
           </span>
         </div>
@@ -103,8 +89,8 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Povežite svoje kalendare kako bismo automatski proveravali vašu
-            zauzetost i izbegavali duple rezervacije.
+            Povežite svoje kalendare kako bismo automatski proveravali vašu zauzetost i izbegavali
+            duple rezervacije.
           </p>
 
           {/* Connected Calendars */}
@@ -142,9 +128,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        Google Calendar
-                      </p>
+                      <p className="font-medium text-gray-900 dark:text-white">Google Calendar</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         {connection.calendarsCount} kalendar(a) odabrano
                       </p>
@@ -156,11 +140,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        if (
-                          confirm(
-                            "Da li ste sigurni da želite da isključite ovaj kalendar?"
-                          )
-                        ) {
+                        if (confirm("Da li ste sigurni da želite da isključite ovaj kalendar?")) {
                           disconnectCalendar.mutate({
                             credentialId: connection.id,
                           });
@@ -181,17 +161,8 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
           </div>
 
           {/* Connect Button */}
-          <Button
-            onClick={handleConnectGoogle}
-            disabled={connectingCalendar}
-            className="w-full"
-          >
-            <svg
-              className="mr-2 w-5 h-5"
-              viewBox="0 0 24 24"
-              role="img"
-              aria-label="Google logo"
-            >
+          <Button onClick={handleConnectGoogle} disabled={connectingCalendar} className="w-full">
+            <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -246,18 +217,14 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
     <div className="flex fixed inset-0 z-50 justify-center items-center bg-black/50">
       <div className="mx-4 w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
-            Odaberite kalendare
-          </h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Odaberite kalendare</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Odabrani kalendari će se koristiti za proveru zauzetosti
           </p>
         </div>
         <div className="overflow-y-auto p-4 max-h-80">
           {isLoading ? (
-            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-              Učitavanje...
-            </div>
+            <div className="py-4 text-center text-gray-500 dark:text-gray-400">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
               {calendars?.map(
@@ -284,13 +251,9 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
                       className="rounded border-gray-300 dark:border-gray-600"
                     />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {cal.name}
-                      </p>
+                      <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
                       {cal.primary && (
-                        <span className="text-xs text-green-600 dark:text-green-400">
-                          Primarni
-                        </span>
+                        <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
                       )}
                     </div>
                   </label>
