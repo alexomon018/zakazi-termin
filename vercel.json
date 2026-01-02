@@ -2,5 +2,11 @@
   "buildCommand": "yarn build",
   "devCommand": "yarn dev",
   "installCommand": "yarn install",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "crons": [
+    {
+      "path": "/api/cron/check-trials",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

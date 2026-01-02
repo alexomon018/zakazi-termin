@@ -40,6 +40,7 @@ declare module "next-auth/jwt" {
     salonName?: string | null;
     locale: string;
     timeZone: string;
+    subscriptionStatus?: string | null;
   }
 }
 
@@ -139,6 +140,30 @@ export const authOptions: NextAuthOptions = {
           token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
+        }
+      }
+
+      // Add subscription status to token (refreshed on each request)
+      if (token.id) {
+        const subscription = await prisma.subscription.findUnique({
+          where: { userId: token.id },
+          select: { status: true, trialEndsAt: true },
+        });
+
+        if (subscription) {
+          // Check if trial has expired
+          const now = new Date();
+          if (
+            subscription.status === "TRIALING" &&
+            subscription.trialEndsAt &&
+            now > subscription.trialEndsAt
+          ) {
+            token.subscriptionStatus = "EXPIRED";
+          } else {
+            token.subscriptionStatus = subscription.status;
+          }
+        } else {
+          token.subscriptionStatus = null;
         }
       }
 

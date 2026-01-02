@@ -35,6 +35,19 @@ enum MembershipRole {
   MEMBER
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum BillingInterval {
+  MONTH
+  YEAR
+}
+
 // ===== ORGANIZATIONS =====
 
 model Organization {
@@ -107,6 +120,7 @@ model User {
   destinationCalendar DestinationCalendar?
   memberships         Membership[]
   outOfOfficeEntries  OutOfOffice[]
+  subscription        Subscription?
 
   @@index([email])
   @@index([salonName])
@@ -391,4 +405,59 @@ model OutOfOffice {
 
   @@index([userId])
   @@index([start, end])
+}
+
+// ===== SUBSCRIPTIONS =====
+
+model Subscription {
+  id                   Int                @id @default(autoincrement())
+  userId               Int                @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe references
+  stripeCustomerId     String             @unique
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+
+  // Status and billing
+  status               SubscriptionStatus @default(TRIALING)
+  billingInterval      BillingInterval?
+
+  // Trial tracking
+  trialStartedAt       DateTime?
+  trialEndsAt          DateTime?
+
+  // Subscription period
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+
+  // Dunning management (failed payment tracking)
+  lastDunningEmailAt   DateTime?          // When last dunning email was sent
+  dunningEmailCount    Int                @default(0) // Number of dunning emails sent
+  lastReminderSentAt   DateTime?          // When last trial reminder was sent
+
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  events               SubscriptionEvent[]
+
+  @@index([stripeCustomerId])
+  @@index([status])
+  @@index([trialEndsAt])        // For cron job trial expiration queries
+  @@index([currentPeriodEnd])   // For subscription expiration queries
+}
+
+model SubscriptionEvent {
+  id             Int          @id @default(autoincrement())
+  subscriptionId Int
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  stripeEventId  String       @unique
+  eventType      String
+  eventData      Json
+  processedAt    DateTime     @default(now())
+
+  @@index([subscriptionId])
 }

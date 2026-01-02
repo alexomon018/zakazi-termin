@@ -10,8 +10,18 @@ import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organi
 import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
 import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
+import { PaymentFailedEmail } from "./templates/payment-failed";
+import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
+import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
-import type { BookingEmailData } from "./types";
+import type {
+  BookingEmailData,
+  PaymentFailedEmailData,
+  SubscriptionCanceledEmailData,
+  SubscriptionExpiredEmailData,
+  TrialEndingEmailData,
+} from "./types";
 
 export interface SendEmailOptions {
   to: string;
@@ -210,6 +220,44 @@ class EmailService {
       to: data.userEmail,
       subject: "Resetujte vašu lozinku - Salonko",
       react: createElement(PasswordResetEmail, data),
+    });
+  }
+
+  // Subscription-related emails
+
+  // Send payment failed notification
+  async sendPaymentFailedEmail(data: PaymentFailedEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Plaćanje nije uspelo - Salonko",
+      react: createElement(PaymentFailedEmail, data),
+    });
+  }
+
+  // Send trial ending reminder (3 days before)
+  async sendTrialEndingEmail(data: TrialEndingEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: `Probni period ističe za ${data.daysRemaining} dana - Salonko`,
+      react: createElement(TrialEndingEmail, data),
+    });
+  }
+
+  // Send subscription canceled confirmation
+  async sendSubscriptionCanceledEmail(data: SubscriptionCanceledEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata otkazana - Salonko",
+      react: createElement(SubscriptionCanceledEmail, data),
+    });
+  }
+
+  // Send subscription expired notification
+  async sendSubscriptionExpiredEmail(data: SubscriptionExpiredEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata istekla - Salonko",
+      react: createElement(SubscriptionExpiredEmail, data),
     });
   }
 }

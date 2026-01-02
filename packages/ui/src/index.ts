@@ -89,6 +89,9 @@ export { NavLink } from "./molecules/landing/NavLink";
 // Organisms - Navigation
 export { DashboardNav } from "./organisms/navigation/DashboardNav";
 
+// Organisms - Dashboard
+export { TrialBanner } from "./organisms/dashboard/TrialBanner";
+
 // Organisms - Bookings
 export { BookingsClient } from "./organisms/bookings/BookingsClient";
 
@@ -102,6 +105,7 @@ export { AvailabilityClient } from "./organisms/availability/AvailabilityClient"
 
 // Organisms - Settings
 export { AppearanceClient } from "./organisms/settings/AppearanceClient";
+export { BillingClient } from "./organisms/settings/BillingClient";
 export { ProfileClient } from "./organisms/settings/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";

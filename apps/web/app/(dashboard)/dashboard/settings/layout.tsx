@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@salonko/ui";
-import { Calendar, CalendarOff, Palette, User } from "lucide-react";
+import { Calendar, CalendarOff, CreditCard, Palette, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +17,12 @@ const settingsNavItems = [
     label: "Izgled",
     icon: Palette,
     description: "Prilagodite izgled aplikacije",
+  },
+  {
+    href: "/dashboard/settings/billing",
+    label: "Naplata",
+    icon: CreditCard,
+    description: "Upravljajte pretplatom",
   },
   {
     href: "/dashboard/settings/out-of-office",

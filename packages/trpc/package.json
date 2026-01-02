@@ -11,6 +11,9 @@
     "@salonko/prisma": "workspace:*",
     "@salonko/scheduling": "workspace:*",
     "@trpc/server": "^11.0.0-rc.660",
+    "@upstash/ratelimit": "^2.0.7",
+    "@upstash/redis": "^1.36.0",
+    "stripe": "^20.1.0",
     "superjson": "^2.2.1",
     "zod": "^3.23.8"
   }
