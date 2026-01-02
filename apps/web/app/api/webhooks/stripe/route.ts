@@ -111,6 +111,9 @@ export async function POST(req: Request) {
             );
           } else {
             // Create minimal subscription record for idempotency and event tracking
+            // Note: Initial status is set to "TRIALING" as a placeholder. The actual status
+            // will be updated by handleCheckoutCompleted or other event handlers based on
+            // the actual Stripe subscription status (e.g., "trialing" vs "active").
             subscription = await prisma.subscription.upsert({
               where: { stripeCustomerId: customerId },
               create: {

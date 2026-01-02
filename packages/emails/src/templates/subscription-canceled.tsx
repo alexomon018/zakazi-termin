@@ -7,11 +7,20 @@ export function SubscriptionCanceledEmail({
   currentPeriodEnd,
   resumeUrl,
 }: SubscriptionCanceledEmailData) {
-  const formattedDate = new Date(currentPeriodEnd).toLocaleDateString("sr-RS", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const formatDate = (dateInput: string | number | Date): string => {
+    const date = new Date(dateInput);
+    if (Number.isNaN(date.getTime())) {
+      console.warn("[SubscriptionCanceledEmail] Invalid date received:", dateInput);
+      return "Nepoznat datum";
+    }
+    return date.toLocaleDateString("sr-RS", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formattedDate = formatDate(currentPeriodEnd);
 
   return (
     <BaseEmail preview="Vaša pretplata je otkazana" heading="Pretplata otkazana">

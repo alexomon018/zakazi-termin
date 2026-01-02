@@ -1,9 +1,14 @@
-import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import {
+  protectedProcedure,
+  publicProcedure,
+  router,
+  subscriptionProtectedProcedure,
+} from "@salonko/trpc/trpc";
 import { z } from "zod";
 
 export const eventTypeRouter = router({
   // List user's event types
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: subscriptionProtectedProcedure.query(async ({ ctx }) => {
     const eventTypes = await ctx.prisma.eventType.findMany({
       where: { userId: ctx.session.user.id },
       orderBy: { position: "asc" },
@@ -12,22 +17,24 @@ export const eventTypeRouter = router({
   }),
 
   // Get single event type by ID
-  byId: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
-    const eventType = await ctx.prisma.eventType.findFirst({
-      where: {
-        id: input.id,
-        userId: ctx.session.user.id,
-      },
-      include: {
-        schedule: {
-          include: {
-            availability: true,
+  byId: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const eventType = await ctx.prisma.eventType.findFirst({
+        where: {
+          id: input.id,
+          userId: ctx.session.user.id,
+        },
+        include: {
+          schedule: {
+            include: {
+              availability: true,
+            },
           },
         },
-      },
-    });
-    return eventType;
-  }),
+      });
+      return eventType;
+    }),
 
   // Get public event type by salonName and slug
   getPublic: publicProcedure
@@ -69,7 +76,7 @@ export const eventTypeRouter = router({
     }),
 
   // Create event type
-  create: protectedProcedure
+  create: subscriptionProtectedProcedure
     .input(
       z.object({
         title: z.string().min(1),
@@ -96,7 +103,7 @@ export const eventTypeRouter = router({
     }),
 
   // Update event type
-  update: protectedProcedure
+  update: subscriptionProtectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -127,7 +134,7 @@ export const eventTypeRouter = router({
     }),
 
   // Delete event type
-  delete: protectedProcedure
+  delete: subscriptionProtectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.eventType.delete({

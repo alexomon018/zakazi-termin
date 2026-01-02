@@ -1,6 +1,6 @@
 import { Link, Section, Text } from "@react-email/components";
 import type { PaymentFailedEmailData } from "../types";
-import { BaseEmail, button, buttonDanger, infoBox, text } from "./base-email";
+import { BaseEmail, buttonDanger, infoBox, text } from "./base-email";
 
 export function PaymentFailedEmail({ userName, billingPortalUrl }: PaymentFailedEmailData) {
   return (

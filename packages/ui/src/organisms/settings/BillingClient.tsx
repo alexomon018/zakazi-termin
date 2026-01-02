@@ -1,8 +1,10 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { PRICING_CONFIG } from "@salonko/config";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@salonko/ui";
+import { useExponentialBackoffPolling } from "@salonko/ui/hooks/useExponentialBackoffPolling";
 import { formatTrialTimeRemaining } from "@salonko/ui/lib/utils/formatTrialTime";
 import {
   AlertCircle,
@@ -15,21 +17,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type SubscriptionStatus = RouterOutputs["subscription"]["getStatus"];
 
 type BillingClientProps = {
-  initialStatus: SubscriptionStatus;
-};
-
-const PRICES = {
-  monthly: { amount: "5.000", period: "mesečno" },
-  yearly: {
-    amount: "50.000",
-    period: "godišnje",
-    savings: "2 meseca besplatno",
-  },
+  initialStatus?: SubscriptionStatus;
 };
 
 export function BillingClient({ initialStatus }: BillingClientProps) {
@@ -47,24 +40,12 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   });
 
   // Refetch status when returning from Stripe checkout
-  useEffect(() => {
-    if (success) {
-      // Poll for status update as webhook may take a moment
-      const pollInterval = setInterval(() => {
-        refetch();
-      }, 1000);
-
-      // Stop polling after 10 seconds
-      const timeout = setTimeout(() => {
-        clearInterval(pollInterval);
-      }, 10000);
-
-      return () => {
-        clearInterval(pollInterval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [success, refetch]);
+  // Poll for status update as webhook may take a moment
+  // Use exponential backoff: 1s, 2s, 4s, 8s (max 8s interval)
+  useExponentialBackoffPolling({
+    enabled: success,
+    onPoll: refetch,
+  });
 
   const createCheckout = trpc.subscription.createCheckoutSession.useMutation({
     onSuccess: ({ url }) => {
@@ -92,6 +73,21 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
 
   const { data: invoicesData, isLoading: invoicesLoading } =
     trpc.subscription.getInvoices.useQuery();
+
+  // Show loading state if status is not yet available
+  if (!status) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Naplata</h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">Upravljajte svojom pretplatom</p>
+        </div>
+        <div className="flex justify-center items-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   // Determine if pricing options should be shown
   const showPricingOptions =
@@ -233,7 +229,7 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
               >
                 <p className="font-semibold text-foreground">Mesečna</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {PRICES.monthly.amount}{" "}
+                  {PRICING_CONFIG.monthly.price}{" "}
                   <span className="text-sm font-normal text-muted-foreground">RSD/mes</span>
                 </p>
               </button>
@@ -248,12 +244,14 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <span className="absolute -top-2 right-2 rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">
-                  {PRICES.yearly.savings}
-                </span>
+                {PRICING_CONFIG.yearly.savings && (
+                  <span className="absolute -top-2 right-2 rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">
+                    {PRICING_CONFIG.yearly.savings}
+                  </span>
+                )}
                 <p className="font-semibold text-foreground">Godišnja</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {PRICES.yearly.amount}{" "}
+                  {PRICING_CONFIG.yearly.price}{" "}
                   <span className="text-sm font-normal text-muted-foreground">RSD/god</span>
                 </p>
               </button>

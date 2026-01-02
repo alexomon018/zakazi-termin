@@ -8,6 +8,36 @@ import { SalonkoAdapter } from "./adapter";
 import { ErrorCode } from "./error-codes";
 import { verifyPassword } from "./password";
 
+// In-memory cache for subscription status to reduce database queries
+// TTL: 5 minutes (300000ms) - balances accuracy with performance
+const SUBSCRIPTION_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface CachedSubscriptionStatus {
+  status: string | null;
+  expiresAt: number;
+}
+
+const subscriptionCache = new Map<string, CachedSubscriptionStatus>();
+
+function getCachedSubscriptionStatus(userId: string): string | null | undefined {
+  const cached = subscriptionCache.get(userId);
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.status;
+  }
+  // Remove expired entry
+  if (cached) {
+    subscriptionCache.delete(userId);
+  }
+  return undefined;
+}
+
+function setCachedSubscriptionStatus(userId: string, status: string | null): void {
+  subscriptionCache.set(userId, {
+    status,
+    expiresAt: Date.now() + SUBSCRIPTION_CACHE_TTL,
+  });
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -143,27 +173,40 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // Add subscription status to token (refreshed on each request)
+      // Add subscription status to token (cached to reduce database queries)
+      // Cache TTL: 5 minutes - balances real-time trial expiry checks with performance
       if (token.id) {
-        const subscription = await prisma.subscription.findUnique({
-          where: { userId: token.id },
-          select: { status: true, trialEndsAt: true },
-        });
-
-        if (subscription) {
-          // Check if trial has expired
-          const now = new Date();
-          if (
-            subscription.status === "TRIALING" &&
-            subscription.trialEndsAt &&
-            now > subscription.trialEndsAt
-          ) {
-            token.subscriptionStatus = "EXPIRED";
-          } else {
-            token.subscriptionStatus = subscription.status;
-          }
+        // Check cache first
+        const cachedStatus = getCachedSubscriptionStatus(token.id);
+        if (cachedStatus !== undefined) {
+          token.subscriptionStatus = cachedStatus;
         } else {
-          token.subscriptionStatus = null;
+          // Cache miss - query database
+          const subscription = await prisma.subscription.findUnique({
+            where: { userId: token.id },
+            select: { status: true, trialEndsAt: true },
+          });
+
+          let finalStatus: string | null;
+          if (subscription) {
+            // Check if trial has expired (real-time check for accuracy)
+            const now = new Date();
+            if (
+              subscription.status === "TRIALING" &&
+              subscription.trialEndsAt &&
+              now > subscription.trialEndsAt
+            ) {
+              finalStatus = "EXPIRED";
+            } else {
+              finalStatus = subscription.status;
+            }
+          } else {
+            finalStatus = null;
+          }
+
+          // Cache the result
+          setCachedSubscriptionStatus(token.id, finalStatus);
+          token.subscriptionStatus = finalStatus;
         }
       }
 

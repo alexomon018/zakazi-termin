@@ -161,3 +161,4 @@ export {
 
 // Hooks
 export { useCookieConsent } from "./hooks/useCookieConsent";
+export { useExponentialBackoffPolling } from "./hooks/useExponentialBackoffPolling";

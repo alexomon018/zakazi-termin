@@ -89,7 +89,7 @@ export function PricingSection() {
               )}
             >
               Godišnje
-              {billingInterval !== "yearly" && (
+              {billingInterval === "yearly" && (
                 <span className="absolute -right-2 -top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                   -17%
                 </span>

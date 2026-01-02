@@ -9,10 +9,26 @@ import {
 } from "@salonko/ui/lib/utils/formatTrialTime";
 import { AlertCircle, Clock, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const DISMISS_STORAGE_KEY = "trial-banner-dismissed";
 
 export function TrialBanner() {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(DISMISS_STORAGE_KEY) === "true";
+    }
+    return false;
+  });
+
+  // Persist dismiss state to localStorage
+  const handleDismiss = () => {
+    setDismissed(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DISMISS_STORAGE_KEY, "true");
+    }
+  };
 
   const { data: status, isLoading } = trpc.subscription.getStatus.useQuery(undefined, {
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -75,7 +91,7 @@ export function TrialBanner() {
               </Link>
               <button
                 type="button"
-                onClick={() => setDismissed(true)}
+                onClick={handleDismiss}
                 className="rounded p-1 text-amber-600 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-800/50"
               >
                 <X className="h-4 w-4" />

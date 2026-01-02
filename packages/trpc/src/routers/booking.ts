@@ -1,6 +1,11 @@
 import { logger } from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
-import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import {
+  protectedProcedure,
+  publicProcedure,
+  router,
+  subscriptionProtectedProcedure,
+} from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -71,7 +76,7 @@ function buildEmailData(
 
 export const bookingRouter = router({
   // Get upcoming bookings with pagination
-  upcoming: protectedProcedure
+  upcoming: subscriptionProtectedProcedure
     .input(
       z
         .object({
@@ -116,7 +121,7 @@ export const bookingRouter = router({
     }),
 
   // List bookings for current user
-  list: protectedProcedure
+  list: subscriptionProtectedProcedure
     .input(
       z
         .object({
@@ -144,7 +149,7 @@ export const bookingRouter = router({
     }),
 
   // List bookings with pagination
-  listPaginated: protectedProcedure
+  listPaginated: subscriptionProtectedProcedure
     .input(
       z.object({
         status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),

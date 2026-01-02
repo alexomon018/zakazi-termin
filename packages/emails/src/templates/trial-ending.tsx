@@ -1,9 +1,9 @@
 import { Link, Section, Text } from "@react-email/components";
 import type { TrialEndingEmailData } from "../types";
-import { BaseEmail, button, buttonSuccess, infoBox, text } from "./base-email";
+import { BaseEmail, buttonSuccess, infoBox, text } from "./base-email";
 
 export function TrialEndingEmail({ userName, daysRemaining, billingUrl }: TrialEndingEmailData) {
-  const daysText = daysRemaining === 1 ? "dan" : daysRemaining < 5 ? "dana" : "dana";
+  const daysText = daysRemaining === 1 ? "dan" : "dana";
 
   return (
     <BaseEmail

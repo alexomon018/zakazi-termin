@@ -39,9 +39,10 @@ export async function POST(req: Request) {
   }
 
   const authHeader = req.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "");
+  // Extract Bearer token more explicitly to handle malformed headers
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7).trim() : null;
 
-  if (token !== CRON_SECRET) {
+  if (!token || token !== CRON_SECRET) {
     logger.warn("Unauthorized cron attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -58,7 +59,8 @@ export async function POST(req: Request) {
 
   try {
     // =========================================================================
-    // 1. EXPIRE TRIALS - Use transaction to ensure email + status update are atomic
+    // 1. EXPIRE TRIALS - Update status first, then send email (non-blocking)
+    // Note: Email is sent after status update. If email fails, status is still updated.
     // =========================================================================
     const justExpiredTrials = await prisma.subscription.findMany({
       where: {
@@ -100,7 +102,9 @@ export async function POST(req: Request) {
             billingUrl: `${APP_URL}/dashboard/settings/billing`,
           });
           results.emailsSent++;
-          logger.info("Subscription expired email sent", { userId: subscription.user.id });
+          logger.info("Subscription expired email sent", {
+            userId: subscription.user.id,
+          });
         } catch (emailError) {
           results.emailsFailed++;
           logger.error("Failed to send subscription expired email", {
@@ -146,12 +150,27 @@ export async function POST(req: Request) {
       },
     });
 
-    logger.info("Trials ending in ~3 days (sending reminder)", { count: trialsEndingSoon.length });
+    logger.info("Trials ending in ~3 days (sending reminder)", {
+      count: trialsEndingSoon.length,
+    });
 
     for (const subscription of trialsEndingSoon) {
+      // Defensive check: trialEndsAt should be non-null based on query filter, but verify
+      if (!subscription.trialEndsAt) {
+        logger.warn("Subscription has null trialEndsAt despite query filter", {
+          subscriptionId: subscription.id,
+        });
+        continue;
+      }
+
       const daysRemaining = Math.ceil(
-        (subscription.trialEndsAt!.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        (subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
+
+      await prisma.subscription.update({
+        where: { id: subscription.id },
+        data: { lastReminderSentAt: now },
+      });
 
       try {
         await emailService.sendTrialEndingEmail({
@@ -160,12 +179,6 @@ export async function POST(req: Request) {
           salonName: subscription.user.salonName,
           daysRemaining,
           billingUrl: `${APP_URL}/dashboard/settings/billing`,
-        });
-
-        // Mark reminder as sent to prevent duplicates
-        await prisma.subscription.update({
-          where: { id: subscription.id },
-          data: { lastReminderSentAt: now },
         });
 
         results.emailsSent++;

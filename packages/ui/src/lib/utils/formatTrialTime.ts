@@ -35,13 +35,7 @@ export function formatTrialTimeRemaining(
     const minutesRemaining = Math.floor((trialEnd.getTime() - now.getTime()) / (1000 * 60));
 
     if (minutesRemaining > 0) {
-      if (minutesRemaining === 1) {
-        return "1 minut";
-      }
-      if (minutesRemaining < 5) {
-        return `${minutesRemaining} minuta`;
-      }
-      return `${minutesRemaining} minuta`;
+      return minutesRemaining === 1 ? "1 minut" : `${minutesRemaining} minuta`;
     }
   }
 

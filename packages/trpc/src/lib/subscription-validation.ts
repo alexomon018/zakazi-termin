@@ -9,6 +9,18 @@ import type { BillingInterval, SubscriptionStatus } from "@salonko/prisma";
  * - EXPIRED: No specific requirements (subscription has ended)
  */
 
+/**
+ * Allowed status transitions
+ * Note: This is optional validation - webhook handlers may already enforce transition rules
+ */
+const ALLOWED_TRANSITIONS: Record<SubscriptionStatus, SubscriptionStatus[]> = {
+  TRIALING: ["ACTIVE", "EXPIRED"],
+  ACTIVE: ["PAST_DUE", "CANCELED", "EXPIRED"],
+  PAST_DUE: ["ACTIVE", "CANCELED", "EXPIRED"],
+  CANCELED: ["ACTIVE"], // resubscribe
+  EXPIRED: ["TRIALING", "ACTIVE"], // new subscription
+};
+
 export interface SubscriptionData {
   status: SubscriptionStatus;
   stripeSubscriptionId?: string | null;
@@ -73,6 +85,17 @@ export function validateStatusTransition(
   newStatus: SubscriptionStatus,
   newData?: Partial<SubscriptionData>
 ): ValidationResult {
+  const errors: string[] = [];
+
+  // Check if transition is allowed (optional validation)
+  const currentStatus = currentData.status;
+  const allowedTargets = ALLOWED_TRANSITIONS[currentStatus];
+  if (allowedTargets && !allowedTargets.includes(newStatus)) {
+    errors.push(
+      `Invalid status transition from ${currentStatus} to ${newStatus}. Allowed transitions: ${allowedTargets.join(", ")}`
+    );
+  }
+
   // Merge current data with new data for validation
   const mergedData: SubscriptionData = {
     ...currentData,
@@ -80,7 +103,14 @@ export function validateStatusTransition(
     status: newStatus,
   };
 
-  return validateSubscriptionData(mergedData);
+  // Validate field requirements for the target status
+  const fieldValidation = validateSubscriptionData(mergedData);
+  errors.push(...fieldValidation.errors);
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
 }
 
 /**

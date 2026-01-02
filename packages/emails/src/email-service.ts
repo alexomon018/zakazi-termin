@@ -236,9 +236,10 @@ class EmailService {
 
   // Send trial ending reminder (3 days before)
   async sendTrialEndingEmail(data: TrialEndingEmailData): Promise<void> {
+    const daysText = data.daysRemaining === 1 ? "dan" : "dana";
     await this.send({
       to: data.userEmail,
-      subject: `Probni period ističe za ${data.daysRemaining} dana - Salonko`,
+      subject: `Probni period ističe za ${data.daysRemaining} ${daysText} - Salonko`,
       react: createElement(TrialEndingEmail, data),
     });
   }

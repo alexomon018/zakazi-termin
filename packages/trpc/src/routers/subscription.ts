@@ -77,11 +77,21 @@ function getTrialStatus(subscription: Subscription | null): {
   totalTrialDays: number;
 } {
   if (!subscription) {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false, totalTrialDays: 0 };
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: false,
+      totalTrialDays: 0,
+    };
   }
 
   if (subscription.status !== "TRIALING") {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false, totalTrialDays: 0 };
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: false,
+      totalTrialDays: 0,
+    };
   }
 
   const now = new Date();
@@ -95,7 +105,12 @@ function getTrialStatus(subscription: Subscription | null): {
   }
 
   if (!trialEnd || now > trialEnd) {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: true, totalTrialDays };
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: true,
+      totalTrialDays,
+    };
   }
 
   // Use Math.floor to match Stripe's calculation (days until trial_end timestamp)
@@ -286,6 +301,7 @@ export const subscriptionRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       // Rate limiting check (async for distributed rate limiting)
+      validateStripeConfig();
       const isAllowed = await checkCheckoutRateLimit(ctx.session.user.id);
       if (!isAllowed) {
         throw new TRPCError({
@@ -409,9 +425,18 @@ export const subscriptionRouter = router({
       });
     } catch (dbError) {
       // Rollback Stripe change to maintain consistency
-      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        cancel_at_period_end: false,
-      });
+      try {
+        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+          cancel_at_period_end: false,
+        });
+      } catch (rollbackError) {
+        // Log rollback failure explicitly - system is now in inconsistent state
+        logger.error("Failed to rollback Stripe subscription cancellation", {
+          error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+          subscriptionId: subscription.stripeSubscriptionId,
+          userId: ctx.session.user.id,
+        });
+      }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Došlo je do greške. Pokušajte ponovo.",
