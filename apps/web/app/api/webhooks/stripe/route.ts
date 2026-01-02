@@ -2,6 +2,7 @@ import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
 import { PrismaClientKnownRequestError } from "@salonko/prisma/generated/client/runtime/library";
+import { validateSubscriptionData } from "@salonko/trpc";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -50,16 +51,95 @@ export async function POST(req: Request) {
     // Log event for debugging
     logger.info("Stripe webhook received", { type: event.type, id: event.id });
 
-    // Find the related subscription first (needed for event storage)
-    const eventData = event.data.object as { customer?: string; id?: string };
-    const subscription = await prisma.subscription.findFirst({
-      where: {
-        OR: [
-          { stripeCustomerId: eventData.customer ?? "" },
-          { stripeSubscriptionId: eventData.id ?? "" },
-        ],
-      },
-    });
+    // Extract customer and subscription IDs from event data
+    // Different event types have different structures:
+    // - customer.subscription.*: event.data.object.id IS the subscription ID
+    // - checkout.session.completed: id is session ID, subscription field has subscription ID
+    // - invoice.*: id is invoice ID, subscription field has subscription ID
+    const eventData = event.data.object as {
+      customer?: string;
+      id?: string;
+      subscription?: string;
+    };
+    const customerId = eventData.customer;
+
+    // Correctly extract subscription ID based on event type
+    let stripeSubscriptionId: string | null = null;
+    if (event.type.startsWith("customer.subscription.")) {
+      // For subscription events, the object ID is the subscription ID
+      stripeSubscriptionId = eventData.id || null;
+    } else if (eventData.subscription) {
+      // For checkout/invoice events, use the subscription field
+      stripeSubscriptionId = eventData.subscription;
+    }
+
+    // Find the related subscription with improved lookup logic:
+    // 1. First prefer exact match by stripeSubscriptionId when available
+    // 2. Otherwise fall back to matching by stripeCustomerId only
+    let subscription = null;
+    if (stripeSubscriptionId) {
+      subscription = await prisma.subscription.findUnique({
+        where: { stripeSubscriptionId },
+      });
+    }
+    if (!subscription && customerId) {
+      subscription = await prisma.subscription.findUnique({
+        where: { stripeCustomerId: customerId },
+      });
+    }
+
+    // If no subscription record exists (e.g., first checkout.session.completed),
+    // create or upsert a minimal subscription/idempotency record
+    if (!subscription && customerId) {
+      try {
+        // Retrieve customer from Stripe to get userId from metadata
+        const stripeCustomer = await stripe.customers.retrieve(customerId);
+        if (stripeCustomer.deleted) {
+          logger.warn("Stripe customer is deleted, cannot create subscription record", {
+            customerId,
+            eventId: event.id,
+          });
+        } else {
+          const userId = (stripeCustomer as Stripe.Customer).metadata?.userId;
+          if (!userId) {
+            logger.warn(
+              "Stripe customer missing userId in metadata, cannot create subscription record",
+              {
+                customerId,
+                eventId: event.id,
+              }
+            );
+          } else {
+            // Create minimal subscription record for idempotency and event tracking
+            subscription = await prisma.subscription.upsert({
+              where: { stripeCustomerId: customerId },
+              create: {
+                userId,
+                stripeCustomerId: customerId,
+                stripeSubscriptionId: stripeSubscriptionId,
+                status: "TRIALING",
+              },
+              update: {
+                // If record exists but we're here, ensure subscriptionId is set if provided
+                ...(stripeSubscriptionId && { stripeSubscriptionId }),
+              },
+            });
+            logger.info("Created minimal subscription record for webhook event", {
+              customerId,
+              stripeSubscriptionId,
+              eventId: event.id,
+            });
+          }
+        }
+      } catch (stripeErr) {
+        logger.error("Failed to retrieve Stripe customer for subscription creation", {
+          error: stripeErr instanceof Error ? stripeErr.message : String(stripeErr),
+          customerId,
+          eventId: event.id,
+        });
+        // Continue without subscription - event handlers may still work
+      }
+    }
 
     // IDEMPOTENCY: Try to insert the event FIRST using a transaction
     // This prevents race conditions where two webhook deliveries both pass the check
@@ -85,6 +165,13 @@ export async function POST(req: Request) {
         // Re-throw other errors
         throw createErr;
       }
+    } else {
+      logger.warn("No subscription record found or created for webhook event", {
+        eventType: event.type,
+        eventId: event.id,
+        customerId,
+        stripeSubscriptionId,
+      });
     }
 
     // Process the event (we've already claimed it via the insert above)
@@ -173,22 +260,46 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
   const priceId = stripeSubscription.items.data[0]?.price.id;
+  const status = statusMap[stripeSubscription.status] || "ACTIVE";
+  const billingInterval = interval === "year" ? "YEAR" : "MONTH";
 
-  // Access period dates from the subscription object
-  const subscriptionData = stripeSubscription as unknown as {
-    current_period_start?: number;
-    current_period_end?: number;
-  };
-  const periodStart = subscriptionData.current_period_start;
-  const periodEnd = subscriptionData.current_period_end;
+  // Access period dates from the subscription item (Stripe SDK v20+)
+  const subscriptionItem = stripeSubscription.items.data[0];
+  const periodStart = subscriptionItem?.current_period_start;
+  const periodEnd = subscriptionItem?.current_period_end;
+
+  // Fetch existing subscription to get trial dates for validation
+  const existing = await prisma.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+  });
+
+  // Validate subscription data before updating
+  const validation = validateSubscriptionData({
+    status,
+    stripeSubscriptionId: subscriptionId,
+    stripePriceId: priceId,
+    billingInterval,
+    trialStartedAt: existing?.trialStartedAt,
+    trialEndsAt: existing?.trialEndsAt,
+  });
+
+  if (!validation.valid) {
+    logger.error("Invalid subscription data in checkout.completed", {
+      customerId,
+      subscriptionId,
+      status,
+      errors: validation.errors,
+    });
+    throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
+  }
 
   await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: subscriptionId,
       stripePriceId: priceId,
-      billingInterval: interval === "year" ? "YEAR" : "MONTH",
-      status: statusMap[stripeSubscription.status] || "ACTIVE",
+      billingInterval,
+      status,
       currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     },
@@ -199,23 +310,46 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
   const customerId = stripeSubscription.customer as string;
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
+  const status = stripeSubscription.status === "trialing" ? "TRIALING" : "ACTIVE";
+  const billingInterval = interval === "year" ? "YEAR" : "MONTH";
 
-  // Access period dates from the subscription object
-  // In Stripe SDK v20+, these are accessed via type assertion
-  const subscriptionData = stripeSubscription as unknown as {
-    current_period_start?: number;
-    current_period_end?: number;
-  };
-  const periodStart = subscriptionData.current_period_start;
-  const periodEnd = subscriptionData.current_period_end;
+  // Access period dates from the subscription item (Stripe SDK v20+)
+  const subscriptionItem = stripeSubscription.items.data[0];
+  const periodStart = subscriptionItem?.current_period_start;
+  const periodEnd = subscriptionItem?.current_period_end;
+
+  // Fetch existing subscription to get trial dates for validation
+  const existing = await prisma.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+  });
+
+  // Validate subscription data before updating
+  const validation = validateSubscriptionData({
+    status,
+    stripeSubscriptionId: stripeSubscription.id,
+    stripePriceId: priceId,
+    billingInterval,
+    trialStartedAt: existing?.trialStartedAt,
+    trialEndsAt: existing?.trialEndsAt,
+  });
+
+  if (!validation.valid) {
+    logger.error("Invalid subscription data in subscription.created", {
+      customerId,
+      subscriptionId: stripeSubscription.id,
+      status,
+      errors: validation.errors,
+    });
+    throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
+  }
 
   await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: stripeSubscription.id,
       stripePriceId: priceId,
-      billingInterval: interval === "year" ? "YEAR" : "MONTH",
-      status: stripeSubscription.status === "trialing" ? "TRIALING" : "ACTIVE",
+      billingInterval,
+      status,
       currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
     },
@@ -256,26 +390,44 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
     unpaid: "PAST_DUE",
   };
 
-  // Access period dates from the subscription object
-  // In Stripe SDK v20+, these are accessed via type assertion
-  const subscriptionData = stripeSubscription as unknown as {
-    current_period_start?: number;
-    current_period_end?: number;
-  };
-  const periodStart = subscriptionData.current_period_start;
-  const periodEnd = subscriptionData.current_period_end;
+  // Access period dates from the subscription item (Stripe SDK v20+)
+  const subscriptionItem = stripeSubscription.items.data[0];
+  const periodStart = subscriptionItem?.current_period_start;
+  const periodEnd = subscriptionItem?.current_period_end;
 
   // Also update billing interval in case of plan change
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
   const priceId = stripeSubscription.items.data[0]?.price.id;
+  const status = statusMap[stripeSubscription.status] || "ACTIVE";
+  const billingInterval = interval === "year" ? "YEAR" : "MONTH";
+
+  // Validate subscription data before updating
+  const validation = validateSubscriptionData({
+    status,
+    stripeSubscriptionId: stripeSubscription.id,
+    stripePriceId: priceId,
+    billingInterval,
+    trialStartedAt: existing.trialStartedAt,
+    trialEndsAt: existing.trialEndsAt,
+  });
+
+  if (!validation.valid) {
+    logger.error("Invalid subscription data in subscription.updated", {
+      customerId,
+      subscriptionId: stripeSubscription.id,
+      status,
+      errors: validation.errors,
+    });
+    throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
+  }
 
   await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: {
       stripeSubscriptionId: stripeSubscription.id, // Set in case of out-of-order
       stripePriceId: priceId,
-      billingInterval: interval === "year" ? "YEAR" : "MONTH",
-      status: statusMap[stripeSubscription.status] || "ACTIVE",
+      billingInterval,
+      status,
       currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
@@ -300,12 +452,43 @@ async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   // Check if this is a subscription invoice
-  // In Stripe SDK v20+, subscription is accessed via type assertion
-  const invoiceData = invoice as unknown as { subscription?: string | null };
-  const subscriptionId = invoiceData.subscription;
+  // In Stripe SDK v20+, subscription is accessed via invoice.parent.subscription_details
+  const subscriptionId = invoice.parent?.subscription_details?.subscription ?? null;
   if (!subscriptionId) return;
 
   const customerId = invoice.customer as string;
+
+  // Fetch existing subscription to validate transition to ACTIVE
+  const existing = await prisma.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+  });
+
+  if (!existing) {
+    logger.warn("Subscription not found for invoice.payment_succeeded", {
+      customerId,
+    });
+    return;
+  }
+
+  // Validate subscription data before updating to ACTIVE
+  // ACTIVE status requires stripeSubscriptionId, stripePriceId, and billingInterval
+  const validation = validateSubscriptionData({
+    status: "ACTIVE",
+    stripeSubscriptionId: existing.stripeSubscriptionId,
+    stripePriceId: existing.stripePriceId,
+    billingInterval: existing.billingInterval,
+    trialStartedAt: existing.trialStartedAt,
+    trialEndsAt: existing.trialEndsAt,
+  });
+
+  if (!validation.valid) {
+    logger.error("Invalid subscription data in invoice.payment_succeeded", {
+      customerId,
+      subscriptionId: existing.stripeSubscriptionId,
+      errors: validation.errors,
+    });
+    throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
+  }
 
   await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
@@ -315,12 +498,52 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   // Check if this is a subscription invoice
-  // In Stripe SDK v20+, subscription is accessed via type assertion
-  const invoiceData = invoice as unknown as { subscription?: string | null };
-  const subscriptionId = invoiceData.subscription;
+  // In Stripe SDK v20+, subscription is accessed via invoice.parent.subscription_details
+  const subscriptionId = invoice.parent?.subscription_details?.subscription ?? null;
   if (!subscriptionId) return;
 
   const customerId = invoice.customer as string;
+
+  // Fetch existing subscription to validate transition to PAST_DUE
+  const existing = await prisma.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+    include: {
+      user: {
+        select: {
+          email: true,
+          name: true,
+          salonName: true,
+        },
+      },
+    },
+  });
+
+  if (!existing) {
+    logger.warn("Subscription not found for invoice.payment_failed", {
+      customerId,
+    });
+    return;
+  }
+
+  // Validate subscription data before updating to PAST_DUE
+  // PAST_DUE status requires stripeSubscriptionId, stripePriceId, and billingInterval
+  const validation = validateSubscriptionData({
+    status: "PAST_DUE",
+    stripeSubscriptionId: existing.stripeSubscriptionId,
+    stripePriceId: existing.stripePriceId,
+    billingInterval: existing.billingInterval,
+    trialStartedAt: existing.trialStartedAt,
+    trialEndsAt: existing.trialEndsAt,
+  });
+
+  if (!validation.valid) {
+    logger.error("Invalid subscription data in invoice.payment_failed", {
+      customerId,
+      subscriptionId: existing.stripeSubscriptionId,
+      errors: validation.errors,
+    });
+    throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
+  }
 
   const subscription = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
@@ -346,7 +569,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     });
     logger.info("Payment failed email sent", {
       customerId,
-      userEmail: subscription.user.email,
+      userId: subscription.userId,
     });
   } catch (emailError) {
     logger.error("Failed to send payment failed email", {

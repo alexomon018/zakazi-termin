@@ -1,3 +1,4 @@
+import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
@@ -6,6 +7,8 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import Stripe from "stripe";
 import { z } from "zod";
+
+import { assertValidSubscriptionData } from "../lib/subscription-validation";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://salonko.rs";
 
@@ -16,10 +19,15 @@ const requiredEnvVars = {
   STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
 } as const;
 
-// Validate all required environment variables at module load
-for (const [key, value] of Object.entries(requiredEnvVars)) {
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
+// Validate at procedure call time instead
+function validateStripeConfig() {
+  for (const [key, value] of Object.entries(requiredEnvVars)) {
+    if (!value) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Stripe not configured: missing ${key}`,
+      });
+    }
   }
 }
 
@@ -66,20 +74,28 @@ function getTrialStatus(subscription: Subscription | null): {
   isInTrial: boolean;
   trialDaysRemaining: number;
   trialExpired: boolean;
+  totalTrialDays: number;
 } {
   if (!subscription) {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false };
+    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false, totalTrialDays: 0 };
   }
 
   if (subscription.status !== "TRIALING") {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false };
+    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: false, totalTrialDays: 0 };
   }
 
   const now = new Date();
   const trialEnd = subscription.trialEndsAt;
+  const trialStart = subscription.trialStartedAt;
+
+  // Calculate total trial days from start/end timestamps
+  let totalTrialDays = TRIAL_DAYS; // Default fallback
+  if (trialStart && trialEnd) {
+    totalTrialDays = Math.ceil((trialEnd.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
+  }
 
   if (!trialEnd || now > trialEnd) {
-    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: true };
+    return { isInTrial: false, trialDaysRemaining: 0, trialExpired: true, totalTrialDays };
   }
 
   // Use Math.floor to match Stripe's calculation (days until trial_end timestamp)
@@ -88,6 +104,7 @@ function getTrialStatus(subscription: Subscription | null): {
     isInTrial: true,
     trialDaysRemaining: daysRemaining,
     trialExpired: false,
+    totalTrialDays,
   };
 }
 
@@ -108,6 +125,7 @@ export const subscriptionRouter = router({
         isActive: false,
         isInTrial: false,
         trialDaysRemaining: 0,
+        totalTrialDays: 0,
         trialEndsAt: null,
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
@@ -129,6 +147,7 @@ export const subscriptionRouter = router({
       isActive,
       isInTrial: trialInfo.isInTrial,
       trialDaysRemaining: trialInfo.trialDaysRemaining,
+      totalTrialDays: trialInfo.totalTrialDays,
       trialEndsAt: subscription.trialEndsAt,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -140,69 +159,105 @@ export const subscriptionRouter = router({
   /**
    * Start free trial - creates Stripe customer and subscription record
    * Called on first dashboard visit
-   * Uses upsert to handle race conditions from concurrent requests
+   * Uses transaction to atomically check and create subscription.
+   * If a race condition causes unique constraint violation, the orphaned
+   * Stripe customer is deleted to prevent orphans.
    */
   startTrial: protectedProcedure.mutation(async ({ ctx }) => {
-    // Check if subscription already exists first
-    const existingSubscription = await ctx.prisma.subscription.findUnique({
-      where: { userId: ctx.session.user.id },
-    });
-
-    // If subscription already exists, return success with existing data
-    if (existingSubscription) {
-      const trialInfo = getTrialStatus(existingSubscription);
-      return {
-        success: true,
-        trialEndsAt: existingSubscription.trialEndsAt,
-        trialDaysRemaining: trialInfo.trialDaysRemaining,
-      };
-    }
-
-    // Get user details for Stripe customer
-    const user = await ctx.prisma.user.findUnique({
-      where: { id: ctx.session.user.id },
-    });
-
-    if (!user) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Korisnik nije pronađen.",
-      });
-    }
-
-    // Create Stripe customer
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name || undefined,
-      metadata: {
-        userId: String(ctx.session.user.id),
-        salonName: user.salonName || "",
-      },
-    });
-
-    // Calculate trial end date using minutes for precision
-    const trialEndsAt = new Date(Date.now() + TRIAL_PERIOD_MINUTES * 60 * 1000);
+    // Use a transaction to atomically check and create
+    // Note: Stripe customer creation happens inside transaction, but if the
+    // transaction fails (unique constraint), we must clean up the Stripe customer
+    let createdCustomerId: string | null = null;
 
     try {
-      // Create subscription record
-      const subscription = await ctx.prisma.subscription.create({
-        data: {
-          userId: ctx.session.user.id,
-          stripeCustomerId: customer.id,
-          status: "TRIALING",
-          trialStartedAt: new Date(),
-          trialEndsAt,
-        },
-      });
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Check if subscription already exists
+        const existing = await tx.subscription.findUnique({
+          where: { userId: ctx.session.user.id },
+        });
 
-      return {
-        success: true,
-        trialEndsAt: subscription.trialEndsAt,
-        trialDaysRemaining: TRIAL_DAYS,
-      };
+        if (existing) {
+          const trialInfo = getTrialStatus(existing);
+          return {
+            success: true,
+            trialEndsAt: existing.trialEndsAt,
+            trialDaysRemaining: trialInfo.trialDaysRemaining,
+          };
+        }
+
+        // Get user details for Stripe customer
+        const user = await tx.user.findUnique({
+          where: { id: ctx.session.user.id },
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Korisnik nije pronađen.",
+          });
+        }
+
+        // Create Stripe customer
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.name || undefined,
+          metadata: {
+            userId: String(ctx.session.user.id),
+            salonName: user.salonName || "",
+          },
+        });
+        // Track the created customer ID for cleanup if transaction fails
+        createdCustomerId = customer.id;
+
+        // Calculate trial end date using minutes for precision
+        const trialStartedAt = new Date();
+        const trialEndsAt = new Date(Date.now() + TRIAL_PERIOD_MINUTES * 60 * 1000);
+
+        // Validate subscription data before creating
+        const subscriptionData = {
+          status: "TRIALING" as const,
+          trialStartedAt,
+          trialEndsAt,
+        };
+        assertValidSubscriptionData(subscriptionData, "startTrial");
+
+        // Create subscription record
+        const subscription = await tx.subscription.create({
+          data: {
+            userId: ctx.session.user.id,
+            stripeCustomerId: customer.id,
+            status: "TRIALING",
+            trialStartedAt,
+            trialEndsAt,
+          },
+        });
+
+        // Transaction succeeded, clear the cleanup marker
+        createdCustomerId = null;
+
+        return {
+          success: true,
+          trialEndsAt: subscription.trialEndsAt,
+          trialDaysRemaining: TRIAL_DAYS,
+        };
+      });
     } catch (error) {
+      // Clean up orphaned Stripe customer if one was created before transaction failed
+      if (createdCustomerId) {
+        try {
+          await stripe.customers.del(createdCustomerId);
+          logger.info("Cleaned up orphaned Stripe customer after transaction failure", {
+            customerId: createdCustomerId,
+          });
+        } catch (cleanupError) {
+          logger.error("Failed to clean up orphaned Stripe customer", {
+            customerId: createdCustomerId,
+            error: cleanupError,
+          });
+        }
+      }
+
       // Handle race condition - if another request created the subscription
-      // while we were creating the Stripe customer, return the existing one
       if (error instanceof Error && error.message.includes("Unique constraint failed")) {
         const existingSub = await ctx.prisma.subscription.findUnique({
           where: { userId: ctx.session.user.id },
@@ -375,7 +430,9 @@ export const subscriptionRouter = router({
         })
         .catch((err) => {
           // Log but don't fail the mutation
-          console.error("Failed to send subscription canceled email", err);
+          logger.error("Failed to send subscription canceled email", {
+            error: err,
+          });
         });
     }
 

@@ -63,7 +63,7 @@ const navItems = [
   },
 ];
 
-export function DashboardNav({ user, isSubscribed = true }: DashboardNavProps) {
+export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 

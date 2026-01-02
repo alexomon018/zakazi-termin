@@ -45,12 +45,15 @@ export function TrialBanner() {
     );
   }
 
-  // Show trial banner when trial is active and less than 7 days remaining
-  // Also check that trial hasn't actually expired (has minutes remaining)
+  // Show trial banner when trial is active and within the warning threshold
+  // Threshold is dynamically computed: 20% of total trial length, minimum 3 days
+  // This ensures the banner works correctly for both short (e.g., 5-day) and long (e.g., 30-day) trials
   const hasTimeRemaining = hasTrialTimeRemaining(status.trialEndsAt);
+  const totalTrialDays = status.totalTrialDays || 7; // Fallback assumes minimum 7-day trial
+  const warningThreshold = Math.max(3, Math.ceil(totalTrialDays * 0.2));
   if (
     status.isInTrial &&
-    status.trialDaysRemaining <= 7 &&
+    status.trialDaysRemaining <= warningThreshold &&
     (status.trialDaysRemaining > 0 || hasTimeRemaining)
   ) {
     return (

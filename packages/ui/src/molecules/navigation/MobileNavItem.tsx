@@ -20,7 +20,7 @@ export const MobileNavItem = memo(function MobileNavItem({
   icon: Icon,
   isActive,
   requiresSubscription = false,
-  isSubscribed = true,
+  isSubscribed = false,
 }: MobileNavItemProps) {
   const isLocked = requiresSubscription && !isSubscribed;
 

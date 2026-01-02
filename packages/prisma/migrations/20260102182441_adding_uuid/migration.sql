@@ -14,8 +14,6 @@
   - The primary key for the `OutOfOfficeReason` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `Schedule` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `SelectedCalendar` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - The primary key for the `Subscription` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - The primary key for the `SubscriptionEvent` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
   - A unique constraint covering the columns `[reason]` on the table `OutOfOfficeReason` will be added. If there are existing duplicate values, this will fail.
 
@@ -85,12 +83,6 @@ ALTER TABLE "SelectedCalendar" DROP CONSTRAINT "SelectedCalendar_userId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "Session" DROP CONSTRAINT "Session_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Subscription" DROP CONSTRAINT "Subscription_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "SubscriptionEvent" DROP CONSTRAINT "SubscriptionEvent_subscriptionId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "UserPassword" DROP CONSTRAINT "UserPassword_userId_fkey";
@@ -213,22 +205,6 @@ ADD CONSTRAINT "SelectedCalendar_pkey" PRIMARY KEY ("userId", "integration", "ex
 ALTER TABLE "Session" ALTER COLUMN "userId" SET DATA TYPE TEXT;
 
 -- AlterTable
-ALTER TABLE "Subscription" DROP CONSTRAINT "Subscription_pkey",
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ALTER COLUMN "userId" SET DATA TYPE TEXT,
-ADD CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "Subscription_id_seq";
-
--- AlterTable
-ALTER TABLE "SubscriptionEvent" DROP CONSTRAINT "SubscriptionEvent_pkey",
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ALTER COLUMN "subscriptionId" SET DATA TYPE TEXT,
-ADD CONSTRAINT "SubscriptionEvent_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "SubscriptionEvent_id_seq";
-
--- AlterTable
 ALTER TABLE "User" DROP CONSTRAINT "User_pkey",
 ALTER COLUMN "id" DROP DEFAULT,
 ALTER COLUMN "id" SET DATA TYPE TEXT,
@@ -310,6 +286,69 @@ ALTER TABLE "OutOfOffice" ADD CONSTRAINT "OutOfOffice_userId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "OutOfOffice" ADD CONSTRAINT "OutOfOffice_reasonId_fkey" FOREIGN KEY ("reasonId") REFERENCES "OutOfOfficeReason"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- CreateTable
+CREATE TABLE "Subscription" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT NOT NULL,
+    "stripeCustomerId" TEXT NOT NULL,
+    "stripeSubscriptionId" TEXT,
+    "stripePriceId" TEXT,
+    "status" "SubscriptionStatus" NOT NULL DEFAULT 'TRIALING',
+    "billingInterval" "BillingInterval",
+    "trialStartedAt" TIMESTAMP(3),
+    "trialEndsAt" TIMESTAMP(3),
+    "currentPeriodStart" TIMESTAMP(3),
+    "currentPeriodEnd" TIMESTAMP(3),
+    "cancelAtPeriodEnd" BOOLEAN NOT NULL DEFAULT false,
+    "canceledAt" TIMESTAMP(3),
+    "lastDunningEmailAt" TIMESTAMP(3),
+    "dunningEmailCount" INTEGER NOT NULL DEFAULT 0,
+    "lastReminderSentAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SubscriptionEvent" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "subscriptionId" TEXT NOT NULL,
+    "stripeEventId" TEXT NOT NULL,
+    "eventType" TEXT NOT NULL,
+    "eventData" JSONB NOT NULL,
+    "processedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SubscriptionEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subscription_stripeCustomerId_key" ON "Subscription"("stripeCustomerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subscription_stripeSubscriptionId_key" ON "Subscription"("stripeSubscriptionId");
+
+-- CreateIndex
+CREATE INDEX "Subscription_stripeCustomerId_idx" ON "Subscription"("stripeCustomerId");
+
+-- CreateIndex
+CREATE INDEX "Subscription_status_idx" ON "Subscription"("status");
+
+-- CreateIndex
+CREATE INDEX "Subscription_trialEndsAt_idx" ON "Subscription"("trialEndsAt");
+
+-- CreateIndex
+CREATE INDEX "Subscription_currentPeriodEnd_idx" ON "Subscription"("currentPeriodEnd");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SubscriptionEvent_stripeEventId_key" ON "SubscriptionEvent"("stripeEventId");
+
+-- CreateIndex
+CREATE INDEX "SubscriptionEvent_subscriptionId_idx" ON "SubscriptionEvent"("subscriptionId");
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

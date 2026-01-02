@@ -160,33 +160,3 @@ jobs:
   #         branch: test-${{ github.head_ref || github.ref_name }}-${{ github.run_id }}
   #         api_key: ${{ secrets.NEON_API_KEY }}
 
-  migrate-production:
-    name: Migrate Production Database
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    # Only run on push to main (not on PRs)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    # Wait for lint and typecheck to pass
-    needs: [lint-and-format, typecheck]
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run database migrations
-        run: yarn workspace @zakazi-termin/prisma prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
