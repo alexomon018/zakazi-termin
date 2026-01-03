@@ -41,6 +41,10 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   EXPIRED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+  PAUSED
 }
 
 enum BillingInterval {
@@ -410,43 +414,43 @@ model OutOfOffice {
 // ===== SUBSCRIPTIONS =====
 
 model Subscription {
-  id                   String             @id @default(dbgenerated("gen_random_uuid()"))
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(dbgenerated("gen_random_uuid()"))
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Stripe references
-  stripeCustomerId     String             @unique
-  stripeSubscriptionId String?            @unique
+  stripeCustomerId     String  @unique
+  stripeSubscriptionId String? @unique
   stripePriceId        String?
 
   // Status and billing
-  status               SubscriptionStatus @default(TRIALING)
-  billingInterval      BillingInterval?
+  status          SubscriptionStatus @default(TRIALING)
+  billingInterval BillingInterval?
 
   // Trial tracking
-  trialStartedAt       DateTime?
-  trialEndsAt          DateTime?
+  trialStartedAt DateTime?
+  trialEndsAt    DateTime?
 
   // Subscription period
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
-  canceledAt           DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  canceledAt         DateTime?
 
   // Dunning management (failed payment tracking)
-  lastDunningEmailAt   DateTime?          // When last dunning email was sent
-  dunningEmailCount    Int                @default(0) // Number of dunning emails sent
-  lastReminderSentAt   DateTime?          // When last trial reminder was sent
+  lastDunningEmailAt DateTime? // When last dunning email was sent
+  dunningEmailCount  Int       @default(0) // Number of dunning emails sent
+  lastReminderSentAt DateTime? // When last trial reminder was sent
 
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  events               SubscriptionEvent[]
+  events SubscriptionEvent[]
 
   @@index([stripeCustomerId])
   @@index([status])
-  @@index([trialEndsAt])        // For cron job trial expiration queries
-  @@index([currentPeriodEnd])   // For subscription expiration queries
+  @@index([trialEndsAt]) // For cron job trial expiration queries
+  @@index([currentPeriodEnd]) // For subscription expiration queries
 }
 
 model SubscriptionEvent {
@@ -454,10 +458,10 @@ model SubscriptionEvent {
   subscriptionId String
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
 
-  stripeEventId  String       @unique
-  eventType      String
-  eventData      Json
-  processedAt    DateTime     @default(now())
+  stripeEventId String   @unique
+  eventType     String
+  eventData     Json
+  processedAt   DateTime @default(now())
 
   @@index([subscriptionId])
 }

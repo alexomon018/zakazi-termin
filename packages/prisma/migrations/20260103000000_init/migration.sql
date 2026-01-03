@@ -1,18 +1,28 @@
--- CreateEnum
+-- Squashed migration: Combines all previous migrations into a single initial migration
+-- This migration uses UUID (TEXT with gen_random_uuid()) for all primary keys
+-- Decision: Database-level UUID generation via PostgreSQL's gen_random_uuid()
+
+-- Enable pgcrypto extension for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- ===== ENUMS =====
+
 CREATE TYPE "IdentityProvider" AS ENUM ('EMAIL', 'GOOGLE');
 
--- CreateEnum
 CREATE TYPE "BookingStatus" AS ENUM ('PENDING', 'ACCEPTED', 'CANCELLED', 'REJECTED');
 
--- CreateEnum
 CREATE TYPE "PeriodType" AS ENUM ('UNLIMITED', 'ROLLING', 'RANGE');
 
--- CreateEnum
 CREATE TYPE "MembershipRole" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 
--- CreateTable
+CREATE TYPE "SubscriptionStatus" AS ENUM ('TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED', 'EXPIRED', 'INCOMPLETE', 'INCOMPLETE_EXPIRED', 'UNPAID', 'PAUSED');
+
+CREATE TYPE "BillingInterval" AS ENUM ('MONTH', 'YEAR');
+
+-- ===== ORGANIZATIONS =====
+
 CREATE TABLE "Organization" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "logoUrl" TEXT,
@@ -23,25 +33,25 @@ CREATE TABLE "Organization" (
     CONSTRAINT "Organization_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Membership" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "role" "MembershipRole" NOT NULL DEFAULT 'MEMBER',
     "accepted" BOOLEAN NOT NULL DEFAULT false,
-    "userId" INTEGER NOT NULL,
-    "organizationId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Membership_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- ===== USERS & AUTH =====
+
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "email" TEXT NOT NULL,
     "name" TEXT,
-    "username" TEXT,
+    "salonName" TEXT,
     "avatarUrl" TEXT,
     "bio" TEXT,
     "timeZone" TEXT NOT NULL DEFAULT 'Europe/Belgrade',
@@ -55,21 +65,19 @@ CREATE TABLE "User" (
     "theme" TEXT,
     "brandColor" TEXT DEFAULT '#292929',
     "darkBrandColor" TEXT DEFAULT '#fafafa',
-    "defaultScheduleId" INTEGER,
+    "defaultScheduleId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "UserPassword" (
     "hash" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL
+    "userId" TEXT NOT NULL
 );
 
--- CreateTable
 CREATE TABLE "Account" (
     "id" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "providerAccountId" TEXT NOT NULL,
@@ -84,26 +92,25 @@ CREATE TABLE "Account" (
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "sessionToken" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "VerificationToken" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL
 );
 
--- CreateTable
+-- ===== EVENT TYPES =====
+
 CREATE TABLE "EventType" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "title" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
@@ -121,31 +128,31 @@ CREATE TABLE "EventType" (
     "periodStartDate" TIMESTAMP(3),
     "periodEndDate" TIMESTAMP(3),
     "periodDays" INTEGER,
-    "scheduleId" INTEGER,
-    "userId" INTEGER NOT NULL,
-    "organizationId" INTEGER,
+    "scheduleId" TEXT,
+    "userId" TEXT NOT NULL,
+    "organizationId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "EventType_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- ===== SCHEDULES & AVAILABILITY =====
+
 CREATE TABLE "Schedule" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "timeZone" TEXT,
 
     CONSTRAINT "Schedule_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Availability" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER,
-    "scheduleId" INTEGER,
-    "eventTypeId" INTEGER,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT,
+    "scheduleId" TEXT,
+    "eventTypeId" TEXT,
     "days" INTEGER[],
     "startTime" TIME NOT NULL,
     "endTime" TIME NOT NULL,
@@ -154,12 +161,13 @@ CREATE TABLE "Availability" (
     CONSTRAINT "Availability_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- ===== CALENDAR SYNC =====
+
 CREATE TABLE "Credential" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "type" TEXT NOT NULL,
     "key" JSONB NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "appId" TEXT,
     "invalid" BOOLEAN DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -168,34 +176,33 @@ CREATE TABLE "Credential" (
     CONSTRAINT "Credential_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "SelectedCalendar" (
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "integration" TEXT NOT NULL,
     "externalId" TEXT NOT NULL,
-    "credentialId" INTEGER,
+    "credentialId" TEXT,
 
-    CONSTRAINT "SelectedCalendar_pkey" PRIMARY KEY ("userId","integration","externalId")
+    CONSTRAINT "SelectedCalendar_pkey" PRIMARY KEY ("userId", "integration", "externalId")
 );
 
--- CreateTable
 CREATE TABLE "DestinationCalendar" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "integration" TEXT NOT NULL,
     "externalId" TEXT NOT NULL,
-    "credentialId" INTEGER,
-    "userId" INTEGER,
-    "eventTypeId" INTEGER,
+    "credentialId" TEXT,
+    "userId" TEXT,
+    "eventTypeId" TEXT,
 
     CONSTRAINT "DestinationCalendar_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- ===== BOOKINGS =====
+
 CREATE TABLE "Booking" (
-    "id" SERIAL NOT NULL,
-    "uid" TEXT NOT NULL,
-    "userId" INTEGER,
-    "eventTypeId" INTEGER,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "uid" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT,
+    "eventTypeId" TEXT,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "startTime" TIMESTAMP(3) NOT NULL,
@@ -213,22 +220,20 @@ CREATE TABLE "Booking" (
     CONSTRAINT "Booking_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Attendee" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "timeZone" TEXT NOT NULL DEFAULT 'Europe/Belgrade',
     "phoneNumber" TEXT,
     "locale" TEXT NOT NULL DEFAULT 'sr',
-    "bookingId" INTEGER NOT NULL,
+    "bookingId" TEXT NOT NULL,
 
     CONSTRAINT "Attendee_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "BookingReference" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "type" TEXT NOT NULL,
     "uid" TEXT NOT NULL,
     "meetingId" TEXT,
@@ -236,244 +241,228 @@ CREATE TABLE "BookingReference" (
     "meetingUrl" TEXT,
     "externalCalendarId" TEXT,
     "deleted" BOOLEAN,
-    "credentialId" INTEGER,
-    "bookingId" INTEGER,
+    "credentialId" TEXT,
+    "bookingId" TEXT,
 
     CONSTRAINT "BookingReference_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+-- ===== OUT OF OFFICE =====
+
 CREATE TABLE "OutOfOfficeReason" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
     "emoji" TEXT NOT NULL DEFAULT '🏝️',
     "reason" TEXT NOT NULL,
-    "userId" INTEGER,
+    "userId" TEXT,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "OutOfOfficeReason_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "OutOfOffice" (
-    "id" SERIAL NOT NULL,
-    "uuid" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "uuid" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT NOT NULL,
     "start" DATE NOT NULL,
     "end" DATE NOT NULL,
     "notes" TEXT,
-    "reasonId" INTEGER,
+    "reasonId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "OutOfOffice_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Organization_slug_key" ON "Organization"("slug");
+-- ===== SUBSCRIPTIONS =====
 
--- CreateIndex
+CREATE TABLE "Subscription" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "userId" TEXT NOT NULL,
+    "stripeCustomerId" TEXT NOT NULL,
+    "stripeSubscriptionId" TEXT,
+    "stripePriceId" TEXT,
+    "status" "SubscriptionStatus" NOT NULL DEFAULT 'TRIALING',
+    "billingInterval" "BillingInterval",
+    "trialStartedAt" TIMESTAMP(3),
+    "trialEndsAt" TIMESTAMP(3),
+    "currentPeriodStart" TIMESTAMP(3),
+    "currentPeriodEnd" TIMESTAMP(3),
+    "cancelAtPeriodEnd" BOOLEAN NOT NULL DEFAULT false,
+    "canceledAt" TIMESTAMP(3),
+    "lastDunningEmailAt" TIMESTAMP(3),
+    "dunningEmailCount" INTEGER NOT NULL DEFAULT 0,
+    "lastReminderSentAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE "SubscriptionEvent" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
+    "subscriptionId" TEXT NOT NULL,
+    "stripeEventId" TEXT NOT NULL,
+    "eventType" TEXT NOT NULL,
+    "eventData" JSONB NOT NULL,
+    "processedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "SubscriptionEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- ===== INDEXES =====
+
+-- Organization
+CREATE UNIQUE INDEX "Organization_slug_key" ON "Organization"("slug");
 CREATE INDEX "Organization_slug_idx" ON "Organization"("slug");
 
--- CreateIndex
+-- Membership
 CREATE INDEX "Membership_userId_idx" ON "Membership"("userId");
-
--- CreateIndex
 CREATE INDEX "Membership_organizationId_idx" ON "Membership"("organizationId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Membership_userId_organizationId_key" ON "Membership"("userId", "organizationId");
 
--- CreateIndex
+-- User
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
-
--- CreateIndex
+CREATE UNIQUE INDEX "User_salonName_key" ON "User"("salonName");
 CREATE INDEX "User_email_idx" ON "User"("email");
+CREATE INDEX "User_salonName_idx" ON "User"("salonName");
 
--- CreateIndex
-CREATE INDEX "User_username_idx" ON "User"("username");
-
--- CreateIndex
+-- UserPassword
 CREATE UNIQUE INDEX "UserPassword_userId_key" ON "UserPassword"("userId");
 
--- CreateIndex
+-- Account
 CREATE INDEX "Account_userId_idx" ON "Account"("userId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
 
--- CreateIndex
+-- Session
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
-
--- CreateIndex
 CREATE INDEX "Session_userId_idx" ON "Session"("userId");
 
--- CreateIndex
+-- VerificationToken
 CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
-
--- CreateIndex
 CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
 
--- CreateIndex
+-- EventType
 CREATE INDEX "EventType_userId_idx" ON "EventType"("userId");
-
--- CreateIndex
 CREATE INDEX "EventType_scheduleId_idx" ON "EventType"("scheduleId");
-
--- CreateIndex
 CREATE INDEX "EventType_organizationId_idx" ON "EventType"("organizationId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "EventType_userId_slug_key" ON "EventType"("userId", "slug");
 
--- CreateIndex
+-- Schedule
 CREATE INDEX "Schedule_userId_idx" ON "Schedule"("userId");
 
--- CreateIndex
+-- Availability
 CREATE INDEX "Availability_scheduleId_idx" ON "Availability"("scheduleId");
-
--- CreateIndex
 CREATE INDEX "Availability_eventTypeId_idx" ON "Availability"("eventTypeId");
-
--- CreateIndex
 CREATE INDEX "Availability_userId_idx" ON "Availability"("userId");
 
--- CreateIndex
+-- Credential
 CREATE INDEX "Credential_userId_idx" ON "Credential"("userId");
-
--- CreateIndex
 CREATE INDEX "Credential_type_idx" ON "Credential"("type");
 
--- CreateIndex
+-- SelectedCalendar
 CREATE INDEX "SelectedCalendar_userId_idx" ON "SelectedCalendar"("userId");
-
--- CreateIndex
 CREATE INDEX "SelectedCalendar_credentialId_idx" ON "SelectedCalendar"("credentialId");
 
--- CreateIndex
+-- DestinationCalendar
 CREATE UNIQUE INDEX "DestinationCalendar_userId_key" ON "DestinationCalendar"("userId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "DestinationCalendar_eventTypeId_key" ON "DestinationCalendar"("eventTypeId");
-
--- CreateIndex
 CREATE INDEX "DestinationCalendar_userId_idx" ON "DestinationCalendar"("userId");
-
--- CreateIndex
 CREATE INDEX "DestinationCalendar_credentialId_idx" ON "DestinationCalendar"("credentialId");
 
--- CreateIndex
+-- Booking
 CREATE UNIQUE INDEX "Booking_uid_key" ON "Booking"("uid");
-
--- CreateIndex
 CREATE INDEX "Booking_eventTypeId_idx" ON "Booking"("eventTypeId");
-
--- CreateIndex
 CREATE INDEX "Booking_userId_idx" ON "Booking"("userId");
-
--- CreateIndex
 CREATE INDEX "Booking_uid_idx" ON "Booking"("uid");
-
--- CreateIndex
 CREATE INDEX "Booking_status_idx" ON "Booking"("status");
-
--- CreateIndex
 CREATE INDEX "Booking_startTime_endTime_idx" ON "Booking"("startTime", "endTime");
 
--- CreateIndex
+-- Attendee
 CREATE INDEX "Attendee_email_idx" ON "Attendee"("email");
-
--- CreateIndex
 CREATE INDEX "Attendee_bookingId_idx" ON "Attendee"("bookingId");
 
--- CreateIndex
+-- BookingReference
 CREATE INDEX "BookingReference_bookingId_idx" ON "BookingReference"("bookingId");
-
--- CreateIndex
 CREATE INDEX "BookingReference_credentialId_idx" ON "BookingReference"("credentialId");
-
--- CreateIndex
 CREATE INDEX "BookingReference_type_idx" ON "BookingReference"("type");
 
--- CreateIndex
+-- OutOfOfficeReason
+CREATE UNIQUE INDEX "OutOfOfficeReason_reason_key" ON "OutOfOfficeReason"("reason");
 CREATE INDEX "OutOfOfficeReason_userId_idx" ON "OutOfOfficeReason"("userId");
 
--- CreateIndex
+-- OutOfOffice
 CREATE UNIQUE INDEX "OutOfOffice_uuid_key" ON "OutOfOffice"("uuid");
-
--- CreateIndex
 CREATE INDEX "OutOfOffice_userId_idx" ON "OutOfOffice"("userId");
-
--- CreateIndex
 CREATE INDEX "OutOfOffice_start_end_idx" ON "OutOfOffice"("start", "end");
 
--- AddForeignKey
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+-- Subscription
+CREATE UNIQUE INDEX "Subscription_userId_key" ON "Subscription"("userId");
+CREATE UNIQUE INDEX "Subscription_stripeCustomerId_key" ON "Subscription"("stripeCustomerId");
+CREATE UNIQUE INDEX "Subscription_stripeSubscriptionId_key" ON "Subscription"("stripeSubscriptionId");
+CREATE INDEX "Subscription_stripeCustomerId_idx" ON "Subscription"("stripeCustomerId");
+CREATE INDEX "Subscription_status_idx" ON "Subscription"("status");
+CREATE INDEX "Subscription_trialEndsAt_idx" ON "Subscription"("trialEndsAt");
+CREATE INDEX "Subscription_currentPeriodEnd_idx" ON "Subscription"("currentPeriodEnd");
 
--- AddForeignKey
+-- SubscriptionEvent
+CREATE UNIQUE INDEX "SubscriptionEvent_stripeEventId_key" ON "SubscriptionEvent"("stripeEventId");
+CREATE INDEX "SubscriptionEvent_subscriptionId_idx" ON "SubscriptionEvent"("subscriptionId");
+
+-- ===== FOREIGN KEYS =====
+
+-- Membership
+ALTER TABLE "Membership" ADD CONSTRAINT "Membership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "Membership" ADD CONSTRAINT "Membership_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- UserPassword
 ALTER TABLE "UserPassword" ADD CONSTRAINT "UserPassword_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Account
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Session
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- EventType
 ALTER TABLE "EventType" ADD CONSTRAINT "EventType_scheduleId_fkey" FOREIGN KEY ("scheduleId") REFERENCES "Schedule"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "EventType" ADD CONSTRAINT "EventType_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "EventType" ADD CONSTRAINT "EventType_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Schedule
 ALTER TABLE "Schedule" ADD CONSTRAINT "Schedule_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Availability
 ALTER TABLE "Availability" ADD CONSTRAINT "Availability_scheduleId_fkey" FOREIGN KEY ("scheduleId") REFERENCES "Schedule"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Availability" ADD CONSTRAINT "Availability_eventTypeId_fkey" FOREIGN KEY ("eventTypeId") REFERENCES "EventType"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Credential
 ALTER TABLE "Credential" ADD CONSTRAINT "Credential_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- SelectedCalendar
 ALTER TABLE "SelectedCalendar" ADD CONSTRAINT "SelectedCalendar_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "SelectedCalendar" ADD CONSTRAINT "SelectedCalendar_credentialId_fkey" FOREIGN KEY ("credentialId") REFERENCES "Credential"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- DestinationCalendar
 ALTER TABLE "DestinationCalendar" ADD CONSTRAINT "DestinationCalendar_credentialId_fkey" FOREIGN KEY ("credentialId") REFERENCES "Credential"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "DestinationCalendar" ADD CONSTRAINT "DestinationCalendar_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "DestinationCalendar" ADD CONSTRAINT "DestinationCalendar_eventTypeId_fkey" FOREIGN KEY ("eventTypeId") REFERENCES "EventType"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Booking
 ALTER TABLE "Booking" ADD CONSTRAINT "Booking_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Booking" ADD CONSTRAINT "Booking_eventTypeId_fkey" FOREIGN KEY ("eventTypeId") REFERENCES "EventType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
--- AddForeignKey
+-- Attendee
 ALTER TABLE "Attendee" ADD CONSTRAINT "Attendee_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- BookingReference
 ALTER TABLE "BookingReference" ADD CONSTRAINT "BookingReference_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "Booking"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+-- OutOfOffice
 ALTER TABLE "OutOfOffice" ADD CONSTRAINT "OutOfOffice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "OutOfOffice" ADD CONSTRAINT "OutOfOffice_reasonId_fkey" FOREIGN KEY ("reasonId") REFERENCES "OutOfOfficeReason"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- Subscription
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- SubscriptionEvent
+ALTER TABLE "SubscriptionEvent" ADD CONSTRAINT "SubscriptionEvent_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE CASCADE ON UPDATE CASCADE;

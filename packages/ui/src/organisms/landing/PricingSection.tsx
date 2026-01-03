@@ -52,7 +52,7 @@ export function PricingSection() {
         {/* Billing Toggle */}
         <div className="flex justify-center mb-10">
           <fieldset className="inline-flex items-center gap-3 rounded-full border border-border bg-card p-1.5">
-            <legend className="sr-only">Billing interval</legend>
+            <legend className="sr-only">Period naplate</legend>
             <button
               type="button"
               onClick={() => setBillingInterval("monthly")}
@@ -129,11 +129,9 @@ export function PricingSection() {
                 <p className="mb-6 text-sm text-muted-foreground">{currentPricing.total}</p>
               )}
 
-              <Link href="/signup" className="block">
-                <Button size="lg" className="mt-4 w-full text-base">
-                  Započni besplatni probni period
-                </Button>
-              </Link>
+              <Button size="lg" className="mt-4 w-full text-base" asChild>
+                <Link href="/signup">Započni besplatni probni period</Link>
+              </Button>
 
               <p className="mt-3 text-xs text-muted-foreground">Bez obaveza. Otkažite bilo kada.</p>
             </div>
