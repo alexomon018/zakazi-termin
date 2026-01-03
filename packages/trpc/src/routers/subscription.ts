@@ -333,7 +333,7 @@ export const subscriptionRouter = router({
       }
 
       // Prevent duplicate subscriptions - user already has active paid subscription
-      if (subscription.stripeSubscriptionId) {
+      if (subscription.stripeSubscriptionId && subscription.status === "ACTIVE") {
         const requestedInterval = input.interval === "monthly" ? "MONTH" : "YEAR";
 
         if (subscription.billingInterval === requestedInterval) {
@@ -418,6 +418,16 @@ export const subscriptionRouter = router({
     }
 
     const appOrigin = getAppOriginFromRequest(ctx.req);
+    try {
+      // eslint-disable-next-line no-new
+      new URL(appOrigin);
+    } catch {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Invalid request origin; cannot create Stripe redirect URLs.",
+      });
+    }
+
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: `${appOrigin}/dashboard/settings/billing`,

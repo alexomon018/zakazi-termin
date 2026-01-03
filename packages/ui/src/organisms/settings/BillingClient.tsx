@@ -203,8 +203,9 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         onOpenChange={setShowCancelDialog}
         isPending={cancelSubscription.isPending}
         onConfirm={() => {
-          cancelSubscription.mutate();
-          setShowCancelDialog(false);
+          cancelSubscription.mutate(undefined, {
+            onSuccess: () => setShowCancelDialog(false),
+          });
         }}
       />
 
