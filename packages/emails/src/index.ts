@@ -12,10 +12,12 @@ export { PaymentFailedEmail } from "./templates/payment-failed";
 export { TrialEndingEmail } from "./templates/trial-ending";
 export { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 export { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+export { SubscriptionSuccessEmail } from "./templates/subscription-success";
 export type {
   BookingEmailData,
   PaymentFailedEmailData,
   TrialEndingEmailData,
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
+  SubscriptionSuccessEmailData,
 } from "./types";

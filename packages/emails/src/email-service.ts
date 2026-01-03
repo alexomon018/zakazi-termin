@@ -13,6 +13,7 @@ import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/pa
 import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+import { SubscriptionSuccessEmail } from "./templates/subscription-success";
 import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 import type {
@@ -20,6 +21,7 @@ import type {
   PaymentFailedEmailData,
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
+  SubscriptionSuccessEmailData,
   TrialEndingEmailData,
 } from "./types";
 
@@ -259,6 +261,15 @@ class EmailService {
       to: data.userEmail,
       subject: "Pretplata istekla - Salonko",
       react: createElement(SubscriptionExpiredEmail, data),
+    });
+  }
+
+  // Send subscription success notification
+  async sendSubscriptionSuccessEmail(data: SubscriptionSuccessEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata uspešno aktivirana - Salonko",
+      react: createElement(SubscriptionSuccessEmail, data),
     });
   }
 }

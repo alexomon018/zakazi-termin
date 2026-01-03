@@ -11,14 +11,20 @@ function normalizeProtocol(value: string): "http" | "https" | undefined {
   return undefined;
 }
 
+type HeaderGetter = {
+  get(name: string): string | null;
+};
+
 /**
  * Compute the public origin (scheme + host) for absolute URLs.
  *
  * Prefer request headers (custom domains, proxies, Vercel) and fall back to env-based app URL.
  */
-export function getAppOriginFromRequest(req?: Request, protocol?: "http" | "https"): string {
-  if (req) {
-    const headers = req.headers;
+export function getAppOriginFromHeaders(
+  headers?: HeaderGetter,
+  protocol?: "http" | "https"
+): string {
+  if (headers) {
     const forwardedHost = headers.get("x-forwarded-host");
     const host = forwardedHost ? firstForwardedHost(forwardedHost) : headers.get("host");
 
@@ -43,4 +49,8 @@ export function getAppOriginFromRequest(req?: Request, protocol?: "http" | "http
 
   // Fallback to env-driven behavior (production / preview / localhost)
   return getAppUrl();
+}
+
+export function getAppOriginFromRequest(req?: Request, protocol?: "http" | "https"): string {
+  return getAppOriginFromHeaders(req?.headers, protocol);
 }

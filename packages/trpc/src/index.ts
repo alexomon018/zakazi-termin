@@ -25,5 +25,7 @@ export {
   type ValidationResult,
 } from "./lib/subscription-validation";
 
+export { getAppOriginFromHeaders, getAppOriginFromRequest } from "./lib/app-origin";
+
 export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
