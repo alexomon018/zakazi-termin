@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 type EventType = {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   description: string | null;
@@ -16,7 +16,7 @@ type EventType = {
 };
 
 type UserProfile = {
-  id: number;
+  id: string;
   name: string | null;
   salonName: string | null;
   avatarUrl: string | null;

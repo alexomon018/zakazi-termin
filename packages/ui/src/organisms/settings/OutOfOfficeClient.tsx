@@ -13,7 +13,7 @@ import { z } from "zod";
 const outOfOfficeSchema = z.object({
   startDate: z.string().min(1, "Datum početka je obavezan"),
   endDate: z.string().min(1, "Datum završetka je obavezan"),
-  reasonId: z.number().optional(),
+  reasonId: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -130,28 +130,28 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Van kancelarije</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
             Upravljajte periodima kada niste dostupni za zakazivanje
           </p>
         </div>
         <Button onClick={() => setShowModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="mr-2 w-4 h-4" />
           Dodaj period
         </Button>
       </div>
 
       {saved && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
           <span className="text-green-800 dark:text-green-300">Uspešno sačuvano!</span>
         </div>
       )}
 
       {createOrUpdate.error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">{createOrUpdate.error.message}</span>
         </div>
@@ -171,16 +171,16 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                   <div
                     key={entry.uuid}
                     className={cn(
-                      "flex items-center justify-between p-4 rounded-lg border",
+                      "flex justify-between items-center p-4 rounded-lg border",
                       isActive
-                        ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                        : "bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-700 opacity-60"
+                        ? "bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                        : "bg-gray-50 border-gray-100 opacity-60 dark:bg-gray-800/50 dark:border-gray-700"
                     )}
                   >
-                    <div className="flex items-center gap-4">
+                    <div className="flex gap-4 items-center">
                       <div
                         className={cn(
-                          "w-10 h-10 rounded-lg flex items-center justify-center text-xl",
+                          "flex justify-center items-center w-10 h-10 text-xl rounded-lg",
                           isActive
                             ? "bg-orange-100 dark:bg-orange-900/30"
                             : "bg-gray-100 dark:bg-gray-700"
@@ -189,7 +189,7 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                         {entry.reason?.emoji || "📅"}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2 items-center">
                           <p className="font-medium text-gray-900 dark:text-white">
                             {formatDateDisplay(entry.start)} - {formatDateDisplay(entry.end)}
                           </p>
@@ -205,13 +205,13 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                           </p>
                         )}
                         {entry.notes && (
-                          <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                          <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
                             {entry.notes}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center">
                       <Button variant="ghost" size="sm" onClick={() => handleEdit(entry)}>
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -229,9 +229,9 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
               })}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <CalendarDays className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 mb-2">Nemate zakazanih odsustva</p>
+            <div className="py-12 text-center">
+              <CalendarDays className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
+              <p className="mb-2 text-gray-500 dark:text-gray-400">Nemate zakazanih odsustva</p>
               <p className="text-sm text-gray-400 dark:text-gray-500">
                 Dodajte period kada nećete biti dostupni za zakazivanje termina.
               </p>
@@ -242,10 +242,10 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+        <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black/50">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {editingUuid ? "Izmeni period odsustva" : "Dodaj period odsustva"}
               </h3>
               <button
@@ -328,12 +328,12 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
                   id="notes"
                   {...register("notes")}
                   rows={2}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  className="px-3 py-2 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 resize-none dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Dodatne informacije..."
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex gap-3 justify-end pt-4">
                 <Button type="button" variant="outline" onClick={handleCloseModal}>
                   Otkaži
                 </Button>

@@ -2885,6 +2885,7 @@ __metadata:
     "@salonko/config": "workspace:*"
     "@salonko/prisma": "workspace:*"
     "@types/bcryptjs": "npm:^2.4.6"
+    "@upstash/redis": "npm:^1.36.0"
     bcryptjs: "npm:^2.4.3"
     next-auth: "npm:^4.24.10"
     typescript: "npm:^5.7.2"
@@ -2960,6 +2961,9 @@ __metadata:
     "@salonko/prisma": "workspace:*"
     "@salonko/scheduling": "workspace:*"
     "@trpc/server": "npm:^11.0.0-rc.660"
+    "@upstash/ratelimit": "npm:^2.0.7"
+    "@upstash/redis": "npm:^1.36.0"
+    stripe: "npm:^20.1.0"
     superjson: "npm:^2.2.1"
     zod: "npm:^3.23.8"
   languageName: unknown
@@ -3040,6 +3044,7 @@ __metadata:
     react-hook-form: "npm:^7.68.0"
     react-i18next: "npm:^15.1.3"
     server-only: "npm:^0.0.1"
+    stripe: "npm:^20.1.0"
     superjson: "npm:^2.2.1"
     tailwind-merge: "npm:^3.4.0"
     tailwindcss: "npm:^3.4.16"
@@ -3581,6 +3586,35 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10c0/d2914f8e9b5b998e4275ec5f0130cba1c2fb47e75616b5c125a65ef6c1db2f1dc3f978c7900693856a15d72bbb4f4e94f805537a4ecb6dc126c64415d31c0590
+  languageName: node
+  linkType: hard
+
+"@upstash/core-analytics@npm:^0.0.10":
+  version: 0.0.10
+  resolution: "@upstash/core-analytics@npm:0.0.10"
+  dependencies:
+    "@upstash/redis": "npm:^1.28.3"
+  checksum: 10c0/c90b1bfaf1f54eed8a48f2aa679f8e082083f49931cf08bd90a0a0035b010f65b6e7420268677f15df1d04687f7e5a9093320c591ef4dbd45d804ea83d890f3f
+  languageName: node
+  linkType: hard
+
+"@upstash/ratelimit@npm:^2.0.7":
+  version: 2.0.7
+  resolution: "@upstash/ratelimit@npm:2.0.7"
+  dependencies:
+    "@upstash/core-analytics": "npm:^0.0.10"
+  peerDependencies:
+    "@upstash/redis": ^1.34.3
+  checksum: 10c0/a90145c0c59812cb3f1e286934e2085468cb2acedc7267ac72af67912cfa736f3508b8b39e921fbfb208a1d3588dea6a27eef99f5a3189345619f784938f1816
+  languageName: node
+  linkType: hard
+
+"@upstash/redis@npm:^1.28.3, @upstash/redis@npm:^1.36.0":
+  version: 1.36.0
+  resolution: "@upstash/redis@npm:1.36.0"
+  dependencies:
+    uncrypto: "npm:^0.1.3"
+  checksum: 10c0/b33badef3014357c9486e318282114932ee9eb0f3730024115c2cd0282d8428eca66c3b30f2895f91b2eb5e4a89001cf6312bfff4dc2be34ee1d7c6f438392bb
   languageName: node
   linkType: hard
 
@@ -6764,6 +6798,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qs@npm:^6.11.0":
+  version: 6.14.1
+  resolution: "qs@npm:6.14.1"
+  dependencies:
+    side-channel: "npm:^1.1.0"
+  checksum: 10c0/0e3b22dc451f48ce5940cbbc7c7d9068d895074f8c969c0801ac15c1313d1859c4d738e46dc4da2f498f41a9ffd8c201bd9fb12df67799b827db94cc373d2613
+  languageName: node
+  linkType: hard
+
 "qs@npm:^6.7.0":
   version: 6.14.0
   resolution: "qs@npm:6.14.0"
@@ -7654,6 +7697,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"stripe@npm:^20.1.0":
+  version: 20.1.0
+  resolution: "stripe@npm:20.1.0"
+  dependencies:
+    qs: "npm:^6.11.0"
+  peerDependencies:
+    "@types/node": ">=16"
+  peerDependenciesMeta:
+    "@types/node":
+      optional: true
+  checksum: 10c0/db3edb03a856aa7bd6b6c06da5fe7934ab2b6978b11d8a279513297d55282d8247a9f979554f1d21630475fc9163ccc92de1d8df7d6d943c7b3d954d14b44a50
+  languageName: node
+  linkType: hard
+
 "stubborn-fs@npm:^2.0.0":
   version: 2.0.0
   resolution: "stubborn-fs@npm:2.0.0"
@@ -8020,6 +8077,13 @@ __metadata:
   version: 1.5.0
   resolution: "uint8array-extras@npm:1.5.0"
   checksum: 10c0/0e74641ac7dadb02eadefc1ccdadba6010e007757bda824960de3c72bbe2b04e6d3af75648441f412148c4103261d54fcb60be45a2863beb76643a55fddba3bd
+  languageName: node
+  linkType: hard
+
+"uncrypto@npm:^0.1.3":
+  version: 0.1.3
+  resolution: "uncrypto@npm:0.1.3"
+  checksum: 10c0/74a29afefd76d5b77bedc983559ceb33f5bbc8dada84ff33755d1e3355da55a4e03a10e7ce717918c436b4dfafde1782e799ebaf2aadd775612b49f7b5b2998e
   languageName: node
   linkType: hard
 

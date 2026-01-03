@@ -61,7 +61,7 @@ export async function GET(request: Request) {
       },
     });
 
-    let credentialId: number;
+    let credentialId: string;
 
     if (existingCredential) {
       // Update existing credential
@@ -126,7 +126,10 @@ export async function GET(request: Request) {
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
   } catch (err) {
-    logger.error("Google Calendar OAuth error", { error: err, userId: session.user.id });
+    logger.error("Google Calendar OAuth error", {
+      error: err,
+      userId: session.user.id,
+    });
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
   }
 }

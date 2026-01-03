@@ -31,3 +31,28 @@ export interface EmailRecipient {
   email: string;
   name?: string;
 }
+
+// Subscription-related email types
+export interface SubscriptionEmailData {
+  userEmail: string;
+  userName: string;
+  salonName?: string | null;
+}
+
+export interface PaymentFailedEmailData extends SubscriptionEmailData {
+  billingPortalUrl: string;
+}
+
+export interface TrialEndingEmailData extends SubscriptionEmailData {
+  daysRemaining: number;
+  billingUrl: string;
+}
+
+export interface SubscriptionCanceledEmailData extends SubscriptionEmailData {
+  currentPeriodEnd: Date;
+  resumeUrl: string;
+}
+
+export interface SubscriptionExpiredEmailData extends SubscriptionEmailData {
+  billingUrl: string;
+}

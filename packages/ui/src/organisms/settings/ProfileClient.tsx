@@ -150,10 +150,10 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Avatar Section */}
+        {/* Salon Logo Section */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Profilna slika</CardTitle>
+            <CardTitle className="text-lg">Logo salona</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -161,7 +161,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
                 {user?.avatarUrl ? (
                   <Image
                     src={user.avatarUrl}
-                    alt={user.name || "Avatar"}
+                    alt={user.salonName || user.name || "Logo"}
                     width={80}
                     height={80}
                     className="object-cover w-full h-full"
@@ -172,7 +172,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Vaša profilna slika će se prikazivati na stranici za zakazivanje.
+                  Logo vašeg salona će se prikazivati na stranici za zakazivanje.
                 </p>
                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Preporučena veličina: 256x256 piksela

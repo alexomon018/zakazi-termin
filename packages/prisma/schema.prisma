@@ -35,10 +35,27 @@ enum MembershipRole {
   MEMBER
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+  PAUSED
+}
+
+enum BillingInterval {
+  MONTH
+  YEAR
+}
+
 // ===== ORGANIZATIONS =====
 
 model Organization {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   name      String
   slug      String   @unique
   logoUrl   String?
@@ -53,14 +70,14 @@ model Organization {
 }
 
 model Membership {
-  id       Int            @id @default(autoincrement())
+  id       String         @id @default(dbgenerated("gen_random_uuid()"))
   role     MembershipRole @default(MEMBER)
   accepted Boolean        @default(false)
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  organizationId Int
+  organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
@@ -74,7 +91,7 @@ model Membership {
 // ===== USERS & AUTH =====
 
 model User {
-  id                 Int              @id @default(autoincrement())
+  id                 String           @id @default(dbgenerated("gen_random_uuid()"))
   email              String           @unique
   name               String?
   salonName          String?          @unique
@@ -99,7 +116,7 @@ model User {
   eventTypes          EventType[]
   bookings            Booking[]            @relation("organizer")
   schedules           Schedule[]
-  defaultScheduleId   Int?
+  defaultScheduleId   String?
   accounts            Account[]
   sessions            Session[]
   credentials         Credential[]
@@ -107,6 +124,7 @@ model User {
   destinationCalendar DestinationCalendar?
   memberships         Membership[]
   outOfOfficeEntries  OutOfOffice[]
+  subscription        Subscription?
 
   @@index([email])
   @@index([salonName])
@@ -114,13 +132,13 @@ model User {
 
 model UserPassword {
   hash   String
-  userId Int    @unique
+  userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
   id                String  @id @default(cuid())
-  userId            Int
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -140,7 +158,7 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -158,7 +176,7 @@ model VerificationToken {
 // ===== EVENT TYPES =====
 
 model EventType {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(dbgenerated("gen_random_uuid()"))
   title       String
   slug        String
   description String?
@@ -184,15 +202,15 @@ model EventType {
   periodDays      Int?
 
   // Scheduling
-  scheduleId Int?
+  scheduleId String?
   schedule   Schedule? @relation(fields: [scheduleId], references: [id])
 
   // Owner
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Organization (optional - for org-level event types)
-  organizationId Int?
+  organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   // Calendar
@@ -214,8 +232,8 @@ model EventType {
 // ===== SCHEDULES & AVAILABILITY =====
 
 model Schedule {
-  id           Int            @id @default(autoincrement())
-  userId       Int
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
+  userId       String
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   name         String
   timeZone     String?
@@ -226,11 +244,11 @@ model Schedule {
 }
 
 model Availability {
-  id          Int        @id @default(autoincrement())
-  userId      Int?
-  scheduleId  Int?
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  userId      String?
+  scheduleId  String?
   schedule    Schedule?  @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  eventTypeId Int?
+  eventTypeId String?
   eventType   EventType? @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
   days        Int[] // 0-6 for days of week (0 = Sunday)
   startTime   DateTime   @db.Time
@@ -245,10 +263,10 @@ model Availability {
 // ===== CALENDAR SYNC =====
 
 model Credential {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()"))
   type      String // e.g., "google_calendar"
   key       Json // OAuth tokens (access_token, refresh_token, expiry_date, etc.)
-  userId    Int
+  userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   appId     String? // e.g., "google-calendar"
   invalid   Boolean? @default(false)
@@ -263,11 +281,11 @@ model Credential {
 }
 
 model SelectedCalendar {
-  userId       Int
+  userId       String
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   integration  String
   externalId   String
-  credentialId Int?
+  credentialId String?
   credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: Cascade)
 
   @@id([userId, integration, externalId])
@@ -276,14 +294,14 @@ model SelectedCalendar {
 }
 
 model DestinationCalendar {
-  id           Int         @id @default(autoincrement())
+  id           String      @id @default(dbgenerated("gen_random_uuid()"))
   integration  String
   externalId   String
-  credentialId Int?
+  credentialId String?
   credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: Cascade)
-  userId       Int?        @unique
+  userId       String?     @unique
   user         User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventTypeId  Int?        @unique
+  eventTypeId  String?     @unique
   eventType    EventType?  @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -293,11 +311,11 @@ model DestinationCalendar {
 // ===== BOOKINGS =====
 
 model Booking {
-  id          Int        @id @default(autoincrement())
-  uid         String     @unique @default(uuid())
-  userId      Int?
+  id          String     @id @default(dbgenerated("gen_random_uuid()"))
+  uid         String     @unique @default(dbgenerated("gen_random_uuid()"))
+  userId      String?
   user        User?      @relation("organizer", fields: [userId], references: [id], onDelete: Cascade)
-  eventTypeId Int?
+  eventTypeId String?
   eventType   EventType? @relation(fields: [eventTypeId], references: [id])
 
   title       String
@@ -332,13 +350,13 @@ model Booking {
 }
 
 model Attendee {
-  id          Int     @id @default(autoincrement())
+  id          String  @id @default(dbgenerated("gen_random_uuid()"))
   email       String
   name        String
   timeZone    String  @default("Europe/Belgrade")
   phoneNumber String?
   locale      String  @default("sr")
-  bookingId   Int
+  bookingId   String
   booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([email])
@@ -346,7 +364,7 @@ model Attendee {
 }
 
 model BookingReference {
-  id                 Int      @id @default(autoincrement())
+  id                 String   @id @default(dbgenerated("gen_random_uuid()"))
   type               String // calendar type: google_calendar, etc.
   uid                String // external calendar event UID
   meetingId          String?
@@ -354,8 +372,8 @@ model BookingReference {
   meetingUrl         String?
   externalCalendarId String?
   deleted            Boolean?
-  credentialId       Int?
-  bookingId          Int?
+  credentialId       String?
+  bookingId          String?
   booking            Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
@@ -366,10 +384,10 @@ model BookingReference {
 // ===== OUT OF OFFICE =====
 
 model OutOfOfficeReason {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(dbgenerated("gen_random_uuid()"))
   emoji        String        @default("🏝️")
-  reason       String
-  userId       Int? // null = global/system reason, userId = custom user reason
+  reason       String        @unique
+  userId       String? // null = global/system reason, userId = custom user reason
   enabled      Boolean       @default(true)
   outOfOffices OutOfOffice[]
 
@@ -377,18 +395,73 @@ model OutOfOfficeReason {
 }
 
 model OutOfOffice {
-  id        Int                @id @default(autoincrement())
-  uuid      String             @unique @default(uuid())
-  userId    Int
+  id        String             @id @default(dbgenerated("gen_random_uuid()"))
+  uuid      String             @unique @default(dbgenerated("gen_random_uuid()"))
+  userId    String
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   start     DateTime           @db.Date
   end       DateTime           @db.Date
   notes     String?
-  reasonId  Int?
+  reasonId  String?
   reason    OutOfOfficeReason? @relation(fields: [reasonId], references: [id])
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
   @@index([userId])
   @@index([start, end])
+}
+
+// ===== SUBSCRIPTIONS =====
+
+model Subscription {
+  id     String @id @default(dbgenerated("gen_random_uuid()"))
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe references
+  stripeCustomerId     String  @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  // Status and billing
+  status          SubscriptionStatus @default(TRIALING)
+  billingInterval BillingInterval?
+
+  // Trial tracking
+  trialStartedAt DateTime?
+  trialEndsAt    DateTime?
+
+  // Subscription period
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+  canceledAt         DateTime?
+
+  // Dunning management (failed payment tracking)
+  lastDunningEmailAt DateTime? // When last dunning email was sent
+  dunningEmailCount  Int       @default(0) // Number of dunning emails sent
+  lastReminderSentAt DateTime? // When last trial reminder was sent
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events SubscriptionEvent[]
+
+  @@index([stripeCustomerId])
+  @@index([status])
+  @@index([trialEndsAt]) // For cron job trial expiration queries
+  @@index([currentPeriodEnd]) // For subscription expiration queries
+}
+
+model SubscriptionEvent {
+  id             String       @id @default(dbgenerated("gen_random_uuid()"))
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  stripeEventId String   @unique
+  eventType     String
+  eventData     Json
+  processedAt   DateTime @default(now())
+
+  @@index([subscriptionId])
 }

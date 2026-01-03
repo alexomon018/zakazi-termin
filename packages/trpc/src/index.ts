@@ -16,6 +16,14 @@ export {
   protectedProcedure,
   createCallerFactory,
 } from "./trpc";
+export {
+  validateSubscriptionData,
+  validateStatusTransition,
+  assertValidSubscriptionData,
+  assertValidStatusTransition,
+  type SubscriptionData,
+  type ValidationResult,
+} from "./lib/subscription-validation";
 
 export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;

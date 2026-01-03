@@ -52,14 +52,14 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Podešavanja</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
           Upravljajte svojim nalogom i integracijama
         </p>
       </div>
 
       {/* Success/Error Messages */}
       {successParam === "google_calendar_connected" && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
           <span className="text-green-800 dark:text-green-300">
             Google Calendar je uspešno povezan!
@@ -68,7 +68,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       )}
 
       {errorParam && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">
             {errorParam === "google_auth_denied" && "Odbili ste pristup Google Calendar-u."}
@@ -82,7 +82,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       {/* Calendar Integrations */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="flex gap-2 items-center text-lg">
             <Calendar className="w-5 h-5" />
             Kalendar integracije
           </CardTitle>
@@ -99,10 +99,10 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
               connections.map((connection: Connection) => (
                 <div
                   key={connection.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800/50"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center">
+                  <div className="flex gap-3 items-center">
+                    <div className="flex justify-center items-center w-10 h-10 bg-white rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
                       <svg
                         className="w-6 h-6"
                         viewBox="0 0 24 24"
@@ -134,14 +134,16 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2 items-center">
                     <CalendarSelectionButton credentialId={connection.id} />
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => {
                         if (confirm("Da li ste sigurni da želite da isključite ovaj kalendar?")) {
-                          disconnectCalendar.mutate({ credentialId: connection.id });
+                          disconnectCalendar.mutate({
+                            credentialId: connection.id,
+                          });
                         }
                       }}
                       disabled={disconnectCalendar.isPending}
@@ -152,7 +154,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 py-2">
+              <p className="py-2 text-sm text-gray-500 dark:text-gray-400">
                 Nemate povezanih kalendara.
               </p>
             )}
@@ -160,7 +162,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
 
           {/* Connect Button */}
           <Button onClick={handleConnectGoogle} disabled={connectingCalendar} className="w-full">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" role="img" aria-label="Google logo">
+            <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -186,7 +188,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
   );
 }
 
-function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
+function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const utils = trpc.useUtils();
 
@@ -205,24 +207,24 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
   if (!isOpen) {
     return (
       <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        <ExternalLink className="w-4 h-4 mr-1" />
+        <ExternalLink className="mr-1 w-4 h-4" />
         Kalendari
       </Button>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div className="flex fixed inset-0 z-50 justify-center items-center bg-black/50">
+      <div className="mx-4 w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h3 className="font-semibold text-gray-900 dark:text-white">Odaberite kalendare</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Odabrani kalendari će se koristiti za proveru zauzetosti
           </p>
         </div>
-        <div className="p-4 max-h-80 overflow-y-auto">
+        <div className="overflow-y-auto p-4 max-h-80">
           {isLoading ? (
-            <div className="text-gray-500 dark:text-gray-400 text-center py-4">Učitavanje...</div>
+            <div className="py-4 text-center text-gray-500 dark:text-gray-400">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
               {calendars?.map(
@@ -234,7 +236,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
                 }) => (
                   <label
                     key={cal.externalId}
-                    className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    className="flex gap-3 items-center p-2 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <input
                       type="checkbox"

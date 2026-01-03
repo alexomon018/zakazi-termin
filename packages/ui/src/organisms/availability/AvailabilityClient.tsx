@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import { Check, Clock, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const DAYS_OF_WEEK = [
   { value: 0, label: "Nedelja", short: "Ned" },
@@ -35,7 +35,7 @@ export function AvailabilityClient({
   currentUser: initialUser,
 }: AvailabilityClientProps) {
   const [newScheduleName, setNewScheduleName] = useState("");
-  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<string | null>(null);
   const [availability, setAvailability] = useState<AvailabilityEntry[]>([
     { days: [1, 2, 3, 4, 5], startTime: "09:00", endTime: "17:00" },
   ]);
@@ -51,7 +51,7 @@ export function AvailabilityClient({
   });
 
   const createSchedule = trpc.availability.createSchedule.useMutation({
-    onSuccess: (schedule: { id: number }) => {
+    onSuccess: (schedule: { id: string }) => {
       utils.availability.listSchedules.invalidate();
       setSelectedScheduleId(schedule.id);
       setNewScheduleName("");
@@ -77,12 +77,12 @@ export function AvailabilityClient({
     },
   });
 
-  const selectedSchedule = schedules?.find((s: { id: number }) => s.id === selectedScheduleId);
+  const selectedSchedule = schedules?.find((s) => s.id === selectedScheduleId);
 
   // Load availability when schedule is selected
-  const handleSelectSchedule = (scheduleId: number) => {
+  const handleSelectSchedule = (scheduleId: string) => {
     setSelectedScheduleId(scheduleId);
-    const schedule = schedules?.find((s: { id: number }) => s.id === scheduleId);
+    const schedule = schedules?.find((s) => s.id === scheduleId);
     if (schedule?.availability) {
       const workingHours = schedule.availability
         .filter((a: { days: number[] }) => a.days.length > 0)

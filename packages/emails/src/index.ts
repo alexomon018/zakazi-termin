@@ -8,4 +8,14 @@ export { BookingPendingOrganizerEmail } from "./templates/booking-pending-organi
 export { BookingRescheduledEmail } from "./templates/booking-rescheduled";
 export { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 export { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
-export type { BookingEmailData } from "./types";
+export { PaymentFailedEmail } from "./templates/payment-failed";
+export { TrialEndingEmail } from "./templates/trial-ending";
+export { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
+export { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+export type {
+  BookingEmailData,
+  PaymentFailedEmailData,
+  TrialEndingEmailData,
+  SubscriptionCanceledEmailData,
+  SubscriptionExpiredEmailData,
+} from "./types";

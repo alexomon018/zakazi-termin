@@ -3,7 +3,7 @@ import { PrismaClient } from "@salonko/prisma";
 import { hash } from "bcryptjs";
 
 export interface TestUser {
-  id: number;
+  id: string;
   email: string;
   password: string;
   salonName: string;
@@ -30,7 +30,7 @@ export type UsersFixtureType = {
 };
 
 // Keep track of created users for cleanup
-const createdUserIds: number[] = [];
+const createdUserIds: string[] = [];
 let userCounter = 0;
 
 // Shared Prisma instance

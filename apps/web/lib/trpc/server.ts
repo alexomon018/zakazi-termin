@@ -17,7 +17,7 @@ export const createServerCaller = cache(async () => {
   const trpcSession: Session = session?.user
     ? {
         user: {
-          id: session.user.id as number,
+          id: session.user.id as string,
           email: session.user.email!,
           name: session.user.name,
           salonName: (session.user as { salonName?: string }).salonName,

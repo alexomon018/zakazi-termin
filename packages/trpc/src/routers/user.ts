@@ -143,7 +143,7 @@ export const userRouter = router({
 
   // Set default schedule
   setDefaultSchedule: protectedProcedure
-    .input(z.object({ scheduleId: z.number() }))
+    .input(z.object({ scheduleId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Verify schedule belongs to user
       const schedule = await ctx.prisma.schedule.findFirst({

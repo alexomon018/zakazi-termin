@@ -38,7 +38,7 @@ export const calendarRouter = router({
 
   // List calendars from a connected account
   listCalendars: protectedProcedure
-    .input(z.object({ credentialId: z.number() }))
+    .input(z.object({ credentialId: z.string() }))
     .query(async ({ ctx, input }) => {
       const credential = await ctx.prisma.credential.findFirst({
         where: {
@@ -98,7 +98,7 @@ export const calendarRouter = router({
   toggleCalendarSelection: protectedProcedure
     .input(
       z.object({
-        credentialId: z.number(),
+        credentialId: z.string(),
         externalId: z.string(),
         selected: z.boolean(),
       })
@@ -152,7 +152,7 @@ export const calendarRouter = router({
 
   // Disconnect calendar (delete credential)
   disconnect: protectedProcedure
-    .input(z.object({ credentialId: z.number() }))
+    .input(z.object({ credentialId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.credential.delete({
         where: {

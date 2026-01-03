@@ -23,7 +23,7 @@ import { getCalendarLinks } from "./utils/getCalendarLinks";
 type BookingStep = "select-time" | "enter-details" | "confirmation";
 
 type EventType = {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   description: string | null;
@@ -31,7 +31,7 @@ type EventType = {
   requiresConfirmation: boolean;
   locations: unknown;
   user: {
-    id: number;
+    id: string;
     name: string | null;
     salonName: string | null;
     avatarUrl: string | null;

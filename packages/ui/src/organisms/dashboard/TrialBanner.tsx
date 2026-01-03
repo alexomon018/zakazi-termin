@@ -1,0 +1,162 @@
+"use client";
+
+import { trpc } from "@/lib/trpc/client";
+import { Button } from "@salonko/ui";
+import {
+  formatTrialTimeRemaining,
+  hasTrialTimeRemaining,
+  parseTrialEndDate,
+} from "@salonko/ui/lib/utils/formatTrialTime";
+import { AlertCircle, Clock, X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const DISMISS_STORAGE_KEY = "trial-banner-dismissed";
+
+export function TrialBanner() {
+  const [dismissed, setDismissed] = useState(() => {
+    // Initialize from localStorage if available
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(DISMISS_STORAGE_KEY) === "true";
+    }
+    return false;
+  });
+
+  // Persist dismiss state to localStorage
+  const handleDismiss = () => {
+    setDismissed(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DISMISS_STORAGE_KEY, "true");
+    }
+  };
+
+  const { data: status, isLoading } = trpc.subscription.getStatus.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  // Don't show if loading, dismissed, or no subscription data
+  if (isLoading || dismissed || !status) return null;
+
+  // Don't show for active paid subscriptions
+  if (status.status === "ACTIVE" && !status.isInTrial) return null;
+
+  // Show banner for users who have never subscribed
+  if (!status.hasSubscription) {
+    return (
+      <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+                Pretplatite se da biste koristili sve funkcije aplikacije.
+              </p>
+            </div>
+            <Link href="/dashboard/settings/billing">
+              <Button size="sm">Pretplatite se</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show trial banner when trial is active and within the warning threshold
+  // Threshold is dynamically computed: 20% of total trial length, minimum 3 days
+  // This ensures the banner works correctly for both short (e.g., 5-day) and long (e.g., 30-day) trials
+  const hasTimeRemaining = hasTrialTimeRemaining(status.trialEndsAt);
+  const totalTrialDays = status.totalTrialDays || 7; // Fallback assumes minimum 7-day trial
+  const warningThreshold = Math.max(3, Math.ceil(totalTrialDays * 0.2));
+  if (
+    status.isInTrial &&
+    status.trialDaysRemaining <= warningThreshold &&
+    (status.trialDaysRemaining > 0 || hasTimeRemaining)
+  ) {
+    return (
+      <div className="bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                Vaš probni period ističe za{" "}
+                <strong>
+                  {formatTrialTimeRemaining(status.trialDaysRemaining, status.trialEndsAt)}
+                </strong>
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard/settings/billing">
+                <Button size="sm">Pretplatite se</Button>
+              </Link>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="rounded p-1 text-amber-600 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-800/50"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show expired/locked banner
+  // Check if trial has actually expired (not just 0 days, but past trialEndsAt)
+  const trialEndDate = parseTrialEndDate(status.trialEndsAt);
+  const isTrialExpired =
+    status.status === "EXPIRED" ||
+    (status.isInTrial &&
+      status.trialDaysRemaining === 0 &&
+      (!trialEndDate || new Date() >= trialEndDate));
+
+  if (isTrialExpired) {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Vaša pretplata je istekla. Pretplatite se da biste nastavili da koristite sve
+                funkcije.
+              </p>
+            </div>
+            <Link href="/dashboard/settings/billing">
+              <Button size="sm" variant="destructive">
+                Pretplatite se
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show past due banner
+  if (status.status === "PAST_DUE") {
+    return (
+      <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                Plaćanje nije uspelo. Ažurirajte način plaćanja.
+              </p>
+            </div>
+            <Link href="/dashboard/settings/billing">
+              <Button size="sm" variant="destructive">
+                Ažuriraj plaćanje
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}

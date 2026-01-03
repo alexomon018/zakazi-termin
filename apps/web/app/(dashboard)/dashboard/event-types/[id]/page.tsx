@@ -9,17 +9,12 @@ type Props = {
 
 export default async function EditEventTypePage({ params }: Props) {
   const { id } = await params;
-  const eventTypeId = Number.parseInt(id);
-
-  if (Number.isNaN(eventTypeId)) {
-    notFound();
-  }
 
   const caller = await createServerCaller();
 
   // Fetch data in parallel
   const [eventType, schedules] = await Promise.all([
-    caller.eventType.byId({ id: eventTypeId }).catch(() => null),
+    caller.eventType.byId({ id }).catch(() => null),
     caller.availability.listSchedules(),
   ]);
 

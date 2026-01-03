@@ -21,23 +21,49 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface DashboardNavProps {
   user: {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
     image?: string | null;
   };
+  isSubscribed?: boolean;
 }
 
 const navItems = [
-  { href: "/dashboard", label: "Pregled", icon: LayoutDashboard },
-  { href: "/dashboard/bookings", label: "Termini", icon: Calendar },
-  { href: "/dashboard/event-types", label: "Tipovi termina", icon: Clock },
-  { href: "/dashboard/availability", label: "Dostupnost", icon: Clock },
-  { href: "/dashboard/settings", label: "Podešavanja", icon: Settings },
+  {
+    href: "/dashboard",
+    label: "Pregled",
+    icon: LayoutDashboard,
+    requiresSubscription: false,
+  },
+  {
+    href: "/dashboard/bookings",
+    label: "Termini",
+    icon: Calendar,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/event-types",
+    label: "Tipovi termina",
+    icon: Clock,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/availability",
+    label: "Dostupnost",
+    icon: Clock,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/settings",
+    label: "Podešavanja",
+    icon: Settings,
+    requiresSubscription: false,
+  },
 ];
 
-export function DashboardNav({ user }: DashboardNavProps) {
+export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -115,6 +141,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
                 label={item.label}
                 icon={item.icon}
                 isActive={item.isActive}
+                requiresSubscription={item.requiresSubscription}
+                isSubscribed={isSubscribed}
               />
             ))}
           </nav>
@@ -122,7 +150,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* User menu */}
           <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
             <div className="hidden lg:block">
-              <UserInfoDisplay name={user.name || ""} email={user.email} />
+              <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
             </div>
             <Button
               variant="outline"
@@ -161,6 +189,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
                   label={item.label}
                   icon={item.icon}
                   isActive={item.isActive}
+                  requiresSubscription={item.requiresSubscription}
+                  isSubscribed={isSubscribed}
                 />
               </div>
             ))}

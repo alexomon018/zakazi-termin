@@ -348,7 +348,7 @@ export function BookingsClient({
                           </p>
                           {booking.attendees.map(
                             (attendee: {
-                              id: number;
+                              id: string;
                               name: string;
                               email: string;
                               phoneNumber: string | null;

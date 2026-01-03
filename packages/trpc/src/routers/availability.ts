@@ -1,12 +1,17 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
 import { logger } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
-import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import {
+  protectedProcedure,
+  publicProcedure,
+  router,
+  subscriptionProtectedProcedure,
+} from "@salonko/trpc/trpc";
 import { z } from "zod";
 
 export const availabilityRouter = router({
   // List user's schedules
-  listSchedules: protectedProcedure.query(async ({ ctx }) => {
+  listSchedules: subscriptionProtectedProcedure.query(async ({ ctx }) => {
     const schedules = await ctx.prisma.schedule.findMany({
       where: { userId: ctx.session.user.id },
       include: {
@@ -17,8 +22,8 @@ export const availabilityRouter = router({
   }),
 
   // Get schedule by ID
-  getSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+  getSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const schedule = await ctx.prisma.schedule.findFirst({
         where: {
@@ -33,7 +38,7 @@ export const availabilityRouter = router({
     }),
 
   // Create a new schedule
-  createSchedule: protectedProcedure
+  createSchedule: subscriptionProtectedProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -52,10 +57,10 @@ export const availabilityRouter = router({
     }),
 
   // Update schedule
-  updateSchedule: protectedProcedure
+  updateSchedule: subscriptionProtectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string().min(1).optional(),
         timeZone: z.string().optional(),
       })
@@ -73,8 +78,8 @@ export const availabilityRouter = router({
     }),
 
   // Delete schedule
-  deleteSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+  deleteSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.schedule.delete({
         where: {
@@ -86,10 +91,10 @@ export const availabilityRouter = router({
     }),
 
   // Set availability for a schedule
-  setAvailability: protectedProcedure
+  setAvailability: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         availability: z.array(
           z.object({
             days: z.array(z.number().min(0).max(6)),
@@ -133,10 +138,10 @@ export const availabilityRouter = router({
     }),
 
   // Add a date override (specific date with custom hours)
-  addDateOverride: protectedProcedure
+  addDateOverride: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
         startTime: z.string(), // HH:mm format
         endTime: z.string(),
@@ -178,10 +183,10 @@ export const availabilityRouter = router({
     }),
 
   // Remove a date override
-  removeDateOverride: protectedProcedure
+  removeDateOverride: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -209,10 +214,10 @@ export const availabilityRouter = router({
     }),
 
   // Block a specific date (no availability)
-  blockDate: protectedProcedure
+  blockDate: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -252,10 +257,10 @@ export const availabilityRouter = router({
     }),
 
   // Get date overrides for a schedule
-  getDateOverrides: protectedProcedure
+  getDateOverrides: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         dateFrom: z.date().optional(),
         dateTo: z.date().optional(),
       })
@@ -285,7 +290,7 @@ export const availabilityRouter = router({
   getSlots: publicProcedure
     .input(
       z.object({
-        eventTypeId: z.number(),
+        eventTypeId: z.string(),
         dateFrom: z.date(),
         dateTo: z.date(),
         timeZone: z.string().default("Europe/Belgrade"),

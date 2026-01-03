@@ -29,8 +29,8 @@ export type IntegrationCalendar = {
 };
 
 type CredentialWithKey = {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   key: GoogleCredential;
 };
 
