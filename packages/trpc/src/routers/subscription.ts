@@ -1,4 +1,4 @@
-import { logger } from "@salonko/config";
+import { getAppUrl, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
@@ -10,7 +10,7 @@ import { z } from "zod";
 
 import { assertValidSubscriptionData } from "../lib/subscription-validation";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://salonko.rs";
+const APP_URL = getAppUrl();
 
 // Environment variable validation
 const requiredEnvVars = {
@@ -28,6 +28,18 @@ function validateStripeConfig() {
         message: `Stripe not configured: missing ${key}`,
       });
     }
+  }
+
+  // Validate redirect URLs we send to Stripe (must include scheme).
+  try {
+    // eslint-disable-next-line no-new
+    new URL(APP_URL);
+  } catch {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message:
+        "Invalid NEXT_PUBLIC_APP_URL. It must be a full URL with scheme, e.g. https://salonko.rs or http://localhost:3000",
+    });
   }
 }
 
@@ -351,8 +363,8 @@ export const subscriptionRouter = router({
             userId: String(ctx.session.user.id),
           },
         },
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?canceled=true`,
+        success_url: `${APP_URL}/dashboard/settings/billing?success=true`,
+        cancel_url: `${APP_URL}/dashboard/settings/billing?canceled=true`,
         metadata: {
           userId: String(ctx.session.user.id),
         },
@@ -378,7 +390,7 @@ export const subscriptionRouter = router({
 
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing`,
+      return_url: `${APP_URL}/dashboard/settings/billing`,
     });
 
     return { url: session.url };
