@@ -8,9 +8,8 @@ import { Redis } from "@upstash/redis";
 import Stripe from "stripe";
 import { z } from "zod";
 
+import { getAppOriginFromRequest } from "../lib/app-origin";
 import { assertValidSubscriptionData } from "../lib/subscription-validation";
-
-const APP_URL = getAppUrl();
 
 // Environment variable validation
 const requiredEnvVars = {
@@ -30,10 +29,10 @@ function validateStripeConfig() {
     }
   }
 
-  // Validate redirect URLs we send to Stripe (must include scheme).
+  // Validate env-based base URL fallback (must include scheme).
   try {
     // eslint-disable-next-line no-new
-    new URL(APP_URL);
+    new URL(getAppUrl());
   } catch {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
@@ -333,6 +332,25 @@ export const subscriptionRouter = router({
         });
       }
 
+      // Prevent duplicate subscriptions - user already has active paid subscription
+      if (subscription.stripeSubscriptionId) {
+        const requestedInterval = input.interval === "monthly" ? "MONTH" : "YEAR";
+
+        if (subscription.billingInterval === requestedInterval) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Već imate aktivnu pretplatu za ovaj plan. Koristite portal za upravljanje pretplatom.",
+          });
+        }
+
+        // Different interval = upgrade/downgrade - should use dedicated mutation
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Za promenu plana koristite opciju za nadogradnju.",
+        });
+      }
+
       // Calculate trial end for Stripe
       // Monthly: If user is in trial, delay billing until trial ends
       // Yearly: Charge immediately (discount of 2 months is already applied in price)
@@ -345,6 +363,17 @@ export const subscriptionRouter = router({
         trialEndTimestamp = Math.floor(subscription.trialEndsAt.getTime() / 1000);
       }
       // Yearly subscriptions charge immediately (no trial_end)
+
+      const appOrigin = getAppOriginFromRequest(ctx.req);
+      try {
+        // eslint-disable-next-line no-new
+        new URL(appOrigin);
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Invalid request origin; cannot create Stripe redirect URLs.",
+        });
+      }
 
       const session = await stripe.checkout.sessions.create({
         customer: subscription.stripeCustomerId,
@@ -363,8 +392,8 @@ export const subscriptionRouter = router({
             userId: String(ctx.session.user.id),
           },
         },
-        success_url: `${APP_URL}/dashboard/settings/billing?success=true`,
-        cancel_url: `${APP_URL}/dashboard/settings/billing?canceled=true`,
+        success_url: `${appOrigin}/dashboard/settings/billing?success=true`,
+        cancel_url: `${appOrigin}/dashboard/settings/billing?canceled=true`,
         metadata: {
           userId: String(ctx.session.user.id),
         },
@@ -388,9 +417,10 @@ export const subscriptionRouter = router({
       });
     }
 
+    const appOrigin = getAppOriginFromRequest(ctx.req);
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
-      return_url: `${APP_URL}/dashboard/settings/billing`,
+      return_url: `${appOrigin}/dashboard/settings/billing`,
     });
 
     return { url: session.url };
@@ -457,13 +487,14 @@ export const subscriptionRouter = router({
 
     // Send cancellation confirmation email (don't block on failure)
     if (subscription.currentPeriodEnd) {
+      const appOrigin = getAppOriginFromRequest(ctx.req);
       emailService
         .sendSubscriptionCanceledEmail({
           userEmail: subscription.user.email,
           userName: subscription.user.name || "Korisniče",
           salonName: subscription.user.salonName,
           currentPeriodEnd: subscription.currentPeriodEnd,
-          resumeUrl: `${APP_URL}/dashboard/settings/billing`,
+          resumeUrl: `${appOrigin}/dashboard/settings/billing`,
         })
         .catch((err) => {
           // Log but don't fail the mutation
@@ -518,6 +549,131 @@ export const subscriptionRouter = router({
     }
 
     return { success: true };
+  }),
+
+  /**
+   * Schedule upgrade from monthly to yearly subscription
+   * Upgrade takes effect at end of current billing period (no proration)
+   */
+  scheduleUpgradeToYearly: protectedProcedure.mutation(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription?.stripeSubscriptionId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Nemate aktivnu pretplatu za nadogradnju.",
+      });
+    }
+
+    if (subscription.billingInterval === "YEAR") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Već imate godišnju pretplatu.",
+      });
+    }
+
+    if (subscription.cancelAtPeriodEnd) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Ne možete nadograditi otkazanu pretplatu. Prvo nastavite pretplatu.",
+      });
+    }
+
+    // Fetch current subscription from Stripe to get item ID
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId
+    );
+    const subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+    if (!subscriptionItemId) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Greška pri dobijanju podataka o pretplati.",
+      });
+    }
+
+    // Schedule upgrade at end of current billing period
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [
+        {
+          id: subscriptionItemId,
+          price: PRICES.yearly,
+        },
+      ],
+      proration_behavior: "none", // Switch at period end, no immediate charge
+    });
+
+    // Note: Don't update DB billingInterval here - webhook will handle it
+    // when subscription.updated event fires at period end
+
+    return {
+      success: true,
+      effectiveDate: subscription.currentPeriodEnd,
+    };
+  }),
+
+  /**
+   * Schedule downgrade from yearly to monthly subscription
+   * Change takes effect at end of current billing period (no proration)
+   */
+  scheduleDowngradeToMonthly: protectedProcedure.mutation(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription?.stripeSubscriptionId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Nemate aktivnu pretplatu za promenu plana.",
+      });
+    }
+
+    if (subscription.billingInterval === "MONTH") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Već imate mesečnu pretplatu.",
+      });
+    }
+
+    if (subscription.cancelAtPeriodEnd) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Ne možete promeniti plan za otkazanu pretplatu. Prvo nastavite pretplatu.",
+      });
+    }
+
+    // Fetch current subscription from Stripe to get item ID
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId
+    );
+    const subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+    if (!subscriptionItemId) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Greška pri dobijanju podataka o pretplati.",
+      });
+    }
+
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      items: [
+        {
+          id: subscriptionItemId,
+          price: PRICES.monthly,
+        },
+      ],
+      proration_behavior: "none",
+    });
+
+    // Note: Don't update DB billingInterval here - webhook will handle it
+    // when subscription.updated event fires at period end
+
+    return {
+      success: true,
+      effectiveDate: subscription.currentPeriodEnd,
+    };
   }),
 
   /**
