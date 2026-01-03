@@ -272,10 +272,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const periodStart = subscriptionItem?.current_period_start;
   const periodEnd = subscriptionItem?.current_period_end;
 
-  // Fetch existing subscription to get trial dates for validation
-  const existing = await prisma.subscription.findUnique({
-    where: { stripeCustomerId: customerId },
-  });
+  // Extract trial dates from Stripe subscription (if in trial)
+  const trialStart = stripeSubscription.trial_start;
+  const trialEnd = stripeSubscription.trial_end;
+  const trialStartedAt = trialStart ? new Date(trialStart * 1000) : null;
+  const trialEndsAt = trialEnd ? new Date(trialEnd * 1000) : null;
 
   // Validate subscription data before updating
   const validation = validateSubscriptionData({
@@ -283,8 +284,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     stripeSubscriptionId: subscriptionId,
     stripePriceId: priceId,
     billingInterval,
-    trialStartedAt: existing?.trialStartedAt,
-    trialEndsAt: existing?.trialEndsAt,
+    trialStartedAt,
+    trialEndsAt,
   });
 
   if (!validation.valid) {
@@ -306,11 +307,45 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       status,
       currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+      trialStartedAt,
+      trialEndsAt,
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+          name: true,
+          salonName: true,
+        },
+      },
     },
   });
 
   // Invalidate subscription cache to ensure fresh status on next auth check
   await invalidateSubscriptionCache(updatedSub.userId);
+
+  // Send subscription success email (only for ACTIVE status, not TRIALING)
+  if (status === "ACTIVE") {
+    try {
+      const planName = billingInterval === "YEAR" ? "Godišnji Pro" : "Mesečni Pro";
+      await emailService.sendSubscriptionSuccessEmail({
+        userEmail: updatedSub.user.email,
+        userName: updatedSub.user.name || "Korisniče",
+        salonName: updatedSub.user.salonName,
+        planName,
+        dashboardUrl: `${APP_URL}/dashboard`,
+      });
+      logger.info("Subscription success email sent", {
+        customerId,
+        userId: updatedSub.userId,
+      });
+    } catch (emailError) {
+      logger.error("Failed to send subscription success email", {
+        error: emailError,
+        customerId,
+      });
+    }
+  }
 }
 
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
@@ -325,10 +360,11 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
   const periodStart = subscriptionItem?.current_period_start;
   const periodEnd = subscriptionItem?.current_period_end;
 
-  // Fetch existing subscription to get trial dates for validation
-  const existing = await prisma.subscription.findUnique({
-    where: { stripeCustomerId: customerId },
-  });
+  // Extract trial dates from Stripe subscription (if in trial)
+  const trialStart = stripeSubscription.trial_start;
+  const trialEnd = stripeSubscription.trial_end;
+  const trialStartedAt = trialStart ? new Date(trialStart * 1000) : null;
+  const trialEndsAt = trialEnd ? new Date(trialEnd * 1000) : null;
 
   // Validate subscription data before updating
   const validation = validateSubscriptionData({
@@ -336,8 +372,8 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
     stripeSubscriptionId: stripeSubscription.id,
     stripePriceId: priceId,
     billingInterval,
-    trialStartedAt: existing?.trialStartedAt,
-    trialEndsAt: existing?.trialEndsAt,
+    trialStartedAt,
+    trialEndsAt,
   });
 
   if (!validation.valid) {
@@ -359,6 +395,8 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
       status,
       currentPeriodStart: periodStart ? new Date(periodStart * 1000) : null,
       currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null,
+      trialStartedAt,
+      trialEndsAt,
     },
   });
 
@@ -411,14 +449,21 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   const status = statusMap[stripeSubscription.status] || "ACTIVE";
   const billingInterval = interval === "year" ? "YEAR" : "MONTH";
 
+  // Extract trial dates from Stripe subscription (if in trial)
+  // Use Stripe values if available, otherwise keep existing values
+  const trialStart = stripeSubscription.trial_start;
+  const trialEnd = stripeSubscription.trial_end;
+  const trialStartedAt = trialStart ? new Date(trialStart * 1000) : existing.trialStartedAt;
+  const trialEndsAt = trialEnd ? new Date(trialEnd * 1000) : existing.trialEndsAt;
+
   // Validate subscription data before updating
   const validation = validateSubscriptionData({
     status,
     stripeSubscriptionId: stripeSubscription.id,
     stripePriceId: priceId,
     billingInterval,
-    trialStartedAt: existing.trialStartedAt,
-    trialEndsAt: existing.trialEndsAt,
+    trialStartedAt,
+    trialEndsAt,
   });
 
   if (!validation.valid) {
@@ -444,6 +489,8 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
       canceledAt: stripeSubscription.canceled_at
         ? new Date(stripeSubscription.canceled_at * 1000)
         : null,
+      trialStartedAt,
+      trialEndsAt,
     },
   });
 
@@ -506,13 +553,48 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
     throw new Error(`Invalid subscription data: ${validation.errors.join(", ")}`);
   }
 
+  // Check if transitioning from TRIALING to ACTIVE (first payment after trial)
+  const wasTrialing = existing.status === "TRIALING";
+
   const updatedSub = await prisma.subscription.update({
     where: { stripeCustomerId: customerId },
     data: { status: "ACTIVE" },
+    include: {
+      user: {
+        select: {
+          email: true,
+          name: true,
+          salonName: true,
+        },
+      },
+    },
   });
 
   // Invalidate subscription cache to ensure fresh status on next auth check
   await invalidateSubscriptionCache(updatedSub.userId);
+
+  // Send subscription success email when transitioning from trial to active
+  if (wasTrialing) {
+    try {
+      const planName = existing.billingInterval === "YEAR" ? "Godišnji Pro" : "Mesečni Pro";
+      await emailService.sendSubscriptionSuccessEmail({
+        userEmail: updatedSub.user.email,
+        userName: updatedSub.user.name || "Korisniče",
+        salonName: updatedSub.user.salonName,
+        planName,
+        dashboardUrl: `${APP_URL}/dashboard`,
+      });
+      logger.info("Subscription success email sent (trial converted)", {
+        customerId,
+        userId: updatedSub.userId,
+      });
+    } catch (emailError) {
+      logger.error("Failed to send subscription success email", {
+        error: emailError,
+        customerId,
+      });
+    }
+  }
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {

@@ -56,3 +56,8 @@ export interface SubscriptionCanceledEmailData extends SubscriptionEmailData {
 export interface SubscriptionExpiredEmailData extends SubscriptionEmailData {
   billingUrl: string;
 }
+
+export interface SubscriptionSuccessEmailData extends SubscriptionEmailData {
+  planName: string;
+  dashboardUrl: string;
+}

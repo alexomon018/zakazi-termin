@@ -1,9 +1,10 @@
 import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 import { getSession } from "@/lib/auth";
-import { getAppUrl } from "@/lib/utils";
 import { prisma } from "@salonko/prisma";
+import { getAppOriginFromHeaders } from "@salonko/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { Calendar, Clock, Users } from "lucide-react";
+import { headers } from "next/headers";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -11,6 +12,8 @@ export default async function DashboardPage() {
   if (!session) {
     return null;
   }
+
+  const origin = getAppOriginFromHeaders(await headers());
 
   // Fetch stats
   const [upcomingBookings, eventTypes, todayBookings] = await Promise.all([
@@ -114,7 +117,7 @@ export default async function DashboardPage() {
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
         <code className="block px-3 py-2 text-sm text-blue-900 bg-white rounded border border-blue-200 dark:bg-gray-800 dark:border-blue-800 dark:text-blue-300">
-          {getAppUrl()}/{session.user.salonName}
+          {origin}/{session.user.salonName}
         </code>
       </div>
     </div>
