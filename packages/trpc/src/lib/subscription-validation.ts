@@ -15,10 +15,14 @@ import type { BillingInterval, SubscriptionStatus } from "@salonko/prisma";
  */
 const ALLOWED_TRANSITIONS: Record<SubscriptionStatus, SubscriptionStatus[]> = {
   TRIALING: ["ACTIVE", "EXPIRED"],
-  ACTIVE: ["PAST_DUE", "CANCELED", "EXPIRED"],
-  PAST_DUE: ["ACTIVE", "CANCELED", "EXPIRED"],
+  ACTIVE: ["PAST_DUE", "CANCELED", "EXPIRED", "PAUSED"],
+  PAST_DUE: ["ACTIVE", "CANCELED", "EXPIRED", "UNPAID"],
   CANCELED: ["ACTIVE"], // resubscribe
   EXPIRED: ["TRIALING", "ACTIVE"], // new subscription
+  INCOMPLETE: ["ACTIVE", "INCOMPLETE_EXPIRED"], // payment pending
+  INCOMPLETE_EXPIRED: ["TRIALING", "ACTIVE"], // can restart
+  UNPAID: ["ACTIVE", "CANCELED", "EXPIRED"], // payment failed after retries
+  PAUSED: ["ACTIVE", "CANCELED"], // resume or cancel
 };
 
 export interface SubscriptionData {
@@ -54,6 +58,9 @@ export function validateSubscriptionData(data: SubscriptionData): ValidationResu
     case "ACTIVE":
     case "PAST_DUE":
     case "CANCELED":
+    case "INCOMPLETE":
+    case "UNPAID":
+    case "PAUSED":
       if (!data.stripeSubscriptionId) {
         errors.push(`stripeSubscriptionId is required for ${data.status} status`);
       }
@@ -66,6 +73,7 @@ export function validateSubscriptionData(data: SubscriptionData): ValidationResu
       break;
 
     case "EXPIRED":
+    case "INCOMPLETE_EXPIRED":
       // No specific requirements for expired subscriptions
       break;
   }
