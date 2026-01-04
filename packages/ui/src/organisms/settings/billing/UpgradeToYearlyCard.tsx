@@ -16,7 +16,7 @@ export function UpgradeToYearlyCard({
   isUpgrading,
 }: UpgradeToYearlyCardProps) {
   return (
-    <Card>
+    <Card data-testid="upgrade-yearly-card">
       <CardHeader>
         <CardTitle className="text-lg">Nadogradite na godišnju pretplatu</CardTitle>
         <CardDescription className="text-sm">
@@ -46,7 +46,12 @@ export function UpgradeToYearlyCard({
             )}
           </p>
         </div>
-        <Button onClick={onOpenUpgradeDialog} disabled={isUpgrading} className="w-full">
+        <Button
+          onClick={onOpenUpgradeDialog}
+          disabled={isUpgrading}
+          className="w-full"
+          data-testid="upgrade-yearly-button"
+        >
           {isUpgrading ? (
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
           ) : (

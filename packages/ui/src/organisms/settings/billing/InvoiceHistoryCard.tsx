@@ -11,7 +11,7 @@ type InvoiceHistoryCardProps = {
 
 export function InvoiceHistoryCard({ invoices, isLoading }: InvoiceHistoryCardProps) {
   return (
-    <Card>
+    <Card data-testid="invoice-history-card">
       <CardHeader>
         <CardTitle className="flex gap-2 items-center text-lg">
           <FileText className="w-5 h-5" />

@@ -24,7 +24,7 @@ export function UpgradeToYearlyDialog({
 }: UpgradeToYearlyDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent data-testid="upgrade-yearly-dialog">
         <DialogHeader>
           <DialogTitle>Nadogradnja na godišnji plan</DialogTitle>
           <DialogDescription>
@@ -36,7 +36,7 @@ export function UpgradeToYearlyDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Odustani
           </Button>
-          <Button onClick={onConfirm} disabled={isPending}>
+          <Button onClick={onConfirm} disabled={isPending} data-testid="confirm-upgrade-button">
             {isPending ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
             {isPending ? "Nadogradnja..." : "Nadogradi"}
           </Button>

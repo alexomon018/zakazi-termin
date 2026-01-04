@@ -23,7 +23,7 @@ export function ManageSubscriptionCard({
   isCanceling,
 }: ManageSubscriptionCardProps) {
   return (
-    <Card>
+    <Card data-testid="manage-subscription-card">
       <CardHeader>
         <CardTitle className="text-lg">Upravljanje pretplatom</CardTitle>
         <CardDescription className="text-sm">
@@ -36,6 +36,7 @@ export function ManageSubscriptionCard({
           onClick={onManagePayment}
           disabled={isManagingPayment}
           className="min-w-[200px]"
+          data-testid="manage-payment-button"
         >
           {isManagingPayment ? (
             <>
@@ -53,6 +54,7 @@ export function ManageSubscriptionCard({
             onClick={onResume}
             disabled={isResuming}
             className="min-w-[160px]"
+            data-testid="resume-subscription-button"
           >
             {isResuming ? (
               <>
@@ -69,6 +71,7 @@ export function ManageSubscriptionCard({
             className="text-destructive hover:text-destructive min-w-[140px]"
             onClick={onOpenCancelDialog}
             disabled={isCanceling}
+            data-testid="cancel-subscription-button"
           >
             {isCanceling ? (
               <>

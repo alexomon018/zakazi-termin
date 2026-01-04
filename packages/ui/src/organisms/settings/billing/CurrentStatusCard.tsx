@@ -10,7 +10,7 @@ type CurrentStatusCardProps = {
 
 export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
   return (
-    <Card>
+    <Card data-testid="billing-status-card">
       <CardHeader>
         <CardTitle className="flex gap-2 items-center text-lg">
           <Crown className="w-5 h-5" />
@@ -19,7 +19,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
       </CardHeader>
       <CardContent>
         {status.isInTrial ? (
-          <div className="space-y-1">
+          <div className="space-y-1" data-testid="trial-active">
             <p className="text-base font-semibold text-green-600 dark:text-green-400">
               Probni period aktivan
             </p>
@@ -32,7 +32,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             </p>
           </div>
         ) : status.status === "ACTIVE" ? (
-          <div className="space-y-1">
+          <div className="space-y-1" data-testid="subscription-active">
             <p className="text-base font-semibold text-green-600 dark:text-green-400">
               Aktivna pretplata
             </p>
@@ -61,7 +61,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             </p>
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1" data-testid="subscription-expired">
             <p className="text-base font-semibold text-red-600 dark:text-red-400">
               {status.status === "PAST_DUE" ? "Plaćanje neuspešno" : "Pretplata istekla"}
             </p>

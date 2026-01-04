@@ -31,6 +31,13 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      testIgnore: "**/payment/**", // Payment tests run in separate project
+    },
+    {
+      name: "chromium-payment",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: "**/payment/**/*.e2e.ts",
+      fullyParallel: false, // Run payment tests serially to avoid race conditions
     },
   ],
 

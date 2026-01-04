@@ -16,6 +16,7 @@ export const ROUTES = {
   SETTINGS_PROFILE: "/dashboard/settings/profile",
   SETTINGS_APPEARANCE: "/dashboard/settings/appearance",
   SETTINGS_OUT_OF_OFFICE: "/dashboard/settings/out-of-office",
+  SETTINGS_BILLING: "/dashboard/settings/billing",
 
   // Public booking routes
   publicBookingPage: (salonName: string) => `/${salonName}`,
@@ -82,6 +83,34 @@ export const SELECTORS = {
     NAME_INPUT: 'input[name="name"]',
     EMAIL_INPUT: 'input[name="email"]',
     NOTES_INPUT: 'textarea[name="notes"]',
+  },
+
+  // Billing
+  BILLING: {
+    STATUS_CARD: '[data-testid="billing-status-card"]',
+    TRIAL_ACTIVE: '[data-testid="trial-active"]',
+    SUBSCRIPTION_ACTIVE: '[data-testid="subscription-active"]',
+    SUBSCRIPTION_EXPIRED: '[data-testid="subscription-expired"]',
+    PLAN_PICKER: '[data-testid="billing-plan-picker"]',
+    PLAN_MONTHLY: '[data-testid="plan-monthly"]',
+    PLAN_YEARLY: '[data-testid="plan-yearly"]',
+    SUBSCRIBE_BUTTON: '[data-testid="subscribe-button"]',
+    MANAGE_SUBSCRIPTION_CARD: '[data-testid="manage-subscription-card"]',
+    MANAGE_PAYMENT_BUTTON: '[data-testid="manage-payment-button"]',
+    CANCEL_SUBSCRIPTION_BUTTON: '[data-testid="cancel-subscription-button"]',
+    RESUME_SUBSCRIPTION_BUTTON: '[data-testid="resume-subscription-button"]',
+    UPGRADE_YEARLY_CARD: '[data-testid="upgrade-yearly-card"]',
+    UPGRADE_YEARLY_BUTTON: '[data-testid="upgrade-yearly-button"]',
+    UPGRADE_YEARLY_DIALOG: '[data-testid="upgrade-yearly-dialog"]',
+    CONFIRM_UPGRADE_BUTTON: '[data-testid="confirm-upgrade-button"]',
+    DOWNGRADE_MONTHLY_CARD: '[data-testid="downgrade-monthly-card"]',
+    DOWNGRADE_MONTHLY_BUTTON: '[data-testid="downgrade-monthly-button"]',
+    DOWNGRADE_MONTHLY_DIALOG: '[data-testid="downgrade-monthly-dialog"]',
+    CONFIRM_DOWNGRADE_BUTTON: '[data-testid="confirm-downgrade-button"]',
+    CANCEL_SUBSCRIPTION_DIALOG: '[data-testid="cancel-subscription-dialog"]',
+    CONFIRM_CANCEL_BUTTON: '[data-testid="confirm-cancel-button"]',
+    DISMISS_CANCEL_BUTTON: '[data-testid="dismiss-cancel-button"]',
+    INVOICE_HISTORY_CARD: '[data-testid="invoice-history-card"]',
   },
 } as const;
 
