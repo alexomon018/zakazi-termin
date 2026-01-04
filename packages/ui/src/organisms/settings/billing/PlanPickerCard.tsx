@@ -16,7 +16,7 @@ export function PlanPickerCard({
   isSubscribing,
 }: PlanPickerCardProps) {
   return (
-    <Card>
+    <Card data-testid="billing-plan-picker">
       <CardHeader>
         <CardTitle className="text-lg">Izaberite plan</CardTitle>
         <CardDescription className="text-sm">
@@ -28,6 +28,7 @@ export function PlanPickerCard({
           <button
             type="button"
             onClick={() => onSelectInterval("monthly")}
+            data-testid="plan-monthly"
             className={`rounded-xl border-2 p-4 text-left transition-all ${
               selectedInterval === "monthly"
                 ? "border-primary bg-primary/5"
@@ -44,6 +45,7 @@ export function PlanPickerCard({
           <button
             type="button"
             onClick={() => onSelectInterval("yearly")}
+            data-testid="plan-yearly"
             className={`relative rounded-xl border-2 p-4 text-left transition-all ${
               selectedInterval === "yearly"
                 ? "border-primary bg-primary/5"
@@ -63,7 +65,13 @@ export function PlanPickerCard({
           </button>
         </div>
 
-        <Button onClick={onSubscribe} disabled={isSubscribing} className="w-full" size="lg">
+        <Button
+          onClick={onSubscribe}
+          disabled={isSubscribing}
+          className="w-full"
+          size="lg"
+          data-testid="subscribe-button"
+        >
           {isSubscribing ? (
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
           ) : (

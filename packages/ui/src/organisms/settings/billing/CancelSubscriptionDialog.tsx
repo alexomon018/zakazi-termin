@@ -24,7 +24,7 @@ export function CancelSubscriptionDialog({
 }: CancelSubscriptionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent data-testid="cancel-subscription-dialog">
         <DialogHeader>
           <DialogTitle>Otkaži pretplatu</DialogTitle>
           <DialogDescription>
@@ -33,10 +33,20 @@ export function CancelSubscriptionDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+            data-testid="dismiss-cancel-button"
+          >
             Odustani
           </Button>
-          <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
+          <Button
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isPending}
+            data-testid="confirm-cancel-button"
+          >
             {isPending ? <Loader2 className="mr-2 w-4 h-4 animate-spin" /> : null}
             {isPending ? "Otkazivanje..." : "Otkaži pretplatu"}
           </Button>

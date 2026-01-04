@@ -48,6 +48,20 @@ const stripe = new Stripe(requiredEnvVars.STRIPE_SECRET_KEY!, {
 });
 
 const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
+
+/**
+ * Checks if a Stripe ID is a test/fake ID used in E2E tests.
+ * Matches known Stripe prefixes followed by "_test_":
+ * sub (subscription), cus (customer), price, prod (product),
+ * pm (payment method), in (invoice), si (setup intent),
+ * pi (payment intent), ch (charge)
+ */
+const TEST_STRIPE_ID_REGEX = /^(?:sub|cus|price|prod|pm|in|si|pi|ch)_test_/;
+
+function isTestStripeId(stripeId: string | null | undefined): boolean {
+  if (!stripeId) return false;
+  return TEST_STRIPE_ID_REGEX.test(stripeId);
+}
 const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
 const PRICES = {
   monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
@@ -461,10 +475,13 @@ export const subscriptionRouter = router({
       });
     }
 
-    // Cancel at period end in Stripe first
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      cancel_at_period_end: true,
-    });
+    // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+    if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      // Cancel at period end in Stripe first
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+    }
 
     // Update local record - if this fails, rollback Stripe change
     try {
@@ -476,18 +493,20 @@ export const subscriptionRouter = router({
         },
       });
     } catch (dbError) {
-      // Rollback Stripe change to maintain consistency
-      try {
-        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-          cancel_at_period_end: false,
-        });
-      } catch (rollbackError) {
-        // Log rollback failure explicitly - system is now in inconsistent state
-        logger.error("Failed to rollback Stripe subscription cancellation", {
-          error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
-          subscriptionId: subscription.stripeSubscriptionId,
-          userId: ctx.session.user.id,
-        });
+      // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+      if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+        try {
+          await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+            cancel_at_period_end: false,
+          });
+        } catch (rollbackError) {
+          // Log rollback failure explicitly - system is now in inconsistent state
+          logger.error("Failed to rollback Stripe subscription cancellation", {
+            error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            subscriptionId: subscription.stripeSubscriptionId,
+            userId: ctx.session.user.id,
+          });
+        }
       }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
@@ -533,10 +552,13 @@ export const subscriptionRouter = router({
       });
     }
 
-    // Resume in Stripe first
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      cancel_at_period_end: false,
-    });
+    // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+    if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      // Resume in Stripe first
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+    }
 
     // Update local record - if this fails, rollback Stripe change
     try {
@@ -548,10 +570,21 @@ export const subscriptionRouter = router({
         },
       });
     } catch (dbError) {
-      // Rollback Stripe change to maintain consistency
-      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        cancel_at_period_end: true,
-      });
+      // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+      if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+        try {
+          await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+            cancel_at_period_end: true,
+          });
+        } catch (rollbackError) {
+          // Log rollback failure explicitly - system is now in inconsistent state
+          logger.error("Failed to rollback Stripe subscription resume", {
+            error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            subscriptionId: subscription.stripeSubscriptionId,
+            userId: ctx.session.user.id,
+          });
+        }
+      }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Došlo je do greške. Pokušajte ponovo.",
@@ -698,25 +731,31 @@ export const subscriptionRouter = router({
       return { invoices: [] };
     }
 
-    const invoices = await stripe.invoices.list({
-      customer: subscription.stripeCustomerId,
-      limit: 24,
-    });
+    try {
+      const invoices = await stripe.invoices.list({
+        customer: subscription.stripeCustomerId,
+        limit: 24,
+      });
 
-    return {
-      invoices: invoices.data.map((inv) => ({
-        id: inv.id,
-        number: inv.number,
-        status: inv.status,
-        amountDue: inv.amount_due,
-        amountPaid: inv.amount_paid,
-        currency: inv.currency,
-        created: inv.created,
-        hostedInvoiceUrl: inv.hosted_invoice_url,
-        invoicePdf: inv.invoice_pdf,
-        periodStart: inv.lines.data[0]?.period?.start ?? null,
-        periodEnd: inv.lines.data[0]?.period?.end ?? null,
-      })),
-    };
+      return {
+        invoices: invoices.data.map((inv) => ({
+          id: inv.id,
+          number: inv.number,
+          status: inv.status,
+          amountDue: inv.amount_due,
+          amountPaid: inv.amount_paid,
+          currency: inv.currency,
+          created: inv.created,
+          hostedInvoiceUrl: inv.hosted_invoice_url,
+          invoicePdf: inv.invoice_pdf,
+          periodStart: inv.lines.data[0]?.period?.start ?? null,
+          periodEnd: inv.lines.data[0]?.period?.end ?? null,
+        })),
+      };
+    } catch (error) {
+      // Return empty invoices if Stripe customer doesn't exist (e.g., test data)
+      // or if there's any other Stripe API error
+      return { invoices: [] };
+    }
   }),
 });

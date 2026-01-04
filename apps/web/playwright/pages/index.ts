@@ -21,6 +21,8 @@ export {
 
 export { AvailabilityPage } from "./AvailabilityPage";
 
+export { BillingPage } from "./BillingPage";
+
 // Public Pages
 export {
   PublicProfilePage,

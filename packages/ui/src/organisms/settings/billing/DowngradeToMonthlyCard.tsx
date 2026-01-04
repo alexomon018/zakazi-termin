@@ -16,7 +16,7 @@ export function DowngradeToMonthlyCard({
   isDowngrading,
 }: DowngradeToMonthlyCardProps) {
   return (
-    <Card>
+    <Card data-testid="downgrade-monthly-card">
       <CardHeader>
         <CardTitle className="text-lg">Pređite na mesečnu pretplatu</CardTitle>
         <CardDescription className="text-sm">
@@ -51,6 +51,7 @@ export function DowngradeToMonthlyCard({
           disabled={isDowngrading}
           className="w-full"
           variant="outline"
+          data-testid="downgrade-monthly-button"
         >
           {isDowngrading ? (
             <Loader2 className="mr-2 w-4 h-4 animate-spin" />
