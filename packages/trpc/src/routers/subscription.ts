@@ -51,11 +51,16 @@ const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES ||
 
 /**
  * Checks if a Stripe ID is a test/fake ID used in E2E tests.
- * Test IDs follow the pattern: sub_test_*, cus_test_*, price_test_*, etc.
+ * Matches known Stripe prefixes followed by "_test_":
+ * sub (subscription), cus (customer), price, prod (product),
+ * pm (payment method), in (invoice), si (setup intent),
+ * pi (payment intent), ch (charge)
  */
+const TEST_STRIPE_ID_REGEX = /^(?:sub|cus|price|prod|pm|in|si|pi|ch)_test_/;
+
 function isTestStripeId(stripeId: string | null | undefined): boolean {
   if (!stripeId) return false;
-  return stripeId.includes("_test_");
+  return TEST_STRIPE_ID_REGEX.test(stripeId);
 }
 const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
 const PRICES = {
@@ -567,9 +572,18 @@ export const subscriptionRouter = router({
     } catch (dbError) {
       // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
       if (!isTestStripeId(subscription.stripeSubscriptionId)) {
-        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-          cancel_at_period_end: true,
-        });
+        try {
+          await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+            cancel_at_period_end: true,
+          });
+        } catch (rollbackError) {
+          // Log rollback failure explicitly - system is now in inconsistent state
+          logger.error("Failed to rollback Stripe subscription resume", {
+            error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            subscriptionId: subscription.stripeSubscriptionId,
+            userId: ctx.session.user.id,
+          });
+        }
       }
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

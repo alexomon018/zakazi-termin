@@ -91,7 +91,7 @@ Tests auto-setup database schema via global setup. Requires `.env.test` with `DA
 yarn tsc
 ```
 
-and aslso you can run biome check to make sure there are no errors.
+and also you can run biome check to make sure there are no errors.
 ```bash
 yarn lint:fix
 ```
