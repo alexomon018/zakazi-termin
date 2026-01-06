@@ -56,19 +56,13 @@ if [ -n "$BRANCH_INFO" ] && [ "$BRANCH_INFO" != "null" ]; then
       exit 0
     fi
 
-    # Construct the DATABASE_URL
-    DB_URL="postgresql://${ROLE_NAME}:${NEON_DB_PASSWORD}@${HOST}/neondb?sslmode=require"
-
+    # Output components separately (secrets can't be passed in job outputs)
     echo "branch_exists=true" >> "$GITHUB_OUTPUT"
     echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
-    # Use heredoc for db_url to handle special characters
-    {
-      echo "db_url<<EOF"
-      echo "$DB_URL"
-      echo "EOF"
-    } >> "$GITHUB_OUTPUT"
+    echo "db_host=$HOST" >> "$GITHUB_OUTPUT"
+    echo "db_user=$ROLE_NAME" >> "$GITHUB_OUTPUT"
     echo "✅ Vercel preview branch found: $BRANCH_NAME"
-    echo "DEBUG: db_url output written to GITHUB_OUTPUT"
+    echo "DEBUG: db_host=$HOST, db_user=$ROLE_NAME output written to GITHUB_OUTPUT"
   else
     echo "branch_exists=false" >> "$GITHUB_OUTPUT"
     echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"

@@ -21,7 +21,8 @@ jobs:
     name: Get Neon Preview Branch
     runs-on: ubuntu-latest
     outputs:
-      db_url: ${{ steps.get-branch.outputs.db_url }}
+      db_host: ${{ steps.get-branch.outputs.db_host }}
+      db_user: ${{ steps.get-branch.outputs.db_user }}
       branch_name: ${{ steps.get-branch.outputs.branch_name }}
       branch_exists: ${{ steps.get-branch.outputs.branch_exists }}
 
@@ -108,17 +109,17 @@ jobs:
       - name: Generate Prisma Client
         run: yarn db:generate
         env:
-          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+          DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
 
       - name: Apply Migrations
         run: yarn workspace @salonko/prisma prisma migrate deploy
         env:
-          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+          DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
 
       - name: Verify Schema
         run: yarn workspace @salonko/prisma prisma migrate status
         env:
-          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+          DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
 
   # e2e-tests:
   #   name: E2E Tests
