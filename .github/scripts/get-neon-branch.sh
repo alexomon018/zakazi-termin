@@ -39,6 +39,23 @@ if [ -n "$BRANCH_INFO" ] && [ "$BRANCH_INFO" != "null" ]; then
       "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches/$BRANCH_ID/roles" \
       | jq -r '.roles[] | select(.name != "web_access") | .name' | head -1)
 
+    echo "DEBUG: HOST=$HOST"
+    echo "DEBUG: ROLE_NAME=$ROLE_NAME"
+
+    if [ -z "$ROLE_NAME" ] || [ "$ROLE_NAME" == "null" ]; then
+      echo "❌ ERROR: Could not get role name from Neon API"
+      echo "branch_exists=false" >> "$GITHUB_OUTPUT"
+      echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+      exit 0
+    fi
+
+    if [ -z "$NEON_DB_PASSWORD" ]; then
+      echo "❌ ERROR: NEON_DB_PASSWORD is not set"
+      echo "branch_exists=false" >> "$GITHUB_OUTPUT"
+      echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+      exit 0
+    fi
+
     # Construct the DATABASE_URL
     DB_URL="postgresql://${ROLE_NAME}:${NEON_DB_PASSWORD}@${HOST}/neondb?sslmode=require"
 
@@ -51,6 +68,7 @@ if [ -n "$BRANCH_INFO" ] && [ "$BRANCH_INFO" != "null" ]; then
       echo "EOF"
     } >> "$GITHUB_OUTPUT"
     echo "✅ Vercel preview branch found: $BRANCH_NAME"
+    echo "DEBUG: db_url output written to GITHUB_OUTPUT"
   else
     echo "branch_exists=false" >> "$GITHUB_OUTPUT"
     echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
