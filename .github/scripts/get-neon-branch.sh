@@ -10,7 +10,8 @@
 # Outputs (via GITHUB_OUTPUT):
 #   branch_exists - "true" or "false"
 #   branch_name - The branch name
-#   db_url - The constructed DATABASE_URL (only if branch exists)
+#   db_host - The database host (only if branch exists)
+#   db_user - The database user/role (only if branch exists)
 
 set -e
 

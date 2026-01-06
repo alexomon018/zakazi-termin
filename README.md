@@ -40,7 +40,7 @@ A modern SaaS appointment scheduling platform for salons and service businesses.
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                           Vercel                                │
 │  ┌───────────────────────────────────────────────────────────┐  │
@@ -175,7 +175,7 @@ The project uses **Playwright** for end-to-end testing with a Page Object patter
 
 ### Test Structure
 
-```
+```text
 apps/web/playwright/
 ├── fixtures/           # Custom test fixtures (users, prisma)
 ├── lib/                # Helpers, constants, setup/teardown
@@ -222,7 +222,7 @@ yarn test:db:stop
 
 The UI package uses **shadcn/ui** components organized following **Atomic Design** principles:
 
-```
+```text
 packages/ui/src/
 ├── atoms/              # Basic building blocks
 │   ├── Button.tsx      # CVA-based variants
