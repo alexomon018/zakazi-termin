@@ -111,13 +111,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
 
-      - name: Apply Migrations
-        run: yarn workspace @salonko/prisma prisma migrate deploy
-        env:
-          DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
-
-      - name: Verify Schema
-        run: yarn workspace @salonko/prisma prisma migrate status
+      - name: Apply Schema Changes
+        run: yarn workspace @salonko/prisma prisma db push --skip-generate
         env:
           DATABASE_URL: postgresql://${{ needs.get-preview-branch.outputs.db_user }}:${{ secrets.NEON_DB_PASSWORD }}@${{ needs.get-preview-branch.outputs.db_host }}/neondb?sslmode=require
 
