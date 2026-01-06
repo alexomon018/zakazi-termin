@@ -71,6 +71,25 @@ jobs:
       - name: Run TypeScript type check
         run: yarn typecheck
 
+  # Check for migration conflicts on PRs to main
+  migration-check:
+    name: Migration Safety Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for pending migrations
+        run: ./.github/scripts/check-migrations.sh
+
+      - name: Validate migration files
+        run: ./.github/scripts/validate-migrations.sh
+
   # e2e-tests:
   #   name: E2E Tests (Playwright)
   #   runs-on: ubuntu-latest

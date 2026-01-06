@@ -1,0 +1,72 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  NODE_VERSION: "22"
+  NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+jobs:
+  migrate-staging:
+    name: Apply Staging Migrations
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma Client
+        run: yarn db:generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEVELOP }}
+
+      - name: Check Migration Status
+        id: migration-status
+        run: ./.github/scripts/check-migration-status.sh
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEVELOP }}
+
+      - name: Apply Migrations
+        if: steps.migration-status.outputs.has_pending == 'true'
+        run: |
+          echo "Applying migrations to staging database..."
+          yarn workspace @salonko/prisma prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEVELOP }}
+
+      - name: Verify Schema
+        run: |
+          echo "Verifying final schema state..."
+          yarn workspace @salonko/prisma prisma migrate status
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEVELOP }}
+
+      - name: Summary
+        run: |
+          echo "## Staging Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | Staging |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | develop |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Migrations Applied** | ${{ steps.migration-status.outputs.has_pending == 'true' && 'Yes' || 'No (up to date)' }} |" >> $GITHUB_STEP_SUMMARY
