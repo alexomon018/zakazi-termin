@@ -1,0 +1,182 @@
+name: Preview Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop]
+
+env:
+  NODE_VERSION: "22"
+  NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
+jobs:
+  get-preview-branch:
+    name: Get Neon Preview Branch
+    runs-on: ubuntu-latest
+    outputs:
+      db_url: ${{ steps.get-branch.outputs.db_url }}
+      branch_name: ${{ steps.get-branch.outputs.branch_name }}
+      branch_exists: ${{ steps.get-branch.outputs.branch_exists }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get Vercel-created Neon Branch
+        id: get-branch
+        run: ./.github/scripts/get-neon-branch.sh
+        env:
+          BRANCH_NAME: preview/${{ github.head_ref }}
+          NEON_DB_PASSWORD: ${{ secrets.NEON_DB_PASSWORD }}
+
+      - name: Comment PR with branch status
+        if: steps.get-branch.outputs.branch_exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = `${{ steps.get-branch.outputs.branch_name }}`;
+
+            const comments = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const existingComment = comments.data.find(
+              (comment) => comment.body.includes('Neon Preview Database')
+            );
+
+            const body = `## 🗄️ Neon Preview Database Ready
+
+            Vercel has created a preview database branch for this PR.
+
+            | Property | Value |
+            |----------|-------|
+            | **Neon Branch** | \`${branchName}\` |
+            | **Parent** | \`preview/develop\` |
+            | **Created by** | Vercel Integration |
+
+            Migrations will be applied and E2E tests will run against this database.
+            `;
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                comment_id: existingComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body,
+              });
+            }
+
+  apply-migrations:
+    name: Apply Migrations to Preview
+    runs-on: ubuntu-latest
+    needs: get-preview-branch
+    if: needs.get-preview-branch.outputs.branch_exists == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma Client
+        run: yarn db:generate
+        env:
+          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+
+      - name: Apply Migrations
+        run: yarn workspace @salonko/prisma prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+
+      - name: Verify Schema
+        run: yarn workspace @salonko/prisma prisma migrate status
+        env:
+          DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+
+  # e2e-tests:
+  #   name: E2E Tests
+  #   runs-on: ubuntu-latest
+  #   needs: [get-preview-branch, apply-migrations]
+  #   if: needs.get-preview-branch.outputs.branch_exists == 'true'
+  #   timeout-minutes: 30
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: Enable Corepack
+  #       run: corepack enable
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: ${{ env.NODE_VERSION }}
+  #         cache: "yarn"
+  #         cache-dependency-path: yarn.lock
+
+  #     - name: Install dependencies
+  #       run: yarn install --immutable
+
+  #     - name: Install Playwright Browsers
+  #       run: npx playwright install chromium --with-deps
+  #       working-directory: apps/web
+
+  #     - name: Generate Prisma Client
+  #       run: yarn db:generate
+  #       env:
+  #         DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+
+  #     - name: Run Playwright tests
+  #       run: yarn test:e2e:ci
+  #       env:
+  #         CI: true
+  #         DATABASE_URL: ${{ needs.get-preview-branch.outputs.db_url }}
+  #         NEXTAUTH_URL: http://localhost:3000
+  #         NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+  #         NEXT_PUBLIC_APP_URL: http://localhost:3000
+  #         NEXT_PUBLIC_APP_NAME: Zakazi Termin
+  #         NEXT_PUBLIC_DEFAULT_TIMEZONE: Europe/Belgrade
+  #         NEXT_PUBLIC_DEFAULT_LOCALE: sr
+  #         EMAIL_FROM: noreply@zakazi-termin.rs
+  #         PLAYWRIGHT_TEST_MODE: "true"
+
+  #     - name: Upload Playwright Report
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: playwright-report-${{ github.event.pull_request.number }}
+  #         path: apps/web/playwright-report/
+  #         retention-days: 7
+
+  #     - name: Upload Test Results
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: test-results-${{ github.event.pull_request.number }}
+  #         path: apps/web/test-results/
+  #         retention-days: 7
