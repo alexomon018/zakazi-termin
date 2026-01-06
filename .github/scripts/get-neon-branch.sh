@@ -44,7 +44,12 @@ if [ -n "$BRANCH_INFO" ] && [ "$BRANCH_INFO" != "null" ]; then
 
     echo "branch_exists=true" >> "$GITHUB_OUTPUT"
     echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
-    echo "db_url=$DB_URL" >> "$GITHUB_OUTPUT"
+    # Use heredoc for db_url to handle special characters
+    {
+      echo "db_url<<EOF"
+      echo "$DB_URL"
+      echo "EOF"
+    } >> "$GITHUB_OUTPUT"
     echo "✅ Vercel preview branch found: $BRANCH_NAME"
   else
     echo "branch_exists=false" >> "$GITHUB_OUTPUT"
