@@ -15,7 +15,6 @@ jobs:
   migrate-staging:
     name: Apply Staging Migrations
     runs-on: ubuntu-latest
-    environment: staging
 
     steps:
       - name: Checkout code
