@@ -5,6 +5,10 @@ on:
     types: [opened, synchronize, reopened]
     branches: [develop]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   NODE_VERSION: "22"
   NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
