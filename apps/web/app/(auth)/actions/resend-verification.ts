@@ -45,9 +45,9 @@ export async function resendVerificationAction(
       };
     }
 
-    // Check cooldown based on createdAt
+    // Check cooldown based on lastSentAt
     const cooldownExpires = new Date(
-      pending.createdAt.getTime() + OTP_CONFIG.resendCooldownSeconds * 1000
+      pending.lastSentAt.getTime() + OTP_CONFIG.resendCooldownSeconds * 1000
     );
 
     if (cooldownExpires > new Date()) {
@@ -67,7 +67,7 @@ export async function resendVerificationAction(
         verificationCode,
         expires: getOTPExpiryDate(),
         attempts: 0, // Reset attempts on resend
-        createdAt: new Date(), // Update createdAt for cooldown tracking
+        lastSentAt: new Date(), // Update lastSentAt for cooldown tracking
       },
     });
 

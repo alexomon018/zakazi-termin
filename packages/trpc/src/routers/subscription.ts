@@ -1,10 +1,9 @@
 import { getAppUrl, logger } from "@salonko/config";
+import { checkoutRateLimiter } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
 import Stripe from "stripe";
 import { z } from "zod";
 
@@ -67,19 +66,6 @@ const PRICES = {
   monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
   yearly: requiredEnvVars.STRIPE_PRICE_YEARLY,
 };
-
-// Distributed rate limiting using Upstash Redis (serverless-compatible)
-// Falls back to allowing requests if Redis is not configured (development)
-let checkoutRateLimiter: Ratelimit | null = null;
-
-if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-  checkoutRateLimiter = new Ratelimit({
-    redis: Redis.fromEnv(),
-    limiter: Ratelimit.slidingWindow(10, "1 h"), // 10 checkout sessions per hour
-    prefix: "@salonko/checkout-ratelimit",
-    ephemeralCache: new Map(), // Local cache for better performance
-  });
-}
 
 async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)

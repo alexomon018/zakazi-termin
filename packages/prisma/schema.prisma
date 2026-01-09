@@ -193,6 +193,7 @@ model PendingRegistration {
   attempts         Int      @default(0)
 
   createdAt        DateTime @default(now())
+  lastSentAt       DateTime @default(now())
 
   @@index([email])
   @@index([expires])

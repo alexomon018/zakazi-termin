@@ -62,6 +62,7 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
             hashedPassword,
             verificationCode,
             expires: getOTPExpiryDate(),
+            lastSentAt: new Date(),
           },
         }),
       ]);

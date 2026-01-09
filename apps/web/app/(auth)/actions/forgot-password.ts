@@ -1,9 +1,16 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
-import { getAppUrl, logger } from "@salonko/config";
+import {
+  checkoutRateLimiter,
+  forgotPasswordEmailRateLimiter,
+  forgotPasswordIpRateLimiter,
+  getAppUrl,
+  logger,
+} from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
+import { headers } from "next/headers";
 import { z } from "zod";
 import type { ActionResult } from "./types";
 
@@ -29,6 +36,37 @@ export async function forgotPasswordAction(
 
     const { email } = result.data;
     const normalizedEmail = email.toLowerCase();
+
+    // Rate limit BEFORE DB lookups / email sends to reduce abuse and avoid email enumeration.
+    // We reuse the same shared Upstash setup/prefix as checkout (see `checkoutRateLimiter`)
+    // to keep keys/config consistent across the app.
+    const h = await headers();
+    const requestIp =
+      h.get("x-forwarded-for")?.split(",")[0]?.trim()?.slice(0, 128) ||
+      h.get("x-real-ip")?.trim()?.slice(0, 128) ||
+      "unknown";
+
+    const [ipLimitResult, emailLimitResult] = await Promise.all([
+      forgotPasswordIpRateLimiter
+        ? forgotPasswordIpRateLimiter.limit(`forgot-password:ip:${requestIp}`)
+        : Promise.resolve({ success: true }),
+      forgotPasswordEmailRateLimiter
+        ? forgotPasswordEmailRateLimiter.limit(`forgot-password:email:${normalizedEmail}`)
+        : Promise.resolve({ success: true }),
+    ]);
+
+    if (!ipLimitResult.success || !emailLimitResult.success) {
+      logger.warn("forgotPasswordAction rate limited", {
+        action: "forgotPasswordAction",
+        normalizedEmail,
+        requestIp,
+        ipAllowed: ipLimitResult.success,
+        emailAllowed: emailLimitResult.success,
+        checkoutRateLimiterConfigured: Boolean(checkoutRateLimiter),
+      });
+      // Always return success to prevent email enumeration
+      return { success: true, data: { message: "OK" } };
+    }
 
     // Find user
     const user = await prisma.user.findUnique({

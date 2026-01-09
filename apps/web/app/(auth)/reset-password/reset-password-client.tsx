@@ -54,7 +54,8 @@ export default function ResetPasswordClient() {
       }
 
       setIsSuccess(true);
-    } catch {
+    } catch (error) {
+      console.error(error);
       setError("Došlo je do greške. Pokušajte ponovo.");
     } finally {
       setIsLoading(false);
