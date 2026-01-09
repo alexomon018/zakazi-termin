@@ -1,4 +1,5 @@
-export { authOptions, invalidateSubscriptionCache } from "./options";
-export { SalonkoAdapter } from "./adapter";
-export { hashPassword, verifyPassword } from "./password";
-export { ErrorCode, errorMessages } from "./error-codes";
+// Client-safe entrypoint.
+//
+// IMPORTANT: Do not export Node-only modules from here (e.g. "node:crypto"),
+// because this file is imported by client components (e.g. login page).
+export * from "./client";

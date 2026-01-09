@@ -1,6 +1,6 @@
 import "server-only";
 
-import { authOptions } from "@salonko/auth";
+import { authOptions } from "@salonko/auth/server";
 import { type Session, appRouter, createCallerFactory, createContextInner } from "@salonko/trpc";
 import { getServerSession } from "next-auth";
 import { cache } from "react";

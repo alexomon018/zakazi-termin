@@ -1,4 +1,4 @@
-import { authOptions } from "@salonko/auth";
+import { authOptions } from "@salonko/auth/server";
 import NextAuth from "next-auth";
 
 const handler = NextAuth(authOptions);

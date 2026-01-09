@@ -8,16 +8,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { signupAction } from "../actions";
 
 export default function SignupPage() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
@@ -27,39 +29,28 @@ export default function SignupPage() {
 
   const onSubmit = async (data: SignupFormData) => {
     setServerError(null);
+    setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email.toLowerCase(),
-          salonName: data.salonName.toLowerCase(),
-          password: data.password,
-        }),
-      });
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email.toLowerCase());
+      formData.append("salonName", data.salonName.toLowerCase());
+      formData.append("password", data.password);
 
-      const responseData = await response.json();
+      const result = await signupAction(formData);
 
-      if (!response.ok) {
-        setServerError(responseData.message || "Greška pri registraciji");
+      if (!result.success) {
+        setServerError(result.error);
+        setIsLoading(false);
         return;
       }
 
-      // Auto sign in after successful registration
-      const result = await signIn("credentials", {
-        email: data.email.toLowerCase(),
-        password: data.password,
-        redirect: false,
-      });
-
-      if (result?.ok) {
-        router.push("/dashboard");
-        router.refresh();
-      }
+      // Redirect to verify-email page (isLoading stays true during navigation)
+      router.push(`/verify-email?email=${encodeURIComponent(result.data.email)}`);
     } catch {
       setServerError("Došlo je do greške. Pokušajte ponovo.");
+      setIsLoading(false);
     }
   };
 
@@ -102,7 +93,7 @@ export default function SignupPage() {
               data-testid="signup-name-input"
               type="text"
               placeholder="Marko Marković"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("name")}
             />
             {errors.name && (
@@ -121,7 +112,7 @@ export default function SignupPage() {
               data-testid="signup-email-input"
               type="text"
               placeholder="vas@email.com"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("email")}
             />
             {errors.email && (
@@ -143,7 +134,7 @@ export default function SignupPage() {
               data-testid="signup-salon-name-input"
               type="text"
               placeholder="Moj Salon"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("salonName")}
             />
             {errors.salonName ? (
@@ -172,7 +163,7 @@ export default function SignupPage() {
               data-testid="signup-password-input"
               type="password"
               placeholder="Najmanje 8 karaktera"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("password")}
             />
             {errors.password && (
@@ -194,7 +185,7 @@ export default function SignupPage() {
               data-testid="signup-confirm-password-input"
               type="password"
               placeholder="Ponovite lozinku"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("confirmPassword")}
             />
             {errors.confirmPassword && (
@@ -211,9 +202,9 @@ export default function SignupPage() {
             type="submit"
             data-testid="signup-submit-button"
             className="w-full"
-            disabled={isSubmitting}
+            disabled={isLoading}
           >
-            {isSubmitting ? "Kreiranje naloga..." : "Registrujte se"}
+            {isLoading ? "Kreiranje naloga..." : "Registrujte se"}
           </Button>
         </form>
 
@@ -232,7 +223,7 @@ export default function SignupPage() {
           data-testid="signup-google-button"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isSubmitting}
+          disabled={isLoading}
         >
           <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
             <path

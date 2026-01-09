@@ -24,13 +24,43 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
   const isAuthPage =
     pathname.startsWith("/login") ||
     pathname.startsWith("/signup") ||
-    pathname.startsWith("/forgot-password");
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/verify-email");
 
   const isDashboardPage = pathname.startsWith("/dashboard");
 
-  // Redirect authenticated users away from auth pages
-  if (isAuthPage && token) {
+  // Redirect authenticated users away from auth pages (except verify-email)
+  if (isAuthPage && token && !pathname.startsWith("/verify-email")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Handle verify-email page access
+  if (pathname.startsWith("/verify-email")) {
+    const emailParam = req.nextUrl.searchParams.get("email");
+
+    // If user has email param, they're verifying from signup (no token yet) - allow access
+    if (emailParam && !token) {
+      return NextResponse.next();
+    }
+
+    // If no email param and no token, redirect to login
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    // Authenticated user - check if already verified
+    const cookie = req.headers.get("cookie") ?? "";
+    const verifyCheckRes = await fetch(new URL("/api/auth/email-verified", req.url), {
+      headers: { cookie },
+      cache: "no-store",
+    });
+
+    if (verifyCheckRes.ok) {
+      const verifyData = (await verifyCheckRes.json()) as { emailVerified: boolean };
+      if (verifyData.emailVerified) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
   }
 
   // Redirect unauthenticated users away from dashboard
@@ -38,6 +68,22 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Check email verification for dashboard access
+  if (isDashboardPage && token) {
+    const cookie = req.headers.get("cookie") ?? "";
+    const emailVerifiedRes = await fetch(new URL("/api/auth/email-verified", req.url), {
+      headers: { cookie },
+      cache: "no-store",
+    });
+
+    if (emailVerifiedRes.ok) {
+      const emailData = (await emailVerifiedRes.json()) as { emailVerified: boolean };
+      if (!emailData.emailVerified) {
+        return NextResponse.redirect(new URL("/verify-email", req.url));
+      }
+    }
   }
 
   // Check subscription status for protected dashboard routes
@@ -81,5 +127,5 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup", "/forgot-password"],
+  matcher: ["/dashboard/:path*", "/login", "/signup", "/forgot-password", "/verify-email"],
 };

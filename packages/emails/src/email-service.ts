@@ -9,6 +9,10 @@ import { BookingPendingEmail } from "./templates/booking-pending";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+import {
+  EmailVerificationEmail,
+  type EmailVerificationEmailProps,
+} from "./templates/email-verification";
 import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
 import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
@@ -81,14 +85,22 @@ class EmailService {
       });
 
       if (error) {
-        logger.error("Failed to send email", { error, to: options.to, subject: options.subject });
+        logger.error("Failed to send email", {
+          error,
+          to: options.to,
+          subject: options.subject,
+        });
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      logger.error("Email service error", { error: err, to: options.to, subject: options.subject });
+      logger.error("Email service error", {
+        error: err,
+        to: options.to,
+        subject: options.subject,
+      });
       return { success: false, error: errorMessage };
     }
   }
@@ -222,6 +234,15 @@ class EmailService {
       to: data.userEmail,
       subject: "Resetujte vašu lozinku - Salonko",
       react: createElement(PasswordResetEmail, data),
+    });
+  }
+
+  // Send email verification OTP
+  async sendEmailVerification(data: EmailVerificationEmailProps): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Vaš verifikacioni kod za Salonko",
+      react: createElement(EmailVerificationEmail, data),
     });
   }
 
