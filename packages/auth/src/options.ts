@@ -167,32 +167,63 @@ export const authOptions: NextAuthOptions = {
 
         // Auto-login flow: validate one-time token after email verification
         if (autoLoginToken) {
-          const user = await prisma.user.findUnique({
-            where: { email },
+          // Use transaction to atomically validate and clear token (prevents race condition)
+          const user = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.findUnique({
+              where: { email },
+            });
+
+            if (!user) {
+              throw new Error(ErrorCode.IncorrectEmailPassword);
+            }
+
+            const now = new Date();
+
+            // Validate the auto-login token
+            if (
+              !user.autoLoginToken ||
+              user.autoLoginToken !== autoLoginToken ||
+              !user.autoLoginTokenExpires ||
+              user.autoLoginTokenExpires < now
+            ) {
+              // Log failed attempt for security monitoring
+              logger.warn("Auto-login token validation failed", {
+                email,
+                hasToken: !!user.autoLoginToken,
+                expired: user.autoLoginTokenExpires ? user.autoLoginTokenExpires < now : null,
+              });
+              throw new Error(ErrorCode.InvalidCredentials);
+            }
+
+            // Token is valid - clear it atomically (one-time use)
+            const updatedUser = await tx.user.update({
+              where: { id: user.id },
+              data: {
+                autoLoginToken: null,
+                autoLoginTokenExpires: null,
+              },
+            });
+
+            return updatedUser;
           });
 
-          if (!user) {
-            throw new Error(ErrorCode.IncorrectEmailPassword);
+          // Send welcome email AFTER successful OTP verification + successful sign-in.
+          // This guarantees the welcome email doesn't go out just because OTP was issued,
+          // and also avoids sending it if auto-login fails.
+          try {
+            await emailService.sendWelcomeEmail({
+              userName: user.name || "Korisnik",
+              userEmail: user.email,
+              salonName: user.salonName || "",
+            });
+          } catch (error) {
+            logger.error("Failed to send welcome email after auto-login", {
+              error,
+              email,
+              userId: user.id,
+            });
+            // Don't block sign-in if email fails
           }
-
-          // Validate the auto-login token
-          if (
-            !user.autoLoginToken ||
-            user.autoLoginToken !== autoLoginToken ||
-            !user.autoLoginTokenExpires ||
-            user.autoLoginTokenExpires < new Date()
-          ) {
-            throw new Error(ErrorCode.InvalidCredentials);
-          }
-
-          // Token is valid - clear it (one-time use)
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              autoLoginToken: null,
-              autoLoginTokenExpires: null,
-            },
-          });
 
           return {
             id: user.id,

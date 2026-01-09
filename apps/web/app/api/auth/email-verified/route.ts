@@ -14,8 +14,12 @@ export async function GET() {
     select: { emailVerified: true, identityProvider: true },
   });
 
+  if (!user) {
+    return NextResponse.json({ emailVerified: false });
+  }
+
   // OAuth users are always considered verified
-  const isVerified = user?.identityProvider !== "EMAIL" || user?.emailVerified !== null;
+  const isVerified = user.identityProvider !== "EMAIL" || user.emailVerified !== null;
 
   return NextResponse.json({ emailVerified: isVerified });
 }

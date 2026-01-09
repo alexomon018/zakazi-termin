@@ -1,24 +1,15 @@
 "use server";
 
-import {
-  generateOTP,
-  getEmailProviderError,
-  getOTPExpiryDate,
-  hashPassword,
-  isAllowedEmailProvider,
-} from "@salonko/auth/server";
+import { generateOTP, getOTPExpiryDate, hashPassword } from "@salonko/auth/server";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
-import { prisma } from "@salonko/prisma";
+import { Prisma, prisma } from "@salonko/prisma";
 import { z } from "zod";
 import type { ActionResult } from "./types";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Ime mora imati najmanje 2 karaktera"),
-  email: z
-    .string()
-    .email("Nevažeća email adresa")
-    .refine(isAllowedEmailProvider, { message: getEmailProviderError() }),
+  email: z.string().email("Nevažeća email adresa"),
   salonName: z
     .string()
     .min(3, "Naziv salona mora imati najmanje 3 karaktera")
@@ -48,24 +39,6 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
     const normalizedEmail = email.toLowerCase();
     const normalizedSalonName = salonName.toLowerCase();
 
-    // Check if email already exists in User table
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (existingUser) {
-      return { success: false, error: "Email adresa je već registrovana" };
-    }
-
-    // Check if salonName already exists in User table
-    const existingSalonName = await prisma.user.findUnique({
-      where: { salonName: normalizedSalonName },
-    });
-
-    if (existingSalonName) {
-      return { success: false, error: "Naziv salona je zauzet" };
-    }
-
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -74,23 +47,42 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
 
     // Delete any existing pending registration for this email or salonName
     // and create new pending registration in a transaction
-    await prisma.$transaction([
-      prisma.pendingRegistration.deleteMany({
-        where: {
-          OR: [{ email: normalizedEmail }, { salonName: normalizedSalonName }],
-        },
-      }),
-      prisma.pendingRegistration.create({
-        data: {
-          email: normalizedEmail,
-          name,
-          salonName: normalizedSalonName,
-          hashedPassword,
-          verificationCode,
-          expires: getOTPExpiryDate(),
-        },
-      }),
-    ]);
+    try {
+      await prisma.$transaction([
+        prisma.pendingRegistration.deleteMany({
+          where: {
+            OR: [{ email: normalizedEmail }, { salonName: normalizedSalonName }],
+          },
+        }),
+        prisma.pendingRegistration.create({
+          data: {
+            email: normalizedEmail,
+            name,
+            salonName: normalizedSalonName,
+            hashedPassword,
+            verificationCode,
+            expires: getOTPExpiryDate(),
+          },
+        }),
+      ]);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const target = (error.meta as { target?: unknown } | undefined)?.target;
+        const targets = Array.isArray(target) ? target.map(String) : target ? [String(target)] : [];
+
+        if (targets.some((t) => t.includes("email"))) {
+          return { success: false, error: "Email adresa je već registrovana" };
+        }
+        if (targets.some((t) => t.includes("salonName"))) {
+          return { success: false, error: "Naziv salona je zauzet" };
+        }
+
+        // Fallback for unexpected unique constraint targets
+        return { success: false, error: "Email adresa je već registrovana" };
+      }
+
+      throw error;
+    }
 
     // Send verification email
     try {

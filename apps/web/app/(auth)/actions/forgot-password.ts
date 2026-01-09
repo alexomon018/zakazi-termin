@@ -76,7 +76,7 @@ export async function forgotPasswordAction(
     } catch (error) {
       logger.error("Failed to send password reset email", {
         error,
-        email: normalizedEmail,
+        userId: user.id,
       });
       // Don't expose email sending failures to prevent enumeration
     }

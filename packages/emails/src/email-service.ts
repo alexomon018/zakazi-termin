@@ -85,14 +85,22 @@ class EmailService {
       });
 
       if (error) {
-        logger.error("Failed to send email", { error, to: options.to, subject: options.subject });
+        logger.error("Failed to send email", {
+          error,
+          to: options.to,
+          subject: options.subject,
+        });
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      logger.error("Email service error", { error: err, to: options.to, subject: options.subject });
+      logger.error("Email service error", {
+        error: err,
+        to: options.to,
+        subject: options.subject,
+      });
       return { success: false, error: errorMessage };
     }
   }
@@ -233,7 +241,7 @@ class EmailService {
   async sendEmailVerification(data: EmailVerificationEmailProps): Promise<void> {
     await this.send({
       to: data.userEmail,
-      subject: `${data.verificationCode} - Vaš verifikacioni kod za Salonko`,
+      subject: "Vaš verifikacioni kod za Salonko",
       react: createElement(EmailVerificationEmail, data),
     });
   }

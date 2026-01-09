@@ -151,20 +151,6 @@ export async function verifyEmailAction(
       return newUser;
     });
 
-    // Send welcome email
-    try {
-      await emailService.sendWelcomeEmail({
-        userName: user.name || "Korisnik",
-        userEmail: user.email,
-        salonName: user.salonName || "",
-      });
-    } catch (error) {
-      logger.error("Failed to send welcome email after verification", {
-        error,
-        userId: user.id,
-      });
-    }
-
     return {
       success: true,
       data: {

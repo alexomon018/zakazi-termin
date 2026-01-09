@@ -80,9 +80,9 @@ export async function resendVerificationAction(
     } catch (error) {
       logger.error("Failed to send verification email", {
         error,
-        email: normalizedEmail,
+        pendingRegistrationId: pending.id,
       });
-      return { success: false, error: "Greška pri slanju emaila" };
+      // Don't expose email sending failures to prevent account enumeration
     }
 
     return {

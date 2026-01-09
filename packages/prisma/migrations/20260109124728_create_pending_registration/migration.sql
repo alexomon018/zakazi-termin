@@ -1,15 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `EmailVerificationCode` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "EmailVerificationCode" DROP CONSTRAINT "EmailVerificationCode_userId_fkey";
-
--- DropTable
-DROP TABLE "EmailVerificationCode";
-
 -- CreateTable
 CREATE TABLE "PendingRegistration" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid(),
