@@ -44,6 +44,12 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from "./atoms/Select";
+export {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "./atoms/InputOTP";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";

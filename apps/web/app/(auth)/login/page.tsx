@@ -24,7 +24,7 @@ function LoginSkeleton() {
     <Card>
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Link href="/" className="transition-opacity hover:opacity-80">
             Salonko
           </Link>
         </CardTitle>
@@ -46,21 +46,28 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const errorParam = searchParams.get("error");
+  const verified = searchParams.get("verified") === "true";
 
   const [serverError, setServerError] = useState<string | null>(
     errorParam ? errorMessages[errorParam as ErrorCode] || "Greška pri prijavi" : null
   );
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    verified ? "Email je uspešno verifikovan. Prijavite se." : null
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginFormData) => {
     setServerError(null);
+    setSuccessMessage(null);
+    setIsLoading(true);
 
     try {
       const result = await signIn("credentials", {
@@ -72,12 +79,15 @@ function LoginForm() {
 
       if (result?.error) {
         setServerError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
+        setIsLoading(false);
       } else if (result?.ok) {
         router.push(callbackUrl);
         router.refresh();
+        // Keep loading true during navigation - it will reset on unmount
       }
     } catch {
       setServerError("Došlo je do greške. Pokušajte ponovo.");
+      setIsLoading(false);
     }
   };
 
@@ -92,7 +102,7 @@ function LoginForm() {
           data-testid="login-title"
           className="text-2xl font-bold text-gray-900 dark:text-white"
         >
-          <Link href="/" className="hover:opacity-80 transition-opacity">
+          <Link href="/" className="transition-opacity hover:opacity-80">
             Salonko
           </Link>
         </CardTitle>
@@ -102,6 +112,14 @@ function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {successMessage && (
+            <div
+              data-testid="login-success-message"
+              className="p-3 text-sm text-green-600 bg-green-50 rounded-md dark:text-green-400 dark:bg-green-900/20"
+            >
+              {successMessage}
+            </div>
+          )}
           {serverError && (
             <div
               data-testid="login-error-message"
@@ -120,7 +138,7 @@ function LoginForm() {
               data-testid="login-email-input"
               type="text"
               placeholder="vas@email.com"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("email")}
             />
             {errors.email && (
@@ -139,7 +157,7 @@ function LoginForm() {
               data-testid="login-password-input"
               type="password"
               placeholder="Vaša lozinka"
-              disabled={isSubmitting}
+              disabled={isLoading}
               {...register("password")}
             />
             {errors.password && (
@@ -166,9 +184,9 @@ function LoginForm() {
             type="submit"
             data-testid="login-submit-button"
             className="w-full"
-            disabled={isSubmitting}
+            disabled={isLoading}
           >
-            {isSubmitting ? "Prijavljivanje..." : "Prijavite se"}
+            {isLoading ? "Prijavljivanje..." : "Prijavite se"}
           </Button>
         </form>
 
@@ -187,7 +205,7 @@ function LoginForm() {
           data-testid="login-google-button"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isSubmitting}
+          disabled={isLoading}
         >
           <svg className="mr-2 w-5 h-5" viewBox="0 0 24 24" role="img" aria-label="Google logo">
             <path

@@ -3,6 +3,7 @@
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
 import Link from "next/link";
 import { useState } from "react";
+import { forgotPasswordAction } from "../actions";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -16,15 +17,13 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase() }),
-      });
+      const formData = new FormData();
+      formData.append("email", email.toLowerCase());
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.message || "Greška pri slanju emaila");
+      const result = await forgotPasswordAction(formData);
+
+      if (!result.success) {
+        setError(result.error);
         return;
       }
 
@@ -45,7 +44,7 @@ export default function ForgotPasswordPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="mb-6 text-gray-600 dark:text-gray-400">
             Ako nalog sa email adresom{" "}
             <strong className="text-gray-900 dark:text-white">{email}</strong> postoji, poslaćemo
             vam link za resetovanje lozinke.
@@ -66,14 +65,14 @@ export default function ForgotPasswordPage() {
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
           Zaboravljena lozinka
         </CardTitle>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
           Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke
         </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-md">
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md dark:text-red-400 dark:bg-red-900/20">
               {error}
             </div>
           )}
@@ -98,11 +97,11 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
           Setili ste se lozinke?{" "}
           <Link
             href="/login"
-            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+            className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             Prijavite se
           </Link>

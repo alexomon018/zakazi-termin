@@ -155,14 +155,62 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Lozinka", type: "password" },
+        autoLoginToken: { label: "Auto Login Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email) {
+          throw new Error(ErrorCode.InvalidCredentials);
+        }
+
+        const email = credentials.email.toLowerCase();
+        const autoLoginToken = credentials.autoLoginToken;
+
+        // Auto-login flow: validate one-time token after email verification
+        if (autoLoginToken) {
+          const user = await prisma.user.findUnique({
+            where: { email },
+          });
+
+          if (!user) {
+            throw new Error(ErrorCode.IncorrectEmailPassword);
+          }
+
+          // Validate the auto-login token
+          if (
+            !user.autoLoginToken ||
+            user.autoLoginToken !== autoLoginToken ||
+            !user.autoLoginTokenExpires ||
+            user.autoLoginTokenExpires < new Date()
+          ) {
+            throw new Error(ErrorCode.InvalidCredentials);
+          }
+
+          // Token is valid - clear it (one-time use)
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              autoLoginToken: null,
+              autoLoginTokenExpires: null,
+            },
+          });
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            salonName: user.salonName,
+            locale: user.locale,
+            timeZone: user.timeZone,
+          };
+        }
+
+        // Standard password-based login flow
+        if (!credentials.password) {
           throw new Error(ErrorCode.InvalidCredentials);
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() },
+          where: { email },
           include: { password: true },
         });
 

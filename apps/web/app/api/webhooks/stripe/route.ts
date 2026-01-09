@@ -1,4 +1,4 @@
-import { invalidateSubscriptionCache } from "@salonko/auth";
+import { invalidateSubscriptionCache } from "@salonko/auth/server";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";

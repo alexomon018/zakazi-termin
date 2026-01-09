@@ -9,6 +9,10 @@ import { BookingPendingEmail } from "./templates/booking-pending";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+import {
+  EmailVerificationEmail,
+  type EmailVerificationEmailProps,
+} from "./templates/email-verification";
 import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
 import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
@@ -222,6 +226,15 @@ class EmailService {
       to: data.userEmail,
       subject: "Resetujte vašu lozinku - Salonko",
       react: createElement(PasswordResetEmail, data),
+    });
+  }
+
+  // Send email verification OTP
+  async sendEmailVerification(data: EmailVerificationEmailProps): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: `${data.verificationCode} - Vaš verifikacioni kod za Salonko`,
+      react: createElement(EmailVerificationEmail, data),
     });
   }
 

@@ -1,4 +1,4 @@
-import { authOptions } from "@salonko/auth";
+import { authOptions } from "@salonko/auth/server";
 import { getServerSession } from "next-auth";
 
 export async function getSession() {
