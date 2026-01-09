@@ -7,6 +7,15 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  // Monorepo: Prisma Client is generated into ../../packages/prisma/generated/client.
+  // Ensure Next's output file tracing can "see" outside apps/web and ships the query engine.
+  outputFileTracingRoot: path.resolve(__dirname, "../.."),
+  outputFileTracingIncludes: {
+    // Include Prisma generated client + native engine for all server entries.
+    "/**/*": ["../../packages/prisma/generated/client/**"],
+  },
+  // Prevent Prisma from being bundled; keeps native engine resolution working on Vercel.
+  serverExternalPackages: ["@prisma/client", "prisma"],
   images: {
     remotePatterns: [
       {
@@ -55,7 +64,6 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
 
 // Injected content via Sentry wizard below
 
