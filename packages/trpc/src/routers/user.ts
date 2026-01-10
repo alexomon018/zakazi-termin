@@ -3,7 +3,7 @@ import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc"
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { isTestStripeId, stripe } from "../lib/stripe";
+import { getStripe, isTestStripeId } from "../lib/stripe";
 
 export const userRouter = router({
   // Get current user profile
@@ -198,6 +198,7 @@ export const userRouter = router({
       if (user.subscription?.stripeSubscriptionId) {
         if (!isTestStripeId(user.subscription.stripeSubscriptionId)) {
           try {
+            const stripe = getStripe();
             await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
           } catch (error) {
             logger.error("Failed to cancel Stripe subscription during account deletion", {
@@ -214,6 +215,7 @@ export const userRouter = router({
           !isTestStripeId(user.subscription.stripeCustomerId)
         ) {
           try {
+            const stripe = getStripe();
             await stripe.customers.del(user.subscription.stripeCustomerId);
           } catch (error) {
             logger.error("Failed to delete Stripe customer during account deletion", {

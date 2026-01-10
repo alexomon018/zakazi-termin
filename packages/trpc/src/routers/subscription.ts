@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { getAppOriginFromRequest } from "../lib/app-origin";
-import { PRICES, isTestStripeId, stripe, validateStripeConfig } from "../lib/stripe";
+import { PRICES, getStripe, isTestStripeId, validateStripeConfig } from "../lib/stripe";
 import { assertValidSubscriptionData } from "../lib/subscription-validation";
 
 const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
@@ -142,6 +142,7 @@ export const subscriptionRouter = router({
     let createdCustomerId: string | null = null;
 
     try {
+      const stripe = getStripe();
       return await ctx.prisma.$transaction(async (tx) => {
         // Check if subscription already exists
         const existing = await tx.subscription.findUnique({
@@ -217,6 +218,7 @@ export const subscriptionRouter = router({
       // Clean up orphaned Stripe customer if one was created before transaction failed
       if (createdCustomerId) {
         try {
+          const stripe = getStripe();
           await stripe.customers.del(createdCustomerId);
           logger.info("Cleaned up orphaned Stripe customer after transaction failure", {
             customerId: createdCustomerId,
@@ -259,6 +261,7 @@ export const subscriptionRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Rate limiting check (async for distributed rate limiting)
       validateStripeConfig();
+      const stripe = getStripe();
       const isAllowed = await checkCheckoutRateLimit(ctx.session.user.id);
       if (!isAllowed) {
         throw new TRPCError({
@@ -374,6 +377,7 @@ export const subscriptionRouter = router({
       });
     }
 
+    const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: `${appOrigin}/dashboard/settings/billing`,
@@ -409,6 +413,7 @@ export const subscriptionRouter = router({
 
     // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
     if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
       // Cancel at period end in Stripe first
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
         cancel_at_period_end: true,
@@ -428,6 +433,7 @@ export const subscriptionRouter = router({
       // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
       if (!isTestStripeId(subscription.stripeSubscriptionId)) {
         try {
+          const stripe = getStripe();
           await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
             cancel_at_period_end: false,
           });
@@ -486,6 +492,7 @@ export const subscriptionRouter = router({
 
     // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
     if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
       // Resume in Stripe first
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
         cancel_at_period_end: false,
@@ -505,6 +512,7 @@ export const subscriptionRouter = router({
       // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
       if (!isTestStripeId(subscription.stripeSubscriptionId)) {
         try {
+          const stripe = getStripe();
           await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
             cancel_at_period_end: true,
           });
@@ -556,6 +564,15 @@ export const subscriptionRouter = router({
       });
     }
 
+    // E2E tests may use fake IDs; don't call Stripe in that case.
+    if (isTestStripeId(subscription.stripeSubscriptionId)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Test pretplate ne podržavaju nadogradnju.",
+      });
+    }
+
+    const stripe = getStripe();
     // Fetch current subscription from Stripe to get item ID
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId
@@ -619,6 +636,15 @@ export const subscriptionRouter = router({
       });
     }
 
+    // E2E tests may use fake IDs; don't call Stripe in that case.
+    if (isTestStripeId(subscription.stripeSubscriptionId)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Test pretplate ne podržavaju promenu plana.",
+      });
+    }
+
+    const stripe = getStripe();
     // Fetch current subscription from Stripe to get item ID
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId
@@ -664,6 +690,7 @@ export const subscriptionRouter = router({
     }
 
     try {
+      const stripe = getStripe();
       const invoices = await stripe.invoices.list({
         customer: subscription.stripeCustomerId,
         limit: 24,

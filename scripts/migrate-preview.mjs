@@ -32,7 +32,7 @@ Behavior:
   - Resolves <name> from the current git branch (unless --branch is provided)
   - Ensures Neon branch name is prefixed with "preview/"
   - Creates the branch on Neon from parent "preview/develop" (fallback: "develop")
-  - Waits for an endpoint host + role, prints DATABASE_URL
+  - Waits for an endpoint host + role, prints a masked DATABASE_URL (never the password)
   - By default, runs:
       - yarn db:generate
       - yarn workspace @salonko/prisma prisma db push --skip-generate --accept-data-loss
@@ -56,6 +56,17 @@ function fail(msg) {
 function info(msg) {
   // eslint-disable-next-line no-console
   console.log(msg);
+}
+
+function maskDatabaseUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    if (u.password) u.password = "****";
+    return u.toString();
+  } catch {
+    // Fallback masking for non-standard URLs or unexpected parsing failures.
+    return rawUrl.replace(/:\/\/([^:/?#]+):([^@]+)@/u, "://$1:****@");
+  }
 }
 
 function requireEnv(name) {
@@ -237,8 +248,8 @@ async function main() {
   if (password) {
     const passwordEnc = encodeURIComponent(password);
     databaseUrl = `postgresql://${roleName}:${passwordEnc}@${host}/neondb?sslmode=require`;
-    info("\nDATABASE_URL:");
-    info(databaseUrl);
+    info("\nDATABASE_URL (masked):");
+    info(maskDatabaseUrl(databaseUrl));
   } else {
     info("\n⚠️ NEON_DB_PASSWORD is not set, so DATABASE_URL can't be constructed.");
   }

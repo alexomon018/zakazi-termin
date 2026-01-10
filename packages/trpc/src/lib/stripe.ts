@@ -10,16 +10,33 @@ const requiredEnvVars = {
   STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
 } as const;
 
-// Validate at procedure call time instead
-export function validateStripeConfig() {
-  for (const [key, value] of Object.entries(requiredEnvVars)) {
-    if (!value) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Stripe not configured: missing ${key}`,
-      });
-    }
+type StripeEnvVars = {
+  STRIPE_SECRET_KEY: string;
+  STRIPE_PRICE_MONTHLY: string;
+  STRIPE_PRICE_YEARLY: string;
+};
+
+function requireEnvVar(key: keyof typeof requiredEnvVars, value: string | undefined): string {
+  if (!value) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `Stripe not configured: missing ${key}`,
+    });
   }
+  return value;
+}
+
+// Validate at procedure call time instead (and return narrowed values).
+export function validateStripeConfig(): StripeEnvVars {
+  const STRIPE_SECRET_KEY = requireEnvVar("STRIPE_SECRET_KEY", requiredEnvVars.STRIPE_SECRET_KEY);
+  const STRIPE_PRICE_MONTHLY = requireEnvVar(
+    "STRIPE_PRICE_MONTHLY",
+    requiredEnvVars.STRIPE_PRICE_MONTHLY
+  );
+  const STRIPE_PRICE_YEARLY = requireEnvVar(
+    "STRIPE_PRICE_YEARLY",
+    requiredEnvVars.STRIPE_PRICE_YEARLY
+  );
 
   // Validate env-based base URL fallback (must include scheme).
   try {
@@ -32,12 +49,22 @@ export function validateStripeConfig() {
         "Invalid NEXT_PUBLIC_APP_URL. It must be a full URL with scheme, e.g. https://salonko.rs or http://localhost:3000",
     });
   }
+
+  return { STRIPE_SECRET_KEY, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY };
 }
 
-export const stripe = new Stripe(requiredEnvVars.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover", // Lock Stripe API version to prevent breaking changes
-  maxNetworkRetries: 2, // Add retry logic for transient network issues
-});
+let _stripe: Stripe | null = null;
+
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    const { STRIPE_SECRET_KEY } = validateStripeConfig();
+    _stripe = new Stripe(STRIPE_SECRET_KEY, {
+      apiVersion: "2025-12-15.clover", // Lock Stripe API version to prevent breaking changes
+      maxNetworkRetries: 2, // Add retry logic for transient network issues
+    });
+  }
+  return _stripe;
+}
 
 /**
  * Checks if a Stripe ID is a test/fake ID used in E2E tests.
@@ -54,6 +81,10 @@ export function isTestStripeId(stripeId: string | null | undefined): boolean {
 }
 
 export const PRICES = {
-  monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
-  yearly: requiredEnvVars.STRIPE_PRICE_YEARLY,
-};
+  get monthly(): string {
+    return validateStripeConfig().STRIPE_PRICE_MONTHLY;
+  },
+  get yearly(): string {
+    return validateStripeConfig().STRIPE_PRICE_YEARLY;
+  },
+} as const;
