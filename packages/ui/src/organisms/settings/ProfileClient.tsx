@@ -9,6 +9,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  DeleteAccountDialog,
   Input,
   Label,
   Select,
@@ -17,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@salonko/ui";
-import { AlertCircle, Check, ExternalLink, User as UserIcon } from "lucide-react";
+import { AlertCircle, AlertTriangle, Check, ExternalLink, User as UserIcon } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -59,6 +61,7 @@ type ProfileClientProps = {
 export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [saved, setSaved] = useState(false);
   const [salonNameAvailable, setSalonNameAvailable] = useState<boolean | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const utils = trpc.useUtils();
 
@@ -73,6 +76,16 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
       setTimeout(() => setSaved(false), 3000);
     },
   });
+
+  const deleteAccount = trpc.user.deleteAccount.useMutation({
+    onSuccess: () => {
+      signOut({ callbackUrl: "/" });
+    },
+  });
+
+  const handleDeleteAccount = (confirmText: string) => {
+    deleteAccount.mutate({ confirmText });
+  };
 
   const {
     register,
@@ -324,6 +337,45 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-red-200 dark:border-red-800">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              <CardTitle className="text-lg text-red-600 dark:text-red-400">Opasna zona</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Jednom kada obrišete nalog, nema povratka. Molimo budite sigurni.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-red-600 text-red-600 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-900/20"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              Obriši nalog
+            </Button>
+            {deleteAccount.error && (
+              <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <span className="text-red-800 dark:text-red-300">
+                  {deleteAccount.error.message}
+                </span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Delete Account Dialog */}
+        <DeleteAccountDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDeleteAccount}
+          isLoading={deleteAccount.isPending}
+        />
 
         {/* Submit Button */}
         <div className="flex justify-end">

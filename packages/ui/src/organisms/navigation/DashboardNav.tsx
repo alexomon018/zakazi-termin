@@ -56,7 +56,7 @@ const navItems = [
     requiresSubscription: true,
   },
   {
-    href: "/dashboard/settings",
+    href: "/dashboard/settings/profile",
     label: "Podešavanja",
     icon: Settings,
     requiresSubscription: false,
