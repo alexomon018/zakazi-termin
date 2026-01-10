@@ -161,6 +161,7 @@ zakazi-termin/
 | `yarn lint:fix` | Auto-fix linting issues |
 | `yarn format` | Format code with Biome |
 | `yarn typecheck` | TypeScript type checking |
+| `yarn migrate` | Create (or reuse) a Neon preview branch for your current git branch and push schema to it |
 | `yarn db:generate` | Generate Prisma client |
 | `yarn db:push` | Push schema to database |
 | `yarn db:migrate` | Run database migrations |
@@ -343,6 +344,23 @@ The backend uses tRPC for type-safe API procedures.
 1. Create a new project in Neon
 2. Copy the connection string to `DATABASE_URL`
 3. Run migrations: `yarn db:push`
+
+### Preview branches (Neon)
+
+This repo uses Neon branches for preview/testing. Locally, you can create a preview branch named after your current git branch:
+
+```bash
+export NEON_API_KEY="..."
+export NEON_PROJECT_ID="..."
+export NEON_DB_PASSWORD="..."
+
+yarn migrate
+```
+
+Notes:
+- Branch name format: `preview/<your-local-branch>`
+- Parent branch: tries `preview/develop`, then falls back to `develop`
+- To skip applying schema: `yarn migrate --no-apply`
 
 ## Environment Variables
 

@@ -75,6 +75,7 @@ export { TabFilter } from "./molecules/filters/TabFilter";
 
 // Molecules - Dialogs
 export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
+export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";
 export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
 
 // Molecules - Settings

@@ -1,71 +1,17 @@
-import { getAppUrl, logger } from "@salonko/config";
+import { logger } from "@salonko/config";
 import { checkoutRateLimiter } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
-import Stripe from "stripe";
 import { z } from "zod";
 
 import { getAppOriginFromRequest } from "../lib/app-origin";
+import { PRICES, getStripe, isTestStripeId, validateStripeConfig } from "../lib/stripe";
 import { assertValidSubscriptionData } from "../lib/subscription-validation";
 
-// Environment variable validation
-const requiredEnvVars = {
-  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-  STRIPE_PRICE_MONTHLY: process.env.STRIPE_PRICE_MONTHLY,
-  STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
-} as const;
-
-// Validate at procedure call time instead
-function validateStripeConfig() {
-  for (const [key, value] of Object.entries(requiredEnvVars)) {
-    if (!value) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Stripe not configured: missing ${key}`,
-      });
-    }
-  }
-
-  // Validate env-based base URL fallback (must include scheme).
-  try {
-    // eslint-disable-next-line no-new
-    new URL(getAppUrl());
-  } catch {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message:
-        "Invalid NEXT_PUBLIC_APP_URL. It must be a full URL with scheme, e.g. https://salonko.rs or http://localhost:3000",
-    });
-  }
-}
-
-const stripe = new Stripe(requiredEnvVars.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover", // Lock Stripe API version to prevent breaking changes
-  maxNetworkRetries: 2, // Add retry logic for transient network issues
-});
-
 const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
-
-/**
- * Checks if a Stripe ID is a test/fake ID used in E2E tests.
- * Matches known Stripe prefixes followed by "_test_":
- * sub (subscription), cus (customer), price, prod (product),
- * pm (payment method), in (invoice), si (setup intent),
- * pi (payment intent), ch (charge)
- */
-const TEST_STRIPE_ID_REGEX = /^(?:sub|cus|price|prod|pm|in|si|pi|ch)_test_/;
-
-function isTestStripeId(stripeId: string | null | undefined): boolean {
-  if (!stripeId) return false;
-  return TEST_STRIPE_ID_REGEX.test(stripeId);
-}
 const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
-const PRICES = {
-  monthly: requiredEnvVars.STRIPE_PRICE_MONTHLY,
-  yearly: requiredEnvVars.STRIPE_PRICE_YEARLY,
-};
 
 async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)
@@ -196,6 +142,7 @@ export const subscriptionRouter = router({
     let createdCustomerId: string | null = null;
 
     try {
+      const stripe = getStripe();
       return await ctx.prisma.$transaction(async (tx) => {
         // Check if subscription already exists
         const existing = await tx.subscription.findUnique({
@@ -271,6 +218,7 @@ export const subscriptionRouter = router({
       // Clean up orphaned Stripe customer if one was created before transaction failed
       if (createdCustomerId) {
         try {
+          const stripe = getStripe();
           await stripe.customers.del(createdCustomerId);
           logger.info("Cleaned up orphaned Stripe customer after transaction failure", {
             customerId: createdCustomerId,
@@ -313,6 +261,7 @@ export const subscriptionRouter = router({
     .mutation(async ({ ctx, input }) => {
       // Rate limiting check (async for distributed rate limiting)
       validateStripeConfig();
+      const stripe = getStripe();
       const isAllowed = await checkCheckoutRateLimit(ctx.session.user.id);
       if (!isAllowed) {
         throw new TRPCError({
@@ -428,6 +377,7 @@ export const subscriptionRouter = router({
       });
     }
 
+    const stripe = getStripe();
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: `${appOrigin}/dashboard/settings/billing`,
@@ -463,6 +413,7 @@ export const subscriptionRouter = router({
 
     // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
     if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
       // Cancel at period end in Stripe first
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
         cancel_at_period_end: true,
@@ -482,6 +433,7 @@ export const subscriptionRouter = router({
       // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
       if (!isTestStripeId(subscription.stripeSubscriptionId)) {
         try {
+          const stripe = getStripe();
           await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
             cancel_at_period_end: false,
           });
@@ -540,6 +492,7 @@ export const subscriptionRouter = router({
 
     // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
     if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
       // Resume in Stripe first
       await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
         cancel_at_period_end: false,
@@ -559,6 +512,7 @@ export const subscriptionRouter = router({
       // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
       if (!isTestStripeId(subscription.stripeSubscriptionId)) {
         try {
+          const stripe = getStripe();
           await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
             cancel_at_period_end: true,
           });
@@ -610,6 +564,15 @@ export const subscriptionRouter = router({
       });
     }
 
+    // E2E tests may use fake IDs; don't call Stripe in that case.
+    if (isTestStripeId(subscription.stripeSubscriptionId)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Test pretplate ne podržavaju nadogradnju.",
+      });
+    }
+
+    const stripe = getStripe();
     // Fetch current subscription from Stripe to get item ID
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId
@@ -673,6 +636,15 @@ export const subscriptionRouter = router({
       });
     }
 
+    // E2E tests may use fake IDs; don't call Stripe in that case.
+    if (isTestStripeId(subscription.stripeSubscriptionId)) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Test pretplate ne podržavaju promenu plana.",
+      });
+    }
+
+    const stripe = getStripe();
     // Fetch current subscription from Stripe to get item ID
     const stripeSubscription = await stripe.subscriptions.retrieve(
       subscription.stripeSubscriptionId
@@ -718,6 +690,7 @@ export const subscriptionRouter = router({
     }
 
     try {
+      const stripe = getStripe();
       const invoices = await stripe.invoices.list({
         customer: subscription.stripeCustomerId,
         limit: 24,

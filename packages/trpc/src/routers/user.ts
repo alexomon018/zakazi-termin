@@ -1,5 +1,9 @@
+import { logger } from "@salonko/config";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+import { getStripe, isTestStripeId } from "../lib/stripe";
 
 export const userRouter = router({
   // Get current user profile
@@ -163,6 +167,71 @@ export const userRouter = router({
       });
 
       return user;
+    }),
+
+  // Delete user account (GDPR compliance)
+  deleteAccount: protectedProcedure
+    .input(z.object({ confirmText: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Validate confirmation text
+      if (input.confirmText !== "DELETE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Morate uneti 'DELETE' da biste potvrdili brisanje naloga.",
+        });
+      }
+
+      // Get user with subscription
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: ctx.session.user.id },
+        include: { subscription: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Korisnik nije pronađen.",
+        });
+      }
+
+      // Cancel Stripe subscription if exists
+      if (user.subscription?.stripeSubscriptionId) {
+        if (!isTestStripeId(user.subscription.stripeSubscriptionId)) {
+          try {
+            const stripe = getStripe();
+            await stripe.subscriptions.cancel(user.subscription.stripeSubscriptionId);
+          } catch (error) {
+            logger.error("Failed to cancel Stripe subscription during account deletion", {
+              error,
+              userId: ctx.session.user.id,
+            });
+            // Continue with deletion - subscription will be orphaned but user data removed
+          }
+        }
+
+        // Delete Stripe customer
+        if (
+          user.subscription.stripeCustomerId &&
+          !isTestStripeId(user.subscription.stripeCustomerId)
+        ) {
+          try {
+            const stripe = getStripe();
+            await stripe.customers.del(user.subscription.stripeCustomerId);
+          } catch (error) {
+            logger.error("Failed to delete Stripe customer during account deletion", {
+              error,
+              userId: ctx.session.user.id,
+            });
+          }
+        }
+      }
+
+      // Delete user (cascades handle all related data)
+      await ctx.prisma.user.delete({
+        where: { id: ctx.session.user.id },
+      });
+
+      return { success: true };
     }),
 
   // Get user's default schedule with availability
