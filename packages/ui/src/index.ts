@@ -4,6 +4,7 @@ export { cn } from "./utils";
 // Atoms
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
+export { Textarea } from "./atoms/Textarea";
 export { Label } from "./atoms/Label";
 export { ColorPicker, PRESET_COLORS, DARK_PRESET_COLORS } from "./atoms/ColorPicker";
 export {

@@ -5,4 +5,4 @@ export { TimeZoneCard } from "./TimeZoneCard";
 export { AccountInfoCard } from "./AccountInfoCard";
 export { DangerZoneCard } from "./DangerZoneCard";
 export { TIMEZONES } from "./constants";
-export type { User, Timezone } from "./types";
+export type { User, AuthenticatedUser, Timezone } from "./types";

@@ -15,18 +15,28 @@ export function AccountInfoCard({ user }: AccountInfoCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label className="text-gray-900 dark:text-white">Email adresa</Label>
-          <Input value={user?.email || ""} disabled className="bg-gray-50 dark:bg-gray-700" />
+          <Label htmlFor="account-email" className="text-gray-900 dark:text-white">
+            Email adresa
+          </Label>
+          <Input
+            id="account-email"
+            value={user?.email || ""}
+            readOnly
+            className="bg-gray-50 dark:bg-gray-700"
+          />
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Email adresa se ne može promeniti.
           </p>
         </div>
 
         <div className="space-y-2">
-          <Label className="text-gray-900 dark:text-white">Način prijave</Label>
+          <Label htmlFor="account-provider" className="text-gray-900 dark:text-white">
+            Način prijave
+          </Label>
           <Input
+            id="account-provider"
             value={user?.identityProvider === "GOOGLE" ? "Google nalog" : "Email i lozinka"}
-            disabled
+            readOnly
             className="bg-gray-50 dark:bg-gray-700"
           />
         </div>

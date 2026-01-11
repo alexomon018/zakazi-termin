@@ -36,7 +36,7 @@ export function TimeZoneCard({ control }: TimeZoneCardProps) {
             name="timeZone"
             control={control}
             render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
                 <SelectTrigger id="timeZone" className="w-full">
                   <SelectValue placeholder="Izaberite vremensku zonu" />
                 </SelectTrigger>

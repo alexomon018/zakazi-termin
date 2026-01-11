@@ -18,6 +18,10 @@ export interface ImageUploadResult {
  * Options for image processing
  */
 export interface ImageProcessingOptions {
+  /** Maximum input file size in bytes (default: S3_CONFIG.MAX_FILE_SIZE) */
+  maxFileSize?: number;
+  /** Allowed input MIME types (default: S3_CONFIG.ALLOWED_MIME_TYPES) */
+  allowedMimeTypes?: readonly string[];
   /** Maximum width (default: 256 for salon icons) */
   maxWidth?: number;
   /** Maximum height (default: 256 for salon icons) */

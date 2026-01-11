@@ -1,14 +1,15 @@
 import type { Timezone } from "./types";
 
 export const TIMEZONES: Timezone[] = [
-  { value: "Europe/Belgrade", label: "Beograd (GMT+1)" },
-  { value: "Europe/Zagreb", label: "Zagreb (GMT+1)" },
-  { value: "Europe/Sarajevo", label: "Sarajevo (GMT+1)" },
-  { value: "Europe/Podgorica", label: "Podgorica (GMT+1)" },
-  { value: "Europe/Skopje", label: "Skoplje (GMT+1)" },
-  { value: "Europe/Ljubljana", label: "Ljubljana (GMT+1)" },
-  { value: "Europe/Vienna", label: "Beč (GMT+1)" },
-  { value: "Europe/Berlin", label: "Berlin (GMT+1)" },
-  { value: "Europe/London", label: "London (GMT+0)" },
-  { value: "America/New_York", label: "Njujork (GMT-5)" },
+  // NOTE: Avoid hardcoded GMT offsets in labels because DST makes them misleading.
+  { value: "Europe/Belgrade", label: "Beograd" },
+  { value: "Europe/Zagreb", label: "Zagreb" },
+  { value: "Europe/Sarajevo", label: "Sarajevo" },
+  { value: "Europe/Podgorica", label: "Podgorica" },
+  { value: "Europe/Skopje", label: "Skoplje" },
+  { value: "Europe/Ljubljana", label: "Ljubljana" },
+  { value: "Europe/Vienna", label: "Beč" },
+  { value: "Europe/Berlin", label: "Berlin" },
+  { value: "Europe/London", label: "London" },
+  { value: "America/New_York", label: "Njujork" },
 ];

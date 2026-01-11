@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import { Card, CardContent, CardHeader, CardTitle, Input, Label, Textarea } from "@salonko/ui";
 import { AlertCircle, Check, ExternalLink } from "lucide-react";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import type { ProfileFormValues } from "./ProfileClient";
@@ -87,11 +87,11 @@ export function BasicInfoCard({
           <Label htmlFor="bio" className="text-gray-900 dark:text-white">
             O salonu
           </Label>
-          <textarea
+          <Textarea
             id="bio"
             {...register("bio")}
             rows={3}
-            className="px-3 py-2 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 resize-none dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="resize-none bg-white text-gray-900 dark:bg-gray-800 dark:text-white"
             placeholder="Kratak opis o salonu koji će se prikazati na stranici za zakazivanje..."
           />
           {errors.bio && <p className="text-sm text-red-600">{errors.bio.message}</p>}

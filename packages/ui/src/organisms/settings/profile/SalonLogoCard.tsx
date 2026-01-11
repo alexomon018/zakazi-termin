@@ -1,6 +1,18 @@
 "use client";
 
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@salonko/ui";
 import { Loader2, Trash2, Upload, User as UserIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
@@ -14,6 +26,7 @@ type SalonLogoCardProps = {
 export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const effectiveAvatarUrl = user?.salonIconUrl || user?.avatarUrl;
@@ -79,6 +92,7 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
       }
 
       onUploadSuccess();
+      setConfirmDeleteOpen(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Greška pri brisanju";
       setUploadError(message);
@@ -138,17 +152,46 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
                 {user?.salonIconKey ? "Promeni logo" : "Dodaj logo"}
               </Button>
               {user?.salonIconKey && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveIcon}
-                  disabled={isUploading}
-                  className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  <Trash2 className="mr-2 w-4 h-4" />
-                  Ukloni
-                </Button>
+                <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setConfirmDeleteOpen(true)}
+                    disabled={isUploading}
+                    className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    <Trash2 className="mr-2 w-4 h-4" />
+                    Ukloni
+                  </Button>
+
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Obriši logo?</DialogTitle>
+                      <DialogDescription>
+                        Ova akcija uklanja logo salona. Možete ga ponovo dodati kasnije.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setConfirmDeleteOpen(false)}
+                        disabled={isUploading}
+                      >
+                        Otkaži
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={handleRemoveIcon}
+                        disabled={isUploading}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        {isUploading ? "Brisanje..." : "Obriši"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
           </div>

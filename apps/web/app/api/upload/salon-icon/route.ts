@@ -37,7 +37,10 @@ export async function POST(request: Request) {
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { ok: false, error: "Nevažeći format slike. Dozvoljeni formati: JPEG, PNG, WebP" },
+        {
+          ok: false,
+          error: "Nevažeći format slike. Dozvoljeni formati: JPEG, PNG, WebP",
+        },
         { status: 400 }
       );
     }
@@ -61,25 +64,35 @@ export async function POST(request: Request) {
       where: { id: session.user.id },
       select: { salonIconKey: true },
     });
+    const oldIconKey = currentUser?.salonIconKey ?? null;
 
     // Upload to S3 (with processing)
     const result = await uploadImage(buffer, file.type, "salon-icons");
 
-    // Delete old icon if exists
-    if (currentUser?.salonIconKey) {
+    // Update DB first so we never end up referencing a deleted S3 object.
+    // If this fails, best-effort rollback by deleting the newly uploaded image.
+    try {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { salonIconKey: result.key },
+      });
+    } catch (dbError) {
       try {
-        await deleteImage(currentUser.salonIconKey);
+        await deleteImage(result.key);
       } catch {
-        // Log but don't fail if deletion fails
-        console.error("Failed to delete old salon icon:", currentUser.salonIconKey);
+        console.error("Failed to rollback newly uploaded salon icon:", result.key);
       }
+      throw dbError;
     }
 
-    // Update user with new icon key
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { salonIconKey: result.key },
-    });
+    // Best-effort delete old icon (leaving an orphan is acceptable; broken DB references are not).
+    if (oldIconKey && oldIconKey !== result.key) {
+      try {
+        await deleteImage(oldIconKey);
+      } catch {
+        console.error("Failed to delete old salon icon:", oldIconKey);
+      }
+    }
 
     return NextResponse.json({
       ok: true,
@@ -129,22 +142,28 @@ export async function DELETE() {
       return NextResponse.json({ ok: false, error: "Nema slike za brisanje" }, { status: 400 });
     }
 
-    // Delete from S3
-    await deleteImage(currentUser.salonIconKey);
+    const iconKey = currentUser.salonIconKey;
 
-    // Clear the key in database
+    // Clear the key in database first (data integrity > storage cleanup)
     await prisma.user.update({
       where: { id: session.user.id },
       data: { salonIconKey: null },
     });
 
-    return NextResponse.json({ ok: true });
+    // Best-effort delete from S3 (may fail and leave an orphan, but DB remains correct)
+    let s3Deleted = true;
+    try {
+      await deleteImage(iconKey);
+    } catch (s3Error) {
+      s3Deleted = false;
+      console.error("Failed to delete salon icon from S3:", iconKey, s3Error);
+    }
+
+    return NextResponse.json({ ok: true, s3Deleted });
   } catch (error) {
     console.error("Delete error:", error);
 
-    if (error instanceof S3ServiceError) {
-      return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
-    }
+    // Note: S3 deletion errors are handled best-effort above; errors here are unexpected/DB-related.
 
     return NextResponse.json(
       { ok: false, error: "Greška pri brisanju slike. Pokušajte ponovo." },

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@salonko/ui";
 import { AlertCircle, Check } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AccountInfoCard } from "./AccountInfoCard";
@@ -13,6 +13,7 @@ import { BasicInfoCard } from "./BasicInfoCard";
 import { DangerZoneCard } from "./DangerZoneCard";
 import { SalonLogoCard } from "./SalonLogoCard";
 import { TimeZoneCard } from "./TimeZoneCard";
+import { toSalonNameSlug } from "./slug";
 import type { User } from "./types";
 
 const profileSchema = z.object({
@@ -22,7 +23,7 @@ const profileSchema = z.object({
     .min(3, "Naziv salona mora imati najmanje 3 karaktera")
     .max(30, "Naziv salona može imati najviše 30 karaktera")
     .regex(/^[a-zA-Z0-9\s_-]+$/, "Naziv salona može sadržati samo slova, brojeve, razmake, _ i -")
-    .transform((val) => val.toLowerCase().replace(/\s+/g, "-")),
+    .transform(toSalonNameSlug),
   bio: z.string().optional(),
   timeZone: z.string(),
 });
@@ -35,7 +36,7 @@ type ProfileClientProps = {
 
 export function ProfileClient({ initialUser }: ProfileClientProps) {
   const [saved, setSaved] = useState(false);
-  const [salonNameAvailable, setSalonNameAvailable] = useState<boolean | null>(null);
+  const lastUserIdRef = useRef<string | null>(null);
 
   const { update: updateSession } = useSession();
   const utils = trpc.useUtils();
@@ -88,7 +89,15 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   });
 
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+
+    // Avoid clobbering unsaved edits when `user` refetches with the same identity.
+    const currentUserId = (user as { id?: string | null } | null)?.id ?? null;
+    const previousUserId = lastUserIdRef.current;
+    const identityChanged =
+      currentUserId !== null && previousUserId !== null && currentUserId !== previousUserId;
+
+    if (!isDirty || identityChanged) {
       reset({
         name: user.name || "",
         salonName: user.salonName || "",
@@ -96,25 +105,27 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
         timeZone: user.timeZone,
       });
     }
-  }, [user, reset]);
+
+    // Track identity for the next run (only if we have an id).
+    if (currentUserId !== null) {
+      lastUserIdRef.current = currentUserId;
+    }
+  }, [user, reset, isDirty]);
 
   const watchedSalonName = watch("salonName");
-  const salonNameSlug = watchedSalonName?.toLowerCase().replace(/\s+/g, "-") || "";
+  const salonNameSlug = watchedSalonName ? toSalonNameSlug(watchedSalonName) : "";
+
+  const shouldCheckSalonName =
+    !!salonNameSlug && salonNameSlug.length >= 3 && salonNameSlug !== user?.salonName;
 
   const { data: salonNameCheck } = trpc.user.checkSalonName.useQuery(
     { salonName: salonNameSlug },
     {
-      enabled: !!salonNameSlug && salonNameSlug.length >= 3 && salonNameSlug !== user?.salonName,
+      enabled: shouldCheckSalonName,
     }
   );
 
-  useEffect(() => {
-    if (salonNameSlug === user?.salonName) {
-      setSalonNameAvailable(null);
-    } else if (salonNameCheck) {
-      setSalonNameAvailable(salonNameCheck.available);
-    }
-  }, [salonNameCheck, salonNameSlug, user?.salonName]);
+  const salonNameAvailable = shouldCheckSalonName ? (salonNameCheck?.available ?? null) : null;
 
   const onSubmit = (data: ProfileFormValues) => {
     updateProfile.mutate(data);
@@ -168,7 +179,11 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
         <div className="flex justify-end">
           <Button
             type="submit"
-            disabled={!isDirty || updateProfile.isPending || salonNameAvailable === false}
+            disabled={
+              !isDirty ||
+              updateProfile.isPending ||
+              (shouldCheckSalonName && salonNameAvailable !== true)
+            }
           >
             {updateProfile.isPending ? "Čuvanje..." : "Sačuvaj promene"}
           </Button>

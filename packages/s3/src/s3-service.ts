@@ -63,13 +63,14 @@ function getS3Client(): S3Client {
 export function validateImage(
   buffer: Buffer,
   mimeType: string,
-  maxSize: number = S3_CONFIG.MAX_FILE_SIZE
+  maxSize: number = S3_CONFIG.MAX_FILE_SIZE,
+  allowedMimeTypes: readonly string[] = S3_CONFIG.ALLOWED_MIME_TYPES
 ): void {
   // Check MIME type
-  const allowedTypes = S3_CONFIG.ALLOWED_MIME_TYPES as readonly string[];
+  const allowedTypes = allowedMimeTypes;
   if (!allowedTypes.includes(mimeType)) {
     throw new ImageValidationError(
-      `Nevažeći tip slike. Dozvoljeni formati: ${S3_CONFIG.ALLOWED_MIME_TYPES.join(", ")}`
+      `Nevažeći tip slike. Dozvoljeni formati: ${allowedTypes.join(", ")}`
     );
   }
 
@@ -90,6 +91,13 @@ export async function uploadImage(
   folder: string = S3_CONFIG.SALON_ICON_PREFIX,
   options: ImageProcessingOptions = {}
 ): Promise<ImageUploadResult> {
+  validateImage(
+    buffer,
+    mimeType,
+    options.maxFileSize ?? S3_CONFIG.MAX_FILE_SIZE,
+    options.allowedMimeTypes ?? S3_CONFIG.ALLOWED_MIME_TYPES
+  );
+
   const client = getS3Client();
   const bucket = getBucketName();
 
@@ -226,8 +234,17 @@ export async function imageExists(key: string): Promise<boolean> {
 
     await client.send(command);
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    const err = error as {
+      name?: unknown;
+      $metadata?: { httpStatusCode?: unknown };
+    };
+
+    const isNotFound = err?.name === "NotFound" || err?.$metadata?.httpStatusCode === 404;
+
+    if (isNotFound) return false;
+
+    throw error;
   }
 }
 
@@ -235,23 +252,55 @@ export async function imageExists(key: string): Promise<boolean> {
  * Extract S3 key from a full URL
  */
 export function extractKeyFromUrl(url: string): string | null {
+  let bucket: string;
+  try {
+    bucket = getBucketName();
+  } catch (error) {
+    logger.error("Error extracting key from URL (bucket not configured)", {
+      error,
+    });
+    return null;
+  }
+
   try {
     const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    const bucket = getBucketName();
 
-    // Handle path-style URL: https://s3.region.amazonaws.com/bucket/key
+    // NOTE: `pathname` never includes query parameters, so presigned URLs are safe.
+    const pathname = urlObj.pathname;
+    const hostname = urlObj.hostname;
+
+    // Handle path-style URL: https://s3.<region>.amazonaws.com/<bucket>/<key>
     if (pathname.startsWith(`/${bucket}/`)) {
-      return pathname.substring(`/${bucket}/`.length);
+      return decodeURIComponent(pathname.substring(`/${bucket}/`.length));
     }
 
-    // Handle virtual-hosted-style URL: https://bucket.s3.region.amazonaws.com/key
-    if (pathname.startsWith("/")) {
-      return pathname.substring(1);
+    // Handle virtual-hosted-style URL:
+    // https://<bucket>.s3.<region>.amazonaws.com/<key>
+    // https://<bucket>.s3-<region>.amazonaws.com/<key>
+    // https://<bucket>.s3.amazonaws.com/<key>
+    const isVirtualHostedS3 =
+      hostname.startsWith(`${bucket}.s3.`) ||
+      hostname.startsWith(`${bucket}.s3-`) ||
+      hostname.startsWith(`${bucket}.s3.amazonaws.com`) ||
+      hostname.startsWith(`${bucket}.s3.dualstack.`);
+
+    if (isVirtualHostedS3 && pathname.startsWith("/")) {
+      return decodeURIComponent(pathname.substring(1));
     }
 
     return null;
-  } catch {
+  } catch (error) {
+    logger.error("Error extracting key from URL", {
+      error,
+      url: (() => {
+        try {
+          const u = new URL(url);
+          return `${u.origin}${u.pathname}`;
+        } catch {
+          return url;
+        }
+      })(),
+    });
     return null;
   }
 }

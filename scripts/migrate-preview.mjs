@@ -203,10 +203,12 @@ async function main() {
   // This script is a plain Node CLI (not Next.js), so we opportunistically load common .env files.
   // We never override vars already present in the environment.
   const cwd = process.cwd();
-  tryLoadEnvFile(resolve(cwd, ".env"));
-  tryLoadEnvFile(resolve(cwd, ".env.local"));
-  tryLoadEnvFile(resolve(cwd, ".env.preview.local"));
+  // Load more specific files first so they take precedence over less specific ones.
+  // (.env is loaded last to provide defaults.)
   tryLoadEnvFile(resolve(cwd, ".env.development.local"));
+  tryLoadEnvFile(resolve(cwd, ".env.preview.local"));
+  tryLoadEnvFile(resolve(cwd, ".env.local"));
+  tryLoadEnvFile(resolve(cwd, ".env"));
 
   requireEnv("NEON_API_KEY");
   requireEnv("NEON_PROJECT_ID");
