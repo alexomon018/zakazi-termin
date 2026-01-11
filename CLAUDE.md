@@ -32,6 +32,8 @@ yarn test:e2e:ui            # Run Playwright with UI mode
 yarn workspace @salonko/web test:e2e playwright/auth/login.e2e.ts
 ```
 
+Each time you want to do migrations you need to go into packages/prisma and run yarn db:migrate.
+
 ## Architecture
 
 ### Monorepo Structure (Yarn Workspaces + Turborepo)

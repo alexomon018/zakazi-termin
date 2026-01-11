@@ -113,7 +113,7 @@ export { AvailabilityClient } from "./organisms/availability/AvailabilityClient"
 // Organisms - Settings
 export { AppearanceClient } from "./organisms/settings/AppearanceClient";
 export { BillingClient } from "./organisms/settings/BillingClient";
-export { ProfileClient } from "./organisms/settings/ProfileClient";
+export { ProfileClient } from "./organisms/settings/profile/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
 

@@ -28,6 +28,7 @@ interface DashboardNavProps {
     image?: string | null;
   };
   isSubscribed?: boolean;
+  salonIconUrl?: string | null;
 }
 
 const navItems = [
@@ -63,7 +64,7 @@ const navItems = [
   },
 ];
 
-export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) {
+export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -130,7 +131,7 @@ export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) 
             href={session ? "/dashboard" : "/"}
             className="flex flex-shrink-0 items-center gap-2.5"
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
+            <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary">
               <Calendar className="w-4 h-4 text-white" aria-hidden="true" />
             </div>
             <span className="text-lg font-semibold text-foreground">Salonko</span>
@@ -154,7 +155,15 @@ export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) 
           {/* User menu */}
           <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
             <div className="hidden lg:block">
-              <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
+              {salonIconUrl ? (
+                <img
+                  src={salonIconUrl}
+                  alt={user.salonName || user.name || "Salon"}
+                  className="object-cover w-9 h-9 rounded-full"
+                />
+              ) : (
+                <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
+              )}
             </div>
             <Button
               variant="outline"

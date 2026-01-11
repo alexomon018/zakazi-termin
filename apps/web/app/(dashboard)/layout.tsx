@@ -15,9 +15,13 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Fetch subscription status to determine if user is subscribed
+  // Fetch subscription status and user data
   const caller = await createServerCaller();
-  let subscriptionStatus = await caller.subscription.getStatus();
+  const [subscriptionStatusResult, userData] = await Promise.all([
+    caller.subscription.getStatus(),
+    caller.user.me(),
+  ]);
+  let subscriptionStatus = subscriptionStatusResult;
 
   // Auto-start trial for new users on their first dashboard visit
   if (!subscriptionStatus.hasSubscription) {
@@ -47,8 +51,12 @@ export default async function DashboardLayout({
   const isSubscribed = subscriptionStatus.isActive || subscriptionStatus.isInTrial;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <DashboardNav user={session.user} isSubscribed={isSubscribed} />
+    <div className="bg-gray-50 min-h-dvh dark:bg-gray-900">
+      <DashboardNav
+        user={session.user}
+        isSubscribed={isSubscribed}
+        salonIconUrl={userData?.salonIconUrl}
+      />
       <TrialBanner />
       <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</main>
     </div>

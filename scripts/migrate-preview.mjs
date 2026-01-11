@@ -19,7 +19,8 @@
  */
 
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 function usage(exitCode = 0) {
   // eslint-disable-next-line no-console
@@ -71,6 +72,47 @@ function maskDatabaseUrl(rawUrl) {
 
 function requireEnv(name) {
   if (!process.env[name]) fail(`Missing required env var: ${name}`);
+}
+
+function stripWrappingQuotes(v) {
+  if (!v) return v;
+  const s = v.trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    return s.slice(1, -1);
+  }
+  return s;
+}
+
+function tryLoadEnvFile(filePath) {
+  try {
+    if (!existsSync(filePath)) return false;
+    const raw = readFileSync(filePath, "utf8");
+    let loadedCount = 0;
+
+    for (const lineRaw of raw.split(/\r?\n/u)) {
+      const line = lineRaw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const eq = line.indexOf("=");
+      if (eq <= 0) continue;
+
+      const key = line.slice(0, eq).trim();
+      let value = stripWrappingQuotes(line.slice(eq + 1).trim());
+
+      if (!key) continue;
+      if (Object.prototype.hasOwnProperty.call(process.env, key)) continue;
+
+      // Convenience: allow \n inside quoted values.
+      value = value.replace(/\\n/gu, "\n");
+
+      process.env[key] = value;
+      loadedCount++;
+    }
+
+    if (loadedCount > 0) info(`🔧 Loaded ${loadedCount} env var(s) from ${filePath}`);
+    return loadedCount > 0;
+  } catch {
+    return false;
+  }
 }
 
 function sleep(ms) {
@@ -158,6 +200,14 @@ async function neonPostJson(url, apiKey, body) {
 async function main() {
   const args = parseArgs(process.argv);
 
+  // This script is a plain Node CLI (not Next.js), so we opportunistically load common .env files.
+  // We never override vars already present in the environment.
+  const cwd = process.cwd();
+  tryLoadEnvFile(resolve(cwd, ".env"));
+  tryLoadEnvFile(resolve(cwd, ".env.local"));
+  tryLoadEnvFile(resolve(cwd, ".env.preview.local"));
+  tryLoadEnvFile(resolve(cwd, ".env.development.local"));
+
   requireEnv("NEON_API_KEY");
   requireEnv("NEON_PROJECT_ID");
 
@@ -213,6 +263,7 @@ async function main() {
     info(`🧬 Creating Neon branch '${neonBranch}' from '${parentName}'...`);
     const createJson = await neonPostJson(`${apiBase}/branches`, apiKey, {
       branch: { name: neonBranch, parent_id: parent.id },
+      endpoints: [{ type: "read_write" }],
     });
     branchId = createJson?.branch?.id ?? "";
     if (!branchId) {

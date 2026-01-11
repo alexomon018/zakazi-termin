@@ -35,6 +35,7 @@ type EventType = {
     name: string | null;
     salonName: string | null;
     avatarUrl: string | null;
+    salonIconUrl: string | null;
     theme?: string | null;
     brandColor?: string | null;
     darkBrandColor?: string | null;
@@ -277,7 +278,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
   return (
     <FramerMotionProvider>
       <div
-        className="px-2 sm:px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900"
+        className="px-2 py-8 min-h-screen bg-gray-50 sm:px-4 dark:bg-gray-900"
         style={
           {
             "--brand-color": brandColor,
@@ -298,20 +299,20 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
             eventLength={eventType.length}
             eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
             salonName={eventType.user?.salonName}
-            userAvatarUrl={eventType.user?.avatarUrl}
+            userAvatarUrl={eventType.user?.salonIconUrl}
             isRescheduling={isRescheduling}
           />
 
           {/* Booking flow */}
           <m.div
             ref={containerScope}
-            className="booking-container mx-auto"
+            className="mx-auto booking-container"
             data-state={bookingState}
           >
-            <Card className="overflow-hidden w-full sm:w-fit mx-auto">
+            <Card className="overflow-hidden mx-auto w-full sm:w-fit">
               <CardContent className="p-0">
                 {currentStep === "select-time" ? (
-                  <div className="flex flex-col md:flex-row divide-y divide-gray-200 dark:divide-gray-700 md:divide-y-0 md:divide-x">
+                  <div className="flex flex-col divide-y divide-gray-200 md:flex-row dark:divide-gray-700 md:divide-y-0 md:divide-x">
                     {/* Calendar */}
                     <BookingCalendar
                       currentMonth={currentMonth}
