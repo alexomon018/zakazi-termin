@@ -9,6 +9,7 @@
     "@salonko/config": "workspace:*",
     "@salonko/emails": "workspace:*",
     "@salonko/prisma": "workspace:*",
+    "@salonko/s3": "workspace:*",
     "@salonko/scheduling": "workspace:*",
     "@trpc/server": "^11.0.0-rc.660",
     "@upstash/ratelimit": "^2.0.7",

@@ -97,6 +97,7 @@ model User {
   salonName          String?          @unique
   password           UserPassword?
   avatarUrl          String?
+  salonIconKey       String?          // S3 object key for uploaded salon icon
   bio                String?
   timeZone           String           @default("Europe/Belgrade")
   weekStart          String           @default("Monday")

@@ -1,3 +1,4 @@
+import { generatePresignedUrl } from "@salonko/s3";
 import {
   protectedProcedure,
   publicProcedure,
@@ -59,6 +60,7 @@ export const eventTypeRouter = router({
               name: true,
               salonName: true,
               avatarUrl: true,
+              salonIconKey: true,
               timeZone: true,
               theme: true,
               brandColor: true,
@@ -72,7 +74,26 @@ export const eventTypeRouter = router({
           },
         },
       });
-      return eventType;
+
+      if (!eventType) return null;
+
+      // Generate pre-signed URL for salon icon
+      let salonIconUrl: string | null = null;
+      if (eventType.user.salonIconKey) {
+        try {
+          salonIconUrl = await generatePresignedUrl(eventType.user.salonIconKey);
+        } catch {
+          // If S3 is not configured, continue without icon URL
+        }
+      }
+
+      return {
+        ...eventType,
+        user: {
+          ...eventType.user,
+          salonIconUrl,
+        },
+      };
     }),
 
   // Create event type

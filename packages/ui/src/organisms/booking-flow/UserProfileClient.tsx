@@ -20,6 +20,7 @@ type UserProfile = {
   name: string | null;
   salonName: string | null;
   avatarUrl: string | null;
+  salonIconUrl?: string | null;
   theme?: string | null;
   brandColor?: string | null;
   darkBrandColor?: string | null;
@@ -35,6 +36,8 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
   const visibleEventTypes = user.eventTypes?.filter((et) => !et.hidden) || [];
   const brandColor = user.brandColor || "#292929";
   const darkBrandColor = user.darkBrandColor || "#fafafa";
+  // Prioritize salonIconUrl (S3) over avatarUrl (Google OAuth)
+  const effectiveAvatarUrl = user.salonIconUrl || user.avatarUrl;
 
   return (
     <div
@@ -49,9 +52,9 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
       <div className="max-w-2xl mx-auto">
         {/* User profile header */}
         <div className="text-center mb-8">
-          {user.avatarUrl ? (
+          {effectiveAvatarUrl ? (
             <Image
-              src={user.avatarUrl}
+              src={effectiveAvatarUrl}
               alt={user.salonName || ""}
               width={80}
               height={80}

@@ -35,6 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description =
       eventType.description ||
       `Zakazite ${eventType.title} (${eventType.length} min) kod ${eventType.user.salonName || salonName}. Online zakazivanje termina putem Salonko platforme.`;
+    // Prioritize salonIconUrl (S3) over avatarUrl (Google OAuth)
+    const imageUrl = eventType.user.salonIconUrl || eventType.user.avatarUrl;
 
     return {
       title,
@@ -44,15 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         url: `${baseUrl}/${salonName}/${eventSlug}`,
         type: "website",
-        images: eventType.user.avatarUrl
-          ? [{ url: eventType.user.avatarUrl, alt: eventType.user.salonName || salonName }]
-          : [],
+        images: imageUrl ? [{ url: imageUrl, alt: eventType.user.salonName || salonName }] : [],
       },
       twitter: {
         card: "summary",
         title,
         description,
-        images: eventType.user.avatarUrl ? [eventType.user.avatarUrl] : [],
+        images: imageUrl ? [imageUrl] : [],
       },
       alternates: {
         canonical: `${baseUrl}/${salonName}/${eventSlug}`,

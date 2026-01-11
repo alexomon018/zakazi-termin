@@ -1,9 +1,24 @@
 import { logger } from "@salonko/config";
+import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { getStripe, isTestStripeId } from "../lib/stripe";
+
+/**
+ * Helper to generate a salon icon URL from S3 key
+ * Returns null if no key is provided
+ */
+async function getSalonIconUrl(salonIconKey: string | null): Promise<string | null> {
+  if (!salonIconKey) return null;
+  try {
+    return await generatePresignedUrl(salonIconKey);
+  } catch {
+    // If S3 is not configured or key is invalid, return null
+    return null;
+  }
+}
 
 export const userRouter = router({
   // Get current user profile
@@ -16,6 +31,7 @@ export const userRouter = router({
         name: true,
         salonName: true,
         avatarUrl: true,
+        salonIconKey: true,
         bio: true,
         timeZone: true,
         weekStart: true,
@@ -27,7 +43,16 @@ export const userRouter = router({
         identityProvider: true,
       },
     });
-    return user;
+
+    if (!user) return null;
+
+    // Generate pre-signed URL for salon icon
+    const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+
+    return {
+      ...user,
+      salonIconUrl,
+    };
   }),
 
   // Get user by salonName (public profile)
@@ -41,10 +66,19 @@ export const userRouter = router({
           name: true,
           salonName: true,
           avatarUrl: true,
+          salonIconKey: true,
           timeZone: true,
         },
       });
-      return user;
+
+      if (!user) return null;
+
+      const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+
+      return {
+        ...user,
+        salonIconUrl,
+      };
     }),
 
   // Get public profile with event types
@@ -58,6 +92,7 @@ export const userRouter = router({
           name: true,
           salonName: true,
           avatarUrl: true,
+          salonIconKey: true,
           timeZone: true,
           theme: true,
           brandColor: true,
@@ -78,7 +113,15 @@ export const userRouter = router({
           },
         },
       });
-      return user;
+
+      if (!user) return null;
+
+      const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+
+      return {
+        ...user,
+        salonIconUrl,
+      };
     }),
 
   // Update user profile

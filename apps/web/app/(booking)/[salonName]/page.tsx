@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${user.salonName || salonName} - Zakazite termin`;
   const description = `Zakazite termin kod ${user.salonName || salonName} online. Brzo i jednostavno zakazivanje termina putem Salonko platforme.`;
+  // Prioritize salonIconUrl (S3) over avatarUrl (Google OAuth)
+  const imageUrl = user.salonIconUrl || user.avatarUrl;
 
   return {
     title,
@@ -34,13 +36,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `${baseUrl}/${salonName}`,
       type: "profile",
-      images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.salonName || salonName }] : [],
+      images: imageUrl ? [{ url: imageUrl, alt: user.salonName || salonName }] : [],
     },
     twitter: {
       card: "summary",
       title,
       description,
-      images: user.avatarUrl ? [user.avatarUrl] : [],
+      images: imageUrl ? [imageUrl] : [],
     },
     alternates: {
       canonical: `${baseUrl}/${salonName}`,
@@ -65,7 +67,7 @@ export default async function UserBookingPage({ params }: Props) {
       <LocalBusinessSchema
         name={user.salonName || salonName}
         salonName={salonName}
-        avatarUrl={user.avatarUrl}
+        avatarUrl={user.salonIconUrl || user.avatarUrl}
       />
       <BreadcrumbSchema
         items={[
