@@ -154,7 +154,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production" || process.env.NODE_ENV === "development",
+        secure: process.env.NODE_ENV === "production",
         // Explicit maxAge ensures cookie persists on mobile browsers
         // Mobile browsers often clear session cookies when app is backgrounded
         maxAge: 30 * 24 * 60 * 60, // 30 days (must match session.maxAge)

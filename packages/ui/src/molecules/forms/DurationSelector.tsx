@@ -54,7 +54,10 @@ export function DurationSelector({
             min={min}
             max={max}
             value={value}
-            onChange={(e) => onChange(Number.parseInt(e.target.value) || 30)}
+            onChange={(e) => {
+              const parsed = Number.parseInt(e.target.value);
+              onChange(Number.isNaN(parsed) ? min : Math.max(min, Math.min(max, parsed)));
+            }}
             className="w-20"
           />
           <span className="text-sm text-gray-500 dark:text-gray-400">min</span>

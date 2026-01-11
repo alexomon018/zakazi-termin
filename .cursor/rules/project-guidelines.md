@@ -154,9 +154,12 @@ The codebase strictly follows atomic design methodology:
 Use the configured TypeScript path aliases:
 
 ```tsx
-import { Button } from "@atoms";
-import { ProductCard } from "@molecules";
-import { Header } from "@organisms";
-import { apiClient } from "@/api";
+// UI components from @salonko/ui package
+import { Button } from "@salonko/ui";
+import { PricingCard } from "@salonko/ui";
+import { LandingHeader } from "@salonko/ui";
+
+// Utilities and app-specific imports using @/* alias (maps to apps/web/*)
 import { cn } from "@/lib/utils";
+import { getSession } from "@/lib/auth";
 ```
