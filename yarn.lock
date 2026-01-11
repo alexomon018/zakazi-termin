@@ -3648,7 +3648,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@salonko/s3@workspace:packages/s3":
+"@salonko/s3@workspace:*, @salonko/s3@workspace:packages/s3":
   version: 0.0.0-use.local
   resolution: "@salonko/s3@workspace:packages/s3"
   dependencies:
@@ -3680,6 +3680,7 @@ __metadata:
     "@salonko/config": "workspace:*"
     "@salonko/emails": "workspace:*"
     "@salonko/prisma": "workspace:*"
+    "@salonko/s3": "workspace:*"
     "@salonko/scheduling": "workspace:*"
     "@trpc/server": "npm:^11.0.0-rc.660"
     "@upstash/ratelimit": "npm:^2.0.7"
