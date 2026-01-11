@@ -100,7 +100,7 @@ export class EventTypesListPage extends BasePage {
 
     if (!dialogHandled) {
       // Check for custom confirm dialog (fallback)
-      const confirmButton = this.page.locator('button:has-text("Potvrdi")');
+      const confirmButton = this.page.locator('button:has-text("Obriši")');
       const confirmButtonVisible = await confirmButton
         .isVisible({ timeout: 2000 })
         .catch(() => false);

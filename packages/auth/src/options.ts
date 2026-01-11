@@ -142,7 +142,24 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     // Shorter JWT lifetime reduces the impact of token leakage and limits stale auth state.
     // Subscription access is enforced server-side (DB-backed) for protected routes.
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        // Explicit maxAge ensures cookie persists on mobile browsers
+        // Mobile browsers often clear session cookies when app is backgrounded
+        maxAge: 30 * 24 * 60 * 60, // 30 days (must match session.maxAge)
+      },
+    },
   },
   pages: {
     signIn: "/login",

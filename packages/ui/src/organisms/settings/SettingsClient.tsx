@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, ConfirmDialog } from "@salonko/ui";
 import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -19,6 +19,8 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
   const errorParam = searchParams.get("error");
 
   const [connectingCalendar, setConnectingCalendar] = useState(false);
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [connectionToDisconnect, setConnectionToDisconnect] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -45,6 +47,18 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
     } catch (error) {
       console.error("Failed to initiate Google Calendar connection:", error);
       setConnectingCalendar(false);
+    }
+  };
+
+  const handleDisconnect = (credentialId: string) => {
+    setConnectionToDisconnect(credentialId);
+    setDisconnectDialogOpen(true);
+  };
+
+  const confirmDisconnect = () => {
+    if (connectionToDisconnect) {
+      disconnectCalendar.mutate({ credentialId: connectionToDisconnect });
+      setConnectionToDisconnect(null);
     }
   };
 
@@ -139,13 +153,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (confirm("Da li ste sigurni da želite da isključite ovaj kalendar?")) {
-                          disconnectCalendar.mutate({
-                            credentialId: connection.id,
-                          });
-                        }
-                      }}
+                      onClick={() => handleDisconnect(connection.id)}
                       disabled={disconnectCalendar.isPending}
                     >
                       <Trash2 className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
@@ -184,6 +192,16 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
           </Button>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={disconnectDialogOpen}
+        onOpenChange={setDisconnectDialogOpen}
+        onConfirm={confirmDisconnect}
+        title="Isključi kalendar"
+        description="Da li ste sigurni da želite da isključite ovaj kalendar?"
+        confirmText="Isključi"
+        isLoading={disconnectCalendar.isPending}
+      />
     </div>
   );
 }
