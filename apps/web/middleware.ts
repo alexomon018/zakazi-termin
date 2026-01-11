@@ -48,19 +48,8 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
 
-    // Authenticated user - check if already verified
-    const cookie = req.headers.get("cookie") ?? "";
-    const verifyCheckRes = await fetch(new URL("/api/auth/email-verified", req.url), {
-      headers: { cookie },
-      cache: "no-store",
-    });
-
-    if (verifyCheckRes.ok) {
-      const verifyData = (await verifyCheckRes.json()) as { emailVerified: boolean };
-      if (verifyData.emailVerified) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-      }
-    }
+    // If already authenticated, no need to be on verify-email (Option A: don't gate dashboard by verification)
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // Redirect unauthenticated users away from dashboard
@@ -68,22 +57,6 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  // Check email verification for dashboard access
-  if (isDashboardPage && token) {
-    const cookie = req.headers.get("cookie") ?? "";
-    const emailVerifiedRes = await fetch(new URL("/api/auth/email-verified", req.url), {
-      headers: { cookie },
-      cache: "no-store",
-    });
-
-    if (emailVerifiedRes.ok) {
-      const emailData = (await emailVerifiedRes.json()) as { emailVerified: boolean };
-      if (!emailData.emailVerified) {
-        return NextResponse.redirect(new URL("/verify-email", req.url));
-      }
-    }
   }
 
   // Check subscription status for protected dashboard routes

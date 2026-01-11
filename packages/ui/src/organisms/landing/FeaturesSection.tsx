@@ -1,80 +1,70 @@
 "use client";
 
-import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
-import { FeatureCard } from "@salonko/ui/molecules/landing/FeatureCard";
-import { cn } from "@salonko/ui/utils";
 import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
 
-export function FeaturesSection() {
-  const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
-  const features = [
-    {
-      icon: Calendar,
-      title: "Online kalendar",
-      description:
-        "Vaši klijenti vide slobodne termine u realnom vremenu i zakazuju kada im odgovara.",
-      variant: "primary" as const,
-    },
-    {
-      icon: Clock,
-      title: "Automatsko zakazivanje",
-      description: "Klijenti samostalno biraju uslugu, termin i frizera - bez vašeg angažmana.",
-      variant: "accent" as const,
-    },
-    {
-      icon: Bell,
-      title: "SMS podsetnici",
-      description: "Automatska obaveštenja smanjuju broj propuštenih termina za preko 70%.",
-      variant: "primary" as const,
-    },
-    {
-      icon: Users,
-      title: "Upravljanje osobljem",
-      description: "Dodajte više zaposlenih, podešavajte radno vreme i pratite njihovu zauzetost.",
-      variant: "accent" as const,
-    },
-    {
-      icon: Smartphone,
-      title: "Mobilna aplikacija",
-      description: "Pratite termine i upravljajte radom salona sa telefona, bilo gde, bilo kada.",
-      variant: "primary" as const,
-    },
-    {
-      icon: TrendingUp,
-      title: "Analitika i izveštaji",
-      description: "Pregledni izveštaji o prihodima, popularnim uslugama i zauzetosti salona.",
-      variant: "accent" as const,
-    },
-  ];
+const features = [
+  {
+    icon: Calendar,
+    title: "Online zakazivanje",
+    description:
+      "Klijenti vide slobodne termine u realnom vremenu i zakazuju kada im odgovara — bez čekanja.",
+  },
+  {
+    icon: Clock,
+    title: "Automatizacija",
+    description:
+      "Klijenti biraju uslugu, termin i zaposlenog samostalno. Vi samo primate obaveštenja.",
+  },
+  {
+    icon: Bell,
+    title: "Podsetnici",
+    description: "Automatski email i SMS podsetnici značajno smanjuju broj propuštenih termina.",
+  },
+  {
+    icon: Users,
+    title: "Tim",
+    description:
+      "Dodajte zaposlene, podesite im radno vreme i pratite zauzetost svakog člana tima.",
+  },
+  {
+    icon: Smartphone,
+    title: "Mobilni pristup",
+    description: "Upravljajte terminima sa telefona, bilo gde i bilo kada — sve na jednom mestu.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Izveštaji",
+    description: "Pregledni izveštaji o prihodima, najpopularnijim uslugama i zauzetosti salona.",
+  },
+];
 
+export function FeaturesSection() {
   return (
-    <section id="funkcije" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div
-          ref={headerRef.ref}
-          className={cn(
-            "text-center mb-16 transition-all duration-700 ease-out",
-            headerRef.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          )}
-        >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance">
-            Sve što vam treba za upravljanje terminima
+    <section id="funkcije" className="py-20 bg-white dark:bg-background lg:py-28">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Sve što vam treba na jednom mestu
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Jednostavan sistem koji štedi vaše vreme i poboljšava iskustvo vaših klijenata
+          <p className="mt-4 text-lg text-muted-foreground">
+            Jednostavan sistem koji štedi vreme i poboljšava iskustvo klijenata.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <FeatureCard
+        {/* Features Grid */}
+        <div className="grid gap-8 mt-16 md:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <div
               key={feature.title}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              variant={feature.variant}
-              delay={index * 100}
-            />
+              className="relative p-6 transition-colors rounded-xl hover:bg-gray-50 dark:hover:bg-muted/50"
+            >
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20">
+                <feature.icon className="w-5 h-5 text-primary" aria-hidden="true" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold text-foreground">{feature.title}</h3>
+              <p className="mt-2 text-muted-foreground leading-relaxed">{feature.description}</p>
+            </div>
           ))}
         </div>
       </div>

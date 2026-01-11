@@ -1,28 +1,28 @@
 "use client";
 
-import { StatDisplay } from "@salonko/ui/molecules/landing/StatDisplay";
+import { Calendar, CreditCard, Mail, MessageSquare } from "lucide-react";
+
+const integrations = [
+  { name: "Google Calendar", icon: Calendar },
+  { name: "Stripe", icon: CreditCard },
+  { name: "Email", icon: Mail },
+  { name: "SMS", icon: MessageSquare },
+];
 
 export function SocialProofBar() {
-  const stats = [
-    { value: "500+", label: "Zadovoljnih salona" },
-    { value: "50,000+", label: "Termina mesečno" },
-    { value: "95%", label: "Manje propuštenih" },
-    { value: "4.9★", label: "Ocena korisnika" },
-  ];
-
   return (
-    <section className="py-12 border-y border-border bg-muted/30 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-border/20 to-transparent" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center">
-          {stats.map((stat, index) => (
-            <StatDisplay
-              key={stat.label}
-              value={stat.value}
-              label={stat.label}
-              delay={index * 100}
-            />
-          ))}
+    <section className="py-8 border-y border-gray-100 dark:border-border bg-gray-50/50 dark:bg-muted/30">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-center gap-6 md:flex-row md:gap-12">
+          <p className="text-sm font-medium text-muted-foreground">Integracije koje podržavamo</p>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            {integrations.map((integration) => (
+              <div key={integration.name} className="flex items-center gap-2 text-muted-foreground">
+                <integration.icon className="w-5 h-5" aria-hidden="true" />
+                <span className="text-sm font-medium">{integration.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

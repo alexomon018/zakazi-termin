@@ -146,7 +146,7 @@ export default function VerifyEmailClient() {
         </p>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-center text-gray-600 dark:text-gray-400 mb-6">
+        <p className="mb-6 text-sm text-center text-gray-600 dark:text-gray-400">
           Unesite 6-cifreni kod koji smo poslali na vašu email adresu
         </p>
 
@@ -169,7 +169,7 @@ export default function VerifyEmailClient() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="code" className="text-gray-900 dark:text-white sr-only">
+            <Label htmlFor="code" className="text-gray-900 sr-only dark:text-white">
               Verifikacioni kod
             </Label>
             <div className="flex justify-center">
@@ -199,7 +199,7 @@ export default function VerifyEmailClient() {
             {errors.code && (
               <p
                 data-testid="verify-email-code-error"
-                className="text-sm text-red-600 dark:text-red-400 text-center"
+                className="text-sm text-center text-red-600 dark:text-red-400"
               >
                 {errors.code.message}
               </p>
