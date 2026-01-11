@@ -146,8 +146,8 @@ export function AvailabilityClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dostupnost</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-foreground">Dostupnost</h1>
+        <p className="mt-1 text-muted-foreground">
           Upravljajte svojim radnim vremenom i rasporedima
         </p>
       </div>
@@ -183,8 +183,8 @@ export function AvailabilityClient({
                   key={schedule.id}
                   className={`w-full flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedScheduleId === schedule.id
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
-                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      ? "border-primary bg-primary/5 dark:bg-primary/10"
+                      : "border-gray-200 dark:border-border hover:border-gray-300 dark:hover:border-muted-foreground/30"
                   }`}
                 >
                   <button
@@ -192,12 +192,10 @@ export function AvailabilityClient({
                     className="flex gap-2 items-center flex-1 text-left"
                     onClick={() => handleSelectSchedule(schedule.id)}
                   >
-                    <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {schedule.name}
-                    </span>
+                    <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+                    <span className="font-medium text-foreground">{schedule.name}</span>
                     {currentUser?.defaultScheduleId === schedule.id && (
-                      <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded">
                         Podrazumevani
                       </span>
                     )}
@@ -211,13 +209,16 @@ export function AvailabilityClient({
                       }
                     }}
                   >
-                    <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                    <Trash2
+                      className="w-4 h-4 text-muted-foreground hover:text-red-500"
+                      aria-hidden="true"
+                    />
                   </Button>
                 </div>
               ))}
 
               {schedules?.length === 0 && (
-                <p className="py-4 text-sm text-center text-gray-500 dark:text-gray-400">
+                <p className="py-4 text-sm text-center text-muted-foreground">
                   Nemate nijedan raspored. Kreirajte novi raspored iznad.
                 </p>
               )}
@@ -240,7 +241,7 @@ export function AvailabilityClient({
                   {availability.map((entry, entryIndex) => (
                     <div
                       key={`${entry.days.join("-")}-${entry.startTime}-${entryIndex}`}
-                      className="p-4 space-y-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                      className="p-4 space-y-4 rounded-lg border border-gray-200 dark:border-border"
                     >
                       {/* Days selector */}
                       <div className="flex flex-wrap gap-2">
@@ -251,8 +252,8 @@ export function AvailabilityClient({
                             onClick={() => toggleDay(entryIndex, day.value)}
                             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                               entry.days.includes(day.value)
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                ? "bg-primary text-white"
+                                : "bg-gray-100 dark:bg-muted text-muted-foreground hover:bg-gray-200 dark:hover:bg-muted/80"
                             }`}
                           >
                             {day.short}
@@ -263,7 +264,7 @@ export function AvailabilityClient({
                       {/* Time inputs */}
                       <div className="flex gap-4 items-center">
                         <div className="flex gap-2 items-center">
-                          <Label className="text-sm text-gray-500 dark:text-gray-400">Od</Label>
+                          <Label className="text-sm text-muted-foreground">Od</Label>
                           <Input
                             type="time"
                             value={entry.startTime}
@@ -272,7 +273,7 @@ export function AvailabilityClient({
                           />
                         </div>
                         <div className="flex gap-2 items-center">
-                          <Label className="text-sm text-gray-500 dark:text-gray-400">Do</Label>
+                          <Label className="text-sm text-muted-foreground">Do</Label>
                           <Input
                             type="time"
                             value={entry.endTime}
@@ -282,7 +283,10 @@ export function AvailabilityClient({
                         </div>
                         {availability.length > 1 && (
                           <Button variant="ghost" size="sm" onClick={() => removeEntry(entryIndex)}>
-                            <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                            <Trash2
+                              className="w-4 h-4 text-muted-foreground hover:text-red-500"
+                              aria-hidden="true"
+                            />
                           </Button>
                         )}
                       </div>
@@ -292,12 +296,12 @@ export function AvailabilityClient({
 
                 {/* Add entry button */}
                 <Button variant="outline" onClick={addEntry} className="w-full">
-                  <Plus className="mr-2 w-4 h-4" />
+                  <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
                   Dodaj vremenski interval
                 </Button>
 
                 {/* Actions */}
-                <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-border">
                   <Button
                     variant="outline"
                     onClick={() =>
@@ -310,7 +314,7 @@ export function AvailabilityClient({
                       setDefaultSchedule.isPending
                     }
                   >
-                    <Check className="mr-2 w-4 h-4" />
+                    <Check className="mr-2 w-4 h-4" aria-hidden="true" />
                     Postavi kao podrazumevani
                   </Button>
                   <Button
@@ -322,8 +326,11 @@ export function AvailabilityClient({
                 </div>
               </div>
             ) : (
-              <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                <Clock className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
+              <div className="py-12 text-center text-muted-foreground">
+                <Clock
+                  className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
+                  aria-hidden="true"
+                />
                 <p>Izaberite raspored sa leve strane ili kreirajte novi</p>
               </div>
             )}

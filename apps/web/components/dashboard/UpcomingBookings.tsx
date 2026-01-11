@@ -79,29 +79,27 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
       </CardHeader>
       <CardContent>
         {displayedBookings.length === 0 ? (
-          <p className="py-8 text-center text-gray-500 dark:text-gray-400">
-            Nemate zakazanih termina.
-          </p>
+          <p className="py-8 text-center text-muted-foreground">Nemate zakazanih termina.</p>
         ) : (
           <>
-            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+            <div className="divide-y divide-gray-100 dark:divide-border">
               {displayedBookings.map((booking) => (
                 <div key={booking.id} className="flex justify-between items-center py-4">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{booking.title}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="font-medium text-foreground">{booking.title}</p>
+                    <p className="text-sm text-muted-foreground">
                       {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-foreground">
                       {new Date(booking.startTime).toLocaleDateString("sr-RS", {
                         weekday: "short",
                         day: "numeric",
                         month: "short",
                       })}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {new Date(booking.startTime).toLocaleTimeString("sr-RS", {
                         hour: "2-digit",
                         minute: "2-digit",

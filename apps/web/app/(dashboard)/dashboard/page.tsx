@@ -57,52 +57,48 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Dobrodošli, {session.user.name?.split(" ")[0] || "Korisniče"}!
         </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          Evo pregleda vaših termina i aktivnosti.
-        </p>
+        <p className="mt-1 text-muted-foreground">Evo pregleda vaših termina i aktivnosti.</p>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row justify-between items-center pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Danas
-            </CardTitle>
-            <Calendar className="w-4 h-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Danas</CardTitle>
+            <Calendar className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold dark:text-white">{todayBookings}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">zakazanih termina</p>
+            <div className="text-2xl font-bold text-foreground">{todayBookings}</div>
+            <p className="text-xs text-muted-foreground">zakazanih termina</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row justify-between items-center pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Predstojeći termini
             </CardTitle>
-            <Users className="w-4 h-4 text-gray-400" />
+            <Users className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold dark:text-white">{upcomingBookings}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">ukupno zakazano</p>
+            <div className="text-2xl font-bold text-foreground">{upcomingBookings}</div>
+            <p className="text-xs text-muted-foreground">ukupno zakazano</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row justify-between items-center pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Tipovi termina
             </CardTitle>
-            <Clock className="w-4 h-4 text-gray-400" />
+            <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold dark:text-white">{eventTypes}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">aktivnih tipova</p>
+            <div className="text-2xl font-bold text-foreground">{eventTypes}</div>
+            <p className="text-xs text-muted-foreground">aktivnih tipova</p>
           </CardContent>
         </Card>
       </div>
@@ -111,12 +107,12 @@ export default async function DashboardPage() {
       <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
 
       {/* Quick links */}
-      <div className="p-6 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-        <h3 className="mb-2 font-medium text-blue-900 dark:text-blue-300">Link za zakazivanje</h3>
-        <p className="mb-3 text-sm text-blue-700 dark:text-blue-400">
+      <div className="p-6 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+        <h3 className="mb-2 font-medium text-foreground">Link za zakazivanje</h3>
+        <p className="mb-3 text-sm text-muted-foreground">
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
-        <code className="block px-3 py-2 text-sm text-blue-900 bg-white rounded border border-blue-200 dark:bg-gray-800 dark:border-blue-800 dark:text-blue-300">
+        <code className="block px-3 py-2 text-sm text-foreground bg-white rounded border border-gray-200 dark:bg-card dark:border-border">
           {origin}/{session.user.salonName}
         </code>
       </div>

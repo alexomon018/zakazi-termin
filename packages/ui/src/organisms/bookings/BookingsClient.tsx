@@ -252,13 +252,13 @@ export function BookingsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
+          <h1 className="text-2xl font-bold text-foreground">Termini</h1>
+          <p className="text-muted-foreground mt-1">Upravljajte zakazanim terminima</p>
         </div>
 
         {/* Filters */}
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
+          <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
             {filters.map((f) => (
               <TabFilter
                 key={f.key}
@@ -271,7 +271,7 @@ export function BookingsClient({
         </div>
 
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
+          <div className="text-muted-foreground">Učitavanje...</div>
         </div>
       </div>
     );
@@ -280,13 +280,13 @@ export function BookingsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
+        <h1 className="text-2xl font-bold text-foreground">Termini</h1>
+        <p className="text-muted-foreground mt-1">Upravljajte zakazanim terminima</p>
       </div>
 
       {/* Filters */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
+        <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
           {filters.map((f) => (
             <TabFilter
               key={f.key}
@@ -302,8 +302,11 @@ export function BookingsClient({
       {currentBookings.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-            <p className="text-gray-500 dark:text-gray-400">{getEmptyMessage()}</p>
+            <Calendar
+              className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-muted-foreground/40"
+              aria-hidden="true"
+            />
+            <p className="text-muted-foreground">{getEmptyMessage()}</p>
           </CardContent>
         </Card>
       ) : (
@@ -316,9 +319,7 @@ export function BookingsClient({
                     <div className="flex-1">
                       {/* Title and status */}
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {booking.title}
-                        </h3>
+                        <h3 className="font-semibold text-foreground">{booking.title}</h3>
                         <StatusBadge
                           status={
                             booking.status as "PENDING" | "ACCEPTED" | "CANCELLED" | "REJECTED"
@@ -328,7 +329,7 @@ export function BookingsClient({
 
                       {/* Event type */}
                       {booking.eventType && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        <p className="text-sm text-muted-foreground mb-3">
                           {booking.eventType.title}
                         </p>
                       )}
@@ -342,10 +343,8 @@ export function BookingsClient({
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                            GOST
-                          </p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
+                          <p className="text-xs font-medium text-muted-foreground mb-2">GOST</p>
                           {booking.attendees.map(
                             (attendee: {
                               id: string;
@@ -364,13 +363,9 @@ export function BookingsClient({
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                            NAPOMENA
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {booking.description}
-                          </p>
+                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
+                          <p className="text-xs font-medium text-muted-foreground mb-1">NAPOMENA</p>
+                          <p className="text-sm text-muted-foreground">{booking.description}</p>
                         </div>
                       )}
                     </div>
@@ -383,9 +378,9 @@ export function BookingsClient({
                             size="sm"
                             onClick={() => handleConfirm(booking.uid)}
                             disabled={confirmBooking.isPending}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-emerald-600 hover:bg-emerald-700"
                           >
-                            <Check className="w-4 h-4 mr-1" />
+                            <Check className="w-4 h-4 mr-1" aria-hidden="true" />
                             Potvrdi
                           </Button>
                           <Button
@@ -393,9 +388,9 @@ export function BookingsClient({
                             variant="outline"
                             onClick={() => handleRejectClick(booking.uid)}
                             disabled={rejectBooking.isPending}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                           >
-                            <X className="w-4 h-4 mr-1" />
+                            <X className="w-4 h-4 mr-1" aria-hidden="true" />
                             Odbij
                           </Button>
                         </>
@@ -406,7 +401,7 @@ export function BookingsClient({
                           variant="outline"
                           onClick={() => handleCancelClick(booking.uid)}
                           disabled={cancelBooking.isPending}
-                          className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                          className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                         >
                           Otkaži
                         </Button>
@@ -416,7 +411,7 @@ export function BookingsClient({
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="bg-gray-50 dark:bg-gray-800/50 px-4 py-2 text-xs text-gray-500 dark:text-gray-400 rounded-b-lg">
+                <div className="bg-gray-50 dark:bg-muted/50 px-4 py-2 text-xs text-muted-foreground rounded-b-lg">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>

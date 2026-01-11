@@ -2,65 +2,49 @@
 
 import { PRICING_CONFIG } from "@salonko/config";
 import { Button } from "@salonko/ui/atoms/Button";
-import { Card } from "@salonko/ui/atoms/Card";
-import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
 import { cn } from "@salonko/ui/utils";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 const features = [
   "Neograničeni termini",
   "Online zakazivanje 24/7",
-  "Email podsetnici za klijente",
+  "Email podsetnici",
   "Upravljanje rasporedom",
   "Google Calendar sinhronizacija",
-  "Personalizovana stranica za zakazivanje",
+  "Personalizovana stranica",
   "Mobilni pristup",
-  "Podrška putem emaila",
+  "Email podrška",
 ];
 
 export function PricingSection() {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
-  const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
-  const cardRef = useScrollAnimation({
-    threshold: 0.1,
-    triggerOnce: true,
-    delay: 100,
-  });
-
   const currentPricing = PRICING_CONFIG[billingInterval];
 
   return (
-    <section id="cene" className="px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-      <div className="mx-auto max-w-7xl">
-        <div
-          ref={headerRef.ref}
-          className={cn(
-            "mb-12 text-center transition-all duration-700 ease-out",
-            headerRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-          )}
-        >
-          <h2 className="mb-4 text-3xl font-bold text-balance text-foreground sm:text-4xl lg:text-5xl">
-            Jednostavna cena, sve funkcije
+    <section id="cene" className="py-20 bg-white dark:bg-background lg:py-28">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Jednostavna cena
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-pretty text-muted-foreground">
+          <p className="mt-4 text-lg text-muted-foreground">
             30 dana besplatno. Bez kreditne kartice. Otkažite bilo kada.
           </p>
         </div>
 
         {/* Billing Toggle */}
-        <div className="flex justify-center mb-10">
-          <fieldset className="inline-flex items-center gap-3 rounded-full border border-border bg-card p-1.5">
-            <legend className="sr-only">Period naplate</legend>
+        <div className="flex justify-center mt-10">
+          <div className="inline-flex items-center p-1 rounded-full bg-gray-100 dark:bg-muted">
             <button
               type="button"
               onClick={() => setBillingInterval("monthly")}
-              aria-pressed={billingInterval === "monthly"}
               className={cn(
-                "rounded-full px-5 py-2 text-sm font-medium transition-all",
+                "px-5 py-2 text-sm font-medium rounded-full transition-all",
                 billingInterval === "monthly"
-                  ? "bg-primary text-primary-foreground shadow-sm"
+                  ? "bg-white dark:bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -69,97 +53,78 @@ export function PricingSection() {
             <button
               type="button"
               onClick={() => setBillingInterval("yearly")}
-              aria-pressed={billingInterval === "yearly"}
               className={cn(
-                "relative rounded-full px-5 py-2 text-sm font-medium transition-all",
+                "relative px-5 py-2 text-sm font-medium rounded-full transition-all",
                 billingInterval === "yearly"
-                  ? "bg-primary text-primary-foreground shadow-sm"
+                  ? "bg-white dark:bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               Godišnje
-              {billingInterval === "yearly" && (
-                <span
-                  aria-hidden="true"
-                  className="absolute -right-2 -top-2 rounded-full bg-green-500 px-1.5 py-0.5 text-[10px] font-bold text-white"
-                >
-                  -17%
-                </span>
-              )}
+              <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold text-white bg-emerald-500 rounded-full">
+                -17%
+              </span>
             </button>
-          </fieldset>
+          </div>
         </div>
 
-        {/* Single Pricing Card */}
-        <div className="pt-4 mx-auto max-w-lg">
-          <Card
-            ref={cardRef.ref}
-            className={cn(
-              "relative border-2 border-primary p-8 shadow-glow transition-all duration-500",
-              cardRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-            )}
-          >
+        {/* Pricing Card */}
+        <div className="max-w-md mx-auto mt-10">
+          <div className="relative p-8 bg-white dark:bg-card rounded-2xl ring-1 ring-gray-200 dark:ring-border shadow-lg">
             {/* Badge */}
-            <div className="absolute -top-4 left-1/2 px-4 py-1 text-sm font-semibold rounded-full -translate-x-1/2 bg-gradient-primary text-primary-foreground shadow-elevated">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4" />
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+              <span className="px-4 py-1.5 text-sm font-medium text-white bg-primary rounded-full">
                 30 dana besplatno
               </span>
             </div>
 
-            {/* Savings Badge for Yearly */}
-            {billingInterval === "yearly" && currentPricing.savings && (
-              <div className="absolute top-4 right-4 px-3 py-1 text-xs font-bold text-white bg-green-500 rounded-full">
-                {currentPricing.savings}
-              </div>
-            )}
-
+            {/* Price */}
             <div className="mt-4 text-center">
-              <h3 className="mb-2 text-2xl font-bold text-foreground">Salonko</h3>
-              <p className="mb-6 text-muted-foreground">Sve što vam treba za upravljanje salonom</p>
+              <h3 className="text-xl font-semibold text-foreground">Salonko Pro</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Sve što vam treba za upravljanje salonom
+              </p>
 
-              <div className="mb-2">
-                <span className="text-5xl font-bold text-foreground">{currentPricing.price}</span>
-                <span className="ml-2 text-lg text-muted-foreground">
+              <div className="mt-6">
+                <span className="text-5xl font-bold tracking-tight text-foreground">
+                  {currentPricing.price}
+                </span>
+                <span className="ml-1 text-muted-foreground">
                   RSD/{billingInterval === "monthly" ? "mes" : "god"}
                 </span>
               </div>
 
-              {billingInterval === "yearly" && (
-                <p className="mb-6 text-sm text-muted-foreground">{currentPricing.total}</p>
+              {billingInterval === "yearly" && currentPricing.total && (
+                <p className="mt-2 text-sm text-muted-foreground">{currentPricing.total}</p>
               )}
-
-              <Button size="lg" className="mt-4 w-full text-base" asChild>
-                <Link href="/signup">Započni besplatni probni period</Link>
-              </Button>
-
-              <p className="mt-3 text-xs text-muted-foreground">Bez obaveza. Otkažite bilo kada.</p>
             </div>
 
-            <hr className="my-8 border-border" />
+            {/* CTA */}
+            <Button className="w-full mt-8" size="lg" asChild>
+              <Link href="/signup">Započni besplatno</Link>
+            </Button>
+            <p className="mt-3 text-xs text-center text-muted-foreground">
+              Bez obaveza. Otkažite bilo kada.
+            </p>
 
-            <ul className="space-y-3">
-              {features.map((feature) => (
-                <li key={feature} className="flex gap-3 items-start">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                  <span className="text-sm text-foreground">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
+            {/* Features */}
+            <div className="pt-8 mt-8 border-t border-gray-100 dark:border-border">
+              <ul className="space-y-3">
+                {features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 mt-0.5 text-emerald-500 shrink-0" />
+                    <span className="text-sm text-foreground">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
 
-        {/* Trust Badges */}
-        <div
-          className={cn(
-            "mt-12 text-center transition-all delay-300 duration-700",
-            cardRef.isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          )}
-        >
-          <p className="text-sm text-muted-foreground">
-            Sigurno plaćanje putem Stripe-a • SSL zaštićeno • GDPR usklađeno
-          </p>
-        </div>
+        {/* Trust indicators */}
+        <p className="mt-10 text-sm text-center text-muted-foreground">
+          Sigurno plaćanje · SSL zaštićeno · GDPR usklađeno
+        </p>
       </div>
     </section>
   );

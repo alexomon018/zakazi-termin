@@ -80,14 +80,14 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tipovi termina</h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-foreground">Tipovi termina</h1>
+          <p className="mt-1 text-muted-foreground">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
         </div>
         <Link href="/dashboard/event-types/new" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto">
-            <Plus className="mr-2 w-4 h-4" />
+            <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
             Novi tip termina
           </Button>
         </Link>
@@ -97,16 +97,17 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
         <Card>
           <CardContent className="py-12">
             <div className="text-center">
-              <Clock className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-                Nemate tipove termina
-              </h3>
-              <p className="mb-4 text-gray-500 dark:text-gray-400">
+              <Clock
+                className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
+                aria-hidden="true"
+              />
+              <h3 className="mb-2 text-lg font-medium text-foreground">Nemate tipove termina</h3>
+              <p className="mb-4 text-muted-foreground">
                 Kreirajte svoj prvi tip termina da biste omogućili klijentima da zakazuju.
               </p>
               <Link href="/dashboard/event-types/new">
                 <Button>
-                  <Plus className="mr-2 w-4 h-4" />
+                  <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
                   Kreiraj tip termina
                 </Button>
               </Link>
@@ -129,16 +130,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                       <div
                         className={cn(
                           "w-1 h-12 rounded-full flex-shrink-0",
-                          eventType.hidden ? "bg-gray-400" : "bg-blue-500"
+                          eventType.hidden ? "bg-gray-400 dark:bg-gray-600" : "bg-primary"
                         )}
                       />
                       <div className="min-w-0">
                         <div className="flex flex-wrap gap-2 items-center">
-                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                          <h3 className="font-medium text-foreground truncate">
                             {eventType.title}
                           </h3>
                           {eventType.hidden && (
-                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded flex-shrink-0">
+                            <span className="text-xs bg-gray-100 dark:bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
                               Skriveno
                             </span>
                           )}
@@ -148,16 +149,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center mt-1 text-sm text-muted-foreground">
                           <span className="flex gap-1 items-center">
-                            <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Clock className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                             {formatDuration(eventType.length)}
                           </span>
                           {eventType.locations &&
                           Array.isArray(eventType.locations) &&
                           eventType.locations.length > 0 ? (
                             <span className="flex gap-1 items-center min-w-0">
-                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                               <span className="truncate">
                                 {(
                                   eventType.locations as {
@@ -179,12 +180,14 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyLink(eventType)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                        className="text-muted-foreground hover:text-foreground px-2"
                       >
                         {copySuccess === eventType.id ? (
-                          <span className="text-xs text-green-600">Kopirano!</span>
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                            Kopirano!
+                          </span>
                         ) : (
-                          <Copy className="w-4 h-4" />
+                          <Copy className="w-4 h-4" aria-hidden="true" />
                         )}
                       </Button>
 
@@ -192,9 +195,9 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                       <Link
                         href={`/${currentUser?.salonName}/${eventType.slug}`}
                         target="_blank"
-                        className="p-2 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
                       </Link>
 
                       {/* Toggle visibility */}
@@ -202,12 +205,12 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                        className="text-muted-foreground hover:text-foreground px-2"
                       >
                         {eventType.hidden ? (
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4" aria-hidden="true" />
                         ) : (
-                          <EyeOff className="w-4 h-4" />
+                          <EyeOff className="w-4 h-4" aria-hidden="true" />
                         )}
                       </Button>
 
@@ -216,9 +219,9 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                          className="text-muted-foreground hover:text-foreground px-2"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" aria-hidden="true" />
                         </Button>
                       </Link>
 
@@ -227,18 +230,18 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(eventType.id)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-2"
+                        className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400 px-2"
                         data-testid={`delete-event-type-${eventType.id}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
                 </div>
 
                 {/* Public URL bar */}
-                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-gray-700 dark:bg-gray-800/50 overflow-hidden">
-                  <code className="text-xs text-gray-600 dark:text-gray-400 block truncate">
+                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50 overflow-hidden">
+                  <code className="text-xs text-muted-foreground block truncate">
                     {baseUrl}/{currentUser?.salonName}/{eventType.slug}
                   </code>
                 </div>
@@ -250,9 +253,9 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
       {/* Help section */}
       {eventTypes && eventTypes.length > 0 && (
-        <div className="p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-          <h4 className="mb-1 font-medium text-blue-900 dark:text-blue-300">Kako funkcioniše?</h4>
-          <p className="text-sm text-blue-700 dark:text-blue-400">
+        <div className="p-4 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+          <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
+          <p className="text-sm text-muted-foreground">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše
             dostupnosti, a vi ćete dobiti obaveštenje o novom terminu.
           </p>

@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@salonko/ui";
-import { NavItem } from "@salonko/ui";
 import { MobileNavItem } from "@salonko/ui";
+import { NavItem } from "@salonko/ui";
 import { UserInfoDisplay } from "@salonko/ui";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -122,14 +122,18 @@ export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) 
   }, []);
 
   return (
-    <header className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+    <header className="bg-white border-b border-gray-200 dark:bg-card dark:border-border">
       <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
         <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
-          <Link href={session ? "/dashboard" : "/"} className="flex flex-shrink-0 items-center">
-            <span className="text-lg font-bold text-gray-900 md:text-xl dark:text-white">
-              Salonko
-            </span>
+          <Link
+            href={session ? "/dashboard" : "/"}
+            className="flex flex-shrink-0 items-center gap-2.5"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
+              <Calendar className="w-4 h-4 text-white" aria-hidden="true" />
+            </div>
+            <span className="text-lg font-semibold text-foreground">Salonko</span>
           </Link>
 
           {/* Navigation */}
@@ -165,18 +169,18 @@ export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) 
         </div>
       </div>
 
-      <nav className="relative py-2 border-t border-gray-200 md:hidden dark:border-gray-700">
+      <nav className="relative py-2 border-t border-gray-200 md:hidden dark:border-border">
         {/* Left arrow */}
         <button
           type="button"
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-opacity ${
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-card border-r border-gray-200 dark:border-border transition-opacity ${
             canScrollPrev ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll left"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         </button>
 
         {/* Carousel viewport */}
@@ -202,12 +206,12 @@ export function DashboardNav({ user, isSubscribed = false }: DashboardNavProps) 
           type="button"
           onClick={scrollNext}
           disabled={!canScrollNext}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 transition-opacity ${
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-card border-l border-gray-200 dark:border-border transition-opacity ${
             canScrollNext ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll right"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         </button>
       </nav>
     </header>
