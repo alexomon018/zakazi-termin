@@ -27,6 +27,7 @@ const nextConfig = {
   transpilePackages: [
     "@salonko/auth",
     "@salonko/prisma",
+    "@salonko/s3",
     "@salonko/ui",
     "@salonko/trpc",
     "@salonko/scheduling",

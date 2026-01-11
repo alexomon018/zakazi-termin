@@ -4,6 +4,7 @@ export { cn } from "./utils";
 // Atoms
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
+export { Textarea } from "./atoms/Textarea";
 export { Label } from "./atoms/Label";
 export { ColorPicker, PRESET_COLORS, DARK_PRESET_COLORS } from "./atoms/ColorPicker";
 export {
@@ -113,7 +114,7 @@ export { AvailabilityClient } from "./organisms/availability/AvailabilityClient"
 // Organisms - Settings
 export { AppearanceClient } from "./organisms/settings/AppearanceClient";
 export { BillingClient } from "./organisms/settings/BillingClient";
-export { ProfileClient } from "./organisms/settings/ProfileClient";
+export { ProfileClient } from "./organisms/settings/profile/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
 
@@ -168,4 +169,5 @@ export {
 
 // Hooks
 export { useCookieConsent } from "./hooks/useCookieConsent";
+export { useDebounce } from "./hooks/useDebounce";
 export { useExponentialBackoffPolling } from "./hooks/useExponentialBackoffPolling";

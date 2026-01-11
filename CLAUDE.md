@@ -32,6 +32,7 @@ yarn test:e2e:ui            # Run Playwright with UI mode
 yarn workspace @salonko/web test:e2e playwright/auth/login.e2e.ts
 ```
 
+
 ## Architecture
 
 ### Monorepo Structure (Yarn Workspaces + Turborepo)
@@ -127,6 +128,10 @@ yarn lint:fix
 14. **Fail Fast, Loud, Early**: Assert aggressively. Silent failures are sabotage.
 
 15. **Docs or It Didn't Ship**: Public utilities need JSDoc/TSDoc. Private helpers: inline types are fine but must be clear.
+
+16. **Use the existing utilities and patterns in the codebase**: Do not reinvent the wheel.
+
+17. **Never use window prompts or alerts always use the components from the ui package**: use shadcn/ui Dialog component for alerts.
 
 ## Dependency and Constant Management
 

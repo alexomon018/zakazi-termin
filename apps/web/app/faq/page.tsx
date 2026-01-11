@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       <LandingHeader />
       <main>
         <FAQSection

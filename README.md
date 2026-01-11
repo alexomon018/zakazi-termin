@@ -392,11 +392,46 @@ UPSTASH_REDIS_REST_TOKEN="..."
 # Cron Authentication
 CRON_SECRET="your-cron-secret"
 
+# S3 (salon icons)
+AWS_REGION="eu-central-1"
+AWS_ACCESS_KEY_ID="AKIA..."
+AWS_SECRET_ACCESS_KEY="..."
+S3_BUCKET_NAME="your-s3-bucket-name"
+
 # App Configuration
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_NAME="Salonko"
 NEXT_PUBLIC_DEFAULT_TIMEZONE="Europe/Belgrade"
 NEXT_PUBLIC_DEFAULT_LOCALE="sr"
+```
+
+### S3 credentials (salon icons)
+
+- **AWS_REGION**: the AWS region where your S3 bucket lives (must match the bucket region).
+- **AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY**: create an IAM user (or role) with programmatic access.
+- **S3_BUCKET_NAME**: the target bucket used for salon icon uploads.
+
+For least-privilege access, grant only S3 permissions needed by the app (head/get/put/delete) for your bucket/prefix. Example policy (replace `YOUR_BUCKET_NAME`):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SalonIconsObjects",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:HeadObject"],
+      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME/salon-icons/*"
+    },
+    {
+      "Sid": "ListSalonIconsPrefix",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::YOUR_BUCKET_NAME",
+      "Condition": { "StringLike": { "s3:prefix": ["salon-icons/*"] } }
+    }
+  ]
+}
 ```
 
 ### Optional
