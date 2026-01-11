@@ -154,6 +154,21 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
 
           {/* User menu */}
           <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
+            {/* Mobile: Show salon logo or name */}
+            <Link href="/dashboard/settings/profile" className="md:hidden">
+              {salonIconUrl ? (
+                <img
+                  src={salonIconUrl}
+                  alt={user.salonName || user.name || "Salon"}
+                  className="object-cover w-8 h-8 rounded-full"
+                />
+              ) : (
+                <span className="text-sm font-medium text-foreground truncate max-w-[100px]">
+                  {user.salonName || user.name || "Salon"}
+                </span>
+              )}
+            </Link>
+            {/* Desktop: Show salon info */}
             <div className="hidden lg:block">
               {salonIconUrl ? (
                 <img
@@ -165,11 +180,12 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
                 <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
               )}
             </div>
+            {/* Desktop: Show logout button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleSignOut}
-              className="flex items-center"
+              className="hidden items-center md:flex"
             >
               <LogOut className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Odjava</span>

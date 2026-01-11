@@ -58,9 +58,20 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
         body: formData,
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        let errorMessage = "Upload failed";
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.error || errorMessage;
+        } catch {
+          const textError = await response.text();
+          if (textError) errorMessage = textError;
+        }
+        throw new Error(errorMessage);
+      }
 
-      if (!response.ok || !result.ok) {
+      const result = await response.json();
+      if (!result.ok) {
         throw new Error(result.error || "Upload failed");
       }
 
@@ -85,9 +96,20 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
         method: "DELETE",
       });
 
-      const result = await response.json();
+      if (!response.ok) {
+        let errorMessage = "Delete failed";
+        try {
+          const errorResult = await response.json();
+          errorMessage = errorResult.error || errorMessage;
+        } catch {
+          const textError = await response.text();
+          if (textError) errorMessage = textError;
+        }
+        throw new Error(errorMessage);
+      }
 
-      if (!response.ok || !result.ok) {
+      const result = await response.json();
+      if (!result.ok) {
         throw new Error(result.error || "Delete failed");
       }
 
@@ -185,7 +207,7 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
                         type="button"
                         onClick={handleRemoveIcon}
                         disabled={isUploading}
-                        className="bg-red-600 hover:bg-red-700 text-white"
+                        className="text-white bg-red-600 hover:bg-red-700"
                       >
                         {isUploading ? "Brisanje..." : "Obriši"}
                       </Button>

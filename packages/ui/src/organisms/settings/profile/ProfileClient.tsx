@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@salonko/ui";
+import { Button, useDebounce } from "@salonko/ui";
 import { AlertCircle, Check } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { z } from "zod";
 import { AccountInfoCard } from "./AccountInfoCard";
 import { BasicInfoCard } from "./BasicInfoCard";
 import { DangerZoneCard } from "./DangerZoneCard";
+import { LogoutCard } from "./LogoutCard";
 import { SalonLogoCard } from "./SalonLogoCard";
 import { TimeZoneCard } from "./TimeZoneCard";
 import { toSalonNameSlug } from "./slug";
@@ -113,7 +114,8 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   }, [user, reset, isDirty]);
 
   const watchedSalonName = watch("salonName");
-  const salonNameSlug = watchedSalonName ? toSalonNameSlug(watchedSalonName) : "";
+  const debouncedSalonName = useDebounce(watchedSalonName, 300);
+  const salonNameSlug = debouncedSalonName ? toSalonNameSlug(debouncedSalonName) : "";
 
   const shouldCheckSalonName =
     !!salonNameSlug && salonNameSlug.length >= 3 && salonNameSlug !== user?.salonName;
@@ -169,6 +171,8 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
         <TimeZoneCard control={control} />
 
         <AccountInfoCard user={user} />
+
+        <LogoutCard />
 
         <DangerZoneCard
           onDeleteAccount={handleDeleteAccount}
