@@ -2,7 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, cn } from "@salonko/ui";
+import { Button, Card, CardContent, ConfirmDialog, cn } from "@salonko/ui";
 import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -17,6 +17,8 @@ type EventTypesClientProps = {
 
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventTypeToDelete, setEventTypeToDelete] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
   const { data: eventTypes } = trpc.eventType.list.useQuery(undefined, {
@@ -54,8 +56,14 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Da li ste sigurni da želite da obrišete ovaj tip termina?")) {
-      deleteEventType.mutate({ id });
+    setEventTypeToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (eventTypeToDelete) {
+      deleteEventType.mutate({ id: eventTypeToDelete });
+      setEventTypeToDelete(null);
     }
   };
 
@@ -261,6 +269,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
           </p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Obriši tip termina"
+        description="Da li ste sigurni da želite da obrišete ovaj tip termina?"
+        confirmText="Obriši"
+        isLoading={deleteEventType.isPending}
+      />
     </div>
   );
 }

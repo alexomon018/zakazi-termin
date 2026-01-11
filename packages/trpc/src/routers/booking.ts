@@ -225,80 +225,89 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Get event type with user
-      const eventType = await ctx.prisma.eventType.findUnique({
-        where: { id: input.eventTypeId },
-        include: { user: true },
-      });
+      // Use transaction with serializable isolation to prevent race conditions
+      const booking = await ctx.prisma.$transaction(
+        async (tx) => {
+          // Get event type with user
+          const eventType = await tx.eventType.findUnique({
+            where: { id: input.eventTypeId },
+            include: { user: true },
+          });
 
-      if (!eventType) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tip događaja nije pronađen.",
-        });
-      }
+          if (!eventType) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Tip događaja nije pronađen.",
+            });
+          }
 
-      // Check for conflicts
-      const conflictingBooking = await ctx.prisma.booking.findFirst({
-        where: {
-          userId: eventType.userId,
-          status: { in: ["PENDING", "ACCEPTED"] },
-          OR: [
-            {
-              startTime: { lt: input.endTime },
-              endTime: { gt: input.startTime },
+          // Check for conflicts within transaction
+          const conflictingBooking = await tx.booking.findFirst({
+            where: {
+              userId: eventType.userId,
+              status: { in: ["PENDING", "ACCEPTED"] },
+              OR: [
+                {
+                  startTime: { lt: input.endTime },
+                  endTime: { gt: input.startTime },
+                },
+              ],
             },
-          ],
-        },
-      });
+          });
 
-      if (conflictingBooking) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Izabrani termin više nije dostupan.",
-        });
-      }
+          if (conflictingBooking) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Izabrani termin više nije dostupan.",
+            });
+          }
 
-      // Determine initial status
-      const status = eventType.requiresConfirmation ? "PENDING" : "ACCEPTED";
+          // Determine initial status
+          const status = eventType.requiresConfirmation ? "PENDING" : "ACCEPTED";
 
-      // Create booking with attendee
-      const booking = await ctx.prisma.booking.create({
-        data: {
-          title: `${eventType.title} sa ${input.name}`,
-          description: input.notes,
-          startTime: input.startTime,
-          endTime: input.endTime,
-          location: getLocationString(eventType.locations),
-          status,
-          userId: eventType.userId,
-          eventTypeId: eventType.id,
-          attendees: {
-            create: {
-              name: input.name,
-              email: input.email,
-              phoneNumber: input.phoneNumber,
-              timeZone: input.timeZone,
-              locale: input.locale,
+          // Create booking with attendee
+          return tx.booking.create({
+            data: {
+              title: `${eventType.title} sa ${input.name}`,
+              description: input.notes,
+              startTime: input.startTime,
+              endTime: input.endTime,
+              location: getLocationString(eventType.locations),
+              status,
+              userId: eventType.userId,
+              eventTypeId: eventType.id,
+              attendees: {
+                create: {
+                  name: input.name,
+                  email: input.email,
+                  phoneNumber: input.phoneNumber,
+                  timeZone: input.timeZone,
+                  locale: input.locale,
+                },
+              },
             },
-          },
-        },
-        include: {
-          attendees: true,
-          eventType: true,
-          user: {
-            select: {
-              name: true,
-              email: true,
+            include: {
+              attendees: true,
+              eventType: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
             },
-          },
+          });
         },
-      });
+        {
+          isolationLevel: "Serializable",
+        }
+      );
 
-      // Send email notifications
+      // Send email notifications outside transaction
       try {
         const emailData = buildEmailData(booking);
-        await emailService.sendNewBookingEmails(emailData, status === "PENDING");
+        const status = booking.status === "PENDING";
+        await emailService.sendNewBookingEmails(emailData, status);
       } catch (error) {
         logger.error("Failed to send booking emails", { error, bookingUid: booking.uid });
         // Don't throw - booking was created successfully
@@ -432,76 +441,84 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Get original booking
-      const originalBooking = await ctx.prisma.booking.findUnique({
-        where: { uid: input.uid },
-        include: {
-          eventType: true,
-          user: true,
-          attendees: true,
-        },
-      });
-
-      if (!originalBooking) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Termin nije pronađen.",
-        });
-      }
-
-      if (originalBooking.status === "CANCELLED" || originalBooking.status === "REJECTED") {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Nije moguće promeniti otkazani ili odbijeni termin.",
-        });
-      }
-
-      // Check for conflicts with new time
-      const conflictingBooking = await ctx.prisma.booking.findFirst({
-        where: {
-          userId: originalBooking.userId,
-          status: { in: ["PENDING", "ACCEPTED"] },
-          id: { not: originalBooking.id },
-          OR: [
-            {
-              startTime: { lt: input.newEndTime },
-              endTime: { gt: input.newStartTime },
+      // Use transaction with serializable isolation to prevent race conditions
+      const { updatedBooking, originalStartTime } = await ctx.prisma.$transaction(
+        async (tx) => {
+          // Get original booking
+          const originalBooking = await tx.booking.findUnique({
+            where: { uid: input.uid },
+            include: {
+              eventType: true,
+              user: true,
+              attendees: true,
             },
-          ],
-        },
-      });
+          });
 
-      if (conflictingBooking) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Novi termin nije dostupan.",
-        });
-      }
+          if (!originalBooking) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Termin nije pronađen.",
+            });
+          }
 
-      const originalStartTime = originalBooking.startTime;
+          if (originalBooking.status === "CANCELLED" || originalBooking.status === "REJECTED") {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Nije moguće promeniti otkazani ili odbijeni termin.",
+            });
+          }
 
-      // Update booking with new time
-      const updatedBooking = await ctx.prisma.booking.update({
-        where: { uid: input.uid },
-        data: {
-          startTime: input.newStartTime,
-          endTime: input.newEndTime,
-          rescheduled: true,
-          fromReschedule: originalBooking.uid,
-        },
-        include: {
-          attendees: true,
-          eventType: true,
-          user: {
-            select: {
-              name: true,
-              email: true,
+          // Check for conflicts with new time within transaction
+          const conflictingBooking = await tx.booking.findFirst({
+            where: {
+              userId: originalBooking.userId,
+              status: { in: ["PENDING", "ACCEPTED"] },
+              id: { not: originalBooking.id },
+              OR: [
+                {
+                  startTime: { lt: input.newEndTime },
+                  endTime: { gt: input.newStartTime },
+                },
+              ],
             },
-          },
-        },
-      });
+          });
 
-      // Send reschedule emails
+          if (conflictingBooking) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Novi termin nije dostupan.",
+            });
+          }
+
+          // Update booking with new time
+          const updated = await tx.booking.update({
+            where: { uid: input.uid },
+            data: {
+              startTime: input.newStartTime,
+              endTime: input.newEndTime,
+              rescheduled: true,
+              fromReschedule: originalBooking.uid,
+            },
+            include: {
+              attendees: true,
+              eventType: true,
+              user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          });
+
+          return { updatedBooking: updated, originalStartTime: originalBooking.startTime };
+        },
+        {
+          isolationLevel: "Serializable",
+        }
+      );
+
+      // Send reschedule emails outside transaction
       try {
         const emailData = buildEmailData(updatedBooking, originalStartTime);
         await emailService.sendBookingRescheduleEmails(emailData);

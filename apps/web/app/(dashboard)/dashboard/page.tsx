@@ -112,7 +112,7 @@ export default async function DashboardPage() {
         <p className="mb-3 text-sm text-muted-foreground">
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
-        <code className="block px-3 py-2 text-sm text-foreground bg-white rounded border border-gray-200 dark:bg-card dark:border-border">
+        <code className="block px-3 py-2 text-sm text-foreground bg-white rounded border border-gray-200 dark:bg-card dark:border-border break-all">
           {origin}/{session.user.salonName}
         </code>
       </div>

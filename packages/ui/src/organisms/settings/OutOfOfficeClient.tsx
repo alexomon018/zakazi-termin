@@ -3,7 +3,16 @@
 import { trpc } from "@/lib/trpc/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  ConfirmDialog,
+  Input,
+  Label,
+} from "@salonko/ui";
 import { cn } from "@salonko/ui";
 import { AlertCircle, CalendarDays, Check, Edit2, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
@@ -31,6 +40,8 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
   const [showModal, setShowModal] = useState(false);
   const [editingUuid, setEditingUuid] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -98,8 +109,14 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
   };
 
   const handleDelete = (uuid: string) => {
-    if (confirm("Da li ste sigurni da želite da obrišete ovaj unos?")) {
-      deleteEntry.mutate({ uuid });
+    setEntryToDelete(uuid);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (entryToDelete) {
+      deleteEntry.mutate({ uuid: entryToDelete });
+      setEntryToDelete(null);
     }
   };
 
@@ -349,6 +366,16 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Obriši period odsustva"
+        description="Da li ste sigurni da želite da obrišete ovaj unos?"
+        confirmText="Obriši"
+        isLoading={deleteEntry.isPending}
+      />
     </div>
   );
 }

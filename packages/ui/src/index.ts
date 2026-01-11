@@ -51,6 +51,12 @@ export {
   InputOTPSlot,
   InputOTPSeparator,
 } from "./atoms/InputOTP";
+export { Switch } from "./atoms/Switch";
+
+// Molecules - Forms
+export { DurationSelector, DURATION_OPTIONS } from "./molecules/forms/DurationSelector";
+export { FormSection } from "./molecules/forms/FormSection";
+export { SelectField, type SelectOption } from "./molecules/forms/SelectField";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";
@@ -76,6 +82,7 @@ export { TabFilter } from "./molecules/filters/TabFilter";
 
 // Molecules - Dialogs
 export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
+export { ConfirmDialog } from "./molecules/dialogs/ConfirmDialog";
 export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";
 export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
 
