@@ -60,7 +60,10 @@ test.describe("Signup", () => {
     await signupPage.expectErrorMessage("Lozinka mora imati najmanje 8 karaktera");
   });
 
-  test("should successfully create account and redirect to dashboard", async ({ page, prisma }) => {
+  test("should successfully submit signup and redirect to verify-email", async ({
+    page,
+    prisma,
+  }) => {
     const email = generateTestEmail();
     // Use a short salonName that passes frontend validation (max 20 chars)
     const salonName = `salon${Date.now() % 100000}`;
@@ -77,19 +80,20 @@ test.describe("Signup", () => {
       password: "TestPassword123!",
     });
 
-    // Wait for redirect to dashboard
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
+    // Wait for redirect to verify-email page (new flow)
+    await expect(page).toHaveURL(/\/verify-email\?email=/, { timeout: 30000 });
 
-    // Verify user was created in database
-    const user = await prisma.user.findUnique({
+    // Verify pending registration was created in database
+    const pendingRegistration = await prisma.pendingRegistration.findUnique({
       where: { email: email.toLowerCase() },
     });
-    expect(user).toBeTruthy();
-    expect(user?.salonName).toBe(salonName.toLowerCase());
+    expect(pendingRegistration).toBeTruthy();
+    expect(pendingRegistration?.salonName).toBe(salonName.toLowerCase());
+    expect(pendingRegistration?.name).toBe("Test User");
 
-    // Cleanup - delete the created user
-    if (user) {
-      await prisma.user.delete({ where: { id: user.id } });
+    // Cleanup - delete the pending registration
+    if (pendingRegistration) {
+      await prisma.pendingRegistration.delete({ where: { id: pendingRegistration.id } });
     }
   });
 

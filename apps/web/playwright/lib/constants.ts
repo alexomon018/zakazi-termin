@@ -5,6 +5,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
+  VERIFY_EMAIL: "/verify-email",
 
   // Dashboard routes
   DASHBOARD: "/dashboard",
@@ -92,13 +93,23 @@ export const SELECTORS = {
     SUBSCRIPTION_ACTIVE: '[data-testid="subscription-active"]',
     SUBSCRIPTION_EXPIRED: '[data-testid="subscription-expired"]',
     PLAN_PICKER: '[data-testid="billing-plan-picker"]',
+    // Legacy selectors (kept for backwards compatibility)
     PLAN_MONTHLY: '[data-testid="plan-monthly"]',
     PLAN_YEARLY: '[data-testid="plan-yearly"]',
+    // New plan tier selectors (4-plan model)
+    PLAN_STARTER: '[data-testid="plan-starter"]',
+    PLAN_GROWTH: '[data-testid="plan-growth"]',
+    PLAN_GROWTH_YEARLY: '[data-testid="plan-growth_yearly"]',
+    PLAN_WEB_PRESENCE: '[data-testid="plan-web_presence"]',
     SUBSCRIBE_BUTTON: '[data-testid="subscribe-button"]',
     MANAGE_SUBSCRIPTION_CARD: '[data-testid="manage-subscription-card"]',
     MANAGE_PAYMENT_BUTTON: '[data-testid="manage-payment-button"]',
     CANCEL_SUBSCRIPTION_BUTTON: '[data-testid="cancel-subscription-button"]',
     RESUME_SUBSCRIPTION_BUTTON: '[data-testid="resume-subscription-button"]',
+    // Change plan (new 4-plan model)
+    CHANGE_PLAN_CARD: '[data-testid="change-plan-card"]',
+    CHANGE_PLAN_DIALOG: '[data-testid="change-plan-dialog"]',
+    // Legacy upgrade/downgrade selectors (kept for backwards compatibility)
     UPGRADE_YEARLY_CARD: '[data-testid="upgrade-yearly-card"]',
     UPGRADE_YEARLY_BUTTON: '[data-testid="upgrade-yearly-button"]',
     UPGRADE_YEARLY_DIALOG: '[data-testid="upgrade-yearly-dialog"]',

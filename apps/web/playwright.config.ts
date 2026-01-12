@@ -44,7 +44,9 @@ export default defineConfig({
   webServer: {
     command: "yarn dev",
     url: "http://localhost:3000",
-    reuseExistingServer: !isCI,
+    // Always start fresh server to ensure correct test database is used
+    // Previous: reuseExistingServer: !isCI (would reuse dev server with wrong DB)
+    reuseExistingServer: false,
     timeout: 120000,
     env: {
       ...process.env,

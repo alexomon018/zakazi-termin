@@ -39,6 +39,22 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
     const normalizedEmail = email.toLowerCase();
     const normalizedSalonName = salonName.toLowerCase();
 
+    // Check for existing user with same email or salonName
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: normalizedEmail }, { salonName: normalizedSalonName }],
+      },
+    });
+
+    if (existingUser) {
+      if (existingUser.email === normalizedEmail) {
+        return { success: false, error: "Email adresa je već registrovana" };
+      }
+      if (existingUser.salonName === normalizedSalonName) {
+        return { success: false, error: "Naziv salona je zauzet" };
+      }
+    }
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 

@@ -1,9 +1,9 @@
 import { invalidateSubscriptionCache } from "@salonko/auth/server";
-import { logger } from "@salonko/config";
+import { PRICING_CONFIG, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
 import { PrismaClientKnownRequestError } from "@salonko/prisma/generated/client/runtime/library";
-import { validateSubscriptionData } from "@salonko/trpc";
+import { getPlanTierFromPriceId, validateSubscriptionData } from "@salonko/trpc";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -327,7 +327,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   // Send subscription success email (only for ACTIVE status, not TRIALING)
   if (status === "ACTIVE") {
     try {
-      const planName = billingInterval === "YEAR" ? "Godišnji Pro" : "Mesečni Pro";
+      // Get plan name from pricing config, fallback to billing interval for legacy prices
+      const planTier = getPlanTierFromPriceId(priceId ?? null);
+      const planName = planTier
+        ? PRICING_CONFIG[planTier].name
+        : billingInterval === "YEAR"
+          ? "Godišnji"
+          : "Mesečni";
       await emailService.sendSubscriptionSuccessEmail({
         userEmail: updatedSub.user.email,
         userName: updatedSub.user.name || "Korisniče",
@@ -576,7 +582,13 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   // Send subscription success email when transitioning from trial to active
   if (wasTrialing) {
     try {
-      const planName = existing.billingInterval === "YEAR" ? "Godišnji Pro" : "Mesečni Pro";
+      // Get plan name from pricing config, fallback to billing interval for legacy prices
+      const planTier = getPlanTierFromPriceId(existing.stripePriceId);
+      const planName = planTier
+        ? PRICING_CONFIG[planTier].name
+        : existing.billingInterval === "YEAR"
+          ? "Godišnji"
+          : "Mesečni";
       await emailService.sendSubscriptionSuccessEmail({
         userEmail: updatedSub.user.email,
         userName: updatedSub.user.name || "Korisniče",

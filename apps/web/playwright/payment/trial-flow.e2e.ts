@@ -41,9 +41,9 @@ test.describe("Trial Flow", () => {
     // Verify plan picker is visible during trial
     await billingPage.expectPlanPickerVisible();
 
-    // Verify both plan options are available
-    await expect(billingPage.planMonthly).toBeVisible();
-    await expect(billingPage.planYearly).toBeVisible();
+    // Verify plan options are available (4-plan model)
+    await billingPage.expectPlanTierVisible("starter");
+    await billingPage.expectPlanTierVisible("growth");
     await expect(billingPage.subscribeButton).toBeVisible();
   });
 
@@ -104,19 +104,25 @@ test.describe("Trial Flow", () => {
     const billingPage = new BillingPage(page);
     await billingPage.goto();
 
-    // Default should be monthly
+    // Plan picker should be visible
     await billingPage.expectPlanPickerVisible();
 
-    // Select yearly plan
-    await billingPage.selectYearlyPlan();
+    // Select growth plan
+    await billingPage.selectPlanTier("growth");
 
-    // Verify yearly is now selected (has the selected border style)
-    await expect(billingPage.planYearly).toHaveClass(/border-primary/);
+    // Verify growth is now selected (has the selected border style)
+    await expect(billingPage.planGrowth).toHaveClass(/border-primary/);
 
-    // Select monthly plan back
-    await billingPage.selectMonthlyPlan();
+    // Select starter plan
+    await billingPage.selectPlanTier("starter");
 
-    // Verify monthly is now selected
-    await expect(billingPage.planMonthly).toHaveClass(/border-primary/);
+    // Verify starter is now selected
+    await expect(billingPage.planStarter).toHaveClass(/border-primary/);
+
+    // Select growth_yearly plan
+    await billingPage.selectPlanTier("growth_yearly");
+
+    // Verify growth_yearly is now selected
+    await expect(billingPage.planGrowthYearly).toHaveClass(/border-primary/);
   });
 });
