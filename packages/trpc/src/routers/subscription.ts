@@ -1,5 +1,7 @@
-import { logger } from "@salonko/config";
+import { invalidateSubscriptionCache } from "@salonko/auth/server";
+import { getBillingIntervalFromPlan, logger } from "@salonko/config";
 import { checkoutRateLimiter } from "@salonko/config";
+import type { PlanTier } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import type { Subscription } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
@@ -7,11 +9,19 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { getAppOriginFromRequest } from "../lib/app-origin";
-import { PRICES, getStripe, isTestStripeId, validateStripeConfig } from "../lib/stripe";
+import {
+  PRICES,
+  getPlanTierFromPriceId,
+  getStripe,
+  isTestStripeId,
+  validateStripeConfig,
+} from "../lib/stripe";
 import { assertValidSubscriptionData } from "../lib/subscription-validation";
 
 const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
 const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
+
+const planTierSchema = z.enum(["starter", "growth", "growth_yearly", "web_presence"]);
 
 async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
   // If rate limiter is not configured, allow all requests (development mode)
@@ -102,6 +112,7 @@ export const subscriptionRouter = router({
         currentPeriodEnd: null,
         cancelAtPeriodEnd: false,
         billingInterval: null,
+        planTier: null as PlanTier | null,
         needsSubscription: true, // User has never subscribed
       };
     }
@@ -111,6 +122,9 @@ export const subscriptionRouter = router({
       ["TRIALING", "ACTIVE"].includes(subscription.status) && !trialInfo.trialExpired;
     // User has paid subscription if they have a Stripe subscription ID
     const hasPaidSubscription = !!subscription.stripeSubscriptionId;
+
+    // Get plan tier from price ID (null for legacy/unknown prices)
+    const planTier = getPlanTierFromPriceId(subscription.stripePriceId);
 
     return {
       hasSubscription: true,
@@ -124,6 +138,7 @@ export const subscriptionRouter = router({
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
       billingInterval: subscription.billingInterval,
+      planTier,
       needsSubscription: false, // User has a subscription record
     };
   }),
@@ -255,7 +270,7 @@ export const subscriptionRouter = router({
   createCheckoutSession: protectedProcedure
     .input(
       z.object({
-        interval: z.enum(["monthly", "yearly"]),
+        plan: planTierSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -281,11 +296,14 @@ export const subscriptionRouter = router({
         });
       }
 
+      // Get billing interval for the selected plan
+      const requestedInterval = getBillingIntervalFromPlan(input.plan);
+
       // Prevent duplicate subscriptions - user already has active paid subscription
       if (subscription.stripeSubscriptionId && subscription.status === "ACTIVE") {
-        const requestedInterval = input.interval === "monthly" ? "MONTH" : "YEAR";
+        const currentPlanTier = getPlanTierFromPriceId(subscription.stripePriceId);
 
-        if (subscription.billingInterval === requestedInterval) {
+        if (currentPlanTier === input.plan) {
           throw new TRPCError({
             code: "BAD_REQUEST",
             message:
@@ -293,25 +311,25 @@ export const subscriptionRouter = router({
           });
         }
 
-        // Different interval = upgrade/downgrade - should use dedicated mutation
+        // Different plan = should use changePlan mutation
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Za promenu plana koristite opciju za nadogradnju.",
+          message: "Za promenu plana koristite opciju za promenu plana.",
         });
       }
 
       // Calculate trial end for Stripe
-      // Monthly: If user is in trial, delay billing until trial ends
-      // Yearly: Charge immediately (discount of 2 months is already applied in price)
+      // Monthly plans: If user is in trial, delay billing until trial ends
+      // Yearly plans: Charge immediately (discount is already applied in price)
       // If trial expired, omit trial_end to charge immediately
       const trialInfo = getTrialStatus(subscription);
       let trialEndTimestamp: number | null = null;
 
-      // Only apply remaining trial for monthly subscriptions
-      if (input.interval === "monthly" && trialInfo.isInTrial && subscription.trialEndsAt) {
+      // Only apply remaining trial for monthly billing plans
+      if (requestedInterval === "MONTH" && trialInfo.isInTrial && subscription.trialEndsAt) {
         trialEndTimestamp = Math.floor(subscription.trialEndsAt.getTime() / 1000);
       }
-      // Yearly subscriptions charge immediately (no trial_end)
+      // Yearly plans charge immediately (no trial_end)
 
       const appOrigin = getAppOriginFromRequest(ctx.req);
       try {
@@ -330,7 +348,7 @@ export const subscriptionRouter = router({
         payment_method_types: ["card"],
         line_items: [
           {
-            price: PRICES[input.interval],
+            price: PRICES[input.plan],
             quantity: 1,
           },
         ],
@@ -535,147 +553,95 @@ export const subscriptionRouter = router({
   }),
 
   /**
-   * Schedule upgrade from monthly to yearly subscription
-   * Upgrade takes effect at end of current billing period (no proration)
+   * Change subscription plan
+   * Takes effect at end of current billing period (no proration)
    */
-  scheduleUpgradeToYearly: protectedProcedure.mutation(async ({ ctx }) => {
-    const subscription = await ctx.prisma.subscription.findUnique({
-      where: { userId: ctx.session.user.id },
-    });
-
-    if (!subscription?.stripeSubscriptionId) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Nemate aktivnu pretplatu za nadogradnju.",
+  changePlan: protectedProcedure
+    .input(
+      z.object({
+        newPlan: planTierSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const subscription = await ctx.prisma.subscription.findUnique({
+        where: { userId: ctx.session.user.id },
       });
-    }
 
-    if (subscription.billingInterval === "YEAR") {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Već imate godišnju pretplatu.",
+      if (!subscription?.stripeSubscriptionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Nemate aktivnu pretplatu za promenu plana.",
+        });
+      }
+
+      const currentPlanTier = getPlanTierFromPriceId(subscription.stripePriceId);
+
+      if (currentPlanTier === input.newPlan) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Već imate ovaj plan.",
+        });
+      }
+
+      if (subscription.cancelAtPeriodEnd) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Ne možete promeniti plan za otkazanu pretplatu. Prvo nastavite pretplatu.",
+        });
+      }
+
+      // E2E tests may use fake IDs; don't call Stripe in that case.
+      if (isTestStripeId(subscription.stripeSubscriptionId)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Test pretplate ne podržavaju promenu plana.",
+        });
+      }
+
+      const stripe = getStripe();
+      // Fetch current subscription from Stripe to get item ID
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        subscription.stripeSubscriptionId
+      );
+      const subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+      if (!subscriptionItemId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Greška pri dobijanju podataka o pretplati.",
+        });
+      }
+
+      // Schedule plan change at end of current billing period
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        items: [
+          {
+            id: subscriptionItemId,
+            price: PRICES[input.newPlan],
+          },
+        ],
+        proration_behavior: "none", // Switch at period end, no immediate charge
       });
-    }
 
-    if (subscription.cancelAtPeriodEnd) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Ne možete nadograditi otkazanu pretplatu. Prvo nastavite pretplatu.",
-      });
-    }
-
-    // E2E tests may use fake IDs; don't call Stripe in that case.
-    if (isTestStripeId(subscription.stripeSubscriptionId)) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Test pretplate ne podržavaju nadogradnju.",
-      });
-    }
-
-    const stripe = getStripe();
-    // Fetch current subscription from Stripe to get item ID
-    const stripeSubscription = await stripe.subscriptions.retrieve(
-      subscription.stripeSubscriptionId
-    );
-    const subscriptionItemId = stripeSubscription.items.data[0]?.id;
-
-    if (!subscriptionItemId) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Greška pri dobijanju podataka o pretplati.",
-      });
-    }
-
-    // Schedule upgrade at end of current billing period
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      items: [
-        {
-          id: subscriptionItemId,
-          price: PRICES.yearly,
+      // Update local DB with new price immediately for UI feedback
+      // The webhook will also fire, but we need immediate cache invalidation
+      const newBillingInterval = getBillingIntervalFromPlan(input.newPlan);
+      await ctx.prisma.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          stripePriceId: PRICES[input.newPlan],
+          billingInterval: newBillingInterval,
         },
-      ],
-      proration_behavior: "none", // Switch at period end, no immediate charge
-    });
-
-    // Note: Don't update DB billingInterval here - webhook will handle it
-    // when subscription.updated event fires at period end
-
-    return {
-      success: true,
-      effectiveDate: subscription.currentPeriodEnd,
-    };
-  }),
-
-  /**
-   * Schedule downgrade from yearly to monthly subscription
-   * Change takes effect at end of current billing period (no proration)
-   */
-  scheduleDowngradeToMonthly: protectedProcedure.mutation(async ({ ctx }) => {
-    const subscription = await ctx.prisma.subscription.findUnique({
-      where: { userId: ctx.session.user.id },
-    });
-
-    if (!subscription?.stripeSubscriptionId) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Nemate aktivnu pretplatu za promenu plana.",
       });
-    }
 
-    if (subscription.billingInterval === "MONTH") {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Već imate mesečnu pretplatu.",
-      });
-    }
+      // Invalidate subscription cache for immediate UI update
+      await invalidateSubscriptionCache(ctx.session.user.id);
 
-    if (subscription.cancelAtPeriodEnd) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Ne možete promeniti plan za otkazanu pretplatu. Prvo nastavite pretplatu.",
-      });
-    }
-
-    // E2E tests may use fake IDs; don't call Stripe in that case.
-    if (isTestStripeId(subscription.stripeSubscriptionId)) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Test pretplate ne podržavaju promenu plana.",
-      });
-    }
-
-    const stripe = getStripe();
-    // Fetch current subscription from Stripe to get item ID
-    const stripeSubscription = await stripe.subscriptions.retrieve(
-      subscription.stripeSubscriptionId
-    );
-    const subscriptionItemId = stripeSubscription.items.data[0]?.id;
-
-    if (!subscriptionItemId) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Greška pri dobijanju podataka o pretplati.",
-      });
-    }
-
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      items: [
-        {
-          id: subscriptionItemId,
-          price: PRICES.monthly,
-        },
-      ],
-      proration_behavior: "none",
-    });
-
-    // Note: Don't update DB billingInterval here - webhook will handle it
-    // when subscription.updated event fires at period end
-
-    return {
-      success: true,
-      effectiveDate: subscription.currentPeriodEnd,
-    };
-  }),
+      return {
+        success: true,
+        effectiveDate: subscription.currentPeriodEnd,
+      };
+    }),
 
   /**
    * Get invoice history from Stripe

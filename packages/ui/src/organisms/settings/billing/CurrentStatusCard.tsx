@@ -1,3 +1,4 @@
+import { PRICING_CONFIG } from "@salonko/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { formatTrialTimeRemaining } from "@salonko/ui/lib/utils/formatTrialTime";
 import { Crown } from "lucide-react";
@@ -8,7 +9,26 @@ type CurrentStatusCardProps = {
   status: SubscriptionStatus;
 };
 
+function getPlanDisplayName(status: SubscriptionStatus): string {
+  // Use plan tier if available
+  if (status.planTier) {
+    return PRICING_CONFIG[status.planTier].name;
+  }
+
+  // Fallback to billing interval for legacy subscribers
+  if (status.billingInterval === "YEAR") {
+    return "Godišnja pretplata";
+  }
+  if (status.billingInterval === "MONTH") {
+    return "Mesečna pretplata";
+  }
+
+  return "Pretplata";
+}
+
 export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
+  const planName = getPlanDisplayName(status);
+
   return (
     <Card data-testid="billing-status-card">
       <CardHeader>
@@ -37,7 +57,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
               Aktivna pretplata
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {status.billingInterval === "YEAR" ? "Godišnja" : "Mesečna"} pretplata
+              {planName}
               {status.cancelAtPeriodEnd && " (otkazana, aktivna do kraja perioda)"}
             </p>
             {status.currentPeriodEnd && (
