@@ -590,49 +590,77 @@ export const subscriptionRouter = router({
         });
       }
 
-      // E2E tests may use fake IDs; don't call Stripe in that case.
-      if (isTestStripeId(subscription.stripeSubscriptionId)) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Test pretplate ne podržavaju promenu plana.",
+      // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+      const skipStripeCall = isTestStripeId(subscription.stripeSubscriptionId);
+
+      let subscriptionItemId: string | undefined;
+      const originalPriceId = subscription.stripePriceId;
+
+      if (!skipStripeCall) {
+        const stripe = getStripe();
+        // Fetch current subscription from Stripe to get item ID
+        const stripeSubscription = await stripe.subscriptions.retrieve(
+          subscription.stripeSubscriptionId
+        );
+        subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+        if (!subscriptionItemId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Greška pri dobijanju podataka o pretplati.",
+          });
+        }
+
+        // Schedule plan change at end of current billing period
+        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+          items: [
+            {
+              id: subscriptionItemId,
+              price: PRICES[input.newPlan],
+            },
+          ],
+          proration_behavior: "none", // Switch at period end, no immediate charge
         });
       }
-
-      const stripe = getStripe();
-      // Fetch current subscription from Stripe to get item ID
-      const stripeSubscription = await stripe.subscriptions.retrieve(
-        subscription.stripeSubscriptionId
-      );
-      const subscriptionItemId = stripeSubscription.items.data[0]?.id;
-
-      if (!subscriptionItemId) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Greška pri dobijanju podataka o pretplati.",
-        });
-      }
-
-      // Schedule plan change at end of current billing period
-      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-        items: [
-          {
-            id: subscriptionItemId,
-            price: PRICES[input.newPlan],
-          },
-        ],
-        proration_behavior: "none", // Switch at period end, no immediate charge
-      });
 
       // Update local DB with new price immediately for UI feedback
       // The webhook will also fire, but we need immediate cache invalidation
       const newBillingInterval = getBillingIntervalFromPlan(input.newPlan);
-      await ctx.prisma.subscription.update({
-        where: { id: subscription.id },
-        data: {
-          stripePriceId: PRICES[input.newPlan],
-          billingInterval: newBillingInterval,
-        },
-      });
+      try {
+        await ctx.prisma.subscription.update({
+          where: { id: subscription.id },
+          data: {
+            stripePriceId: PRICES[input.newPlan],
+            billingInterval: newBillingInterval,
+          },
+        });
+      } catch (dbError) {
+        // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+        if (!skipStripeCall && subscriptionItemId) {
+          try {
+            const stripe = getStripe();
+            await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+              items: [
+                {
+                  id: subscriptionItemId,
+                  price: originalPriceId!,
+                },
+              ],
+              proration_behavior: "none",
+            });
+          } catch (rollbackError) {
+            logger.error("Failed to rollback Stripe plan change", {
+              error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+              subscriptionId: subscription.stripeSubscriptionId,
+              userId: ctx.session.user.id,
+            });
+          }
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Došlo je do greške. Pokušajte ponovo.",
+        });
+      }
 
       // Invalidate subscription cache for immediate UI update
       await invalidateSubscriptionCache(ctx.session.user.id);
