@@ -22,11 +22,10 @@ test.describe("Checkout Flow", () => {
     await expect(billingPage.subscribeButton).toBeEnabled();
   });
 
-  test("should activate monthly subscription successfully", async ({
+  test("should activate starter subscription successfully", async ({
     page,
     users,
     subscription,
-    prisma,
   }) => {
     // Create a user and log in
     const user = await users.create({ withSchedule: true });
@@ -41,7 +40,7 @@ test.describe("Checkout Flow", () => {
 
     // Delete the trial subscription and create an active one to simulate successful checkout
     await subscription.deleteSubscription(user.id);
-    await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
+    await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
     // Navigate to billing page with success param (simulating redirect from Stripe)
     await page.goto("/dashboard/settings/billing?success=true");
@@ -63,7 +62,7 @@ test.describe("Checkout Flow", () => {
     expect(sub?.billingInterval).toBe("MONTH");
   });
 
-  test("should activate yearly subscription successfully", async ({
+  test("should activate growth subscription successfully", async ({
     page,
     users,
     subscription,
@@ -79,9 +78,43 @@ test.describe("Checkout Flow", () => {
     const billingPage = new BillingPage(page);
     await billingPage.goto();
 
-    // Delete the trial subscription and create an active yearly one
+    // Delete the trial subscription and create an active growth one
     await subscription.deleteSubscription(user.id);
-    await subscription.createWithActiveSubscription(user.id, { interval: "yearly" });
+    await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
+
+    // Navigate to billing page with success param
+    await page.goto("/dashboard/settings/billing?success=true");
+    await billingPage.waitForPageLoad();
+
+    // Verify subscription is now active
+    await billingPage.expectSubscriptionActive();
+
+    // Verify subscription in database
+    const sub = await subscription.getSubscription(user.id);
+    expect(sub).not.toBeNull();
+    expect(sub?.status).toBe("ACTIVE");
+    expect(sub?.billingInterval).toBe("MONTH");
+  });
+
+  test("should activate growth yearly subscription successfully", async ({
+    page,
+    users,
+    subscription,
+  }) => {
+    // Create a user and log in
+    const user = await users.create({ withSchedule: true });
+
+    // Create a trial subscription
+    await subscription.createWithTrial(user.id, { daysRemaining: 30 });
+
+    await users.login(user);
+
+    const billingPage = new BillingPage(page);
+    await billingPage.goto();
+
+    // Delete the trial subscription and create an active growth yearly one
+    await subscription.deleteSubscription(user.id);
+    await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
 
     // Navigate to billing page with success param
     await page.goto("/dashboard/settings/billing?success=true");
@@ -132,7 +165,7 @@ test.describe("Checkout Flow", () => {
     const user = await users.create({ withSchedule: true });
 
     // Create an active subscription directly
-    await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
+    await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
     await users.login(user);
 

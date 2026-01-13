@@ -150,22 +150,44 @@ export class AvailabilityPage extends BasePage {
    * Check if days of the week are visible
    */
   async expectDaysVisible(): Promise<void> {
-    // Look for day labels in Serbian or English
-    const hasDays =
-      (await this.page
-        .locator("text=/[Pp]onedeljak|Monday/")
-        .isVisible()
-        .catch(() => false)) ||
-      (await this.page
-        .locator("text=/[Uu]torak|Tuesday/")
-        .isVisible()
-        .catch(() => false)) ||
-      (await this.page
-        .locator("text=/[Ss]reda|Wednesday/")
-        .isVisible()
-        .catch(() => false));
-    // Days may or may not be visible depending on UI
-    expect(true).toBe(true);
+    // Look for day labels in Serbian (short form: Ned, Pon, Uto, Sre, Čet, Pet, Sub)
+    // Check for at least one day button being visible
+    const dayButtons = [
+      this.page.getByRole("button", { name: /^Ned$/i }),
+      this.page.getByRole("button", { name: /^Pon$/i }),
+      this.page.getByRole("button", { name: /^Uto$/i }),
+      this.page.getByRole("button", { name: /^Sre$/i }),
+      this.page.getByRole("button", { name: /^Čet$/i }),
+      this.page.getByRole("button", { name: /^Pet$/i }),
+      this.page.getByRole("button", { name: /^Sub$/i }),
+    ];
+
+    // Check if at least one day button is visible
+    let hasDays = false;
+    for (const button of dayButtons) {
+      if (await button.isVisible().catch(() => false)) {
+        hasDays = true;
+        break;
+      }
+    }
+
+    // Fallback: check for text patterns
+    if (!hasDays) {
+      hasDays =
+        (await this.page
+          .locator("text=/^Ned$|^Pon$|^Uto$|^Sre$|^Čet$|^Pet$|^Sub$/i")
+          .first()
+          .isVisible()
+          .catch(() => false)) ||
+        (await this.page
+          .locator("text=/[Pp]onedeljak|Monday/")
+          .isVisible()
+          .catch(() => false));
+    }
+
+    if (!hasDays) {
+      throw new Error("Days of the week are not visible on the availability page");
+    }
   }
 
   /**

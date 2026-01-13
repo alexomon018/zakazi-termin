@@ -4,196 +4,71 @@ import { BillingPage } from "../pages";
 // Run payment tests serially to avoid race conditions with shared server state
 test.describe.configure({ mode: "serial" });
 
-test.describe("Upgrade and Downgrade", () => {
-  test.describe("Upgrade to Yearly", () => {
-    test("should show upgrade card for monthly subscribers", async ({
+test.describe("Plan Changes", () => {
+  test.describe("Change Plan Card Visibility", () => {
+    test("should show change plan card for active starter subscribers", async ({
       page,
       users,
       subscription,
     }) => {
-      // Create a user with monthly subscription
+      // Create a user with starter subscription
       const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
 
       const billingPage = new BillingPage(page);
       await billingPage.goto();
 
-      // Verify upgrade to yearly card is visible
-      await billingPage.expectUpgradeYearlyCardVisible();
-
-      // Verify downgrade card is hidden (only for yearly subscribers)
-      await billingPage.expectDowngradeMonthlyCardHidden();
+      // Verify change plan card is visible
+      await billingPage.expectChangePlanCardVisible();
     });
 
-    test("should hide upgrade card for yearly subscribers", async ({
+    test("should show change plan card for active growth subscribers", async ({
       page,
       users,
       subscription,
     }) => {
-      // Create a user with yearly subscription
+      // Create a user with growth subscription
       const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "yearly" });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
       await users.login(user);
 
       const billingPage = new BillingPage(page);
       await billingPage.goto();
 
-      // Verify upgrade card is hidden (already yearly)
-      await billingPage.expectUpgradeYearlyCardHidden();
+      // Verify change plan card is visible
+      await billingPage.expectChangePlanCardVisible();
     });
 
-    test("should open upgrade confirmation dialog", async ({ page, users, subscription }) => {
-      // Create a user with monthly subscription
-      const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
-
-      await users.login(user);
-
-      const billingPage = new BillingPage(page);
-      await billingPage.goto();
-
-      // Click upgrade button
-      await billingPage.clickUpgradeToYearly();
-
-      // Verify dialog is visible
-      await billingPage.expectUpgradeDialogVisible();
-      await expect(billingPage.confirmUpgradeButton).toBeVisible();
-    });
-
-    test("should schedule upgrade to yearly when confirmed", async ({
+    test("should show change plan card for active growth yearly subscribers", async ({
       page,
       users,
       subscription,
     }) => {
-      // Create a user with monthly subscription
+      // Create a user with growth_yearly subscription
       const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
 
       await users.login(user);
 
       const billingPage = new BillingPage(page);
       await billingPage.goto();
 
-      // Complete upgrade flow
-      await billingPage.upgradeToYearlyFlow();
-
-      // After upgrade is scheduled, the upgrade card should be hidden
-      // and downgrade card should be visible (since interval changes to yearly)
-      // Note: In real scenario, the webhook would update the interval at period end
-      // For testing, we simulate this by updating the DB
-      await subscription.updateBillingInterval(user.id, "yearly");
-
-      // Refresh the page to see updated state
-      await billingPage.goto();
-
-      // Verify downgrade card is now visible
-      await billingPage.expectDowngradeMonthlyCardVisible();
-      await billingPage.expectUpgradeYearlyCardHidden();
+      // Verify change plan card is visible
+      await billingPage.expectChangePlanCardVisible();
     });
-  });
 
-  test.describe("Downgrade to Monthly", () => {
-    test("should show downgrade card for yearly subscribers", async ({
+    test("should hide change plan card for canceled subscriptions", async ({
       page,
       users,
       subscription,
     }) => {
-      // Create a user with yearly subscription
-      const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "yearly" });
-
-      await users.login(user);
-
-      const billingPage = new BillingPage(page);
-      await billingPage.goto();
-
-      // Verify downgrade to monthly card is visible
-      await billingPage.expectDowngradeMonthlyCardVisible();
-
-      // Verify upgrade card is hidden (already yearly)
-      await billingPage.expectUpgradeYearlyCardHidden();
-    });
-
-    test("should hide downgrade card for monthly subscribers", async ({
-      page,
-      users,
-      subscription,
-    }) => {
-      // Create a user with monthly subscription
-      const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "monthly" });
-
-      await users.login(user);
-
-      const billingPage = new BillingPage(page);
-      await billingPage.goto();
-
-      // Verify downgrade card is hidden (already monthly)
-      await billingPage.expectDowngradeMonthlyCardHidden();
-    });
-
-    test("should open downgrade confirmation dialog", async ({ page, users, subscription }) => {
-      // Create a user with yearly subscription
-      const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "yearly" });
-
-      await users.login(user);
-
-      const billingPage = new BillingPage(page);
-      await billingPage.goto();
-
-      // Click downgrade button
-      await billingPage.clickDowngradeToMonthly();
-
-      // Verify dialog is visible
-      await billingPage.expectDowngradeDialogVisible();
-      await expect(billingPage.confirmDowngradeButton).toBeVisible();
-    });
-
-    test("should schedule downgrade to monthly when confirmed", async ({
-      page,
-      users,
-      subscription,
-    }) => {
-      // Create a user with yearly subscription
-      const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, { interval: "yearly" });
-
-      await users.login(user);
-
-      const billingPage = new BillingPage(page);
-      await billingPage.goto();
-
-      // Complete downgrade flow
-      await billingPage.downgradeToMonthlyFlow();
-
-      // After downgrade is scheduled, the downgrade card should be hidden
-      // and upgrade card should be visible (since interval changes to monthly)
-      // For testing, we simulate this by updating the DB
-      await subscription.updateBillingInterval(user.id, "monthly");
-
-      // Refresh the page to see updated state
-      await billingPage.goto();
-
-      // Verify upgrade card is now visible
-      await billingPage.expectUpgradeYearlyCardVisible();
-      await billingPage.expectDowngradeMonthlyCardHidden();
-    });
-  });
-
-  test.describe("Upgrade/Downgrade Not Available for Canceled Subscriptions", () => {
-    test("should hide upgrade card for canceled monthly subscription", async ({
-      page,
-      users,
-      subscription,
-    }) => {
-      // Create a user with canceled monthly subscription
+      // Create a user with canceled subscription
       const user = await users.create({ withSchedule: true });
       await subscription.createWithActiveSubscription(user.id, {
-        interval: "monthly",
+        planTier: "starter",
         canceledAtPeriodEnd: true,
       });
 
@@ -202,29 +77,174 @@ test.describe("Upgrade and Downgrade", () => {
       const billingPage = new BillingPage(page);
       await billingPage.goto();
 
-      // Verify upgrade card is hidden (subscription is canceled)
-      await billingPage.expectUpgradeYearlyCardHidden();
+      // Verify change plan card is hidden (subscription is canceled)
+      await billingPage.expectChangePlanCardHidden();
     });
+  });
 
-    test("should hide downgrade card for canceled yearly subscription", async ({
+  test.describe("Change Plan Dialog", () => {
+    test("should open change plan dialog when clicking plan option", async ({
       page,
       users,
       subscription,
     }) => {
-      // Create a user with canceled yearly subscription
+      // Create a user with starter subscription
       const user = await users.create({ withSchedule: true });
-      await subscription.createWithActiveSubscription(user.id, {
-        interval: "yearly",
-        canceledAtPeriodEnd: true,
-      });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
 
       const billingPage = new BillingPage(page);
       await billingPage.goto();
 
-      // Verify downgrade card is hidden (subscription is canceled)
-      await billingPage.expectDowngradeMonthlyCardHidden();
+      // Click on a different plan in the change plan card
+      await billingPage.clickChangePlanTo("growth");
+
+      // Verify dialog is visible
+      await billingPage.expectChangePlanDialogVisible();
+    });
+
+    test("should show plan change confirmation text", async ({ page, users, subscription }) => {
+      // Create a user with starter subscription
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Click on growth plan
+      await billingPage.clickChangePlanTo("growth");
+
+      // Verify dialog shows confirmation text
+      await billingPage.expectChangePlanDialogVisible();
+      await expect(billingPage.changePlanDialog).toContainText("Promenite plan?");
+      await expect(billingPage.changePlanDialog).toContainText("Potvrdi promenu");
+    });
+  });
+
+  test.describe("Plan Change Flow", () => {
+    test("should complete plan change from starter to growth", async ({
+      page,
+      users,
+      subscription,
+    }) => {
+      // Create a user with starter subscription
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Start plan change flow
+      await billingPage.clickChangePlanTo("growth");
+      await billingPage.expectChangePlanDialogVisible();
+
+      // Confirm plan change
+      await billingPage.confirmPlanChange();
+
+      // Simulate the plan change by updating the DB
+      // (In production, this would happen via Stripe webhook)
+      await subscription.updatePlanTier(user.id, "growth");
+
+      // Refresh and verify
+      await billingPage.goto();
+
+      // Change plan card should still be visible (can change to other plans)
+      await billingPage.expectChangePlanCardVisible();
+    });
+
+    test("should complete plan change from growth to growth_yearly", async ({
+      page,
+      users,
+      subscription,
+    }) => {
+      // Create a user with growth subscription
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Complete the plan change flow
+      await billingPage.changePlanFlow("growth_yearly");
+
+      // Simulate the plan change by updating the DB
+      await subscription.updatePlanTier(user.id, "growth_yearly");
+
+      // Refresh and verify
+      await billingPage.goto();
+
+      // Change plan card should still be visible
+      await billingPage.expectChangePlanCardVisible();
+    });
+
+    test("should complete plan change from growth_yearly to starter", async ({
+      page,
+      users,
+      subscription,
+    }) => {
+      // Create a user with growth_yearly subscription
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Complete the plan change flow
+      await billingPage.changePlanFlow("starter");
+
+      // Simulate the plan change by updating the DB
+      await subscription.updatePlanTier(user.id, "starter");
+
+      // Refresh and verify
+      await billingPage.goto();
+
+      // Change plan card should still be visible
+      await billingPage.expectChangePlanCardVisible();
+    });
+  });
+
+  test.describe("Plan Change Not Available", () => {
+    test("should hide change plan card for trial users", async ({ page, users, subscription }) => {
+      // Create a user with trial subscription (no paid subscription yet)
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithTrial(user.id, { daysRemaining: 30 });
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Trial users should see plan picker, not change plan card
+      await billingPage.expectChangePlanCardHidden();
+      await billingPage.expectPlanPickerVisible();
+    });
+
+    test("should hide change plan card for expired subscriptions", async ({
+      page,
+      users,
+      subscription,
+    }) => {
+      // Create a user with expired trial
+      const user = await users.create({ withSchedule: true });
+      await subscription.createWithTrial(user.id, { daysRemaining: 30 });
+      await subscription.expireTrial(user.id);
+
+      await users.login(user);
+
+      const billingPage = new BillingPage(page);
+      await billingPage.goto();
+
+      // Expired users should see plan picker, not change plan card
+      await billingPage.expectChangePlanCardHidden();
     });
   });
 });

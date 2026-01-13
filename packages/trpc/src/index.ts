@@ -26,6 +26,7 @@ export {
 } from "./lib/subscription-validation";
 
 export { getAppOriginFromHeaders, getAppOriginFromRequest } from "./lib/app-origin";
+export { getPlanTierFromPriceId } from "./lib/stripe";
 
 export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;

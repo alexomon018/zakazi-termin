@@ -4,6 +4,7 @@ export { BasePage } from "./BasePage";
 // Auth Pages
 export { LoginPage } from "./LoginPage";
 export { SignupPage } from "./SignupPage";
+export { VerifyEmailPage } from "./VerifyEmailPage";
 
 // Dashboard Pages
 export {

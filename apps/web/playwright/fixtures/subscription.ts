@@ -1,6 +1,9 @@
 import { test as base } from "@playwright/test";
 import { type BillingInterval, PrismaClient, type SubscriptionStatus } from "@salonko/prisma";
 
+// Plan tier type matching the 4-plan model
+export type PlanTier = "starter" | "growth" | "growth_yearly" | "web_presence";
+
 export interface SubscriptionFixture {
   /**
    * Create a trial subscription for a user
@@ -13,6 +16,8 @@ export interface SubscriptionFixture {
   createWithActiveSubscription: (
     userId: string,
     options?: {
+      planTier?: PlanTier;
+      /** @deprecated Use planTier instead. Kept for backwards compatibility. */
       interval?: "monthly" | "yearly";
       canceledAtPeriodEnd?: boolean;
     }
@@ -34,7 +39,13 @@ export interface SubscriptionFixture {
   resumeSubscription: (userId: string) => Promise<void>;
 
   /**
+   * Update subscription plan tier (for testing plan changes)
+   */
+  updatePlanTier: (userId: string, planTier: PlanTier) => Promise<void>;
+
+  /**
    * Update subscription billing interval (for testing upgrade/downgrade)
+   * @deprecated Use updatePlanTier instead
    */
   updateBillingInterval: (userId: string, interval: "monthly" | "yearly") => Promise<void>;
 
@@ -46,6 +57,7 @@ export interface SubscriptionFixture {
     status: SubscriptionStatus;
     billingInterval: BillingInterval | null;
     cancelAtPeriodEnd: boolean;
+    stripePriceId: string | null;
   } | null>;
 
   /**
@@ -85,6 +97,20 @@ function generateStripePriceId(interval: "monthly" | "yearly"): string {
   return interval === "monthly" ? "price_test_monthly" : "price_test_yearly";
 }
 
+/**
+ * Generate a test Stripe price ID for a plan tier
+ */
+function generateStripePriceIdForPlan(planTier: PlanTier): string {
+  return `price_test_${planTier}`;
+}
+
+/**
+ * Get billing interval from plan tier
+ */
+function getBillingIntervalFromPlanTier(planTier: PlanTier): BillingInterval {
+  return planTier === "growth_yearly" ? "YEAR" : "MONTH";
+}
+
 export const test = base.extend<SubscriptionFixtureType>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright fixtures require object destructuring syntax
   subscription: async ({}, use) => {
@@ -112,16 +138,32 @@ export const test = base.extend<SubscriptionFixtureType>({
       createWithActiveSubscription: async (
         userId: string,
         options?: {
+          planTier?: PlanTier;
+          /** @deprecated Use planTier instead */
           interval?: "monthly" | "yearly";
           canceledAtPeriodEnd?: boolean;
         }
       ) => {
-        const interval = options?.interval ?? "monthly";
         const canceledAtPeriodEnd = options?.canceledAtPeriodEnd ?? false;
+
+        // Support both new planTier and legacy interval options
+        let billingInterval: BillingInterval;
+        let stripePriceId: string;
+
+        if (options?.planTier) {
+          // New 4-plan model
+          billingInterval = getBillingIntervalFromPlanTier(options.planTier);
+          stripePriceId = generateStripePriceIdForPlan(options.planTier);
+        } else {
+          // Legacy monthly/yearly model (backwards compatibility)
+          const interval = options?.interval ?? "monthly";
+          billingInterval = interval === "monthly" ? "MONTH" : "YEAR";
+          stripePriceId = generateStripePriceId(interval);
+        }
 
         const now = new Date();
         const periodEnd = new Date(
-          now.getTime() + (interval === "monthly" ? 30 : 365) * 24 * 60 * 60 * 1000
+          now.getTime() + (billingInterval === "MONTH" ? 30 : 365) * 24 * 60 * 60 * 1000
         );
 
         const subscription = await prisma.subscription.create({
@@ -129,9 +171,9 @@ export const test = base.extend<SubscriptionFixtureType>({
             userId,
             stripeCustomerId: generateStripeCustomerId(),
             stripeSubscriptionId: generateStripeSubscriptionId(),
-            stripePriceId: generateStripePriceId(interval),
+            stripePriceId,
             status: "ACTIVE",
-            billingInterval: interval === "monthly" ? "MONTH" : "YEAR",
+            billingInterval,
             currentPeriodStart: now,
             currentPeriodEnd: periodEnd,
             cancelAtPeriodEnd: canceledAtPeriodEnd,
@@ -172,6 +214,16 @@ export const test = base.extend<SubscriptionFixtureType>({
         });
       },
 
+      updatePlanTier: async (userId: string, planTier: PlanTier) => {
+        await prisma.subscription.update({
+          where: { userId },
+          data: {
+            billingInterval: getBillingIntervalFromPlanTier(planTier),
+            stripePriceId: generateStripePriceIdForPlan(planTier),
+          },
+        });
+      },
+
       updateBillingInterval: async (userId: string, interval: "monthly" | "yearly") => {
         await prisma.subscription.update({
           where: { userId },
@@ -190,6 +242,7 @@ export const test = base.extend<SubscriptionFixtureType>({
             status: true,
             billingInterval: true,
             cancelAtPeriodEnd: true,
+            stripePriceId: true,
           },
         });
 

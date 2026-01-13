@@ -2,6 +2,9 @@ import { type Locator, type Page, expect } from "@playwright/test";
 import { ROUTES, SELECTORS, TIMEOUTS } from "../lib/constants";
 import { BasePage } from "./BasePage";
 
+// Plan tier type for the 4-plan model
+export type PlanTier = "starter" | "growth" | "growth_yearly" | "web_presence";
+
 /**
  * Page object for the billing settings page
  */
@@ -12,11 +15,21 @@ export class BillingPage extends BasePage {
   readonly subscriptionActive: Locator;
   readonly subscriptionExpired: Locator;
 
-  // Plan picker
+  // Plan picker (for new subscriptions)
   readonly planPicker: Locator;
   readonly planMonthly: Locator;
   readonly planYearly: Locator;
   readonly subscribeButton: Locator;
+
+  // Plan tier buttons (4-plan model)
+  readonly planStarter: Locator;
+  readonly planGrowth: Locator;
+  readonly planGrowthYearly: Locator;
+  readonly planWebPresence: Locator;
+
+  // Change plan (for existing subscriptions)
+  readonly changePlanCard: Locator;
+  readonly changePlanDialog: Locator;
 
   // Manage subscription card
   readonly manageSubscriptionCard: Locator;
@@ -24,13 +37,13 @@ export class BillingPage extends BasePage {
   readonly cancelSubscriptionButton: Locator;
   readonly resumeSubscriptionButton: Locator;
 
-  // Upgrade to yearly
+  // Upgrade to yearly (legacy)
   readonly upgradeYearlyCard: Locator;
   readonly upgradeYearlyButton: Locator;
   readonly upgradeYearlyDialog: Locator;
   readonly confirmUpgradeButton: Locator;
 
-  // Downgrade to monthly
+  // Downgrade to monthly (legacy)
   readonly downgradeMonthlyCard: Locator;
   readonly downgradeMonthlyButton: Locator;
   readonly downgradeMonthlyDialog: Locator;
@@ -59,19 +72,29 @@ export class BillingPage extends BasePage {
     this.planYearly = page.locator(SELECTORS.BILLING.PLAN_YEARLY);
     this.subscribeButton = page.locator(SELECTORS.BILLING.SUBSCRIBE_BUTTON);
 
+    // Plan tier buttons (4-plan model)
+    this.planStarter = page.locator(SELECTORS.BILLING.PLAN_STARTER);
+    this.planGrowth = page.locator(SELECTORS.BILLING.PLAN_GROWTH);
+    this.planGrowthYearly = page.locator(SELECTORS.BILLING.PLAN_GROWTH_YEARLY);
+    this.planWebPresence = page.locator(SELECTORS.BILLING.PLAN_WEB_PRESENCE);
+
+    // Change plan
+    this.changePlanCard = page.locator(SELECTORS.BILLING.CHANGE_PLAN_CARD);
+    this.changePlanDialog = page.locator(SELECTORS.BILLING.CHANGE_PLAN_DIALOG);
+
     // Manage subscription card
     this.manageSubscriptionCard = page.locator(SELECTORS.BILLING.MANAGE_SUBSCRIPTION_CARD);
     this.managePaymentButton = page.locator(SELECTORS.BILLING.MANAGE_PAYMENT_BUTTON);
     this.cancelSubscriptionButton = page.locator(SELECTORS.BILLING.CANCEL_SUBSCRIPTION_BUTTON);
     this.resumeSubscriptionButton = page.locator(SELECTORS.BILLING.RESUME_SUBSCRIPTION_BUTTON);
 
-    // Upgrade to yearly
+    // Upgrade to yearly (legacy)
     this.upgradeYearlyCard = page.locator(SELECTORS.BILLING.UPGRADE_YEARLY_CARD);
     this.upgradeYearlyButton = page.locator(SELECTORS.BILLING.UPGRADE_YEARLY_BUTTON);
     this.upgradeYearlyDialog = page.locator(SELECTORS.BILLING.UPGRADE_YEARLY_DIALOG);
     this.confirmUpgradeButton = page.locator(SELECTORS.BILLING.CONFIRM_UPGRADE_BUTTON);
 
-    // Downgrade to monthly
+    // Downgrade to monthly (legacy)
     this.downgradeMonthlyCard = page.locator(SELECTORS.BILLING.DOWNGRADE_MONTHLY_CARD);
     this.downgradeMonthlyButton = page.locator(SELECTORS.BILLING.DOWNGRADE_MONTHLY_BUTTON);
     this.downgradeMonthlyDialog = page.locator(SELECTORS.BILLING.DOWNGRADE_MONTHLY_DIALOG);
@@ -129,6 +152,104 @@ export class BillingPage extends BasePage {
 
   async clickSubscribe(): Promise<void> {
     await this.clickButton(this.subscribeButton);
+  }
+
+  // ==================== Plan tier actions (4-plan model) ====================
+
+  /**
+   * Select a plan tier in the plan picker
+   */
+  async selectPlanTier(planTier: PlanTier): Promise<void> {
+    const locator = this.getPlanTierLocator(planTier);
+    await this.clickButton(locator);
+  }
+
+  /**
+   * Get the locator for a specific plan tier
+   */
+  private getPlanTierLocator(planTier: PlanTier): Locator {
+    switch (planTier) {
+      case "starter":
+        return this.planStarter;
+      case "growth":
+        return this.planGrowth;
+      case "growth_yearly":
+        return this.planGrowthYearly;
+      case "web_presence":
+        return this.planWebPresence;
+    }
+  }
+
+  /**
+   * Check if a plan tier is visible in the picker
+   */
+  async expectPlanTierVisible(planTier: PlanTier): Promise<void> {
+    const locator = this.getPlanTierLocator(planTier);
+    await expect(locator).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+  }
+
+  /**
+   * Subscribe to a specific plan tier
+   */
+  async subscribeToTier(planTier: PlanTier): Promise<void> {
+    await this.selectPlanTier(planTier);
+    await this.clickSubscribe();
+  }
+
+  // ==================== Change plan actions ====================
+
+  async expectChangePlanCardVisible(): Promise<void> {
+    await expect(this.changePlanCard).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+  }
+
+  async expectChangePlanCardHidden(): Promise<void> {
+    await expect(this.changePlanCard).toBeHidden({ timeout: TIMEOUTS.MEDIUM });
+  }
+
+  async expectChangePlanDialogVisible(): Promise<void> {
+    await expect(this.changePlanDialog).toBeVisible({ timeout: TIMEOUTS.MEDIUM });
+  }
+
+  /**
+   * Click the change plan button for a specific tier
+   * Note: The button is inside the change plan card for each available tier
+   */
+  async clickChangePlanTo(planTier: PlanTier): Promise<void> {
+    // Find the button within the change plan card that corresponds to this tier
+    const button = this.changePlanCard.locator(`button:has-text("Pređi na ovaj plan")`).first();
+    // For more specific targeting, we'd need a data-testid on each plan's button
+    // For now, we'll use the locator with the plan name
+    const planButton = this.changePlanCard
+      .locator(
+        `[data-testid="plan-${planTier}"] button, button[data-testid="change-to-${planTier}"]`
+      )
+      .first();
+
+    // Try the more specific locator first, fall back to general
+    if (await planButton.isVisible().catch(() => false)) {
+      await this.clickButton(planButton);
+    } else {
+      // Use text-based selection as fallback
+      await this.clickButton(button);
+    }
+  }
+
+  /**
+   * Confirm plan change in the dialog
+   */
+  async confirmPlanChange(): Promise<void> {
+    await this.waitForMutation(async () => {
+      await this.changePlanDialog.locator('button:has-text("Potvrdi promenu")').click();
+    });
+  }
+
+  /**
+   * Complete the change plan flow
+   */
+  async changePlanFlow(newPlanTier: PlanTier): Promise<void> {
+    await this.clickChangePlanTo(newPlanTier);
+    await this.expectChangePlanDialogVisible();
+    await this.confirmPlanChange();
   }
 
   // ==================== Manage subscription actions ====================

@@ -56,6 +56,25 @@ test.describe("Schedule Management", () => {
     const availabilityPage = new AvailabilityPage(page);
     await availabilityPage.goto();
 
+    // Wait for the page to fully load
+    await availabilityPage.waitForPageLoad();
+
+    // The default schedule should be automatically selected, but if not, select it
+    const scheduleName = "Working Hours";
+    await availabilityPage.expectScheduleVisible(scheduleName);
+
+    // Check if schedule is already selected by looking for the availability editor
+    const availabilityEditor = page.locator('text="Radno vreme"');
+    const isScheduleSelected = await availabilityEditor.isVisible().catch(() => false);
+
+    if (!isScheduleSelected) {
+      // Click on the schedule name to select it (the schedule card is clickable)
+      const scheduleText = page.locator(`text=${scheduleName}`).first();
+      await scheduleText.click();
+      // Wait for the schedule to load
+      await page.waitForTimeout(1000);
+    }
+
     // Should see days of the week (in Serbian or English)
     await availabilityPage.expectDaysVisible();
   });

@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import type { PlanTier } from "@salonko/config";
 import { useExponentialBackoffPolling } from "@salonko/ui/hooks/useExponentialBackoffPolling";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,15 +10,13 @@ import { useEffect, useState } from "react";
 import { BillingAlerts } from "./billing/BillingAlerts";
 import { BillingPageHeader } from "./billing/BillingPageHeader";
 import { CancelSubscriptionDialog } from "./billing/CancelSubscriptionDialog";
+import { ChangePlanCard } from "./billing/ChangePlanCard";
+import { ChangePlanDialog } from "./billing/ChangePlanDialog";
 import { CurrentStatusCard } from "./billing/CurrentStatusCard";
-import { DowngradeToMonthlyCard } from "./billing/DowngradeToMonthlyCard";
-import { DowngradeToMonthlyDialog } from "./billing/DowngradeToMonthlyDialog";
 import { InvoiceHistoryCard } from "./billing/InvoiceHistoryCard";
 import { ManageSubscriptionCard } from "./billing/ManageSubscriptionCard";
 import { PastDueCard } from "./billing/PastDueCard";
 import { PlanPickerCard } from "./billing/PlanPickerCard";
-import { UpgradeToYearlyCard } from "./billing/UpgradeToYearlyCard";
-import { UpgradeToYearlyDialog } from "./billing/UpgradeToYearlyDialog";
 import type { SubscriptionStatus } from "./billing/types";
 
 type BillingClientProps = {
@@ -31,10 +30,10 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
   const success = searchParams.get("success") === "true";
   const canceled = searchParams.get("canceled") === "true";
 
-  const [selectedInterval, setSelectedInterval] = useState<"monthly" | "yearly">("monthly");
+  const [selectedPlan, setSelectedPlan] = useState<PlanTier>("growth");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
+  const [showChangePlanDialog, setShowChangePlanDialog] = useState(false);
+  const [pendingNewPlan, setPendingNewPlan] = useState<PlanTier | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -84,15 +83,13 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
     },
   });
 
-  const upgradeToYearly = trpc.subscription.scheduleUpgradeToYearly.useMutation({
-    onSuccess: () => {
-      utils.subscription.getStatus.invalidate();
-    },
-  });
-
-  const downgradeToMonthly = trpc.subscription.scheduleDowngradeToMonthly.useMutation({
-    onSuccess: () => {
-      utils.subscription.getStatus.invalidate();
+  const changePlan = trpc.subscription.changePlan.useMutation({
+    onSuccess: async () => {
+      // Invalidate and refetch to ensure immediate UI update
+      await utils.subscription.getStatus.invalidate();
+      await refetch();
+      setShowChangePlanDialog(false);
+      setPendingNewPlan(null);
     },
   });
 
@@ -126,18 +123,22 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         status.status !== "ACTIVE" &&
         status.status !== "PAST_DUE"));
 
-  // Show upgrade option when user has monthly paid subscription
-  const showUpgradeOption =
+  // Show change plan option when user has an active paid subscription
+  const showChangePlanOption =
     status.hasPaidSubscription &&
-    status.billingInterval === "MONTH" &&
     !status.cancelAtPeriodEnd &&
     (status.status === "ACTIVE" || status.isInTrial);
 
-  const showDowngradeOption =
-    status.hasPaidSubscription &&
-    status.billingInterval === "YEAR" &&
-    !status.cancelAtPeriodEnd &&
-    (status.status === "ACTIVE" || status.isInTrial);
+  const handleOpenChangePlanDialog = (newPlan: PlanTier) => {
+    setPendingNewPlan(newPlan);
+    setShowChangePlanDialog(true);
+  };
+
+  const handleConfirmChangePlan = () => {
+    if (pendingNewPlan) {
+      changePlan.mutate({ newPlan: pendingNewPlan });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -148,9 +149,10 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
       {/* Pricing Options - Show when trial (without paid subscription), expired, or no subscription */}
       {showPricingOptions && (
         <PlanPickerCard
-          selectedInterval={selectedInterval}
-          onSelectInterval={setSelectedInterval}
-          onSubscribe={() => createCheckout.mutate({ interval: selectedInterval })}
+          selectedPlan={selectedPlan}
+          currentPlan={status.planTier}
+          onSelectPlan={setSelectedPlan}
+          onSubscribe={() => createCheckout.mutate({ plan: selectedPlan })}
           isSubscribing={createCheckout.isPending}
         />
       )}
@@ -168,21 +170,12 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         />
       )}
 
-      {/* Upgrade to Yearly - Show when user has monthly subscription */}
-      {showUpgradeOption && (
-        <UpgradeToYearlyCard
+      {/* Change Plan - Show when user has active subscription */}
+      {showChangePlanOption && (
+        <ChangePlanCard
           status={status}
-          onOpenUpgradeDialog={() => setShowUpgradeDialog(true)}
-          isUpgrading={upgradeToYearly.isPending}
-        />
-      )}
-
-      {/* Downgrade to Monthly - Show when user has yearly subscription */}
-      {showDowngradeOption && (
-        <DowngradeToMonthlyCard
-          status={status}
-          onOpenDowngradeDialog={() => setShowDowngradeDialog(true)}
-          isDowngrading={downgradeToMonthly.isPending}
+          onOpenChangePlanDialog={handleOpenChangePlanDialog}
+          isChangingPlan={changePlan.isPending}
         />
       )}
 
@@ -209,26 +202,14 @@ export function BillingClient({ initialStatus }: BillingClientProps) {
         }}
       />
 
-      {/* Upgrade to Yearly Dialog */}
-      <UpgradeToYearlyDialog
-        open={showUpgradeDialog}
-        onOpenChange={setShowUpgradeDialog}
-        isPending={upgradeToYearly.isPending}
-        onConfirm={() => {
-          upgradeToYearly.mutate();
-          setShowUpgradeDialog(false);
-        }}
-      />
-
-      {/* Downgrade to Monthly Dialog */}
-      <DowngradeToMonthlyDialog
-        open={showDowngradeDialog}
-        onOpenChange={setShowDowngradeDialog}
-        isPending={downgradeToMonthly.isPending}
-        onConfirm={() => {
-          downgradeToMonthly.mutate();
-          setShowDowngradeDialog(false);
-        }}
+      {/* Change Plan Dialog */}
+      <ChangePlanDialog
+        open={showChangePlanDialog}
+        onOpenChange={setShowChangePlanDialog}
+        newPlan={pendingNewPlan}
+        currentPlan={status.planTier}
+        isPending={changePlan.isPending}
+        onConfirm={handleConfirmChangePlan}
       />
     </div>
   );

@@ -1,22 +1,75 @@
 /**
- * Centralized pricing configuration
+ * Centralized pricing configuration for all plan tiers
  *
  * Note: These are display prices in RSD. The actual Stripe prices are configured
- * via STRIPE_PRICE_MONTHLY and STRIPE_PRICE_YEARLY environment variables.
+ * via environment variables:
+ * - STRIPE_PRICE_STARTER
+ * - STRIPE_PRICE_GROWTH
+ * - STRIPE_PRICE_GROWTH_YEARLY
+ * - STRIPE_PRICE_WEB_PRESENCE
  *
  * If Stripe prices change, update these values to keep the UI in sync.
  */
-export const PRICING_CONFIG = {
-  monthly: {
-    price: "5.000",
+
+export type PlanTier = "starter" | "growth" | "growth_yearly" | "web_presence";
+
+export type BillingInterval = "MONTH" | "YEAR";
+
+export type PlanConfig = {
+  name: string;
+  price: string;
+  period: string;
+  billingInterval: BillingInterval;
+  badge: string | null;
+  features: string[];
+};
+
+export const PLAN_TIERS: PlanTier[] = ["starter", "web_presence", "growth", "growth_yearly"];
+
+export const PRICING_CONFIG: Record<PlanTier, PlanConfig> = {
+  starter: {
+    name: "Starter",
+    price: "1.999",
     period: "mesečno",
-    total: "5.000 RSD/mes",
-    savings: null,
+    billingInterval: "MONTH",
+    badge: null,
+    features: [
+      "Online zakazivanje 24/7",
+      "Email podsetnici",
+      "Upravljanje rasporedom",
+      "Google Calendar sinhronizacija",
+      "Mobilni pristup",
+    ],
   },
-  yearly: {
-    price: "50.000",
+  web_presence: {
+    name: "Web Presence",
+    price: "1.999",
+    period: "mesečno",
+    billingInterval: "MONTH",
+    badge: "Buduća funkcionalnost",
+    features: ["Listing na Salonko sajtu", "Vidljivost za nove klijente", "Profil salona"],
+  },
+  growth: {
+    name: "Growth",
+    price: "2.999",
+    period: "mesečno",
+    billingInterval: "MONTH",
+    badge: "Najpopularnije",
+    features: ["Sve iz Starter plana", "Sve iz Web Presence plana", "Prioritetna podrška"],
+  },
+  growth_yearly: {
+    name: "Growth Godišnje",
+    price: "29.999",
     period: "godišnje",
-    total: "~4.167 RSD/mes",
-    savings: "2 meseca besplatno",
+    billingInterval: "YEAR",
+    badge: "Ušteda 17%",
+    features: ["Sve iz Growth plana", "Godišnja naplata", "2 meseca besplatno"],
   },
 } as const;
+
+/**
+ * Get billing interval from plan tier
+ */
+export function getBillingIntervalFromPlan(plan: PlanTier): BillingInterval {
+  return PRICING_CONFIG[plan].billingInterval;
+}

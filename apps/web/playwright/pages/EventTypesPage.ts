@@ -75,13 +75,6 @@ export class EventTypesListPage extends BasePage {
       throw new Error(`Could not find delete button for event type: ${title}`);
     }
 
-    // Set up dialog handler BEFORE clicking (native browser confirm)
-    // Use Promise.all to handle both the dialog and the API response
-    const dialogPromise = this.page.waitForEvent("dialog").then(async (dialog) => {
-      await dialog.accept();
-      return true;
-    });
-
     // Set up response waiter for the delete mutation
     const responsePromise = this.page.waitForResponse(
       (response) =>
@@ -95,25 +88,28 @@ export class EventTypesListPage extends BasePage {
     // Click the delete button
     await deleteButton.click();
 
-    // Wait for native dialog (with short timeout in case it's a custom dialog)
-    const dialogHandled = await dialogPromise.catch(() => false);
+    // Wait for custom confirm dialog to appear (ConfirmDialog component)
+    const confirmDialog = this.page.locator('[role="dialog"]').filter({
+      hasText: "Obriši tip termina",
+    });
+    await expect(confirmDialog).toBeVisible({ timeout: 5000 });
 
-    if (!dialogHandled) {
-      // Check for custom confirm dialog (fallback)
-      const confirmButton = this.page.locator('button:has-text("Obriši")');
-      const confirmButtonVisible = await confirmButton
-        .isVisible({ timeout: 2000 })
-        .catch(() => false);
-
-      if (confirmButtonVisible) {
-        await confirmButton.click();
-      }
-    }
+    // Find and click the confirm button in the dialog
+    const confirmButton = confirmDialog.locator('button:has-text("Obriši")').filter({
+      hasNotText: "Otkaži",
+    });
+    await expect(confirmButton).toBeVisible({ timeout: 2000 });
 
     // Wait for the delete response to complete
-    await responsePromise.catch(() => {
-      // Response might have already completed, that's ok
-    });
+    await Promise.all([
+      responsePromise.catch(() => {
+        // Response might have already completed, that's ok
+      }),
+      confirmButton.click(),
+    ]);
+
+    // Wait for dialog to close
+    await expect(confirmDialog).toBeHidden({ timeout: 5000 });
 
     // Give the UI a moment to update
     await this.page.waitForTimeout(500);

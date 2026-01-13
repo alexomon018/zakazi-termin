@@ -104,7 +104,7 @@ export class SignupPage extends BasePage {
   }
 
   /**
-   * Signup and wait for successful navigation to dashboard
+   * Signup and wait for successful redirect to verify-email page
    */
   async signupAndExpectSuccess(data: {
     name: string;
@@ -113,7 +113,25 @@ export class SignupPage extends BasePage {
     password: string;
   }): Promise<void> {
     await this.signup(data);
-    await this.waitForUrl(/\/dashboard/);
+    // After signup, user is redirected to verify-email page with their email as a param
+    await this.waitForUrl(/\/verify-email\?email=/);
+  }
+
+  /**
+   * Signup and verify redirect to verify-email page with specific email
+   */
+  async signupAndExpectVerifyEmail(data: {
+    name: string;
+    email: string;
+    salonName: string;
+    password: string;
+  }): Promise<void> {
+    await this.signup(data);
+    const encodedEmail = encodeURIComponent(data.email.toLowerCase());
+    await this.page.waitForURL(
+      new RegExp(`/verify-email\\?email=${encodedEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+      { timeout: 30000 }
+    );
   }
 
   /**
@@ -155,7 +173,16 @@ export class SignupPage extends BasePage {
    * Check for a specific error message
    */
   async expectErrorMessage(message: string): Promise<void> {
-    await expect(this.page.locator(`text=${message}`)).toBeVisible({ timeout: 10000 });
+    // First check for server error message (data-testid)
+    const serverErrorLocator = this.page.getByTestId("signup-error-message");
+    const hasServerError = await serverErrorLocator.isVisible().catch(() => false);
+
+    if (hasServerError) {
+      await expect(serverErrorLocator).toContainText(message, { timeout: 10000 });
+    } else {
+      // Fallback to checking for text anywhere on the page
+      await expect(this.page.locator(`text=${message}`)).toBeVisible({ timeout: 10000 });
+    }
   }
 
   /**

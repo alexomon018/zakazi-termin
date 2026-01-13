@@ -2,18 +2,23 @@ import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 
 import { getAppUrl } from "@salonko/config";
+import type { PlanTier } from "@salonko/config";
 
 // Environment variable validation
 const requiredEnvVars = {
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-  STRIPE_PRICE_MONTHLY: process.env.STRIPE_PRICE_MONTHLY,
-  STRIPE_PRICE_YEARLY: process.env.STRIPE_PRICE_YEARLY,
+  STRIPE_PRICE_STARTER: process.env.STRIPE_PRICE_STARTER,
+  STRIPE_PRICE_GROWTH: process.env.STRIPE_PRICE_GROWTH,
+  STRIPE_PRICE_GROWTH_YEARLY: process.env.STRIPE_PRICE_GROWTH_YEARLY,
+  STRIPE_PRICE_WEB_PRESENCE: process.env.STRIPE_PRICE_WEB_PRESENCE,
 } as const;
 
 type StripeEnvVars = {
   STRIPE_SECRET_KEY: string;
-  STRIPE_PRICE_MONTHLY: string;
-  STRIPE_PRICE_YEARLY: string;
+  STRIPE_PRICE_STARTER: string;
+  STRIPE_PRICE_GROWTH: string;
+  STRIPE_PRICE_GROWTH_YEARLY: string;
+  STRIPE_PRICE_WEB_PRESENCE: string;
 };
 
 function requireEnvVar(key: keyof typeof requiredEnvVars, value: string | undefined): string {
@@ -29,13 +34,21 @@ function requireEnvVar(key: keyof typeof requiredEnvVars, value: string | undefi
 // Validate at procedure call time instead (and return narrowed values).
 export function validateStripeConfig(): StripeEnvVars {
   const STRIPE_SECRET_KEY = requireEnvVar("STRIPE_SECRET_KEY", requiredEnvVars.STRIPE_SECRET_KEY);
-  const STRIPE_PRICE_MONTHLY = requireEnvVar(
-    "STRIPE_PRICE_MONTHLY",
-    requiredEnvVars.STRIPE_PRICE_MONTHLY
+  const STRIPE_PRICE_STARTER = requireEnvVar(
+    "STRIPE_PRICE_STARTER",
+    requiredEnvVars.STRIPE_PRICE_STARTER
   );
-  const STRIPE_PRICE_YEARLY = requireEnvVar(
-    "STRIPE_PRICE_YEARLY",
-    requiredEnvVars.STRIPE_PRICE_YEARLY
+  const STRIPE_PRICE_GROWTH = requireEnvVar(
+    "STRIPE_PRICE_GROWTH",
+    requiredEnvVars.STRIPE_PRICE_GROWTH
+  );
+  const STRIPE_PRICE_GROWTH_YEARLY = requireEnvVar(
+    "STRIPE_PRICE_GROWTH_YEARLY",
+    requiredEnvVars.STRIPE_PRICE_GROWTH_YEARLY
+  );
+  const STRIPE_PRICE_WEB_PRESENCE = requireEnvVar(
+    "STRIPE_PRICE_WEB_PRESENCE",
+    requiredEnvVars.STRIPE_PRICE_WEB_PRESENCE
   );
 
   // Validate env-based base URL fallback (must include scheme).
@@ -50,7 +63,13 @@ export function validateStripeConfig(): StripeEnvVars {
     });
   }
 
-  return { STRIPE_SECRET_KEY, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY };
+  return {
+    STRIPE_SECRET_KEY,
+    STRIPE_PRICE_STARTER,
+    STRIPE_PRICE_GROWTH,
+    STRIPE_PRICE_GROWTH_YEARLY,
+    STRIPE_PRICE_WEB_PRESENCE,
+  };
 }
 
 let _stripe: Stripe | null = null;
@@ -80,11 +99,34 @@ export function isTestStripeId(stripeId: string | null | undefined): boolean {
   return TEST_STRIPE_ID_REGEX.test(stripeId);
 }
 
-export const PRICES = {
-  get monthly(): string {
-    return validateStripeConfig().STRIPE_PRICE_MONTHLY;
+export const PRICES: Record<PlanTier, string> = {
+  get starter(): string {
+    return validateStripeConfig().STRIPE_PRICE_STARTER;
   },
-  get yearly(): string {
-    return validateStripeConfig().STRIPE_PRICE_YEARLY;
+  get growth(): string {
+    return validateStripeConfig().STRIPE_PRICE_GROWTH;
   },
-} as const;
+  get growth_yearly(): string {
+    return validateStripeConfig().STRIPE_PRICE_GROWTH_YEARLY;
+  },
+  get web_presence(): string {
+    return validateStripeConfig().STRIPE_PRICE_WEB_PRESENCE;
+  },
+};
+
+/**
+ * Get plan tier from Stripe price ID
+ * Returns null for unknown/legacy price IDs
+ */
+export function getPlanTierFromPriceId(priceId: string | null): PlanTier | null {
+  if (!priceId) return null;
+
+  const config = validateStripeConfig();
+
+  if (priceId === config.STRIPE_PRICE_STARTER) return "starter";
+  if (priceId === config.STRIPE_PRICE_GROWTH) return "growth";
+  if (priceId === config.STRIPE_PRICE_GROWTH_YEARLY) return "growth_yearly";
+  if (priceId === config.STRIPE_PRICE_WEB_PRESENCE) return "web_presence";
+
+  return null; // Legacy or unknown price
+}
