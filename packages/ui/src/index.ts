@@ -52,6 +52,20 @@ export {
   InputOTPSeparator,
 } from "./atoms/InputOTP";
 export { Switch } from "./atoms/Switch";
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./atoms/Popover";
+export { ScrollArea, ScrollBar } from "./atoms/ScrollArea";
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from "./atoms/Command";
+export { PhoneInput } from "./atoms/PhoneInput";
 
 // Molecules - Forms
 export { DurationSelector, DURATION_OPTIONS } from "./molecules/forms/DurationSelector";
