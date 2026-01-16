@@ -1,13 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Input, Label } from "@salonko/ui";
+import { Button, Input, Label, PhoneInput } from "@salonko/ui";
 import {
   type BookingDetailsFormData,
   bookingDetailsSchema,
 } from "@salonko/ui/lib/validations/booking";
 import { Calendar, ChevronLeft, Clock, FileText, Mail, Phone, User } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 interface BookingDetailsFormProps {
   selectedSlot: string | null;
@@ -33,6 +33,7 @@ export function BookingDetailsForm({
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<BookingDetailsFormData>({
     resolver: zodResolver(bookingDetailsSchema),
@@ -134,13 +135,25 @@ export function BookingDetailsForm({
                 <Phone className="w-4 h-4" />
                 Telefon (opciono)
               </Label>
-              <Input
-                id="phoneNumber"
-                type="tel"
-                placeholder="+381 60 123 4567"
-                disabled={isPending}
-                {...register("phoneNumber")}
+              <Controller
+                name="phoneNumber"
+                control={control}
+                render={({ field }) => (
+                  <PhoneInput
+                    id="phoneNumber"
+                    defaultCountry="RS"
+                    placeholder="60 123 4567"
+                    disabled={isPending}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
               />
+              {errors.phoneNumber && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  {errors.phoneNumber.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
