@@ -5,13 +5,13 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
   Label,
+  LoadingButton,
 } from "@salonko/ui";
+import { AlertCircle, Calendar, CheckCircle, Loader2, Mail, XCircle } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -24,7 +24,7 @@ const verifySchema = z.object({
   code: z
     .string()
     .length(6, "Kod mora imati 6 cifara")
-    .regex(/^\d+$/, "Kod mora sadržati samo cifre"),
+    .regex(/^\d+$/, "Kod mora sadrzati samo cifre"),
 });
 
 type VerifyFormData = z.infer<typeof verifySchema>;
@@ -96,7 +96,7 @@ export default function VerifyEmailClient() {
       router.refresh();
     } catch {
       setIsLoading(false);
-      setServerError("Došlo je do greške. Pokušajte ponovo.");
+      setServerError("Doslo je do greske. Pokusajte ponovo.");
     }
   };
 
@@ -120,7 +120,7 @@ export default function VerifyEmailClient() {
         setServerError(result.error);
       }
     } catch {
-      setServerError("Došlo je do greške pri slanju koda.");
+      setServerError("Doslo je do greske pri slanju koda.");
     } finally {
       setIsResending(false);
     }
@@ -131,106 +131,145 @@ export default function VerifyEmailClient() {
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle
-          data-testid="verify-email-title"
-          className="text-2xl font-bold text-gray-900 dark:text-white"
-        >
-          <Link href="/" className="transition-opacity hover:opacity-80">
-            Salonko
-          </Link>
-        </CardTitle>
-        <p data-testid="verify-email-subtitle" className="mt-2 text-gray-600 dark:text-gray-400">
-          Verifikujte vaš email
-        </p>
-      </CardHeader>
-      <CardContent>
-        <p className="mb-6 text-sm text-center text-gray-600 dark:text-gray-400">
-          Unesite 6-cifreni kod koji smo poslali na vašu email adresu
-        </p>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {serverError && (
-            <div
-              data-testid="verify-email-error-message"
-              className="p-3 text-sm text-red-600 bg-red-50 rounded-md dark:text-red-400 dark:bg-red-900/20"
+    <div className="mx-auto w-full max-w-md animate-fade-in-up">
+      <Card className="border-0 backdrop-blur-sm shadow-elevated-lg bg-card/80">
+        <CardContent className="p-6 sm:p-8">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <Link
+              href="/"
+              className="inline-flex gap-2 justify-center items-center mb-3 transition-transform hover:scale-105"
             >
-              {serverError}
-            </div>
-          )}
-          {resendMessage && (
-            <div
-              data-testid="verify-email-success-message"
-              className="p-3 text-sm text-green-600 bg-green-50 rounded-md dark:text-green-400 dark:bg-green-900/20"
-            >
-              {resendMessage}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="code" className="text-gray-900 sr-only dark:text-white">
-              Verifikacioni kod
-            </Label>
-            <div className="flex justify-center">
-              <Controller
-                name="code"
-                control={control}
-                render={({ field }) => (
-                  <InputOTP
-                    maxLength={6}
-                    value={field.value}
-                    onChange={field.onChange}
-                    disabled={isLoading}
-                    data-testid="verify-email-code-input"
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                )}
-              />
-            </div>
-            {errors.code && (
-              <p
-                data-testid="verify-email-code-error"
-                className="text-sm text-center text-red-600 dark:text-red-400"
+              <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-lg from-primary to-primary/70 shadow-primary/20">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <span
+                data-testid="verify-email-title"
+                className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300"
               >
-                {errors.code.message}
-              </p>
-            )}
+                Salonko
+              </span>
+            </Link>
+            <p
+              data-testid="verify-email-subtitle"
+              className="text-sm text-gray-500 dark:text-gray-400"
+            >
+              Verifikujte vas email
+            </p>
           </div>
 
-          <Button
-            type="submit"
-            data-testid="verify-email-submit-button"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? "Provera..." : "Verifikuj"}
-          </Button>
-        </form>
+          {/* Email info box */}
+          <div className="p-4 mb-6 bg-blue-50 rounded-lg border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50">
+            <div className="flex gap-3 items-start">
+              <Mail className="flex-shrink-0 mt-0.5 w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div className="text-sm text-blue-700 dark:text-blue-300">
+                <p>
+                  Unesite 6-cifreni kod koji smo poslali na{" "}
+                  <strong className="font-semibold">{email}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Niste primili kod?{" "}
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={isResending || isLoading}
-              data-testid="verify-email-resend-button"
-              className="font-medium text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {serverError && (
+              <div
+                data-testid="verify-email-error-message"
+                className="p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800/50 animate-fade-in"
+              >
+                <div className="flex gap-2 items-center">
+                  <XCircle className="flex-shrink-0 w-4 h-4" aria-hidden="true" />
+                  {serverError}
+                </div>
+              </div>
+            )}
+
+            {resendMessage && (
+              <div
+                data-testid="verify-email-success-message"
+                className="p-4 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800/50 animate-fade-in"
+              >
+                <div className="flex gap-2 items-center">
+                  <CheckCircle className="flex-shrink-0 w-4 h-4" aria-hidden="true" />
+                  {resendMessage}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="code" className="text-sm font-medium sr-only">
+                Verifikacioni kod
+              </Label>
+              <div className="flex justify-center">
+                <Controller
+                  name="code"
+                  control={control}
+                  render={({ field }) => (
+                    <InputOTP
+                      maxLength={6}
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={isLoading}
+                      data-testid="verify-email-code-input"
+                    >
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
+                  )}
+                />
+              </div>
+              {errors.code && (
+                <p
+                  data-testid="verify-email-code-error"
+                  className="flex gap-1 justify-center items-center mt-2 text-xs text-destructive"
+                >
+                  <AlertCircle className="w-3 h-3" aria-hidden="true" />
+                  {errors.code.message}
+                </p>
+              )}
+            </div>
+
+            <LoadingButton
+              type="submit"
+              data-testid="verify-email-submit-button"
+              className="w-full h-12 text-base font-medium transition-all duration-300 shadow-glow hover:shadow-lg"
+              disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Verifikovanje..."
             >
-              {isResending ? "Slanje..." : "Pošalji ponovo"}
-            </button>
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+              Verifikovanje...
+            </LoadingButton>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Niste primili kod?{" "}
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={isResending || isLoading}
+                data-testid="verify-email-resend-button"
+                className="font-semibold transition-colors text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResending ? (
+                  <span className="flex gap-2 items-center">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Slanje...
+                  </span>
+                ) : (
+                  "Posalji ponovo"
+                )}
+              </button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -319,7 +319,7 @@ export const authOptions: NextAuthOptions = {
         token.timeZone = user.timeZone ?? "Europe/Belgrade";
       }
 
-      // OAuth sign in - fetch additional user data
+      // OAuth sign in - fetch additional user data and ensure user exists
       if (account?.type === "oauth" && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
@@ -330,6 +330,14 @@ export const authOptions: NextAuthOptions = {
           token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
+        } else {
+          // User should have been created in signIn callback but wasn't found
+          // This can happen if there was an error during user creation
+          // Log the error for debugging
+          logger.error("OAuth user not found in database after signIn", {
+            email: token.email,
+            providerId: account.providerAccountId,
+          });
         }
       }
 
@@ -389,7 +397,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
 
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Credentials provider - already validated in authorize
       if (account?.type === "credentials") {
         return true;
@@ -400,59 +408,65 @@ export const authOptions: NextAuthOptions = {
         const email = user.email?.toLowerCase();
         if (!email) return false;
 
-        // Check for existing user
-        const existingUser = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (existingUser) {
-          // Update identity provider if switching from EMAIL to GOOGLE
-          if (existingUser.identityProvider === "EMAIL") {
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: {
-                identityProvider: "GOOGLE",
-                identityProviderId: account.providerAccountId,
-                emailVerified: new Date(),
-                avatarUrl: user.image ?? existingUser.avatarUrl,
-              },
-            });
-          }
-          return true;
-        }
-
-        // Create new user with Google
-        const salonName = email
-          .split("@")[0]
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "");
-        const generatedSalonName = await generateUniqueSalonName(salonName);
-
-        await prisma.user.create({
-          data: {
-            email,
-            name: user.name,
-            salonName: generatedSalonName,
-            avatarUrl: user.image,
-            emailVerified: new Date(),
-            identityProvider: "GOOGLE",
-            identityProviderId: account.providerAccountId,
-          },
-        });
-
-        // Send welcome email to new user
         try {
-          await emailService.sendWelcomeEmail({
-            userName: user.name || "Korisnik",
-            userEmail: email,
-            salonName: generatedSalonName,
+          // Check for existing user
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
           });
-        } catch (error) {
-          logger.error("Failed to send welcome email", { error, email });
-          // Don't block sign-in if email fails
-        }
 
-        return true;
+          if (existingUser) {
+            // Update identity provider if switching from EMAIL to GOOGLE
+            if (existingUser.identityProvider === "EMAIL") {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                  identityProvider: "GOOGLE",
+                  identityProviderId: account.providerAccountId,
+                  emailVerified: new Date(),
+                  avatarUrl: user.image ?? existingUser.avatarUrl,
+                },
+              });
+            }
+            return true;
+          }
+
+          // Create new user with Google
+          const baseSlug = email
+            .split("@")[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          const safeSlug = baseSlug || "salon";
+          const generatedSalonName = await generateUniqueSalonName(safeSlug);
+
+          await prisma.user.create({
+            data: {
+              email,
+              name: user.name,
+              salonName: generatedSalonName,
+              avatarUrl: user.image,
+              emailVerified: new Date(),
+              identityProvider: "GOOGLE",
+              identityProviderId: account.providerAccountId,
+            },
+          });
+
+          // Send welcome email to new user
+          try {
+            await emailService.sendWelcomeEmail({
+              userName: user.name || "Korisnik",
+              userEmail: email,
+              salonName: generatedSalonName,
+            });
+          } catch (emailError) {
+            logger.error("Failed to send welcome email", { error: emailError, email });
+            // Don't block sign-in if email fails
+          }
+
+          return true;
+        } catch (error) {
+          logger.error("Failed to create OAuth user", { error, email });
+          return false;
+        }
       }
 
       return false;

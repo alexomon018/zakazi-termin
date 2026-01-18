@@ -66,11 +66,29 @@ export {
   CommandSeparator,
 } from "./atoms/Command";
 export { PhoneInput } from "./atoms/PhoneInput";
+export { Checkbox } from "./atoms/Checkbox";
+export { GoogleIcon } from "./atoms/Icons";
+export { FormErrorMessage } from "./atoms/FormErrorMessage";
+export { ServerErrorAlert } from "./atoms/ServerErrorAlert";
+export { LoadingButton } from "./atoms/LoadingButton";
+
+// Molecules - Auth
+export { AuthHeader } from "./molecules/auth/AuthHeader";
 
 // Molecules - Forms
 export { DurationSelector, DURATION_OPTIONS } from "./molecules/forms/DurationSelector";
 export { FormSection } from "./molecules/forms/FormSection";
 export { SelectField, type SelectOption } from "./molecules/forms/SelectField";
+export { SignupHeader } from "./molecules/forms/SignupHeader";
+export { SignupProgressSteps } from "./molecules/forms/SignupProgressSteps";
+export { SignupFormField } from "./molecules/forms/SignupFormField";
+export { SignupFormSection } from "./molecules/forms/SignupFormSection";
+export { GoogleSearchSection } from "./molecules/forms/GoogleSearchSection";
+export { SalonInfoSection } from "./molecules/forms/SalonInfoSection";
+export { OwnerInfoSection } from "./molecules/forms/OwnerInfoSection";
+
+// Molecules - Google Places
+export { GooglePlacesSearch, type PlaceResult } from "./molecules/google-places/GooglePlacesSearch";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";
@@ -117,6 +135,9 @@ export { NavLink } from "./molecules/landing/NavLink";
 
 // Organisms - Navigation
 export { DashboardNav } from "./organisms/navigation/DashboardNav";
+
+// Organisms - Auth
+export { SignupForm } from "./organisms/auth/SignupForm";
 
 // Organisms - Dashboard
 export { TrialBanner } from "./organisms/dashboard/TrialBanner";

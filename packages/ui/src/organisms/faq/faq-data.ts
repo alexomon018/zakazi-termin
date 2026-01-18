@@ -13,7 +13,7 @@ export const generalFAQs: FAQItem[] = [
   {
     question: "Da li je korišćenje Salonko platforme besplatno?",
     answer:
-      "Salonko nudi besplatan probni period od 14 dana. Nakon toga, platforma je dostupna kroz mesečnu pretplatu koja omogućava pristup digitalnom kalendaru, upravljanju uslugama, online zakazivanjima i naprednim funkcijama.",
+      "Salonko nudi besplatan probni period od 30 dana. Nakon toga, platforma je dostupna kroz mesečnu pretplatu koja omogućava pristup digitalnom kalendaru, upravljanju uslugama, online zakazivanjima i naprednim funkcijama.",
   },
   {
     question: "Kako mogu da registrujem svoj profil na Salonko?",

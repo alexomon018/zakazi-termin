@@ -90,6 +90,17 @@ export async function verifyEmailAction(
           emailVerified: new Date(),
           autoLoginToken,
           autoLoginTokenExpires,
+          // Salon info from registration
+          salonTypes: pending.salonTypes,
+          salonPhone: pending.salonPhone,
+          salonEmail: pending.salonEmail,
+          salonCity: pending.salonCity,
+          salonAddress: pending.salonAddress,
+          googlePlaceId: pending.googlePlaceId,
+          // Owner info
+          ownerFirstName: pending.ownerFirstName,
+          ownerLastName: pending.ownerLastName,
+          ownerPhone: pending.ownerPhone,
           password: {
             create: {
               hash: pending.hashedPassword,

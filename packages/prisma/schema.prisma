@@ -105,11 +105,24 @@ model User {
   identityProvider   IdentityProvider @default(EMAIL)
   identityProviderId String?
   emailVerified      DateTime?
-  
+
+  // Salon info (registration)
+  salonTypes    String[] // Array of salon type IDs
+  salonPhone    String?
+  salonEmail    String?
+  salonCity     String?
+  salonAddress  String?
+  googlePlaceId String?  // Google Places ID for the salon
+
+  // Owner info (separate from user email)
+  ownerFirstName String?
+  ownerLastName  String?
+  ownerPhone     String?
+
   // Auto-login token (one-time use after email verification)
   autoLoginToken        String?
   autoLoginTokenExpires DateTime?
-  
+
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
@@ -187,6 +200,19 @@ model PendingRegistration {
   hashedPassword   String
   organizationName String?
   organizationSlug String?
+
+  // Salon info (registration)
+  salonTypes    String[] // Array of salon type IDs
+  salonPhone    String?
+  salonEmail    String?
+  salonCity     String?
+  salonAddress  String?
+  googlePlaceId String?  // Google Places ID for the salon
+
+  // Owner info (separate from user email)
+  ownerFirstName String?
+  ownerLastName  String?
+  ownerPhone     String?
 
   // OTP fields
   verificationCode String
