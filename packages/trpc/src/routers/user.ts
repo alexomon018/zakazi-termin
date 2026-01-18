@@ -310,65 +310,78 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check if salonName is already taken (if changing)
-      const existingUser = await ctx.prisma.user.findFirst({
-        where: {
-          salonName: input.salonName,
-          NOT: { id: ctx.session.user.id },
-        },
-      });
-
-      if (existingUser) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Naziv salona je već zauzet.",
-        });
-      }
-
-      // Update user with onboarding data
-      const user = await ctx.prisma.user.update({
-        where: { id: ctx.session.user.id },
-        data: {
-          salonName: input.salonName,
-          salonTypes: input.salonTypes,
-          salonPhone: input.salonPhone,
-          salonEmail: input.salonEmail || null,
-          salonCity: input.salonCity,
-          salonAddress: input.salonAddress,
-          googlePlaceId: input.googlePlaceId || null,
-        },
-      });
-
-      // Create default schedule if user doesn't have one
-      const existingSchedule = await ctx.prisma.schedule.findFirst({
-        where: { userId: ctx.session.user.id },
-      });
-
-      if (!existingSchedule) {
-        const schedule = await ctx.prisma.schedule.create({
-          data: {
-            userId: ctx.session.user.id,
-            name: "Radno vreme",
-            timeZone: "Europe/Belgrade",
-            availability: {
-              create: [
-                {
-                  days: [1, 2, 3, 4, 5],
-                  startTime: new Date("1970-01-01T09:00:00"),
-                  endTime: new Date("1970-01-01T17:00:00"),
-                },
-              ],
-            },
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Check if salonName is already taken (if changing)
+        const existingUser = await tx.user.findFirst({
+          where: {
+            salonName: input.salonName,
+            NOT: { id: ctx.session.user.id },
           },
         });
 
-        await ctx.prisma.user.update({
-          where: { id: ctx.session.user.id },
-          data: { defaultScheduleId: schedule.id },
-        });
-      }
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Naziv salona je već zauzet.",
+          });
+        }
 
-      return { success: true, salonName: user.salonName };
+        // Update user with onboarding data
+        const user = await tx.user
+          .update({
+            where: { id: ctx.session.user.id },
+            data: {
+              salonName: input.salonName,
+              salonTypes: input.salonTypes,
+              salonPhone: input.salonPhone,
+              salonEmail: input.salonEmail || null,
+              salonCity: input.salonCity,
+              salonAddress: input.salonAddress,
+              googlePlaceId: input.googlePlaceId || null,
+            },
+          })
+          .catch((error) => {
+            // Convert unique constraint failures to CONFLICT error
+            if (error.code === "P2002" && error.meta?.target?.includes("salonName")) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "Naziv salona je već zauzet.",
+              });
+            }
+            throw error;
+          });
+
+        // Create default schedule if user doesn't have one
+        const existingSchedule = await tx.schedule.findFirst({
+          where: { userId: ctx.session.user.id },
+        });
+
+        if (!existingSchedule) {
+          const schedule = await tx.schedule.create({
+            data: {
+              userId: ctx.session.user.id,
+              name: "Radno vreme",
+              timeZone: "Europe/Belgrade",
+              availability: {
+                create: [
+                  {
+                    days: [1, 2, 3, 4, 5],
+                    startTime: new Date("1970-01-01T09:00:00"),
+                    endTime: new Date("1970-01-01T17:00:00"),
+                  },
+                ],
+              },
+            },
+          });
+
+          await tx.user.update({
+            where: { id: ctx.session.user.id },
+            data: { defaultScheduleId: schedule.id },
+          });
+        }
+
+        return { success: true, salonName: user.salonName };
+      });
     }),
 
   // Get user's default schedule with availability

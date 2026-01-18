@@ -91,7 +91,6 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
       // For 401 or other errors, let the request continue - the dashboard layout will handle auth
     } catch {
       // Fetch failed, let the request continue - dashboard will handle missing data
-      return NextResponse.next();
     }
   }
 

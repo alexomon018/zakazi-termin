@@ -133,7 +133,7 @@ yarn lint:fix
 
 17. **Never use window prompts or alerts always use the components from the ui package**: use shadcn/ui Dialog component for alerts.
 
-18. **Never hardcode svg's always use the ones from the ui package. Or from the lucide-react package.**: If you need to use an svg, always use the ones from the ui package. Or from the lucide-react package.
+**Never hardcode SVGs; always use the ones from the ui package or lucide-react.**: If you need to use an SVG, always use the ones from the ui package or lucide-react.
 
 ## Dependency and Constant Management
 

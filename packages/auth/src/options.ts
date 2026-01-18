@@ -431,11 +431,12 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Create new user with Google
-          const salonName = email
+          const baseSlug = email
             .split("@")[0]
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "");
-          const generatedSalonName = await generateUniqueSalonName(salonName);
+          const safeSlug = baseSlug || "salon";
+          const generatedSalonName = await generateUniqueSalonName(safeSlug);
 
           await prisma.user.create({
             data: {

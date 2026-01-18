@@ -174,7 +174,7 @@ function LoginForm() {
               <Input
                 id="email"
                 data-testid="login-email-input"
-                type="text"
+                type="email"
                 placeholder="vas@email.com"
                 disabled={isLoading}
                 className="px-4 h-12 transition-colors bg-background/50 border-border/50 focus:border-primary focus:bg-background"

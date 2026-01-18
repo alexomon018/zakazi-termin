@@ -81,11 +81,12 @@ export default function ResetPasswordClient() {
               </p>
             </div>
 
-            <Link href="/login" className="block">
-              <Button className="w-full h-12 text-base font-medium transition-all duration-300 shadow-glow hover:shadow-lg">
-                Prijavite se
-              </Button>
-            </Link>
+            <Button
+              asChild
+              className="w-full h-12 text-base font-medium transition-all duration-300 shadow-glow hover:shadow-lg"
+            >
+              <Link href="/login">Prijavite se</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

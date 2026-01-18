@@ -1,5 +1,6 @@
 "use server";
 
+import { generateSalonSlug } from "@/lib/salon-utils";
 import { generateOTP, getOTPExpiryDate, hashPassword } from "@salonko/auth/server";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
@@ -24,22 +25,6 @@ const signupSchema = z.object({
   ownerPhone: z.string().min(1, "Telefon je obavezan"),
   password: z.string().min(8, "Lozinka mora imati najmanje 8 karaktera"),
 });
-
-function generateSalonSlug(salonName: string): string {
-  return salonName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[čć]/g, "c")
-    .replace(/[šś]/g, "s")
-    .replace(/[žź]/g, "z")
-    .replace(/đ/g, "dj")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 30);
-}
 
 export async function signupAction(formData: FormData): Promise<ActionResult<{ email: string }>> {
   try {
