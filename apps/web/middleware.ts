@@ -28,10 +28,18 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     pathname.startsWith("/verify-email");
 
   const isDashboardPage = pathname.startsWith("/dashboard");
+  const isOnboardingPage = pathname.startsWith("/onboarding");
 
   // Redirect authenticated users away from auth pages (except verify-email)
   if (isAuthPage && token && !pathname.startsWith("/verify-email")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // Handle onboarding page - require authentication
+  if (isOnboardingPage && !token) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   // Handle verify-email page access
@@ -57,6 +65,53 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Check profile completeness for dashboard access (redirect incomplete profiles to onboarding)
+  if (isDashboardPage && token) {
+    const cookie = req.headers.get("cookie") ?? "";
+    try {
+      const profileRes = await fetch(new URL("/api/profile/complete", req.url), {
+        headers: { cookie },
+        cache: "no-store",
+      });
+
+      if (profileRes.ok) {
+        const profileData = (await profileRes.json()) as {
+          ok: boolean;
+          isComplete?: boolean;
+        };
+        if (profileData.ok && profileData.isComplete === false) {
+          return NextResponse.redirect(new URL("/onboarding/complete-profile", req.url));
+        }
+      } else if (profileRes.status === 404) {
+        // User not found in database - redirect to onboarding
+        return NextResponse.redirect(new URL("/onboarding/complete-profile", req.url));
+      }
+      // For 401 or other errors, let the request continue - the dashboard layout will handle auth
+    } catch {
+      // Fetch failed, let the request continue - dashboard will handle missing data
+      return NextResponse.next();
+    }
+  }
+
+  // If user has completed onboarding, redirect away from onboarding page
+  if (isOnboardingPage && token) {
+    const cookie = req.headers.get("cookie") ?? "";
+    const profileRes = await fetch(new URL("/api/profile/complete", req.url), {
+      headers: { cookie },
+      cache: "no-store",
+    });
+
+    if (profileRes.ok) {
+      const profileData = (await profileRes.json()) as {
+        ok: boolean;
+        isComplete?: boolean;
+      };
+      if (profileData.ok && profileData.isComplete === true) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+    }
   }
 
   // Check subscription status for protected dashboard routes
@@ -100,5 +155,12 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/signup", "/forgot-password", "/verify-email"],
+  matcher: [
+    "/dashboard/:path*",
+    "/onboarding/:path*",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/verify-email",
+  ],
 };

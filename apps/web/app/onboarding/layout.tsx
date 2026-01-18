@@ -1,4 +1,4 @@
-export default function AuthLayout({
+export default function OnboardingLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -44,8 +44,8 @@ export default function AuthLayout({
 
       {/* Content container */}
       <div className="relative min-h-dvh flex flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-        {/* Main content area with max width */}
-        <div className="w-full max-w-lg">{children}</div>
+        {/* Main content area */}
+        <div className="w-full max-w-2xl">{children}</div>
 
         {/* Footer */}
         <div className="mt-8 text-center">

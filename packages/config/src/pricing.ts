@@ -22,6 +22,8 @@ export type PlanConfig = {
   billingInterval: BillingInterval;
   badge: string | null;
   features: string[];
+  ctaText: string;
+  isAvailable: boolean;
 };
 
 export const PLAN_TIERS: PlanTier[] = ["starter", "web_presence", "growth", "growth_yearly"];
@@ -40,6 +42,8 @@ export const PRICING_CONFIG: Record<PlanTier, PlanConfig> = {
       "Google Calendar sinhronizacija",
       "Mobilni pristup",
     ],
+    ctaText: "Započni besplatno",
+    isAvailable: true,
   },
   web_presence: {
     name: "Web Presence",
@@ -48,6 +52,8 @@ export const PRICING_CONFIG: Record<PlanTier, PlanConfig> = {
     billingInterval: "MONTH",
     badge: "Buduća funkcionalnost",
     features: ["Listing na Salonko sajtu", "Vidljivost za nove klijente", "Profil salona"],
+    ctaText: "Obavesti me",
+    isAvailable: false,
   },
   growth: {
     name: "Growth",
@@ -56,6 +62,8 @@ export const PRICING_CONFIG: Record<PlanTier, PlanConfig> = {
     billingInterval: "MONTH",
     badge: "Najpopularnije",
     features: ["Sve iz Starter plana", "Sve iz Web Presence plana", "Prioritetna podrška"],
+    ctaText: "Započni besplatno",
+    isAvailable: true,
   },
   growth_yearly: {
     name: "Growth Godišnje",
@@ -64,6 +72,8 @@ export const PRICING_CONFIG: Record<PlanTier, PlanConfig> = {
     billingInterval: "YEAR",
     badge: "Ušteda 17%",
     features: ["Sve iz Growth plana", "Godišnja naplata", "2 meseca besplatno"],
+    ctaText: "Uštedi sada",
+    isAvailable: true,
   },
 } as const;
 

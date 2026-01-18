@@ -18,7 +18,7 @@ function PricingCard({ plan, isHighlighted }: PricingCardProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col p-6 bg-white dark:bg-card rounded-2xl ring-1 shadow-lg h-full",
+        "flex relative flex-col p-6 h-full bg-white rounded-2xl ring-1 shadow-lg dark:bg-card",
         isHighlighted ? "ring-2 ring-primary" : "ring-gray-200 dark:ring-border"
       )}
     >
@@ -27,7 +27,7 @@ function PricingCard({ plan, isHighlighted }: PricingCardProps) {
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span
             className={cn(
-              "px-3 py-1 text-xs font-medium text-white rounded-full whitespace-nowrap",
+              "px-3 py-1 text-xs font-medium text-white whitespace-nowrap rounded-full",
               isHighlighted ? "bg-primary" : "bg-emerald-500"
             )}
           >
@@ -48,17 +48,28 @@ function PricingCard({ plan, isHighlighted }: PricingCardProps) {
       </div>
 
       {/* CTA */}
-      <Button
-        className="w-full mt-6"
-        size="default"
-        variant={isHighlighted ? "default" : "outline"}
-        asChild
-      >
-        <Link href="/signup">Započni besplatno</Link>
-      </Button>
+      {config.isAvailable ? (
+        <Button
+          className="mt-6 w-full"
+          size="default"
+          variant={isHighlighted ? "default" : "outline"}
+          asChild
+        >
+          <Link href="/signup">{config.ctaText}</Link>
+        </Button>
+      ) : (
+        <Button
+          className="mt-6 w-full"
+          size="default"
+          variant={isHighlighted ? "default" : "outline"}
+          disabled
+        >
+          {config.ctaText}
+        </Button>
+      )}
 
       {/* Features */}
-      <div className="pt-6 mt-6 border-t border-gray-100 dark:border-border flex-1">
+      <div className="flex-1 pt-6 mt-6 border-t border-gray-100 dark:border-border">
         <ul className="space-y-2.5">
           {config.features.map((feature) => (
             <li key={feature} className="flex items-start gap-2.5">
@@ -77,7 +88,7 @@ export function PricingSection() {
     <section id="cene" className="py-20 bg-white dark:bg-background lg:py-28">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="max-w-2xl mx-auto text-center">
+        <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Izaberite plan koji vam odgovara
           </h2>
