@@ -1,5 +1,7 @@
 "use client";
 
+import { CheckCircle } from "lucide-react";
+
 interface ProgressStepProps {
   number: number;
   label: string;
@@ -9,33 +11,24 @@ interface ProgressStepProps {
 
 function ProgressStep({ number, label, isActive, isCompleted }: ProgressStepProps) {
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex flex-col gap-1 items-center">
       <div
         className={`
           w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300
-          ${isActive ? "bg-primary text-white shadow-lg shadow-primary/30 scale-110" : ""}
-          ${isCompleted ? "bg-green-500 text-white" : ""}
+          ${isActive ? "text-white shadow-lg scale-110 bg-primary shadow-primary/30" : ""}
+          ${isCompleted ? "text-white bg-green-500" : ""}
           ${!isActive && !isCompleted ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}
         `}
       >
         {isCompleted ? (
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            role="img"
-            aria-label="Zavrseno"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
+          <CheckCircle className="w-4 h-4 text-green-500" aria-hidden="true" />
         ) : (
           number
         )}
       </div>
       <span
         className={`text-xs transition-colors ${
-          isActive ? "text-primary font-medium" : "text-gray-400"
+          isActive ? "font-medium text-primary" : "text-gray-400"
         }`}
       >
         {label}
@@ -50,7 +43,7 @@ interface SignupProgressStepsProps {
 
 export function SignupProgressSteps({ activeSection }: SignupProgressStepsProps) {
   return (
-    <div className="flex items-center justify-center gap-2 mb-6">
+    <div className="flex gap-2 justify-center items-center mb-6">
       <ProgressStep
         number={1}
         label="Pronadji"

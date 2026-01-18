@@ -9,8 +9,9 @@ import {
   InputOTPGroup,
   InputOTPSlot,
   Label,
+  LoadingButton,
 } from "@salonko/ui";
-import { Calendar, Mail } from "lucide-react";
+import { AlertCircle, Calendar, CheckCircle, Loader2, Mail, XCircle } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -177,18 +178,7 @@ export default function VerifyEmailClient() {
                 className="p-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800/50 animate-fade-in"
               >
                 <div className="flex gap-2 items-center">
-                  <svg
-                    className="flex-shrink-0 w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <XCircle className="flex-shrink-0 w-4 h-4" aria-hidden="true" />
                   {serverError}
                 </div>
               </div>
@@ -200,18 +190,7 @@ export default function VerifyEmailClient() {
                 className="p-4 text-sm text-green-700 bg-green-50 rounded-lg border border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800/50 animate-fade-in"
               >
                 <div className="flex gap-2 items-center">
-                  <svg
-                    className="flex-shrink-0 w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <CheckCircle className="flex-shrink-0 w-4 h-4" aria-hidden="true" />
                   {resendMessage}
                 </div>
               </div>
@@ -250,53 +229,22 @@ export default function VerifyEmailClient() {
                   data-testid="verify-email-code-error"
                   className="flex gap-1 justify-center items-center mt-2 text-xs text-destructive"
                 >
-                  <svg
-                    className="w-3 h-3"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <AlertCircle className="w-3 h-3" aria-hidden="true" />
                   {errors.code.message}
                 </p>
               )}
             </div>
 
-            <Button
+            <LoadingButton
               type="submit"
               data-testid="verify-email-submit-button"
               className="w-full h-12 text-base font-medium transition-all duration-300 shadow-glow hover:shadow-lg"
               disabled={isLoading}
+              isLoading={isLoading}
+              loadingText="Verifikovanje..."
             >
-              {isLoading ? (
-                <span className="flex gap-2 items-center">
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Provera...
-                </span>
-              ) : (
-                "Verifikuj"
-              )}
-            </Button>
+              Verifikovanje...
+            </LoadingButton>
           </form>
 
           <div className="mt-8 text-center">
@@ -310,23 +258,8 @@ export default function VerifyEmailClient() {
                 className="font-semibold transition-colors text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isResending ? (
-                  <span className="inline-flex gap-1 items-center">
-                    <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
+                  <span className="flex gap-2 items-center">
+                    <Loader2 className="w-3 h-3 animate-spin" />
                     Slanje...
                   </span>
                 ) : (

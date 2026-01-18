@@ -125,7 +125,7 @@ function FormField({ id, label, error, optional, children }: FormFieldProps) {
       <Label htmlFor={id} className="text-sm font-medium">
         {label}
         {optional && (
-          <span className="text-xs font-normal text-muted-foreground ml-1">(opciono)</span>
+          <span className="ml-1 text-xs font-normal text-muted-foreground">(opciono)</span>
         )}
       </Label>
       {children}
@@ -356,7 +356,7 @@ export default function CompleteProfilePage() {
           className="text-muted-foreground hover:text-foreground"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
-          <LogOut className="w-4 h-4 mr-2" />
+          <LogOut className="mr-2 w-4 h-4" />
           Odjavi se
         </Button>
       </div>

@@ -1,4 +1,22 @@
 /**
+ * Sanitizes characters by converting to lowercase, removing diacritics,
+ * and replacing Serbian-specific characters with ASCII equivalents.
+ *
+ * @param str - The string to sanitize
+ * @returns A sanitized string with normalized characters
+ */
+function sanitizeCharacters(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[čć]/g, "c")
+    .replace(/[šś]/g, "s")
+    .replace(/[žź]/g, "z")
+    .replace(/đ/g, "dj");
+}
+
+/**
  * Generates a URL-safe slug from a salon name.
  * Ensures the result is always non-empty with a deterministic fallback.
  *
@@ -6,14 +24,7 @@
  * @returns A non-empty slug (max 30 characters)
  */
 export function generateSalonSlug(salonName: string): string {
-  const slug = salonName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace(/[čć]/g, "c")
-    .replace(/[šś]/g, "s")
-    .replace(/[žź]/g, "z")
-    .replace(/đ/g, "dj")
+  const slug = sanitizeCharacters(salonName)
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
@@ -23,14 +34,7 @@ export function generateSalonSlug(salonName: string): string {
   // Ensure non-empty slug with deterministic fallback
   if (!slug) {
     // Create a more lenient sanitized version of the original name
-    const fallbackBase = salonName
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/\p{Diacritic}/gu, "")
-      .replace(/[čć]/g, "c")
-      .replace(/[šś]/g, "s")
-      .replace(/[žź]/g, "z")
-      .replace(/đ/g, "dj")
+    const fallbackBase = sanitizeCharacters(salonName)
       .replace(/[^a-z0-9]/g, "")
       .slice(0, 20);
 
