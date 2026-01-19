@@ -48,8 +48,8 @@ export const NavItem = memo(function NavItem({
       className={cn(
         "flex items-center px-2 py-2 text-xs font-medium whitespace-nowrap rounded-md transition-colors md:px-2 lg:px-3 md:text-xs lg:text-sm",
         isActive
-          ? "text-gray-900 bg-gray-100 dark:bg-gray-700 dark:text-white"
-          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+          ? "text-primary bg-primary/10 dark:bg-primary/15 font-medium"
+          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/80 dark:hover:bg-muted/50 hover:text-gray-900 dark:hover:text-white"
       )}
     >
       <Icon className="flex-shrink-0 mr-1 w-4 h-4 lg:mr-2" />

@@ -66,7 +66,7 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Predstojeći termini</CardTitle>
         {totalBookings > 0 && (
@@ -82,9 +82,12 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
           <p className="py-8 text-center text-muted-foreground">Nemate zakazanih termina.</p>
         ) : (
           <>
-            <div className="divide-y divide-gray-100 dark:divide-border">
+            <div className="divide-y divide-gray-100/70 dark:divide-border/70">
               {displayedBookings.map((booking) => (
-                <div key={booking.id} className="flex justify-between items-center py-4">
+                <div
+                  key={booking.id}
+                  className="flex justify-between items-center py-4 -mx-6 px-6 transition-colors hover:bg-gray-50/50 dark:hover:bg-muted/30"
+                >
                   <div>
                     <p className="font-medium text-foreground">{booking.title}</p>
                     <p className="text-sm text-muted-foreground">

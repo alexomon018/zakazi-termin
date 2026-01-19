@@ -51,14 +51,19 @@ export default async function DashboardLayout({
   const isSubscribed = subscriptionStatus.isActive || subscriptionStatus.isInTrial;
 
   return (
-    <div className="bg-gray-50 min-h-dvh dark:bg-gray-900">
-      <DashboardNav
-        user={session.user}
-        isSubscribed={isSubscribed}
-        salonIconUrl={userData?.salonIconUrl}
-      />
-      <TrialBanner />
-      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</main>
+    <div className="relative bg-gradient-to-br via-white min-h-dvh from-slate-50/80 to-blue-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+      {/* Subtle grid lines pattern overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] bg-grid-pattern" />
+      {/* Content */}
+      <div className="relative">
+        <DashboardNav
+          user={session.user}
+          isSubscribed={isSubscribed}
+          salonIconUrl={userData?.salonIconUrl}
+        />
+        <TrialBanner />
+        <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</main>
+      </div>
     </div>
   );
 }

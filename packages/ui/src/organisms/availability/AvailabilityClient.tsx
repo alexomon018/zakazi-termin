@@ -204,10 +204,10 @@ export function AvailabilityClient({
               {schedules?.map((schedule: Schedule) => (
                 <div
                   key={schedule.id}
-                  className={`w-full flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  className={`w-full flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                     selectedScheduleId === schedule.id
-                      ? "border-primary bg-primary/5 dark:bg-primary/10"
-                      : "border-gray-200 dark:border-border hover:border-gray-300 dark:hover:border-muted-foreground/30"
+                      ? "border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-sm ring-1 ring-primary/20"
+                      : "border-gray-200/70 dark:border-border/70 hover:border-gray-300 dark:hover:border-muted-foreground/30 hover:shadow-sm"
                   }`}
                 >
                   <button
@@ -261,7 +261,7 @@ export function AvailabilityClient({
                   {availability.map((entry, entryIndex) => (
                     <div
                       key={`${entry.days.join("-")}-${entry.startTime}-${entryIndex}`}
-                      className="p-4 space-y-4 rounded-lg border border-gray-200 dark:border-border"
+                      className="p-4 space-y-4 rounded-xl border border-gray-200/70 dark:border-border/70 bg-gray-50/30 dark:bg-muted/20"
                     >
                       {/* Days selector */}
                       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
@@ -326,7 +326,7 @@ export function AvailabilityClient({
                 </Button>
 
                 {/* Actions */}
-                <div className="flex flex-col-reverse gap-3 pt-4 border-t border-gray-200 dark:border-border sm:flex-row sm:justify-between sm:items-center">
+                <div className="flex flex-col-reverse gap-3 pt-4 border-t border-gray-200/70 dark:border-border/70 sm:flex-row sm:justify-between sm:items-center">
                   <Button
                     variant="outline"
                     onClick={() =>

@@ -302,6 +302,52 @@
   background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)));
 }
 
+/* Dashboard-specific subtle background */
+.bg-dashboard {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--muted) / 0.15) 50%,
+    hsl(var(--primary) / 0.03) 100%
+  );
+}
+
+.dark .bg-dashboard {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--background)) 0%,
+    hsl(var(--muted) / 0.2) 50%,
+    hsl(var(--primary) / 0.05) 100%
+  );
+}
+
+/* Interactive card hover effect */
+.card-interactive {
+  transition: all 0.2s ease-out;
+}
+
+.card-interactive:hover {
+  transform: translateY(-1px);
+}
+
+/* Subtle glass effect for dashboard panels */
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .glass-subtle {
+  background: rgba(30, 30, 30, 0.6);
+}
+
+/* Grid pattern background utility */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, #94a3b8 1px, transparent 1px),
+    linear-gradient(to bottom, #94a3b8 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,

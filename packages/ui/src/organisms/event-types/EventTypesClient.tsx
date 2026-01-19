@@ -127,7 +127,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
           {eventTypes?.map((eventType: EventType, index: number) => (
             <Card
               key={eventType.id}
-              className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
+              className={`transition-all duration-200 hover:shadow-elevated ${eventType.hidden ? "opacity-60" : ""}`}
             >
               <CardContent className="p-0">
                 <div className="p-4">
@@ -248,7 +248,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                 </div>
 
                 {/* Public URL bar */}
-                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50 overflow-hidden">
+                <div className="px-4 py-2 bg-gray-50/80 dark:bg-muted/30 backdrop-blur-sm rounded-b-lg border-t border-gray-100/50 dark:border-border/50 overflow-hidden">
                   <code className="text-xs text-muted-foreground block truncate">
                     {baseUrl}/{currentUser?.salonName}/{eventType.slug}
                   </code>
@@ -261,7 +261,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
       {/* Help section */}
       {eventTypes && eventTypes.length > 0 && (
-        <div className="p-4 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+        <div className="p-5 rounded-xl bg-white/50 dark:bg-card/50 backdrop-blur-sm border border-gray-200/50 dark:border-border/50 shadow-sm">
           <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
           <p className="text-sm text-muted-foreground">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše

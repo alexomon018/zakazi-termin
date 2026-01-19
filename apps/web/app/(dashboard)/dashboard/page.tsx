@@ -65,10 +65,12 @@ export default async function DashboardPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-elevated-lg hover:border-primary/20 group">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Danas</CardTitle>
-            <Calendar className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/15 transition-colors group-hover:bg-primary/15 dark:group-hover:bg-primary/20">
+              <Calendar className="w-4 h-4 text-primary" aria-hidden="true" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{todayBookings}</div>
@@ -76,12 +78,14 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-elevated-lg hover:border-primary/20 group">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Predstojeći termini
             </CardTitle>
-            <Users className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/15 transition-colors group-hover:bg-primary/15 dark:group-hover:bg-primary/20">
+              <Users className="w-4 h-4 text-primary" aria-hidden="true" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{upcomingBookings}</div>
@@ -89,12 +93,14 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-all duration-300 hover:shadow-elevated-lg hover:border-primary/20 group">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tipovi termina
             </CardTitle>
-            <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/15 transition-colors group-hover:bg-primary/15 dark:group-hover:bg-primary/20">
+              <Clock className="w-4 h-4 text-primary" aria-hidden="true" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{eventTypes}</div>
@@ -107,12 +113,12 @@ export default async function DashboardPage() {
       <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
 
       {/* Quick links */}
-      <div className="p-6 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+      <div className="p-6 rounded-xl bg-white/50 dark:bg-card/50 backdrop-blur-sm border border-gray-200/50 dark:border-border/50 shadow-sm">
         <h3 className="mb-2 font-medium text-foreground">Link za zakazivanje</h3>
         <p className="mb-3 text-sm text-muted-foreground">
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
-        <code className="block px-3 py-2 text-sm text-foreground bg-white rounded border border-gray-200 dark:bg-card dark:border-border break-all">
+        <code className="block px-4 py-3 text-sm text-foreground bg-gray-50 dark:bg-muted/50 rounded-lg border border-gray-200/50 dark:border-border/50 break-all font-mono">
           {origin}/{session.user.salonName}
         </code>
       </div>

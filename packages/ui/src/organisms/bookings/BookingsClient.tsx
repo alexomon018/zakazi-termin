@@ -258,7 +258,7 @@ export function BookingsClient({
 
         {/* Filters */}
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
+          <div className="flex gap-2 border-b border-gray-200/50 dark:border-border/50 pb-4 min-w-max sm:min-w-0">
             {filters.map((f) => (
               <TabFilter
                 key={f.key}
@@ -286,7 +286,7 @@ export function BookingsClient({
 
       {/* Filters */}
       <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
+        <div className="flex gap-2 border-b border-gray-200/50 dark:border-border/50 pb-4 min-w-max sm:min-w-0">
           {filters.map((f) => (
             <TabFilter
               key={f.key}
@@ -312,7 +312,7 @@ export function BookingsClient({
       ) : (
         <div className="space-y-4">
           {currentBookings.map((booking: Booking) => (
-            <Card key={booking.id}>
+            <Card key={booking.id} className="transition-all duration-200 hover:shadow-elevated">
               <CardContent className="p-0">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
@@ -343,7 +343,7 @@ export function BookingsClient({
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
+                        <div className="mt-4 pt-4 border-t border-gray-100/70 dark:border-border/70">
                           <p className="text-xs font-medium text-muted-foreground mb-2">GOST</p>
                           {booking.attendees.map(
                             (attendee: {
@@ -363,7 +363,7 @@ export function BookingsClient({
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
+                        <div className="mt-4 pt-4 border-t border-gray-100/70 dark:border-border/70">
                           <p className="text-xs font-medium text-muted-foreground mb-1">NAPOMENA</p>
                           <p className="text-sm text-muted-foreground">{booking.description}</p>
                         </div>
@@ -411,7 +411,7 @@ export function BookingsClient({
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="bg-gray-50 dark:bg-muted/50 px-4 py-2 text-xs text-muted-foreground rounded-b-lg">
+                <div className="bg-gray-50/80 dark:bg-muted/30 backdrop-blur-sm px-4 py-2 text-xs text-muted-foreground rounded-b-lg border-t border-gray-100/50 dark:border-border/50">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>

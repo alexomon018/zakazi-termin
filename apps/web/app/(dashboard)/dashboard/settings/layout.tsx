@@ -62,13 +62,22 @@ export default function SettingsLayout({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                   isActive
-                    ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                    ? "bg-primary/10 dark:bg-primary/15 text-primary border-l-2 border-primary -ml-[2px] pl-[14px]"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-muted/50 hover:text-gray-900 dark:hover:text-white"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <div
+                  className={cn(
+                    "flex items-center justify-center w-8 h-8 rounded-md transition-colors",
+                    isActive
+                      ? "bg-primary/15 dark:bg-primary/20"
+                      : "bg-gray-100 dark:bg-muted group-hover:bg-gray-200 dark:group-hover:bg-muted/80"
+                  )}
+                >
+                  <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "")} />
+                </div>
                 <div>
                   <p className="font-medium text-sm">{item.label}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 hidden lg:block">
