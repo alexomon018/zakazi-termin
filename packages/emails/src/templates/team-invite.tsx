@@ -1,14 +1,16 @@
 import { Button, Section, Text } from "@react-email/components";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
+type Role = "OWNER" | "ADMIN" | "MEMBER";
+
 export interface TeamInviteEmailProps {
   inviterName: string;
   organizationName: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: Role;
   inviteUrl: string;
 }
 
-const roleLabels: Record<string, string> = {
+const roleLabels: Record<Role, string> = {
   OWNER: "Vlasnik",
   ADMIN: "Administrator",
   MEMBER: "Član tima",

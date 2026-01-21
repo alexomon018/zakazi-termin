@@ -1,4 +1,4 @@
-import { MembershipRole } from "@salonko/prisma";
+import { MembershipRole, Prisma } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -55,40 +55,48 @@ export const organizationRouter = router({
       // Generate slug if not provided
       const slug = input.slug || generateSlug(input.name);
 
-      // Check if slug is already taken
-      const existingOrg = await ctx.prisma.organization.findUnique({
-        where: { slug },
-      });
-
-      if (existingOrg) {
+      // Handle empty slug (e.g., name contains only punctuation/special characters)
+      if (!slug || slug.length < 3) {
         throw new TRPCError({
-          code: "CONFLICT",
-          message: "Ovaj slug je već zauzet. Izaberite drugi.",
+          code: "BAD_REQUEST",
+          message:
+            "Naziv organizacije ne može da generiše validan slug. Naziv mora sadržati slova ili brojeve, ili unesite slug ručno.",
         });
       }
 
-      // Create organization and membership in a transaction
-      const organization = await ctx.prisma.$transaction(async (tx) => {
-        const org = await tx.organization.create({
-          data: {
-            name: input.name,
-            slug,
-          },
+      try {
+        // Create organization and membership in a transaction
+        const organization = await ctx.prisma.$transaction(async (tx) => {
+          const org = await tx.organization.create({
+            data: {
+              name: input.name,
+              slug,
+            },
+          });
+
+          await tx.membership.create({
+            data: {
+              userId,
+              organizationId: org.id,
+              role: MembershipRole.OWNER,
+              accepted: true,
+            },
+          });
+
+          return org;
         });
 
-        await tx.membership.create({
-          data: {
-            userId,
-            organizationId: org.id,
-            role: MembershipRole.OWNER,
-            accepted: true,
-          },
-        });
+        return organization;
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Ovaj slug je već zauzet. Izaberite drugi.",
+          });
+        }
 
-        return org;
-      });
-
-      return organization;
+        throw error;
+      }
     }),
 
   /**

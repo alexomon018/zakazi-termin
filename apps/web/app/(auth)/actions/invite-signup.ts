@@ -51,7 +51,10 @@ export async function validateInviteTokenAction(token: string): Promise<{
       invitedEmail: verificationToken.invitedEmail || undefined,
     };
   } catch (error) {
-    logger.error("Failed to validate invite token", { error, token });
+    logger.error("Failed to validate invite token", {
+      error,
+      tokenPrefix: token.slice(0, 8),
+    });
     return { valid: false, error: "Došlo je do greške pri proveri pozivnice." };
   }
 }
@@ -131,9 +134,7 @@ export async function inviteSignupAction(
             verificationCode,
             expires: getOTPExpiryDate(),
             lastSentAt: new Date(),
-            // Store invite token in a field we'll use during verification
-            // We'll use salonName field to store the token temporarily
-            // (team members don't need salonName)
+            // Store invite token for use during verification
             inviteToken: token,
           },
         }),

@@ -41,14 +41,15 @@ export function StaffSelector({
             <button
               key={member.id}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => onSelectStaff(isSelected ? null : member.userId)}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all",
+                "flex gap-3 items-center px-4 py-3 rounded-lg border-2 transition-all",
                 "hover:border-gray-300 dark:hover:border-gray-600",
                 "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
                 isSelected
-                  ? "border-[var(--brand-color)] dark:border-[var(--brand-color-dark)] bg-gray-50 dark:bg-gray-800"
-                  : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  ? "bg-gray-50 border-[var(--brand-color)] dark:border-[var(--brand-color-dark)] dark:bg-gray-800"
+                  : "bg-white border-gray-200 dark:border-gray-700 dark:bg-gray-900"
               )}
             >
               <div className="relative">

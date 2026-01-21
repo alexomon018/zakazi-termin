@@ -111,5 +111,36 @@ export async function canManageEventTypes(
   userId: string,
   organizationId: string
 ): Promise<boolean> {
-  return isOrganizationAdmin(prisma, userId, organizationId);
+  // First, allow organization OWNERs and ADMINs to manage all event types
+  const isOwner = await isOrganizationOwner(prisma, userId, organizationId);
+  if (isOwner) return true;
+
+  const isAdmin = await isOrganizationAdmin(prisma, userId, organizationId);
+  if (isAdmin) return true;
+
+  // For MEMBERs, only allow management of event types they are explicitly assigned to
+  const membership = await getUserMembership(prisma, userId, organizationId);
+  if (!membership || !membership.accepted || membership.role !== "MEMBER") {
+    return false;
+  }
+
+  // A "member assignment" is modeled via ownership or Host linking the user to an EventType
+  const assignedEventType = await prisma.eventType.findFirst({
+    where: {
+      organizationId,
+      OR: [
+        { userId },
+        {
+          hosts: {
+            some: {
+              userId,
+            },
+          },
+        },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return !!assignedEventType;
 }

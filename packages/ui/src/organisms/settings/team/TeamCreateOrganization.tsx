@@ -44,7 +44,7 @@ export function TeamCreateOrganization({
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex gap-2 items-center">
             <Users className="w-5 h-5" />
             Kreirajte svoju organizaciju
           </CardTitle>
@@ -55,7 +55,7 @@ export function TeamCreateOrganization({
         </CardHeader>
         <CardContent>
           <Button onClick={() => onDialogChange(true)}>
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="mr-2 w-4 h-4" />
             Kreiraj organizaciju
           </Button>
         </CardContent>
@@ -63,31 +63,40 @@ export function TeamCreateOrganization({
 
       <Dialog open={isDialogOpen} onOpenChange={onDialogChange}>
         <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Kreiraj organizaciju</DialogTitle>
-            <DialogDescription>
-              Unesite naziv vaše organizacije (salona). Možete ga kasnije promeniti.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="orgName">Naziv organizacije</Label>
-              <Input
-                id="orgName"
-                value={orgName}
-                onChange={(e) => onOrgNameChange(e.target.value)}
-                placeholder="Moj salon"
-              />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (orgName.trim() && !isCreating) {
+                onCreateOrganization();
+              }
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Kreiraj organizaciju</DialogTitle>
+              <DialogDescription>
+                Unesite naziv vaše organizacije (salona). Možete ga kasnije promeniti.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="orgName">Naziv organizacije</Label>
+                <Input
+                  id="orgName"
+                  value={orgName}
+                  onChange={(e) => onOrgNameChange(e.target.value)}
+                  placeholder="Moj salon"
+                />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onDialogChange(false)}>
-              Otkaži
-            </Button>
-            <Button onClick={onCreateOrganization} disabled={!orgName.trim() || isCreating}>
-              {isCreating ? "Kreiranje..." : "Kreiraj"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onDialogChange(false)}>
+                Otkaži
+              </Button>
+              <Button type="submit" disabled={!orgName.trim() || isCreating}>
+                {isCreating ? "Kreiranje..." : "Kreiraj"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

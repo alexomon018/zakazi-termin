@@ -251,11 +251,11 @@ export const eventTypeRouter = router({
         }
       }
 
-      // Generate pre-signed URLs for host avatars
+      // Generate pre-signed URLs for host avatars (using salon icon as fallback)
       const hostsWithUrls = await Promise.all(
         eventType.hosts.map(async (host) => {
           let hostAvatarUrl: string | null = host.user.avatarUrl;
-          if (host.user.salonIconKey) {
+          if (!hostAvatarUrl && host.user.salonIconKey) {
             try {
               hostAvatarUrl = await generatePresignedUrl(host.user.salonIconKey);
             } catch {

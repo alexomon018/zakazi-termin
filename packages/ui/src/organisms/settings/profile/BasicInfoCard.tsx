@@ -15,7 +15,7 @@ const VALID_SLUG_PATTERN = /^[a-z0-9-]*$/;
  * Validates and sanitizes a salon name slug for safe URL usage.
  * Returns the slug if valid, or an empty string if invalid.
  */
-function getSafeSlug(slug: string): string {
+function getSafeSlug(slug: string | undefined): string {
   if (!slug || !VALID_SLUG_PATTERN.test(slug)) {
     return "";
   }
@@ -25,16 +25,24 @@ function getSafeSlug(slug: string): string {
 type BasicInfoCardProps = {
   register: UseFormRegister<ProfileFormValues>;
   errors: FieldErrors<ProfileFormValues>;
-  /**
-   * Pre-validated salon name slug. Must match pattern /^[a-z0-9-]*$/.
-   * This value is used directly in href construction, so it must be sanitized
-   * before being passed to this component.
-   */
-  salonNameSlug: string;
-  salonNameAvailable: boolean | null;
-  /** If true, shows salon name field. Defaults to true for backwards compatibility. */
-  showSalonName?: boolean;
-};
+} & (
+  | {
+      /** If true, shows salon name field. Defaults to true for backwards compatibility. */
+      showSalonName?: true;
+      /**
+       * Pre-validated salon name slug. Must match pattern /^[a-z0-9-]*$/.
+       * This value is used directly in href construction, so it must be sanitized
+       * before being passed to this component.
+       */
+      salonNameSlug: string;
+      salonNameAvailable: boolean | null;
+    }
+  | {
+      showSalonName: false;
+      salonNameSlug?: string;
+      salonNameAvailable?: boolean | null;
+    }
+);
 
 export function BasicInfoCard({
   register,

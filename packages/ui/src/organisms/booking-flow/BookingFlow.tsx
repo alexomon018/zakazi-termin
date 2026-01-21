@@ -102,6 +102,14 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
     }));
   }, [eventType.hosts]);
 
+  const selectedStaffName = useMemo(() => {
+    if (!selectedStaffId) {
+      return hasMultipleHosts ? null : (eventType.user?.name ?? null);
+    }
+
+    return staffMembers.find((member) => member.userId === selectedStaffId)?.user.name ?? null;
+  }, [selectedStaffId, staffMembers, hasMultipleHosts, eventType.user?.name]);
+
   // Local state for compatibility
   const [currentStep, setCurrentStep] = useState<BookingStep>("select-time");
   const selectedDate = selectedDateStr ? new Date(selectedDateStr) : null;
@@ -339,7 +347,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
             eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
             salonName={eventType.user?.salonName}
             userAvatarUrl={eventType.user?.salonIconUrl}
-            staffName={eventType.user?.name}
+            staffName={selectedStaffName}
             isRescheduling={isRescheduling}
           />
 

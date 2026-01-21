@@ -30,9 +30,11 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
-    // Team members (ADMIN/MEMBER) don't need to complete salon onboarding
+    // Team members (ADMIN/MEMBER) without any OWNER role don't need to complete salon onboarding
     // They're joining someone else's salon, not creating their own
-    const isTeamMember = user.memberships.some((m) => m.role === "ADMIN" || m.role === "MEMBER");
+    const hasOwnerRole = user.memberships.some((m) => m.role === "OWNER");
+    const isTeamMember =
+      !hasOwnerRole && user.memberships.some((m) => m.role === "ADMIN" || m.role === "MEMBER");
 
     if (isTeamMember) {
       return NextResponse.json({ ok: true, isComplete: true });

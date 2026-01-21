@@ -36,6 +36,7 @@ export function TeamSettingsClient({
   const [deleteInviteDialogOpen, setDeleteInviteDialogOpen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = useState(false);
   const [orgName, setOrgName] = useState(currentUser?.salonName || "");
 
@@ -86,10 +87,16 @@ export function TeamSettingsClient({
   const createInviteLink = trpc.team.createInviteLink.useMutation({
     onSuccess: async (result) => {
       await utils.team.listInvites.invalidate();
-      await navigator.clipboard.writeText(result.inviteLink);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 3000);
-      showSuccess("Link za pozivnicu je kopiran!");
+      try {
+        await navigator.clipboard.writeText(result.inviteLink);
+        setCopySuccess(true);
+        showSuccess("Link za pozivnicu je kopiran!");
+      } catch (error) {
+        setCopySuccess(false);
+        showError("Nije moguće automatski kopirati link. Pokušajte ponovo ili kopirajte ga ručno.");
+      } finally {
+        setTimeout(() => setCopySuccess(false), 3000);
+      }
     },
   });
 
@@ -127,6 +134,11 @@ export function TeamSettingsClient({
   const showSuccess = (message: string) => {
     setSuccessMessage(message);
     setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
+  const showError = (message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(null), 3000);
   };
 
   const handleInviteMember = () => {
@@ -215,11 +227,12 @@ export function TeamSettingsClient({
       )}
 
       {/* Error Messages */}
-      {(inviteMember.error || removeMember.error || changeMemberRole.error) && (
+      {(errorMessage || inviteMember.error || removeMember.error || changeMemberRole.error) && (
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">
-            {inviteMember.error?.message ||
+            {errorMessage ||
+              inviteMember.error?.message ||
               removeMember.error?.message ||
               changeMemberRole.error?.message}
           </span>
@@ -262,8 +275,15 @@ export function TeamSettingsClient({
               typeof window !== "undefined"
                 ? window.location.origin
                 : process.env.NEXT_PUBLIC_APP_URL || "";
-            await navigator.clipboard.writeText(`${baseUrl}/signup?token=${invite.token}`);
-            showSuccess("Link kopiran!");
+            const inviteUrl = `${baseUrl}/signup?token=${invite.token}`;
+            try {
+              await navigator.clipboard.writeText(inviteUrl);
+              showSuccess("Link kopiran!");
+            } catch (error) {
+              showError(
+                "Nije moguće automatski kopirati link. Pokušajte ponovo ili kopirajte ga ručno."
+              );
+            }
           }}
           onDeleteInvite={(invite) => {
             setInviteToDelete(invite);

@@ -479,6 +479,7 @@ export const userRouter = router({
     const user = await ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
       select: {
+        name: true,
         salonTypes: true,
         salonCity: true,
         salonAddress: true,
@@ -495,9 +496,10 @@ export const userRouter = router({
 
     // Team members (ADMIN/MEMBER) don't need to complete salon onboarding
     // They're joining someone else's salon, not creating their own
+    // However, they must still have their name set
     const isTeamMember = user.memberships.some((m) => m.role === "ADMIN" || m.role === "MEMBER");
 
-    if (isTeamMember) {
+    if (isTeamMember && Boolean(user.name)) {
       return { complete: true };
     }
 

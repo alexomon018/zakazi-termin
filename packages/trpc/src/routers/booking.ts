@@ -465,17 +465,18 @@ export const bookingRouter = router({
           // For team bookings, check the assigned host's schedule
           const conflictingBooking = await tx.booking.findFirst({
             where: {
-              status: { in: ["PENDING", "ACCEPTED"] },
-              OR: [
-                {
-                  startTime: { lt: input.endTime },
-                  endTime: { gt: input.startTime },
-                },
+              AND: [
+                { status: { in: ["PENDING", "ACCEPTED"] } },
+                { startTime: { lt: input.endTime } },
+                { endTime: { gt: input.startTime } },
+                // Check conflicts for the specific host or owner
+                assignedHostId
+                  ? {
+                      // For assigned host, check both their owned bookings and assigned bookings
+                      OR: [{ userId: assignedHostId }, { assignedHostId: assignedHostId }],
+                    }
+                  : { userId: conflictUserId, assignedHostId: null },
               ],
-              // Check conflicts for the specific host or owner
-              ...(assignedHostId
-                ? { assignedHostId: assignedHostId }
-                : { userId: conflictUserId, assignedHostId: null }),
             },
           });
 

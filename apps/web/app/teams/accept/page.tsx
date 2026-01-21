@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@salonko/ui";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { trpc } from "@/lib/trpc/client";
 
@@ -39,6 +39,7 @@ function AcceptInvitationPageContent() {
   const [state, setState] = useState<AcceptState>("loading");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [organizationName, setOrganizationName] = useState<string>("");
+  const attemptedRef = useRef(false);
 
   const acceptMutation = trpc.team.acceptInvitation.useMutation({
     onSuccess: (data) => {
@@ -57,11 +58,15 @@ function AcceptInvitationPageContent() {
       return;
     }
 
+    if (attemptedRef.current || acceptMutation.isPending) {
+      return;
+    }
+
     // Automatically attempt to accept the invitation
     setState("accepting");
+    attemptedRef.current = true;
     acceptMutation.mutate({ token });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, acceptMutation.mutate]);
+  }, [token, acceptMutation]);
 
   const handleGoToDashboard = () => {
     router.push("/dashboard");

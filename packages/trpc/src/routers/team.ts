@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { emailService } from "@salonko/emails";
 import { MembershipRole } from "@salonko/prisma";
-import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -125,15 +125,32 @@ export const teamRouter = router({
           },
         });
 
-        // Send email invitation
+        // Send email invitation - rollback token on failure
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-        await emailService.sendTeamInviteEmail({
-          recipientEmail: email,
-          organizationName: membership.organization.name,
-          inviterName: membership.user.name || "Član tima",
-          inviteUrl: `${baseUrl}/signup?token=${token}`,
-          role: input.role,
-        });
+        try {
+          await emailService.sendTeamInviteEmail({
+            recipientEmail: email,
+            organizationName: membership.organization.name,
+            inviterName: membership.user.name || "Član tima",
+            inviteUrl: `${baseUrl}/signup?token=${token}`,
+            role: input.role,
+          });
+        } catch (emailError) {
+          // Rollback: delete the created token since email failed
+          await ctx.prisma.verificationToken.delete({
+            where: {
+              identifier_token: {
+                identifier: email,
+                token,
+              },
+            },
+          });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Neuspešno slanje pozivnice na ${email}. Pokušajte ponovo.`,
+            cause: emailError,
+          });
+        }
 
         results.push({ email, status: "invited" });
       }
@@ -710,7 +727,7 @@ export const teamRouter = router({
   /**
    * Get invitation info by token (public, for signup page)
    */
-  getInviteInfo: protectedProcedure
+  getInviteInfo: publicProcedure
     .input(z.object({ token: z.string() }))
     .query(async ({ ctx, input }) => {
       const invite = await ctx.prisma.verificationToken.findFirst({

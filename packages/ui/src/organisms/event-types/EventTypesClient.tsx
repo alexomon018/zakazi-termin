@@ -54,8 +54,10 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
   });
 
   const bookingSlug = getBookingSlug(currentUser);
+  const canShare = Boolean(bookingSlug);
 
   const handleCopyLink = async (eventType: { id: string; slug: string }) => {
+    if (!bookingSlug) return;
     // Use window.location.origin for client-side (always correct)
     // Fall back to NEXT_PUBLIC_APP_URL for SSR
     const baseUrl =
@@ -206,7 +208,11 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyLink(eventType)}
-                        className="text-muted-foreground hover:text-foreground px-2"
+                        disabled={!canShare}
+                        className={cn(
+                          "text-muted-foreground hover:text-foreground px-2",
+                          !canShare && "opacity-50 cursor-not-allowed"
+                        )}
                       >
                         {copySuccess === eventType.id ? (
                           <span className="text-xs text-emerald-600 dark:text-emerald-400">
@@ -219,9 +225,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
                       {/* Preview link */}
                       <Link
-                        href={`/${bookingSlug}/${eventType.slug}`}
+                        href={canShare ? `/${bookingSlug}/${eventType.slug}` : "#"}
+                        aria-disabled={!canShare}
+                        onClick={(e) => {
+                          if (!canShare) e.preventDefault();
+                        }}
                         target="_blank"
-                        className="p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted"
+                        className={cn(
+                          "p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted",
+                          !canShare && "pointer-events-none opacity-50"
+                        )}
                       >
                         <ExternalLink className="w-4 h-4" aria-hidden="true" />
                       </Link>
@@ -268,7 +281,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                 {/* Public URL bar */}
                 <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50 overflow-hidden">
                   <code className="text-xs text-muted-foreground block truncate">
-                    {baseUrl}/{bookingSlug}/{eventType.slug}
+                    {canShare ? `${baseUrl}/${bookingSlug}/${eventType.slug}` : "—"}
                   </code>
                 </div>
               </CardContent>

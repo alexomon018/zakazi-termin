@@ -41,7 +41,7 @@ export function TeamPendingInvites({
                   {invite.email || "Link za pozivnicu"}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {invite.role ? roleLabels[invite.role] : "Član"} · Ističe{" "}
+                  {roleLabels[invite.role ?? "MEMBER"] ?? "Član"} · Ističe{" "}
                   {new Date(invite.expiresAt).toLocaleDateString("sr-Latn")}
                 </p>
               </div>
