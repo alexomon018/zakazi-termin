@@ -327,12 +327,17 @@ export function BookingsClient({
                         />
                       </div>
 
-                      {/* Event type */}
-                      {booking.eventType && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {booking.eventType.title}
-                        </p>
-                      )}
+                      {/* Event type and staff */}
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        {booking.eventType && (
+                          <p className="text-sm text-muted-foreground">{booking.eventType.title}</p>
+                        )}
+                        {(booking.assignedHost?.name || booking.user?.name) && (
+                          <span className="text-xs text-muted-foreground/70 bg-muted px-2 py-0.5 rounded">
+                            {booking.assignedHost?.name || booking.user?.name}
+                          </span>
+                        )}
+                      </div>
 
                       {/* Details */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

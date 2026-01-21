@@ -29,6 +29,34 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
 
   const isDashboardPage = pathname.startsWith("/dashboard");
   const isOnboardingPage = pathname.startsWith("/onboarding");
+  const isTeamsAcceptPage = pathname.startsWith("/teams/accept");
+
+  // Handle team invitation acceptance page
+  // If user has invite token and is authenticated, allow access to accept page
+  if (isTeamsAcceptPage) {
+    if (!token) {
+      // Not logged in - redirect to login, preserving the token
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
+      return NextResponse.redirect(loginUrl);
+    }
+    // Authenticated user accessing accept page - allow through
+    return NextResponse.next();
+  }
+
+  // Check if user is coming from signup with an invite token
+  const inviteToken = req.nextUrl.searchParams.get("token");
+
+  // Redirect authenticated users with invite token to accept page
+  if (isAuthPage && token && !pathname.startsWith("/verify-email") && inviteToken) {
+    return NextResponse.redirect(new URL(`/teams/accept?token=${inviteToken}`, req.url));
+  }
+
+  // Redirect unauthenticated users with invite token to invite signup page
+  // (unless they're already on the invite signup page or verify-email)
+  if (pathname === "/signup" && !token && inviteToken && !pathname.startsWith("/signup/invite")) {
+    return NextResponse.redirect(new URL(`/signup/invite?token=${inviteToken}`, req.url));
+  }
 
   // Redirect authenticated users away from auth pages (except verify-email)
   if (isAuthPage && token && !pathname.startsWith("/verify-email")) {
@@ -157,6 +185,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/onboarding/:path*",
+    "/teams/:path*",
     "/login",
     "/signup",
     "/forgot-password",

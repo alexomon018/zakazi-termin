@@ -17,6 +17,7 @@ export { TrialEndingEmail } from "./templates/trial-ending";
 export { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 export { SubscriptionExpiredEmail } from "./templates/subscription-expired";
 export { SubscriptionSuccessEmail } from "./templates/subscription-success";
+export { TeamInviteEmail, type TeamInviteEmailProps } from "./templates/team-invite";
 export type {
   BookingEmailData,
   PaymentFailedEmailData,
@@ -24,4 +25,5 @@ export type {
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
   SubscriptionSuccessEmailData,
+  TeamInviteEmailData,
 } from "./types";

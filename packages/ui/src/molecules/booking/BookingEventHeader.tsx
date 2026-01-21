@@ -9,6 +9,8 @@ interface BookingEventHeaderProps {
   eventLocation?: string;
   salonName?: string | null;
   userAvatarUrl?: string | null;
+  /** Name of the staff member who created/provides this service */
+  staffName?: string | null;
   isRescheduling?: boolean;
 }
 
@@ -19,6 +21,7 @@ export function BookingEventHeader({
   eventLocation,
   salonName,
   userAvatarUrl,
+  staffName,
   isRescheduling,
 }: BookingEventHeaderProps) {
   return (
@@ -39,7 +42,7 @@ export function BookingEventHeader({
       {eventDescription && (
         <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">{eventDescription}</p>
       )}
-      <div className="flex gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
         <span className="flex gap-1 items-center">
           <Clock className="w-4 h-4" />
           {eventLength} minuta
@@ -48,6 +51,12 @@ export function BookingEventHeader({
           <span className="flex gap-1 items-center">
             <MapPin className="w-4 h-4" />
             {eventLocation}
+          </span>
+        )}
+        {staffName && (
+          <span className="flex gap-1 items-center">
+            <span className="text-gray-400 dark:text-gray-500">•</span>
+            {staffName}
           </span>
         )}
       </div>

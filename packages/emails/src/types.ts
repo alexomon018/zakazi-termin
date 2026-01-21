@@ -61,3 +61,12 @@ export interface SubscriptionSuccessEmailData extends SubscriptionEmailData {
   planName: string;
   dashboardUrl: string;
 }
+
+// Team-related email types
+export interface TeamInviteEmailData {
+  inviterName: string;
+  organizationName: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+  inviteUrl: string;
+  recipientEmail: string;
+}

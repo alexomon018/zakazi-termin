@@ -1,5 +1,6 @@
 import { logger } from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
+import type { Context } from "@salonko/trpc/context";
 import {
   protectedProcedure,
   publicProcedure,
@@ -74,8 +75,134 @@ function buildEmailData(
   };
 }
 
+// Helper to build booking where clause based on user's role
+// - OWNER/ADMIN: see all bookings in their organization
+// - MEMBER or solo user: see only their own bookings + assigned bookings
+async function buildBookingWhereClause(
+  prisma: Context["prisma"],
+  userId: string
+): Promise<{ OR: Array<Record<string, unknown>> }> {
+  // Check if user is OWNER or ADMIN of an organization
+  const membership = await prisma.membership.findFirst({
+    where: {
+      userId,
+      accepted: true,
+      role: { in: ["OWNER", "ADMIN"] },
+    },
+    select: {
+      organizationId: true,
+      role: true,
+    },
+  });
+
+  if (membership) {
+    // OWNER/ADMIN: see bookings from all organization members
+    return {
+      OR: [
+        // Direct ownership
+        { userId: userId },
+        // Assigned as host
+        { assignedHostId: userId },
+        // Bookings from any organization member (event types owned by org members)
+        {
+          user: {
+            memberships: {
+              some: {
+                organizationId: membership.organizationId,
+                accepted: true,
+              },
+            },
+          },
+        },
+      ],
+    };
+  }
+
+  // Regular user or MEMBER: only their own bookings + assigned bookings
+  return {
+    OR: [{ userId: userId }, { assignedHostId: userId }],
+  };
+}
+
+// Helper to build event type where clause based on user's role
+async function buildEventTypeWhereClause(
+  prisma: Context["prisma"],
+  userId: string
+): Promise<Record<string, unknown>> {
+  const membership = await prisma.membership.findFirst({
+    where: {
+      userId,
+      accepted: true,
+      role: { in: ["OWNER", "ADMIN"] },
+    },
+    select: {
+      organizationId: true,
+    },
+  });
+
+  if (membership) {
+    return {
+      user: {
+        memberships: {
+          some: {
+            organizationId: membership.organizationId,
+            accepted: true,
+          },
+        },
+      },
+    };
+  }
+
+  return { userId };
+}
+
 export const bookingRouter = router({
+  // Dashboard stats for the current user
+  // Returns counts for today's bookings, upcoming bookings, and event types
+  dashboardStats: subscriptionProtectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const [bookingWhere, eventTypeWhere] = await Promise.all([
+      buildBookingWhereClause(ctx.prisma, userId),
+      buildEventTypeWhereClause(ctx.prisma, userId),
+    ]);
+
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const [upcomingBookings, eventTypes, todayBookings] = await Promise.all([
+      ctx.prisma.booking.count({
+        where: {
+          ...bookingWhere,
+          startTime: { gte: now },
+          status: { in: ["ACCEPTED", "PENDING"] },
+        },
+      }),
+      ctx.prisma.eventType.count({
+        where: eventTypeWhere,
+      }),
+      ctx.prisma.booking.count({
+        where: {
+          ...bookingWhere,
+          startTime: { gte: todayStart, lt: todayEnd },
+          status: { in: ["ACCEPTED", "PENDING"] },
+        },
+      }),
+    ]);
+
+    return {
+      upcomingBookings,
+      eventTypes,
+      todayBookings,
+    };
+  }),
+
   // Get upcoming bookings with pagination
+  // Shows bookings where user is owner OR assigned host (for team members)
+  // For OWNER/ADMIN: shows all bookings from organization members
   upcoming: subscriptionProtectedProcedure
     .input(
       z
@@ -88,28 +215,43 @@ export const bookingRouter = router({
     .query(async ({ ctx, input }) => {
       const skip = input?.skip ?? 0;
       const take = input?.take ?? 5;
+      const userId = ctx.session.user.id;
+
+      // Build where clause based on user's role
+      const roleBasedWhere = await buildBookingWhereClause(ctx.prisma, userId);
+
+      // Include bookings where user is owner OR assigned host OR organization member (for owners/admins)
+      const baseWhere = {
+        startTime: { gte: new Date() },
+        status: { in: ["ACCEPTED", "PENDING"] as ("ACCEPTED" | "PENDING")[] },
+        ...roleBasedWhere,
+      };
 
       const [bookings, total] = await Promise.all([
         ctx.prisma.booking.findMany({
-          where: {
-            userId: ctx.session.user.id,
-            startTime: { gte: new Date() },
-            status: { in: ["ACCEPTED", "PENDING"] },
-          },
+          where: baseWhere,
           include: {
             eventType: true,
             attendees: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            assignedHost: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
           orderBy: { startTime: "asc" },
           skip,
           take,
         }),
         ctx.prisma.booking.count({
-          where: {
-            userId: ctx.session.user.id,
-            startTime: { gte: new Date() },
-            status: { in: ["ACCEPTED", "PENDING"] },
-          },
+          where: baseWhere,
         }),
       ]);
 
@@ -121,6 +263,8 @@ export const bookingRouter = router({
     }),
 
   // List bookings for current user
+  // Shows bookings where user is owner OR assigned host (for team members)
+  // For OWNER/ADMIN: shows all bookings from organization members
   list: subscriptionProtectedProcedure
     .input(
       z
@@ -132,9 +276,14 @@ export const bookingRouter = router({
         .optional()
     )
     .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Build where clause based on user's role
+      const roleBasedWhere = await buildBookingWhereClause(ctx.prisma, userId);
+
       const bookings = await ctx.prisma.booking.findMany({
         where: {
-          userId: ctx.session.user.id,
+          ...roleBasedWhere,
           ...(input?.status && { status: input.status }),
           ...(input?.dateFrom && { startTime: { gte: input.dateFrom } }),
           ...(input?.dateTo && { endTime: { lte: input.dateTo } }),
@@ -142,6 +291,18 @@ export const bookingRouter = router({
         include: {
           eventType: true,
           attendees: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          assignedHost: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
         orderBy: { startTime: "asc" },
       });
@@ -149,6 +310,8 @@ export const bookingRouter = router({
     }),
 
   // List bookings with pagination
+  // Shows bookings where user is owner OR assigned host (for team members)
+  // For OWNER/ADMIN: shows all bookings from organization members
   listPaginated: subscriptionProtectedProcedure
     .input(
       z.object({
@@ -160,8 +323,13 @@ export const bookingRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Build where clause based on user's role
+      const roleBasedWhere = await buildBookingWhereClause(ctx.prisma, userId);
+
       const where = {
-        userId: ctx.session.user.id,
+        ...roleBasedWhere,
         ...(input.status && { status: input.status }),
         ...(input.dateFrom && { startTime: { gte: input.dateFrom } }),
         ...(input.dateTo && { endTime: { lte: input.dateTo } }),
@@ -173,6 +341,18 @@ export const bookingRouter = router({
           include: {
             eventType: true,
             attendees: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            assignedHost: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
           orderBy: { startTime: input.dateTo ? "desc" : "asc" },
           skip: input.skip,
@@ -201,12 +381,31 @@ export const bookingRouter = router({
             email: true,
             salonName: true,
             timeZone: true,
+            memberships: {
+              where: { accepted: true },
+              select: {
+                organization: {
+                  select: { slug: true },
+                },
+              },
+              take: 1,
+            },
           },
         },
         attendees: true,
       },
     });
-    return booking;
+
+    if (!booking) return null;
+
+    // Compute the booking slug for URL construction
+    const bookingSlug =
+      booking.user?.salonName || booking.user?.memberships?.[0]?.organization?.slug || null;
+
+    return {
+      ...booking,
+      bookingSlug,
+    };
   }),
 
   // Create a new booking (public - for attendees)
@@ -222,16 +421,20 @@ export const bookingRouter = router({
         notes: z.string().optional(),
         timeZone: z.string().default("Europe/Belgrade"),
         locale: z.string().default("sr"),
+        hostUserId: z.string().optional(), // Optional: specific staff member for team bookings
       })
     )
     .mutation(async ({ ctx, input }) => {
       // Use transaction with serializable isolation to prevent race conditions
       const booking = await ctx.prisma.$transaction(
         async (tx) => {
-          // Get event type with user
+          // Get event type with user and hosts
           const eventType = await tx.eventType.findUnique({
             where: { id: input.eventTypeId },
-            include: { user: true },
+            include: {
+              user: true,
+              hosts: true,
+            },
           });
 
           if (!eventType) {
@@ -241,10 +444,27 @@ export const bookingRouter = router({
             });
           }
 
+          // Validate hostUserId if provided
+          let assignedHostId: string | null = null;
+          if (input.hostUserId) {
+            // Check if the host is valid for this event type
+            const validHost = eventType.hosts.find((h) => h.userId === input.hostUserId);
+            if (!validHost) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Izabrani zaposleni nije dostupan za ovu uslugu.",
+              });
+            }
+            assignedHostId = input.hostUserId;
+          }
+
+          // Determine which user's bookings to check for conflicts
+          const conflictUserId = assignedHostId || eventType.userId;
+
           // Check for conflicts within transaction
+          // For team bookings, check the assigned host's schedule
           const conflictingBooking = await tx.booking.findFirst({
             where: {
-              userId: eventType.userId,
               status: { in: ["PENDING", "ACCEPTED"] },
               OR: [
                 {
@@ -252,6 +472,10 @@ export const bookingRouter = router({
                   endTime: { gt: input.startTime },
                 },
               ],
+              // Check conflicts for the specific host or owner
+              ...(assignedHostId
+                ? { assignedHostId: assignedHostId }
+                : { userId: conflictUserId, assignedHostId: null }),
             },
           });
 
@@ -276,6 +500,7 @@ export const bookingRouter = router({
               status,
               userId: eventType.userId,
               eventTypeId: eventType.id,
+              assignedHostId: assignedHostId,
               attendees: {
                 create: {
                   name: input.name,
@@ -290,6 +515,12 @@ export const bookingRouter = router({
               attendees: true,
               eventType: true,
               user: {
+                select: {
+                  name: true,
+                  email: true,
+                },
+              },
+              assignedHost: {
                 select: {
                   name: true,
                   email: true,
@@ -317,14 +548,29 @@ export const bookingRouter = router({
     }),
 
   // Confirm a pending booking
+  // Can be done by owner OR assigned host
   confirm: protectedProcedure
     .input(z.object({ uid: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const booking = await ctx.prisma.booking.update({
+      const userId = ctx.session.user.id;
+
+      // First check if user has permission (owner or assigned host)
+      const existingBooking = await ctx.prisma.booking.findFirst({
         where: {
           uid: input.uid,
-          userId: ctx.session.user.id,
+          OR: [{ userId: userId }, { assignedHostId: userId }],
         },
+      });
+
+      if (!existingBooking) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Termin nije pronađen ili nemate dozvolu za ovu akciju.",
+        });
+      }
+
+      const booking = await ctx.prisma.booking.update({
+        where: { uid: input.uid },
         data: {
           status: "ACCEPTED",
         },
@@ -352,6 +598,7 @@ export const bookingRouter = router({
     }),
 
   // Reject a pending booking
+  // Can be done by owner OR assigned host
   reject: protectedProcedure
     .input(
       z.object({
@@ -360,11 +607,25 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const booking = await ctx.prisma.booking.update({
+      const userId = ctx.session.user.id;
+
+      // First check if user has permission (owner or assigned host)
+      const existingBooking = await ctx.prisma.booking.findFirst({
         where: {
           uid: input.uid,
-          userId: ctx.session.user.id,
+          OR: [{ userId: userId }, { assignedHostId: userId }],
         },
+      });
+
+      if (!existingBooking) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Termin nije pronađen ili nemate dozvolu za ovu akciju.",
+        });
+      }
+
+      const booking = await ctx.prisma.booking.update({
+        where: { uid: input.uid },
         data: {
           status: "REJECTED",
           rejectionReason: input.reason,
@@ -541,7 +802,19 @@ export const bookingRouter = router({
       const booking = await ctx.prisma.booking.findUnique({
         where: { uid: input.uid },
         include: {
-          user: true,
+          user: {
+            include: {
+              memberships: {
+                where: { accepted: true },
+                include: {
+                  organization: {
+                    select: { slug: true },
+                  },
+                },
+                take: 1,
+              },
+            },
+          },
           attendees: true,
           eventType: true,
         },
@@ -554,12 +827,16 @@ export const bookingRouter = router({
         });
       }
 
+      // Get booking slug: use salonName for owners, or organization slug for team members
+      const bookingSlug =
+        booking.user?.salonName || booking.user?.memberships?.[0]?.organization?.slug;
+
       // For now, just return the booking URL for the user to reschedule
       // In a full implementation, this would send an email to organizer
       return {
         success: true,
         message: "Zahtev za promenu termina je poslat.",
-        rescheduleUrl: `/${booking.user?.salonName}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`,
+        rescheduleUrl: `/${bookingSlug}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`,
       };
     }),
 });

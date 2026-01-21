@@ -234,13 +234,13 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
             {/* Actions */}
             {(canReschedule || canCancel) && (
               <div className="flex flex-col gap-3 pt-6 mt-6 border-t dark:border-gray-700 sm:flex-row">
-                {canReschedule && booking.user?.salonName && booking.eventType?.slug && (
+                {canReschedule && booking.bookingSlug && booking.eventType?.slug && (
                   <Button
                     variant="outline"
                     className="flex-1"
                     onClick={() =>
                       router.push(
-                        `/${booking.user?.salonName}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
+                        `/${booking.bookingSlug}/${booking.eventType?.slug}?rescheduleUid=${booking.uid}`
                       )
                     }
                   >

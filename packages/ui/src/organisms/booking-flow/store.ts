@@ -9,6 +9,7 @@ interface BookingStore {
   selectedSlot: string | null;
   tentativeSlot: string | null;
   currentMonth: Date;
+  selectedStaffId: string | null; // For team bookings
 
   // Form data
   formData: {
@@ -26,6 +27,7 @@ interface BookingStore {
   resetSelection: () => void;
   setCurrentMonth: (month: Date) => void;
   setFormData: (data: Partial<BookingStore["formData"]>) => void;
+  setSelectedStaffId: (staffId: string | null) => void;
   goToNextStep: () => void;
   goToPreviousStep: () => void;
   reset: () => void;
@@ -45,6 +47,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   selectedSlot: null,
   tentativeSlot: null,
   currentMonth: new Date(),
+  selectedStaffId: null,
   formData: initialFormData,
 
   // Actions
@@ -88,6 +91,17 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     }));
   },
 
+  setSelectedStaffId: (staffId) => {
+    // When staff changes, reset date and slot selection to refetch availability
+    set({
+      selectedStaffId: staffId,
+      selectedDate: null,
+      selectedSlot: null,
+      tentativeSlot: null,
+      state: "selecting_date",
+    });
+  },
+
   goToNextStep: () => {
     const { state } = get();
     if (state === "selecting_date") {
@@ -119,6 +133,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       selectedSlot: null,
       tentativeSlot: null,
       currentMonth: new Date(),
+      selectedStaffId: null,
       formData: initialFormData,
     });
   },

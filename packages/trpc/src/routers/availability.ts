@@ -294,6 +294,7 @@ export const availabilityRouter = router({
         dateFrom: z.date(),
         dateTo: z.date(),
         timeZone: z.string().default("Europe/Belgrade"),
+        hostUserId: z.string().optional(), // Optional: filter by specific host/staff member
       })
     )
     .query(async ({ ctx, input }) => {
@@ -306,6 +307,16 @@ export const availabilityRouter = router({
               availability: true,
             },
           },
+          hosts: {
+            include: {
+              user: true,
+              schedule: {
+                include: {
+                  availability: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -313,13 +324,32 @@ export const availabilityRouter = router({
         return { slots: [] };
       }
 
-      // Get existing bookings in the date range
+      // Determine which user's schedule and bookings to use
+      let targetUserId = eventType.userId;
+      let targetSchedule = eventType.schedule;
+      let targetUserTimeZone = eventType.user.timeZone;
+
+      // If a specific host is requested, use their schedule instead
+      if (input.hostUserId && eventType.hosts.length > 0) {
+        const host = eventType.hosts.find((h) => h.userId === input.hostUserId);
+        if (host) {
+          targetUserId = host.userId;
+          // Use host's custom schedule if available, otherwise fall back to event type schedule
+          if (host.schedule) {
+            targetSchedule = host.schedule;
+          }
+          targetUserTimeZone = host.user.timeZone;
+        }
+      }
+
+      // Get existing bookings in the date range for the target user
+      // For team bookings, check both assignedHostId AND userId (for owner's own bookings)
       const bookings = await ctx.prisma.booking.findMany({
         where: {
-          userId: eventType.userId,
           status: { in: ["PENDING", "ACCEPTED"] },
           startTime: { gte: input.dateFrom },
           endTime: { lte: input.dateTo },
+          OR: [{ assignedHostId: targetUserId }, { userId: targetUserId, assignedHostId: null }],
         },
         select: {
           startTime: true,
@@ -329,7 +359,7 @@ export const availabilityRouter = router({
       });
 
       // Convert availability to working hours and date overrides format
-      const scheduleAvailability = eventType.schedule?.availability || [];
+      const scheduleAvailability = targetSchedule?.availability || [];
       const availability = scheduleAvailability.map((a) => {
         if (a.date) {
           // Date override
@@ -350,7 +380,7 @@ export const availabilityRouter = router({
       // Get busy times from bookings
       const bookingBusyTimes = getBookingBusyTimes(bookings);
 
-      // Get busy times from connected calendars
+      // Get busy times from connected calendars for the target user
       const calendarBusyTimes: { start: Date; end: Date }[] = [];
 
       const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -359,7 +389,7 @@ export const availabilityRouter = router({
       if (clientId && clientSecret) {
         const credentials = await ctx.prisma.credential.findMany({
           where: {
-            userId: eventType.userId,
+            userId: targetUserId,
             type: "google_calendar",
             invalid: { not: true },
           },
@@ -406,7 +436,7 @@ export const availabilityRouter = router({
       const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes];
 
       // Use scheduling package to calculate available slots
-      const timeZone = eventType.schedule?.timeZone || eventType.user.timeZone;
+      const timeZone = targetSchedule?.timeZone || targetUserTimeZone;
       const { slots, dateRanges } = getAvailability({
         availability,
         timeZone,

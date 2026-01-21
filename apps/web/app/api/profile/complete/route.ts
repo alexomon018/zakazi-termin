@@ -17,6 +17,12 @@ export async function GET() {
         salonTypes: true,
         salonCity: true,
         salonAddress: true,
+        memberships: {
+          where: { accepted: true },
+          select: {
+            role: true,
+          },
+        },
       },
     });
 
@@ -24,7 +30,15 @@ export async function GET() {
       return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
-    // Profile is complete if user has salon types, city, and address
+    // Team members (ADMIN/MEMBER) don't need to complete salon onboarding
+    // They're joining someone else's salon, not creating their own
+    const isTeamMember = user.memberships.some((m) => m.role === "ADMIN" || m.role === "MEMBER");
+
+    if (isTeamMember) {
+      return NextResponse.json({ ok: true, isComplete: true });
+    }
+
+    // For owners or users without memberships, check if they have salon info
     const isComplete = user.salonTypes.length > 0 && !!user.salonCity && !!user.salonAddress;
 
     return NextResponse.json({ ok: true, isComplete });

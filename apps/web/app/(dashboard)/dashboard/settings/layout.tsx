@@ -1,16 +1,35 @@
 "use client";
 
+import { trpc } from "@/lib/trpc/client";
+import type { MembershipRole } from "@salonko/prisma";
 import { cn } from "@salonko/ui";
-import { Calendar, CalendarOff, CreditCard, Palette, User } from "lucide-react";
+import { Calendar, CalendarOff, CreditCard, Palette, User, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-const settingsNavItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof User;
+  description: string;
+  /** Roles that can see this nav item. If undefined, visible to all. */
+  allowedRoles?: MembershipRole[];
+};
+
+const settingsNavItems: NavItem[] = [
   {
     href: "/dashboard/settings/profile",
     label: "Moj profil",
     icon: User,
     description: "Upravljajte svojim profilom",
+  },
+  {
+    href: "/dashboard/settings/team",
+    label: "Tim",
+    icon: Users,
+    description: "Upravljajte članovima tima",
+    allowedRoles: ["OWNER", "ADMIN"], // Only OWNER and ADMIN can see team settings
   },
   {
     href: "/dashboard/settings/appearance",
@@ -23,6 +42,7 @@ const settingsNavItems = [
     label: "Naplata",
     icon: CreditCard,
     description: "Upravljajte pretplatom",
+    allowedRoles: ["OWNER"], // Only OWNER can see billing
   },
   {
     href: "/dashboard/settings/out-of-office",
@@ -44,13 +64,25 @@ export default function SettingsLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { data: user } = trpc.user.me.useQuery();
+
+  // Get user's role - default to OWNER if no membership (solo user/salon owner)
+  const userRole: MembershipRole = user?.membership?.role ?? "OWNER";
+
+  // Filter nav items based on user role
+  const visibleNavItems = useMemo(() => {
+    return settingsNavItems.filter((item) => {
+      if (!item.allowedRoles) return true;
+      return item.allowedRoles.includes(userRole);
+    });
+  }, [userRole]);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
       {/* Sidebar */}
       <aside className="lg:w-64 flex-shrink-0">
         <nav className="space-y-1">
-          {settingsNavItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
               item.href === "/dashboard/settings"

@@ -78,35 +78,39 @@ export async function verifyEmailAction(
     const autoLoginToken = generateAutoLoginToken();
     const autoLoginTokenExpires = getAutoLoginTokenExpiryDate();
 
+    // Check if this is a team member signup (has invite token)
+    const isTeamMemberSignup = !!pending.inviteToken;
+
     // Code is valid - create user with all data from pending registration
     const user = await prisma.$transaction(async (tx) => {
-      // Create the user with email already verified and auto-login token
+      // For team member signups, we create a minimal user without salon info
+      // For regular signups, we create user with full salon info
       const newUser = await tx.user.create({
         data: {
           name: pending.name,
           email: pending.email,
-          salonName: pending.salonName,
+          salonName: isTeamMemberSignup ? null : pending.salonName,
           identityProvider: "EMAIL",
           emailVerified: new Date(),
           autoLoginToken,
           autoLoginTokenExpires,
-          // Salon info from registration
-          salonTypes: pending.salonTypes,
-          salonPhone: pending.salonPhone,
-          salonEmail: pending.salonEmail,
-          salonCity: pending.salonCity,
-          salonAddress: pending.salonAddress,
-          googlePlaceId: pending.googlePlaceId,
+          // Salon info from registration (only for salon owners)
+          salonTypes: isTeamMemberSignup ? [] : pending.salonTypes,
+          salonPhone: isTeamMemberSignup ? null : pending.salonPhone,
+          salonEmail: isTeamMemberSignup ? null : pending.salonEmail,
+          salonCity: isTeamMemberSignup ? null : pending.salonCity,
+          salonAddress: isTeamMemberSignup ? null : pending.salonAddress,
+          googlePlaceId: isTeamMemberSignup ? null : pending.googlePlaceId,
           // Owner info
           ownerFirstName: pending.ownerFirstName,
           ownerLastName: pending.ownerLastName,
-          ownerPhone: pending.ownerPhone,
+          ownerPhone: isTeamMemberSignup ? null : pending.ownerPhone,
           password: {
             create: {
               hash: pending.hashedPassword,
             },
           },
-          // Create default schedule
+          // Create default schedule (for all users - team members also need availability)
           schedules: {
             create: {
               name: "Radno vreme",
@@ -137,8 +141,45 @@ export async function verifyEmailAction(
         });
       }
 
-      // Create organization if specified
-      if (pending.organizationName && pending.organizationSlug) {
+      // Handle team invitation if this is a team member signup
+      if (isTeamMemberSignup && pending.inviteToken) {
+        // Find the verification token for the invitation
+        const verificationToken = await tx.verificationToken.findFirst({
+          where: {
+            token: pending.inviteToken,
+            expires: { gte: new Date() },
+            organizationId: { not: null },
+          },
+        });
+
+        // Token must exist - if not, it was already used (race condition)
+        if (!verificationToken || !verificationToken.organizationId) {
+          throw new Error("INVITE_TOKEN_USED");
+        }
+
+        // Create membership for the team
+        await tx.membership.create({
+          data: {
+            userId: newUser.id,
+            organizationId: verificationToken.organizationId,
+            role: verificationToken.invitedRole || "MEMBER",
+            accepted: true,
+          },
+        });
+
+        // Delete the token after use (all tokens are single-use for security)
+        await tx.verificationToken.delete({
+          where: {
+            identifier_token: {
+              identifier: verificationToken.identifier,
+              token: verificationToken.token,
+            },
+          },
+        });
+      }
+
+      // Create organization if specified (for regular salon owner signup)
+      if (!isTeamMemberSignup && pending.organizationName && pending.organizationSlug) {
         await tx.organization.create({
           data: {
             name: pending.organizationName,
@@ -170,6 +211,13 @@ export async function verifyEmailAction(
       },
     };
   } catch (error) {
+    // Handle invite token already used (race condition)
+    if (error instanceof Error && error.message === "INVITE_TOKEN_USED") {
+      return {
+        success: false,
+        error: "Pozivnica je već iskorišćena ili je istekla. Zatražite novu pozivnicu.",
+      };
+    }
     logger.error("Email verification error", { error });
     return { success: false, error: "Došlo je do greške" };
   }

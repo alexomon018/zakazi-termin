@@ -11,11 +11,18 @@ interface Attendee {
   email: string;
 }
 
+interface StaffMember {
+  id: string;
+  name: string | null;
+}
+
 interface Booking {
   id: string;
   title: string;
   startTime: Date;
   attendees: Attendee[];
+  user?: StaffMember | null;
+  assignedHost?: StaffMember | null;
 }
 
 interface UpcomingBookingsProps {
@@ -32,6 +39,8 @@ interface UpcomingBookingsProps {
       locale: string;
       bookingId: string;
     }>;
+    user?: { id: string; name: string | null } | null;
+    assignedHost?: { id: string; name: string | null } | null;
     [key: string]: unknown;
   }>;
   totalBookings: number;
@@ -83,31 +92,40 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
         ) : (
           <>
             <div className="divide-y divide-gray-100 dark:divide-border">
-              {displayedBookings.map((booking) => (
-                <div key={booking.id} className="flex justify-between items-center py-4">
-                  <div>
-                    <p className="font-medium text-foreground">{booking.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
-                    </p>
+              {displayedBookings.map((booking) => {
+                // Get staff name (assigned host or event owner)
+                const staffName = booking.assignedHost?.name || booking.user?.name;
+                return (
+                  <div key={booking.id} className="flex justify-between items-center py-4">
+                    <div>
+                      <p className="font-medium text-foreground">{booking.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
+                      </p>
+                      {staffName && (
+                        <p className="text-xs text-muted-foreground/70 mt-0.5">
+                          Zaposleni: {staffName}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-foreground">
+                        {new Date(booking.startTime).toLocaleDateString("sr-RS", {
+                          weekday: "short",
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(booking.startTime).toLocaleTimeString("sr-RS", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">
-                      {new Date(booking.startTime).toLocaleDateString("sr-RS", {
-                        weekday: "short",
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(booking.startTime).toLocaleTimeString("sr-RS", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             {hasMore && (
               <div className="mt-4 text-center">

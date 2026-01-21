@@ -18,6 +18,7 @@ import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
 import { SubscriptionSuccessEmail } from "./templates/subscription-success";
+import { TeamInviteEmail } from "./templates/team-invite";
 import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 import type {
@@ -26,6 +27,7 @@ import type {
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
   SubscriptionSuccessEmailData,
+  TeamInviteEmailData,
   TrialEndingEmailData,
 } from "./types";
 
@@ -291,6 +293,22 @@ class EmailService {
       to: data.userEmail,
       subject: "Pretplata uspešno aktivirana - Salonko",
       react: createElement(SubscriptionSuccessEmail, data),
+    });
+  }
+
+  // Team-related emails
+
+  // Send team invitation email
+  async sendTeamInviteEmail(data: TeamInviteEmailData): Promise<void> {
+    await this.send({
+      to: data.recipientEmail,
+      subject: `Poziv u tim: ${data.organizationName} - Salonko`,
+      react: createElement(TeamInviteEmail, {
+        inviterName: data.inviterName,
+        organizationName: data.organizationName,
+        role: data.role,
+        inviteUrl: data.inviteUrl,
+      }),
     });
   }
 }

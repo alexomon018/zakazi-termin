@@ -8,12 +8,28 @@ import Link from "next/link";
 import { useState } from "react";
 
 type EventType = RouterOutputs["eventType"]["list"][number];
-type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "salonName" | "name">;
+type User = Pick<
+  NonNullable<RouterOutputs["user"]["me"]>,
+  "id" | "salonName" | "name" | "membership"
+>;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
   currentUser: User | null;
 };
+
+/**
+ * Get the booking page slug for the current user.
+ * - For salon owners: use their salonName
+ * - For team members: use the organization slug
+ */
+function getBookingSlug(user: User | null): string | null {
+  if (!user) return null;
+  // If user has their own salonName, use it (salon owners)
+  if (user.salonName) return user.salonName;
+  // Otherwise use the organization slug (team members)
+  return user.membership?.organization?.slug ?? null;
+}
 
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
@@ -37,6 +53,8 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     },
   });
 
+  const bookingSlug = getBookingSlug(currentUser);
+
   const handleCopyLink = async (eventType: { id: string; slug: string }) => {
     // Use window.location.origin for client-side (always correct)
     // Fall back to NEXT_PUBLIC_APP_URL for SSR
@@ -44,7 +62,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
       typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_APP_URL || "";
-    const link = `${baseUrl}/${currentUser?.salonName}/${eventType.slug}`;
+    const link = `${baseUrl}/${bookingSlug}/${eventType.slug}`;
 
     try {
       await navigator.clipboard.writeText(link);
@@ -201,7 +219,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
                       {/* Preview link */}
                       <Link
-                        href={`/${currentUser?.salonName}/${eventType.slug}`}
+                        href={`/${bookingSlug}/${eventType.slug}`}
                         target="_blank"
                         className="p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted"
                       >
@@ -250,7 +268,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                 {/* Public URL bar */}
                 <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50 overflow-hidden">
                   <code className="text-xs text-muted-foreground block truncate">
-                    {baseUrl}/{currentUser?.salonName}/{eventType.slug}
+                    {baseUrl}/{bookingSlug}/{eventType.slug}
                   </code>
                 </div>
               </CardContent>
