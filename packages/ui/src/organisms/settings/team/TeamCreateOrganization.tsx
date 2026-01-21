@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   Card,
@@ -14,12 +16,13 @@ import {
   Input,
   Label,
 } from "@salonko/ui";
-import { Plus, Users } from "lucide-react";
+import { AlertCircle, Plus, Users } from "lucide-react";
 
 type TeamCreateOrganizationProps = {
   orgName: string;
   isDialogOpen: boolean;
   isCreating: boolean;
+  error?: string | null;
   onOrgNameChange: (value: string) => void;
   onDialogChange: (open: boolean) => void;
   onCreateOrganization: () => void;
@@ -29,6 +32,7 @@ export function TeamCreateOrganization({
   orgName,
   isDialogOpen,
   isCreating,
+  error,
   onOrgNameChange,
   onDialogChange,
   onCreateOrganization,
@@ -41,6 +45,13 @@ export function TeamCreateOrganization({
           Kreirajte organizaciju da biste dodali članove tima
         </p>
       </div>
+
+      {error && (
+        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <span className="text-red-800 dark:text-red-300">{error}</span>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

@@ -281,15 +281,18 @@ export const teamRouter = router({
         },
       });
 
-      // Delete the token after use (all tokens are single-use for security)
-      await ctx.prisma.verificationToken.delete({
-        where: {
-          identifier_token: {
-            identifier: verificationToken.identifier,
-            token: verificationToken.token,
+      // Only delete email-specific invites after use
+      // General invite links (without invitedEmail) remain reusable
+      if (verificationToken.invitedEmail) {
+        await ctx.prisma.verificationToken.delete({
+          where: {
+            identifier_token: {
+              identifier: verificationToken.identifier,
+              token: verificationToken.token,
+            },
           },
-        },
-      });
+        });
+      }
 
       return {
         organizationId: verificationToken.organizationId,

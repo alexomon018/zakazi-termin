@@ -117,6 +117,7 @@ export function TeamMembersList({
                       size="sm"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                       onClick={() => onRemoveMember(member)}
+                      aria-label={`Ukloni člana ${member.name || member.email}`}
                     >
                       <UserMinus className="w-4 h-4" />
                     </Button>

@@ -70,6 +70,9 @@ export function TeamSettingsClient({
       setCreateOrgDialogOpen(false);
       showSuccess("Organizacija je uspešno kreirana!");
     },
+    onError: (error) => {
+      showError(error.message || "Greška pri kreiranju organizacije. Pokušajte ponovo.");
+    },
   });
 
   const inviteMember = trpc.team.inviteMember.useMutation({
@@ -98,6 +101,9 @@ export function TeamSettingsClient({
         setTimeout(() => setCopySuccess(false), 3000);
       }
     },
+    onError: (error) => {
+      showError(error.message || "Greška pri kreiranju linka za pozivnicu. Pokušajte ponovo.");
+    },
   });
 
   const removeMember = trpc.team.removeMember.useMutation({
@@ -123,11 +129,17 @@ export function TeamSettingsClient({
       setInviteToDelete(null);
       showSuccess("Pozivnica je obrisana.");
     },
+    onError: (error) => {
+      showError(error.message || "Greška pri brisanju pozivnice. Pokušajte ponovo.");
+    },
   });
 
   const resendInvite = trpc.team.resendInvite.useMutation({
     onSuccess: () => {
       showSuccess("Pozivnica je ponovo poslata.");
+    },
+    onError: (error) => {
+      showError(error.message || "Greška pri ponovnom slanju pozivnice. Pokušajte ponovo.");
     },
   });
 
@@ -202,6 +214,7 @@ export function TeamSettingsClient({
         orgName={orgName}
         isDialogOpen={createOrgDialogOpen}
         isCreating={createOrganization.isPending}
+        error={errorMessage || createOrganization.error?.message}
         onOrgNameChange={setOrgName}
         onDialogChange={setCreateOrgDialogOpen}
         onCreateOrganization={() => createOrganization.mutate({ name: orgName })}
@@ -227,14 +240,23 @@ export function TeamSettingsClient({
       )}
 
       {/* Error Messages */}
-      {(errorMessage || inviteMember.error || removeMember.error || changeMemberRole.error) && (
+      {(errorMessage ||
+        inviteMember.error ||
+        removeMember.error ||
+        changeMemberRole.error ||
+        createInviteLink.error ||
+        deleteInvite.error ||
+        resendInvite.error) && (
         <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">
             {errorMessage ||
               inviteMember.error?.message ||
               removeMember.error?.message ||
-              changeMemberRole.error?.message}
+              changeMemberRole.error?.message ||
+              createInviteLink.error?.message ||
+              deleteInvite.error?.message ||
+              resendInvite.error?.message}
           </span>
         </div>
       )}

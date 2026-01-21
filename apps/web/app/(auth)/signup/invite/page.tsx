@@ -86,15 +86,22 @@ function InviteSignupPageContent() {
         return;
       }
 
-      const result = await validateInviteTokenAction(token);
-      setTokenValidation(result);
+      try {
+        const result = await validateInviteTokenAction(token);
+        setTokenValidation(result);
 
-      // Pre-fill email if it's an email-specific invite
-      if (result.valid && result.invitedEmail) {
-        setValue("email", result.invitedEmail);
+        // Pre-fill email if it's an email-specific invite
+        if (result.valid && result.invitedEmail) {
+          setValue("email", result.invitedEmail);
+        }
+      } catch {
+        setTokenValidation({
+          valid: false,
+          error: "Došlo je do greške pri proveri pozivnice.",
+        });
+      } finally {
+        setIsValidating(false);
       }
-
-      setIsValidating(false);
     }
 
     validateToken();
