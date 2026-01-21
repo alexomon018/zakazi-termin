@@ -5,13 +5,33 @@ export const dynamic = "force-dynamic";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@salonko/ui";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { trpc } from "@/lib/trpc/client";
 
 type AcceptState = "loading" | "accepting" | "success" | "error" | "invalid";
 
 export default function AcceptInvitationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen bg-gray-50">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <Loader2 className="mx-auto w-12 h-12 text-blue-600 animate-spin" />
+              <CardTitle className="mt-4">Prihvatanje pozivnice...</CardTitle>
+              <CardDescription>Molimo sačekajte dok obrađujemo vašu pozivnicu.</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <AcceptInvitationPageContent />
+    </Suspense>
+  );
+}
+
+function AcceptInvitationPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
