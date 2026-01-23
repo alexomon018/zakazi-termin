@@ -47,7 +47,8 @@ export async function GET(request: Request) {
   }
 
   const baseUrl = getAppUrl();
-  const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const redirectUri = `${normalizedBaseUrl}/api/integrations/google-calendar/callback`;
 
   try {
     // Exchange code for tokens

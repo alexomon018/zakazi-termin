@@ -71,8 +71,11 @@ export const teamRouter = router({
       }
 
       const emails = Array.isArray(input.emails) ? input.emails : [input.emails];
-      const results: { email: string; status: "invited" | "already_member" | "already_invited" }[] =
-        [];
+      const results: {
+        email: string;
+        status: "invited" | "already_member" | "already_invited" | "email_failed";
+        message?: string;
+      }[] = [];
 
       for (const email of emails) {
         // Check if user with this email already exists and is a member
@@ -147,11 +150,10 @@ export const teamRouter = router({
               },
             },
           });
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: `Neuspešno slanje pozivnice na ${email}. Pokušajte ponovo.`,
-            cause: emailError,
-          });
+          const message =
+            emailError instanceof Error ? emailError.message : "Failed to send invite email";
+          results.push({ email, status: "email_failed", message });
+          continue;
         }
 
         results.push({ email, status: "invited" });
@@ -658,13 +660,26 @@ export const teamRouter = router({
 
       // Send email invitation
       const appOrigin = getAppOriginFromRequest(ctx.req);
-      await emailService.sendTeamInviteEmail({
-        recipientEmail: input.email,
-        organizationName: membership.organization.name,
-        inviterName: membership.user.name || "Član tima",
-        inviteUrl: `${appOrigin}/signup?token=${existingInvite.token}`,
-        role: existingInvite.invitedRole || MembershipRole.MEMBER,
-      });
+      try {
+        await emailService.sendTeamInviteEmail({
+          recipientEmail: input.email,
+          organizationName: membership.organization.name,
+          inviterName: membership.user.name || "Član tima",
+          inviteUrl: `${appOrigin}/signup?token=${existingInvite.token}`,
+          role: existingInvite.invitedRole || MembershipRole.MEMBER,
+        });
+      } catch (error) {
+        console.error("Failed to send invite email", {
+          error,
+          organizationId: input.organizationId,
+          email: input.email,
+        });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to send invite email",
+          cause: error,
+        });
+      }
 
       return { success: true };
     }),
