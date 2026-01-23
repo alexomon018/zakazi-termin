@@ -385,9 +385,11 @@ export const userRouter = router({
   checkSalonName: protectedProcedure
     .input(z.object({ salonName: z.string().min(3) }))
     .query(async ({ ctx, input }) => {
+      // Normalize the salon name to a slug and check uniqueness against salonSlug
+      const salonSlug = generateSalonSlug(input.salonName);
       const existingUser = await ctx.prisma.user.findFirst({
         where: {
-          salonName: input.salonName,
+          salonSlug,
           NOT: { id: ctx.session.user.id },
         },
       });
