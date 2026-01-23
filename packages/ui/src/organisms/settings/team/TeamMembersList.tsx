@@ -100,8 +100,8 @@ export function TeamMembersList({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ADMIN">Administrator</SelectItem>
-                        <SelectItem value="MEMBER">Član</SelectItem>
+                        <SelectItem value="ADMIN">{roleLabels.ADMIN}</SelectItem>
+                        <SelectItem value="MEMBER">{roleLabels.MEMBER}</SelectItem>
                       </SelectContent>
                     </Select>
                   ) : (

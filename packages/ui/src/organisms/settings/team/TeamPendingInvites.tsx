@@ -33,7 +33,7 @@ export function TeamPendingInvites({
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {invites.map((invite) => (
             <div
-              key={invite.token}
+              key={invite.inviteUrl}
               className="flex flex-col gap-3 justify-between p-4 sm:flex-row sm:items-center"
             >
               <div className="min-w-0">

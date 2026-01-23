@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth";
 import { getGoogleAuthUrl } from "@salonko/calendar";
+import { getAppUrl } from "@salonko/config";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const returnTo = searchParams.get("returnTo") || "/dashboard/settings";
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+  const baseUrl = getAppUrl();
   const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
 
   // Encode state with returnTo URL

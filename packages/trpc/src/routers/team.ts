@@ -5,6 +5,8 @@ import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc"
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { getAppOriginFromRequest } from "../lib/app-origin";
+
 const MAX_BULK_INVITES = 50;
 
 export const teamRouter = router({
@@ -126,13 +128,13 @@ export const teamRouter = router({
         });
 
         // Send email invitation - rollback token on failure
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const appOrigin = getAppOriginFromRequest(ctx.req);
         try {
           await emailService.sendTeamInviteEmail({
             recipientEmail: email,
             organizationName: membership.organization.name,
             inviterName: membership.user.name || "Član tima",
-            inviteUrl: `${baseUrl}/signup?token=${token}`,
+            inviteUrl: `${appOrigin}/signup?token=${token}`,
             role: input.role,
           });
         } catch (emailError) {
@@ -209,10 +211,10 @@ export const teamRouter = router({
         },
       });
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const appOrigin = getAppOriginFromRequest(ctx.req);
       return {
         token,
-        inviteLink: `${baseUrl}/signup?token=${token}`,
+        inviteLink: `${appOrigin}/signup?token=${token}`,
         expiresAt: new Date(Date.now() + input.expiresInDays * 24 * 60 * 60 * 1000),
       };
     }),
@@ -589,8 +591,9 @@ export const teamRouter = router({
         orderBy: { createdAt: "desc" },
       });
 
+      const appOrigin = getAppOriginFromRequest(ctx.req);
       return invites.map((invite) => ({
-        token: invite.token,
+        inviteUrl: `${appOrigin}/signup?token=${invite.token}`,
         email: invite.invitedEmail,
         role: invite.invitedRole,
         expiresAt: invite.expires,
@@ -654,12 +657,12 @@ export const teamRouter = router({
       }
 
       // Send email invitation
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const appOrigin = getAppOriginFromRequest(ctx.req);
       await emailService.sendTeamInviteEmail({
         recipientEmail: input.email,
         organizationName: membership.organization.name,
         inviterName: membership.user.name || "Član tima",
-        inviteUrl: `${baseUrl}/signup?token=${existingInvite.token}`,
+        inviteUrl: `${appOrigin}/signup?token=${existingInvite.token}`,
         role: existingInvite.invitedRole || MembershipRole.MEMBER,
       });
 
@@ -673,7 +676,7 @@ export const teamRouter = router({
     .input(
       z.object({
         organizationId: z.string(),
-        token: z.string(),
+        inviteUrl: z.string().url("Neispravan URL pozivnice."),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -700,10 +703,21 @@ export const teamRouter = router({
         });
       }
 
+      // Extract token from URL
+      const url = new URL(input.inviteUrl);
+      const token = url.searchParams.get("token");
+
+      if (!token) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "URL pozivnice ne sadrži token.",
+        });
+      }
+
       // Find and delete the invite
       const invite = await ctx.prisma.verificationToken.findFirst({
         where: {
-          token: input.token,
+          token,
           organizationId: input.organizationId,
         },
       });

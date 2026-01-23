@@ -191,7 +191,7 @@ export function TeamSettingsClient({
     if (!organization?.id || !inviteToDelete) return;
     deleteInvite.mutate({
       organizationId: organization.id,
-      token: inviteToDelete.token,
+      inviteUrl: inviteToDelete.inviteUrl,
     });
   };
 
@@ -293,13 +293,8 @@ export function TeamSettingsClient({
           isResendPending={resendInvite.isPending}
           onResendInvite={handleResendInvite}
           onCopyLink={async (invite) => {
-            const baseUrl =
-              typeof window !== "undefined"
-                ? window.location.origin
-                : process.env.NEXT_PUBLIC_APP_URL || "";
-            const inviteUrl = `${baseUrl}/signup?token=${invite.token}`;
             try {
-              await navigator.clipboard.writeText(inviteUrl);
+              await navigator.clipboard.writeText(invite.inviteUrl);
               showSuccess("Link kopiran!");
             } catch (error) {
               showError(

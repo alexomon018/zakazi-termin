@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@salonko/ui";
+import { roleLabels } from "./constants";
 
 type TeamInviteMemberDialogProps = {
   open: boolean;
@@ -47,7 +48,7 @@ export function TeamInviteMemberDialog({
             Pošaljite pozivnicu putem email-a. Novi član će moći da se registruje i pristupi timu.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="py-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email adresa</Label>
             <Input
@@ -65,9 +66,9 @@ export function TeamInviteMemberDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="MEMBER">Član</SelectItem>
+                <SelectItem value="MEMBER">{roleLabels.MEMBER}</SelectItem>
                 {currentUserRole === "OWNER" && (
-                  <SelectItem value="ADMIN">Administrator</SelectItem>
+                  <SelectItem value="ADMIN">{roleLabels.ADMIN}</SelectItem>
                 )}
               </SelectContent>
             </Select>

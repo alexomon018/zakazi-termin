@@ -1,6 +1,6 @@
 import { Link, Section, Text } from "@react-email/components";
+import { getAppUrl } from "@salonko/config";
 import type { BookingEmailData } from "../types";
-import { getAppUrl } from "../utils";
 import {
   BaseEmail,
   button,
