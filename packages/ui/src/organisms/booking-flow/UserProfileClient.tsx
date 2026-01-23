@@ -1,5 +1,6 @@
 "use client";
 
+import { normalizeToSlug } from "@salonko/config";
 import { Card, CardContent } from "@salonko/ui";
 import { ArrowRight, Clock, MapPin, User } from "lucide-react";
 import Image from "next/image";
@@ -89,7 +90,11 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
         ) : (
           <div className="space-y-3">
             {visibleEventTypes.map((eventType) => (
-              <Link key={eventType.id} href={`/${salonName}/${eventType.slug}`} className="block">
+              <Link
+                key={eventType.id}
+                href={`/${normalizeToSlug(salonName)}/${eventType.slug}`}
+                className="block"
+              >
                 <Card className="transition-shadow cursor-pointer hover:shadow-md">
                   <CardContent className="p-0">
                     <div className="flex items-stretch p-5 min-h-[88px]">

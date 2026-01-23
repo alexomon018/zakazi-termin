@@ -1,3 +1,4 @@
+import { normalizeToSlug } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import {
   protectedProcedure,
@@ -155,14 +156,17 @@ export const eventTypeRouter = router({
   getPublic: publicProcedure
     .input(z.object({ salonName: z.string(), slug: z.string() }))
     .query(async ({ ctx, input }) => {
+      // Normalize salonName to handle URL-decoded spaces and special characters
+      const normalizedSalonName = normalizeToSlug(input.salonName);
+
       // Try to find a user with this salonName (salon owners)
       const user = await ctx.prisma.user.findUnique({
-        where: { salonName: input.salonName },
+        where: { salonName: normalizedSalonName },
       });
 
       // Also try to find an organization with this slug
       const organization = await ctx.prisma.organization.findUnique({
-        where: { slug: input.salonName },
+        where: { slug: normalizedSalonName },
         select: { id: true },
       });
 

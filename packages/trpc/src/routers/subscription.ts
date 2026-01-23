@@ -80,8 +80,8 @@ function getTrialStatus(subscription: Subscription | null): {
     };
   }
 
-  // Use Math.floor to match Stripe's calculation (days until trial_end timestamp)
-  const daysRemaining = Math.floor((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  // Use Math.ceil to show user-friendly remaining days (any portion of a day counts as a full day)
+  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   return {
     isInTrial: true,
     trialDaysRemaining: daysRemaining,

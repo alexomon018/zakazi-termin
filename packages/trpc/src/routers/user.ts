@@ -1,4 +1,4 @@
-import { logger } from "@salonko/config";
+import { logger, normalizeToSlug } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
@@ -134,9 +134,12 @@ export const userRouter = router({
   getPublicProfile: publicProcedure
     .input(z.object({ salonName: z.string() }))
     .query(async ({ ctx, input }) => {
+      // Normalize salonName to handle URL-decoded spaces and special characters
+      const normalizedSalonName = normalizeToSlug(input.salonName);
+
       // First try to find by user salonName
       const user = await ctx.prisma.user.findUnique({
-        where: { salonName: input.salonName },
+        where: { salonName: normalizedSalonName },
         select: {
           id: true,
           name: true,
@@ -161,7 +164,7 @@ export const userRouter = router({
       let organization = null;
       if (!user) {
         organization = await ctx.prisma.organization.findUnique({
-          where: { slug: input.salonName },
+          where: { slug: normalizedSalonName },
           select: {
             id: true,
             name: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
-import { getAppUrl } from "@salonko/config";
+import { getAppUrl, normalizeToSlug } from "@salonko/config";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, ConfirmDialog, cn } from "@salonko/ui";
 import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
@@ -21,14 +21,15 @@ type EventTypesClientProps = {
 
 /**
  * Get the booking page slug for the current user.
- * - For salon owners: use their salonName
+ * Normalizes the salonName to ensure URL-safe format.
+ * - For salon owners: use their salonName (normalized)
  * - For team members: use the organization slug
  */
 function getBookingSlug(user: User | null): string | null {
   if (!user) return null;
-  // If user has their own salonName, use it (salon owners)
-  if (user.salonName) return user.salonName;
-  // Otherwise use the organization slug (team members)
+  // If user has their own salonName, use it (salon owners) - normalize to ensure URL-safe
+  if (user.salonName) return normalizeToSlug(user.salonName);
+  // Otherwise use the organization slug (team members) - already normalized
   return user.membership?.organization?.slug ?? null;
 }
 
