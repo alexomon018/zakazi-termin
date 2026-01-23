@@ -95,7 +95,8 @@ model User {
   id                 String           @id @default(dbgenerated("gen_random_uuid()"))
   email              String           @unique
   name               String?
-  salonName          String?          @unique
+  salonName          String? // Display name (e.g., "Berbernica Langobard")
+  salonSlug          String?          @unique // URL-friendly slug (e.g., "berbernica-langobard")
   password           UserPassword?
   avatarUrl          String?
   salonIconKey       String? // S3 object key for uploaded salon icon
@@ -149,7 +150,7 @@ model User {
   hosts               Host[]
 
   @@index([email])
-  @@index([salonName])
+  @@index([salonSlug])
 }
 
 model UserPassword {
@@ -210,6 +211,7 @@ model PendingRegistration {
   email            String  @unique
   name             String
   salonName        String? @unique // Optional for team member signups (they join existing salon)
+  salonSlug        String? @unique // URL-friendly slug (e.g., "berbernica-langobard")
   hashedPassword   String
   organizationName String?
   organizationSlug String?
@@ -241,6 +243,7 @@ model PendingRegistration {
   @@index([email])
   @@index([expires])
   @@index([inviteToken])
+  @@index([salonSlug])
 }
 
 // ===== EVENT TYPES =====

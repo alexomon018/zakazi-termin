@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
- * Create (or reuse) a Neon preview branch for the current git branch, based off develop,
+ * Create (or reuse and reset) a Neon preview branch for the current git branch, based off develop,
  * then (by default) push the Prisma schema to it.
+ *
+ * If the branch already exists, it will be reset to match the parent branch (preview/develop)
+ * to ensure it contains the latest changes from the parent.
  *
  * Requires:
  *   - Node 18+ (repo uses Node 22), git, yarn
@@ -33,6 +36,7 @@ Behavior:
   - Resolves <name> from the current git branch (unless --branch is provided)
   - Ensures Neon branch name is prefixed with "preview/"
   - Creates the branch on Neon from parent "preview/develop" (fallback: "develop")
+  - If branch already exists, resets it to match the parent branch
   - Waits for an endpoint host + role, prints a masked DATABASE_URL (never the password)
   - By default, runs:
       - yarn db:generate
@@ -197,6 +201,22 @@ async function neonPostJson(url, apiKey, body) {
   return await res.json();
 }
 
+async function neonResetBranch(apiBase, branchId, sourceBranchId, apiKey) {
+  const res = await fetch(`${apiBase}/branches/${branchId}/reset`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ source_branch_id: sourceBranchId }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    fail(`Neon API reset failed (${res.status} ${res.statusText}): ${text}`);
+  }
+  return await res.json();
+}
+
 async function main() {
   const args = parseArgs(process.argv);
 
@@ -240,28 +260,35 @@ async function main() {
   const branchesJson = await neonGetJson(`${apiBase}/branches`, apiKey);
   const branches = Array.isArray(branchesJson?.branches) ? branchesJson.branches : [];
 
+  // Resolve parent branch first (needed for both create and reset)
+  let parent = branches.find((b) => b?.name === parentName);
+  if (!parent && parentName === "preview/develop") {
+    parentName = "develop";
+    parent = branches.find((b) => b?.name === parentName);
+  }
+  if (!parent?.id) {
+    const names = branches
+      .map((b) => b?.name)
+      .filter(Boolean)
+      .slice(0, 50);
+    fail(
+      `Could not find parent branch '${args.parentOverride || "preview/develop"}' (or fallback 'develop') in Neon.\n` +
+        `Available branches (first 50):\n- ${names.join("\n- ")}`
+    );
+  }
+
   const existingBranch = branches.find((b) => b?.name === neonBranch);
   let branchId = existingBranch?.id ?? "";
 
   if (branchId) {
     info(`✅ Neon branch already exists: ${neonBranch} (id: ${branchId})`);
+    info(`🔄 Resetting branch to match '${parentName}'...`);
+    await neonResetBranch(apiBase, branchId, parent.id, apiKey);
+    info(`✅ Reset complete: ${neonBranch} now matches '${parentName}'`);
+    // Wait a moment for the reset to fully complete
+    info("⏳ Waiting for reset to complete...");
+    await sleep(2000);
   } else {
-    let parent = branches.find((b) => b?.name === parentName);
-    if (!parent && parentName === "preview/develop") {
-      parentName = "develop";
-      parent = branches.find((b) => b?.name === parentName);
-    }
-    if (!parent?.id) {
-      const names = branches
-        .map((b) => b?.name)
-        .filter(Boolean)
-        .slice(0, 50);
-      fail(
-        `Could not find parent branch '${args.parentOverride || "preview/develop"}' (or fallback 'develop') in Neon.\n` +
-          `Available branches (first 50):\n- ${names.join("\n- ")}`
-      );
-    }
-
     info(`🧬 Creating Neon branch '${neonBranch}' from '${parentName}'...`);
     const createJson = await neonPostJson(`${apiBase}/branches`, apiKey, {
       branch: { name: neonBranch, parent_id: parent.id },

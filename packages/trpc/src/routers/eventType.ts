@@ -1,4 +1,3 @@
-import { normalizeToSlug } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import {
   protectedProcedure,
@@ -150,23 +149,20 @@ export const eventTypeRouter = router({
       return eventType;
     }),
 
-  // Get public event type by salonName/orgSlug and slug
-  // Supports both individual salon owners (by salonName) and team event types (by organization slug)
-  // When a salon owner has a team, the salonName and org slug are the same, so we need to check both
+  // Get public event type by salonSlug/orgSlug and eventType slug
+  // Supports both individual salon owners (by salonSlug) and team event types (by organization slug)
+  // When a salon owner has a team, the salonSlug and org slug are the same, so we need to check both
   getPublic: publicProcedure
-    .input(z.object({ salonName: z.string(), slug: z.string() }))
+    .input(z.object({ salonSlug: z.string(), slug: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Normalize salonName to handle URL-decoded spaces and special characters
-      const normalizedSalonName = normalizeToSlug(input.salonName);
-
-      // Try to find a user with this salonName (salon owners)
+      // Try to find a user with this salonSlug (salon owners)
       const user = await ctx.prisma.user.findUnique({
-        where: { salonName: normalizedSalonName },
+        where: { salonSlug: input.salonSlug },
       });
 
       // Also try to find an organization with this slug
       const organization = await ctx.prisma.organization.findUnique({
-        where: { slug: normalizedSalonName },
+        where: { slug: input.salonSlug },
         select: { id: true },
       });
 

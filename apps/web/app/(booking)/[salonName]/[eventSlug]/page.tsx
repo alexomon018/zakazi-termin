@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const eventType = await caller.eventType.getPublic({
-      salonName,
+      salonSlug: salonName,
       slug: eventSlug,
     });
 
@@ -74,7 +74,7 @@ export default async function PublicBookingPage({ params }: Props) {
 
   try {
     const eventType = await caller.eventType.getPublic({
-      salonName,
+      salonSlug: salonName,
       slug: eventSlug,
     });
 

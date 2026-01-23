@@ -67,10 +67,10 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
     const normalizedEmail = email.toLowerCase();
     const salonSlug = generateSalonSlug(salonName);
 
-    // Check for existing user with same email or salonName (slug)
+    // Check for existing user with same email or salonSlug
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [{ email: normalizedEmail }, { salonName: salonSlug }],
+        OR: [{ email: normalizedEmail }, { salonSlug }],
       },
     });
 
@@ -78,7 +78,7 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
       if (existingUser.email === normalizedEmail) {
         return { success: false, error: "Email adresa je vec registrovana" };
       }
-      if (existingUser.salonName === salonSlug) {
+      if (existingUser.salonSlug === salonSlug) {
         return { success: false, error: "Naziv salona je zauzet" };
       }
     }
@@ -89,20 +89,21 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
     // Generate OTP
     const verificationCode = generateOTP();
 
-    // Delete any existing pending registration for this email or salonName
+    // Delete any existing pending registration for this email or salonSlug
     // and create new pending registration in a transaction
     try {
       await prisma.$transaction([
         prisma.pendingRegistration.deleteMany({
           where: {
-            OR: [{ email: normalizedEmail }, { salonName: salonSlug }],
+            OR: [{ email: normalizedEmail }, { salonSlug }],
           },
         }),
         prisma.pendingRegistration.create({
           data: {
             email: normalizedEmail,
             name: `${ownerFirstName} ${ownerLastName}`,
-            salonName: salonSlug,
+            salonName,
+            salonSlug,
             hashedPassword,
             salonTypes,
             salonPhone,
@@ -127,7 +128,7 @@ export async function signupAction(formData: FormData): Promise<ActionResult<{ e
         if (targets.some((t) => t.includes("email"))) {
           return { success: false, error: "Email adresa je vec registrovana" };
         }
-        if (targets.some((t) => t.includes("salonName"))) {
+        if (targets.some((t) => t.includes("salonSlug"))) {
           return { success: false, error: "Naziv salona je zauzet" };
         }
 

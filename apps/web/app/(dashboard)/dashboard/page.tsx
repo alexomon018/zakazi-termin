@@ -37,8 +37,8 @@ export default async function DashboardPage() {
   const { upcomingBookings, eventTypes, todayBookings } = stats;
   const { bookings } = upcomingData;
 
-  // Determine the booking link slug (salonName or organization slug) with a safe fallback
-  const displaySlug = userProfile?.salonName || userProfile?.membership?.organization?.slug || null;
+  // Determine the booking link slug (salonSlug or organization slug) with a safe fallback
+  const displaySlug = userProfile?.salonSlug || userProfile?.membership?.organization?.slug || null;
 
   return (
     <div className="space-y-8">

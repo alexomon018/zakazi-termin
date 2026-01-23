@@ -1,4 +1,5 @@
-import { logger, normalizeToSlug } from "@salonko/config";
+import { generateSalonSlug } from "@/lib/salon-utils";
+import { logger } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
@@ -30,6 +31,7 @@ export const userRouter = router({
         email: true,
         name: true,
         salonName: true,
+        salonSlug: true,
         avatarUrl: true,
         salonIconKey: true,
         bio: true,
@@ -102,11 +104,12 @@ export const userRouter = router({
     };
   }),
 
-  // Get user by salonName (public profile)
+  // Get user by salonName (public profile) - deprecated, use getPublicProfile with salonSlug instead
+  // Kept for backward compatibility but uses findFirst since salonName is not unique
   bySalonName: publicProcedure
     .input(z.object({ salonName: z.string() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user.findUnique({
+      const user = await ctx.prisma.user.findFirst({
         where: { salonName: input.salonName },
         select: {
           id: true,
@@ -129,17 +132,14 @@ export const userRouter = router({
     }),
 
   // Get public profile with event types
-  // Supports both salonName (user) and organization slug
+  // Supports both salonSlug (user) and organization slug
   // When accessed via organization owner, returns all members' event types
   getPublicProfile: publicProcedure
-    .input(z.object({ salonName: z.string() }))
+    .input(z.object({ salonSlug: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Normalize salonName to handle URL-decoded spaces and special characters
-      const normalizedSalonName = normalizeToSlug(input.salonName);
-
-      // First try to find by user salonName
+      // First try to find by user salonSlug
       const user = await ctx.prisma.user.findUnique({
-        where: { salonName: normalizedSalonName },
+        where: { salonSlug: input.salonSlug },
         select: {
           id: true,
           name: true,
@@ -160,11 +160,11 @@ export const userRouter = router({
         },
       });
 
-      // If not found by salonName, try to find by organization slug
+      // If not found by salonSlug, try to find by organization slug
       let organization = null;
       if (!user) {
         organization = await ctx.prisma.organization.findUnique({
-          where: { slug: normalizedSalonName },
+          where: { slug: input.salonSlug },
           select: {
             id: true,
             name: true,
@@ -338,11 +338,14 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check if salonName is already taken (if changing)
-      if (input.salonName) {
+      // Generate slug if salonName is being updated
+      const salonSlug = input.salonName ? generateSalonSlug(input.salonName) : undefined;
+
+      // Check if salonSlug is already taken (if changing)
+      if (salonSlug) {
         const existingUser = await ctx.prisma.user.findFirst({
           where: {
-            salonName: input.salonName,
+            salonSlug,
             NOT: { id: ctx.session.user.id },
           },
         });
@@ -353,7 +356,10 @@ export const userRouter = router({
 
       const user = await ctx.prisma.user.update({
         where: { id: ctx.session.user.id },
-        data: input,
+        data: {
+          ...input,
+          salonSlug,
+        },
       });
       return user;
     }),
@@ -526,11 +532,14 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Generate slug from display name
+      const salonSlug = generateSalonSlug(input.salonName);
+
       return await ctx.prisma.$transaction(async (tx) => {
-        // Check if salonName is already taken (if changing)
+        // Check if salonSlug is already taken
         const existingUser = await tx.user.findFirst({
           where: {
-            salonName: input.salonName,
+            salonSlug,
             NOT: { id: ctx.session.user.id },
           },
         });
@@ -548,6 +557,7 @@ export const userRouter = router({
             where: { id: ctx.session.user.id },
             data: {
               salonName: input.salonName,
+              salonSlug,
               salonTypes: input.salonTypes,
               salonPhone: input.salonPhone,
               salonEmail: input.salonEmail || null,
@@ -558,7 +568,7 @@ export const userRouter = router({
           })
           .catch((error) => {
             // Convert unique constraint failures to CONFLICT error
-            if (error.code === "P2002" && error.meta?.target?.includes("salonName")) {
+            if (error.code === "P2002" && error.meta?.target?.includes("salonSlug")) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "Naziv salona je već zauzet.",
