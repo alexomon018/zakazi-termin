@@ -13,6 +13,11 @@ type EventType = {
   length: number;
   hidden: boolean;
   locations: unknown;
+  user?: {
+    id: string;
+    name: string | null;
+    salonName: string | null;
+  } | null;
 };
 
 type UserProfile = {
@@ -25,6 +30,7 @@ type UserProfile = {
   brandColor?: string | null;
   darkBrandColor?: string | null;
   eventTypes: EventType[];
+  isOrganization?: boolean;
 };
 
 type UserProfileClientProps = {
@@ -41,7 +47,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
   return (
     <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4"
+      className="px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900"
       style={
         {
           "--brand-color": brandColor,
@@ -49,19 +55,19 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
         } as React.CSSProperties
       }
     >
-      <div className="max-w-2xl mx-auto">
+      <div className="mx-auto max-w-2xl">
         {/* User profile header */}
-        <div className="text-center mb-8">
+        <div className="mb-8 text-center">
           {effectiveAvatarUrl ? (
             <Image
               src={effectiveAvatarUrl}
               alt={user.salonName || ""}
               width={80}
               height={80}
-              className="w-20 h-20 rounded-full mx-auto mb-4 object-cover"
+              className="object-cover mx-auto mb-4 w-20 h-20 rounded-full"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-4">
+            <div className="flex justify-center items-center mx-auto mb-4 w-20 h-20 rounded-full bg-brand/10">
               <User className="w-10 h-10 text-brand" />
             </div>
           )}
@@ -71,9 +77,6 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
           >
             {user.salonName}
           </h1>
-          {user.name && user.name !== user.salonName && (
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{user.name}</p>
-          )}
         </div>
 
         {/* Event types list */}
@@ -87,14 +90,14 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
           <div className="space-y-3">
             {visibleEventTypes.map((eventType) => (
               <Link key={eventType.id} href={`/${salonName}/${eventType.slug}`} className="block">
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card className="transition-shadow cursor-pointer hover:shadow-md">
                   <CardContent className="p-0">
                     <div className="flex items-stretch p-5 min-h-[88px]">
                       {/* Color indicator */}
                       <div className="w-1 rounded-full bg-brand" />
 
                       {/* Event info */}
-                      <div className="flex-1 ml-4 flex flex-col justify-center">
+                      <div className="flex flex-col flex-1 justify-center ml-4">
                         <h3 className="font-semibold text-gray-900 dark:text-white">
                           {eventType.title}
                         </h3>
@@ -103,8 +106,8 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
                             {eventType.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2">
-                          <span className="flex items-center gap-1">
+                        <div className="flex gap-4 items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          <span className="flex gap-1 items-center">
                             <Clock className="w-3.5 h-3.5" />
                             {eventType.length < 60
                               ? `${eventType.length} min`
@@ -112,11 +115,17 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
                           </span>
                           {eventType.locations &&
                           (eventType.locations as { address?: string }[])[0]?.address ? (
-                            <span className="flex items-center gap-1">
+                            <span className="flex gap-1 items-center">
                               <MapPin className="w-3.5 h-3.5" />
                               Uživo
                             </span>
                           ) : null}
+                          {eventType.user?.name && (
+                            <span className="flex gap-1 items-center">
+                              <User className="w-3.5 h-3.5" />
+                              {eventType.user.name}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -133,7 +142,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-8 text-sm text-gray-500">
+        <div className="mt-8 text-sm text-center text-gray-500">
           Pokreće{" "}
           <Link href="/" className="text-blue-600 hover:underline">
             Salonko
@@ -146,10 +155,10 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
 export function UserNotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <Card className="max-w-md mx-auto">
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <Card className="mx-auto max-w-md">
         <CardContent className="py-12 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Korisnik nije pronađen</h2>
+          <h2 className="mb-2 text-xl font-semibold text-gray-900">Korisnik nije pronađen</h2>
           <p className="text-gray-500">Ovaj korisnik ne postoji ili nema javne tipove termina.</p>
         </CardContent>
       </Card>

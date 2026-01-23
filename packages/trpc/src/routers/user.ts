@@ -21,7 +21,7 @@ async function getSalonIconUrl(salonIconKey: string | null): Promise<string | nu
 }
 
 export const userRouter = router({
-  // Get current user profile
+  // Get current user profile with membership info
   me: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
@@ -41,17 +41,64 @@ export const userRouter = router({
         darkBrandColor: true,
         defaultScheduleId: true,
         identityProvider: true,
+        memberships: {
+          where: { accepted: true },
+          select: {
+            id: true,
+            role: true,
+            organizationId: true,
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!user) return null;
 
     // Generate pre-signed URL for salon icon
-    const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+    let salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+
+    // Get the primary membership (if any)
+    const primaryMembership = user.memberships[0] || null;
+
+    // For team members (ADMIN/MEMBER), fetch the organization owner's salon icon if user doesn't have one
+    if (
+      !salonIconUrl &&
+      primaryMembership &&
+      (primaryMembership.role === "ADMIN" || primaryMembership.role === "MEMBER")
+    ) {
+      // Find the organization owner and get their salon icon
+      const ownerMembership = await ctx.prisma.membership.findFirst({
+        where: {
+          organizationId: primaryMembership.organizationId,
+          role: "OWNER",
+          accepted: true,
+        },
+        select: {
+          user: {
+            select: {
+              salonIconKey: true,
+              salonName: true,
+            },
+          },
+        },
+      });
+
+      if (ownerMembership?.user?.salonIconKey) {
+        salonIconUrl = await getSalonIconUrl(ownerMembership.user.salonIconKey);
+      }
+    }
 
     return {
       ...user,
       salonIconUrl,
+      membership: primaryMembership,
     };
   }),
 
@@ -82,9 +129,12 @@ export const userRouter = router({
     }),
 
   // Get public profile with event types
+  // Supports both salonName (user) and organization slug
+  // When accessed via organization owner, returns all members' event types
   getPublicProfile: publicProcedure
     .input(z.object({ salonName: z.string() }))
     .query(async ({ ctx, input }) => {
+      // First try to find by user salonName
       const user = await ctx.prisma.user.findUnique({
         where: { salonName: input.salonName },
         select: {
@@ -97,30 +147,177 @@ export const userRouter = router({
           theme: true,
           brandColor: true,
           darkBrandColor: true,
-          eventTypes: {
-            where: { hidden: false },
+          memberships: {
+            where: { accepted: true },
             select: {
-              id: true,
-              title: true,
-              slug: true,
-              description: true,
-              length: true,
-              hidden: true,
-              locations: true,
-              requiresConfirmation: true,
+              role: true,
+              organizationId: true,
             },
-            orderBy: { position: "asc" },
           },
         },
       });
 
-      if (!user) return null;
+      // If not found by salonName, try to find by organization slug
+      let organization = null;
+      if (!user) {
+        organization = await ctx.prisma.organization.findUnique({
+          where: { slug: input.salonName },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+            timeZone: true,
+            members: {
+              where: { accepted: true, role: "OWNER" },
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    salonIconKey: true,
+                    avatarUrl: true,
+                    theme: true,
+                    brandColor: true,
+                    darkBrandColor: true,
+                  },
+                },
+              },
+            },
+          },
+        });
 
-      const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
+        if (!organization) return null;
+      }
+
+      // Determine if we should fetch org-wide event types
+      let organizationId: string | null = null;
+      if (organization) {
+        organizationId = organization.id;
+      } else if (user) {
+        // Check if user is an OWNER of an organization
+        const ownerMembership = user.memberships.find((m) => m.role === "OWNER");
+        if (ownerMembership) {
+          organizationId = ownerMembership.organizationId;
+        }
+      }
+
+      // Fetch event types - either org-wide or user-specific
+      type EventTypeWithUser = {
+        id: string;
+        title: string;
+        slug: string;
+        description: string | null;
+        length: number;
+        hidden: boolean;
+        locations: unknown;
+        requiresConfirmation: boolean;
+        user: {
+          id: string;
+          name: string | null;
+          salonName: string | null;
+        } | null;
+      };
+      let eventTypes: EventTypeWithUser[];
+      if (organizationId) {
+        // Fetch all event types from organization members
+        eventTypes = await ctx.prisma.eventType.findMany({
+          where: {
+            hidden: false,
+            user: {
+              memberships: {
+                some: {
+                  organizationId: organizationId,
+                  accepted: true,
+                },
+              },
+            },
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            length: true,
+            hidden: true,
+            locations: true,
+            requiresConfirmation: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                salonName: true,
+              },
+            },
+          },
+          orderBy: { position: "asc" },
+        });
+      } else if (user) {
+        // Fetch only this user's event types
+        eventTypes = await ctx.prisma.eventType.findMany({
+          where: {
+            userId: user.id,
+            hidden: false,
+          },
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            description: true,
+            length: true,
+            hidden: true,
+            locations: true,
+            requiresConfirmation: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                salonName: true,
+              },
+            },
+          },
+          orderBy: { position: "asc" },
+        });
+      } else {
+        eventTypes = [];
+      }
+
+      // Build the response based on whether we found user or organization
+      if (organization) {
+        const owner = organization.members[0]?.user;
+        const salonIconUrl = owner?.salonIconKey ? await getSalonIconUrl(owner.salonIconKey) : null;
+
+        return {
+          id: organization.id,
+          name: organization.name,
+          salonName: organization.slug,
+          avatarUrl: owner?.avatarUrl || null,
+          salonIconKey: owner?.salonIconKey || null,
+          salonIconUrl: salonIconUrl || organization.logoUrl,
+          timeZone: organization.timeZone,
+          theme: owner?.theme || null,
+          brandColor: owner?.brandColor || null,
+          darkBrandColor: owner?.darkBrandColor || null,
+          eventTypes,
+          isOrganization: true,
+        };
+      }
+
+      // User response
+      const salonIconUrl = await getSalonIconUrl(user!.salonIconKey);
 
       return {
-        ...user,
+        id: user!.id,
+        name: user!.name,
+        salonName: user!.salonName,
+        avatarUrl: user!.avatarUrl,
+        salonIconKey: user!.salonIconKey,
         salonIconUrl,
+        timeZone: user!.timeZone,
+        theme: user!.theme,
+        brandColor: user!.brandColor,
+        darkBrandColor: user!.darkBrandColor,
+        eventTypes,
+        isOrganization: !!organizationId,
       };
     }),
 
@@ -282,15 +479,31 @@ export const userRouter = router({
     const user = await ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },
       select: {
+        name: true,
         salonTypes: true,
         salonCity: true,
         salonAddress: true,
+        memberships: {
+          where: { accepted: true },
+          select: {
+            role: true,
+          },
+        },
       },
     });
 
     if (!user) return { complete: false };
 
-    // Profile is complete if user has salon types, city, and address
+    // Team members (ADMIN/MEMBER) don't need to complete salon onboarding
+    // They're joining someone else's salon, not creating their own
+    // However, they must still have their name set
+    const isTeamMember = user.memberships.some((m) => m.role === "ADMIN" || m.role === "MEMBER");
+
+    if (isTeamMember && Boolean(user.name)) {
+      return { complete: true };
+    }
+
+    // For owners or users without memberships, check if they have salon info
     const complete = user.salonTypes.length > 0 && !!user.salonCity && !!user.salonAddress;
 
     return { complete };

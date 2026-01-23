@@ -1,11 +1,11 @@
-import { logger } from "@salonko/config";
+import { getAppUrl, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
 // Secret to protect the cron endpoint
 const CRON_SECRET = process.env.CRON_SECRET;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://salonko.rs";
+const APP_URL = getAppUrl();
 
 // Dunning schedule: days after first payment failure to send follow-up emails
 const DUNNING_SCHEDULE_DAYS = [3, 7, 14]; // Day 1 is sent immediately via webhook

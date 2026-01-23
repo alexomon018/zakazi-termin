@@ -3,8 +3,10 @@ import { availabilityRouter } from "./availability";
 import { bookingRouter } from "./booking";
 import { calendarRouter } from "./calendar";
 import { eventTypeRouter } from "./eventType";
+import { organizationRouter } from "./organization";
 import { outOfOfficeRouter } from "./outOfOffice";
 import { subscriptionRouter } from "./subscription";
+import { teamRouter } from "./team";
 import { userRouter } from "./user";
 
 export const appRouter = router({
@@ -15,6 +17,8 @@ export const appRouter = router({
   calendar: calendarRouter,
   outOfOffice: outOfOfficeRouter,
   subscription: subscriptionRouter,
+  organization: organizationRouter,
+  team: teamRouter,
 });
 
 export type AppRouter = typeof appRouter;

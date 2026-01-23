@@ -159,6 +159,7 @@ export { BillingClient } from "./organisms/settings/BillingClient";
 export { ProfileClient } from "./organisms/settings/profile/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
+export { TeamSettingsClient } from "./organisms/settings/team/TeamSettingsClient";
 
 // Molecules - Booking
 export { BookingEventHeader } from "./molecules/booking/BookingEventHeader";
@@ -167,6 +168,7 @@ export { TimeSlotsList } from "./molecules/booking/TimeSlotsList";
 export { BookingDetailsForm } from "./molecules/booking/BookingDetailsForm";
 export { BookingConfirmation } from "./molecules/booking/BookingConfirmation";
 export { RescheduleBanner } from "./molecules/booking/RescheduleBanner";
+export { StaffSelector, type StaffMember } from "./molecules/booking/StaffSelector";
 
 // Organisms - Booking Flow
 export {

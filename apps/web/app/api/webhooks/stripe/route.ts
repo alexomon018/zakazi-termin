@@ -1,5 +1,5 @@
 import { invalidateSubscriptionCache } from "@salonko/auth/server";
-import { PRICING_CONFIG, logger } from "@salonko/config";
+import { PRICING_CONFIG, getAppUrl, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
 import { PrismaClientKnownRequestError } from "@salonko/prisma/generated/client/runtime/library";
@@ -8,7 +8,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://salonko.rs";
+const APP_URL = getAppUrl();
 
 // Environment variables - validated at runtime, not module load
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;

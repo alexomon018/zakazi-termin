@@ -10,6 +10,7 @@ import {
 } from "@salonko/ui/molecules/booking/BookingDetailsForm";
 import { BookingEventHeader } from "@salonko/ui/molecules/booking/BookingEventHeader";
 import { RescheduleBanner } from "@salonko/ui/molecules/booking/RescheduleBanner";
+import { type StaffMember, StaffSelector } from "@salonko/ui/molecules/booking/StaffSelector";
 import { TimeSlotsList } from "@salonko/ui/molecules/booking/TimeSlotsList";
 import { m } from "framer-motion";
 import Link from "next/link";
@@ -22,6 +23,20 @@ import { getCalendarLinks } from "./utils/getCalendarLinks";
 
 type BookingStep = "select-time" | "enter-details" | "confirmation";
 
+type Host = {
+  id: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string | null;
+    avatarUrl: string | null;
+    salonIconKey: string | null;
+  };
+  schedule: {
+    availability: unknown[];
+  } | null;
+};
+
 type EventType = {
   id: string;
   title: string;
@@ -30,6 +45,7 @@ type EventType = {
   length: number;
   requiresConfirmation: boolean;
   locations: unknown;
+  hosts?: Host[];
   user: {
     id: string;
     name: string | null;
@@ -60,14 +76,39 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
     tentativeSlot,
     currentMonth,
     formData,
+    selectedStaffId,
     setSelectedDate: setSelectedDateStore,
     setTentativeSlot,
     confirmSlot,
     setCurrentMonth,
     setFormData,
+    setSelectedStaffId,
     setState,
     reset: resetStore,
   } = useBookingStore();
+
+  // Check if this event type has multiple hosts (team booking)
+  const hasMultipleHosts = (eventType.hosts?.length ?? 0) > 0;
+  const staffMembers: StaffMember[] = useMemo(() => {
+    if (!eventType.hosts) return [];
+    return eventType.hosts.map((host) => ({
+      id: host.id,
+      userId: host.userId,
+      user: {
+        id: host.user.id,
+        name: host.user.name,
+        avatarUrl: host.user.avatarUrl,
+      },
+    }));
+  }, [eventType.hosts]);
+
+  const selectedStaffName = useMemo(() => {
+    if (!selectedStaffId) {
+      return hasMultipleHosts ? null : (eventType.user?.name ?? null);
+    }
+
+    return staffMembers.find((member) => member.userId === selectedStaffId)?.user.name ?? null;
+  }, [selectedStaffId, staffMembers, hasMultipleHosts, eventType.user?.name]);
 
   // Local state for compatibility
   const [currentStep, setCurrentStep] = useState<BookingStep>("select-time");
@@ -108,15 +149,16 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
     return { start, end };
   }, [currentMonth]);
 
-  // Fetch available slots
+  // Fetch available slots (filtered by selected staff if team booking)
   const { data: slotsData, isLoading: slotsLoading } = trpc.availability.getSlots.useQuery(
     {
       eventTypeId: eventType.id,
       dateFrom: dateRange.start,
       dateTo: dateRange.end,
+      hostUserId: selectedStaffId || undefined,
     },
     {
-      enabled: !!eventType.id,
+      enabled: !!eventType.id && (!hasMultipleHosts || !!selectedStaffId),
     }
   );
 
@@ -216,8 +258,13 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
         email: data.email,
         phoneNumber: data.phoneNumber || undefined,
         notes: data.notes || undefined,
+        hostUserId: selectedStaffId || undefined,
       });
     }
+  };
+
+  const handleStaffSelect = (staffUserId: string | null) => {
+    setSelectedStaffId(staffUserId);
   };
 
   const goToPreviousMonth = () => {
@@ -300,8 +347,21 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
             eventLocation={(eventType.locations as { address?: string }[])?.[0]?.address}
             salonName={eventType.user?.salonName}
             userAvatarUrl={eventType.user?.salonIconUrl}
+            staffName={selectedStaffName}
             isRescheduling={isRescheduling}
           />
+
+          {/* Staff selector for team bookings */}
+          {hasMultipleHosts && currentStep === "select-time" && (
+            <div className="mx-auto mb-6 max-w-6xl">
+              <StaffSelector
+                staff={staffMembers}
+                selectedStaffId={selectedStaffId}
+                onSelectStaff={handleStaffSelect}
+                className="p-4 bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+              />
+            </div>
+          )}
 
           {/* Booking flow */}
           <m.div
@@ -312,31 +372,40 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
             <Card className="overflow-hidden mx-auto w-full sm:w-fit">
               <CardContent className="p-0">
                 {currentStep === "select-time" ? (
-                  <div className="flex flex-col divide-y divide-gray-200 md:flex-row dark:divide-gray-700 md:divide-y-0 md:divide-x">
-                    {/* Calendar */}
-                    <BookingCalendar
-                      currentMonth={currentMonth}
-                      selectedDate={selectedDate}
-                      slotsByDate={slotsByDate}
-                      slotsLoading={slotsLoading}
-                      onDateSelect={handleDateSelect}
-                      onPreviousMonth={goToPreviousMonth}
-                      onNextMonth={goToNextMonth}
-                      monthDirection={monthDirection}
-                    />
+                  hasMultipleHosts && !selectedStaffId ? (
+                    /* Prompt to select staff first */
+                    <div className="p-8 text-center">
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Molimo izaberite zaposlenog iznad da biste videli dostupne termine.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col divide-y divide-gray-200 md:flex-row dark:divide-gray-700 md:divide-y-0 md:divide-x">
+                      {/* Calendar */}
+                      <BookingCalendar
+                        currentMonth={currentMonth}
+                        selectedDate={selectedDate}
+                        slotsByDate={slotsByDate}
+                        slotsLoading={slotsLoading}
+                        onDateSelect={handleDateSelect}
+                        onPreviousMonth={goToPreviousMonth}
+                        onNextMonth={goToNextMonth}
+                        monthDirection={monthDirection}
+                      />
 
-                    {/* Time slots */}
-                    <TimeSlotsList
-                      key={selectedDate?.toISOString() || "no-date"}
-                      selectedDate={selectedDate}
-                      slots={selectedDate ? slotsByDate[selectedDate.toDateString()] || [] : []}
-                      tentativeSlot={tentativeSlot}
-                      selectedSlot={selectedSlot}
-                      bookingState={bookingState}
-                      onSlotSelect={handleSlotSelect}
-                      onConfirmSlot={handleConfirmSlot}
-                    />
-                  </div>
+                      {/* Time slots */}
+                      <TimeSlotsList
+                        key={selectedDate?.toISOString() || "no-date"}
+                        selectedDate={selectedDate}
+                        slots={selectedDate ? slotsByDate[selectedDate.toDateString()] || [] : []}
+                        tentativeSlot={tentativeSlot}
+                        selectedSlot={selectedSlot}
+                        bookingState={bookingState}
+                        onSlotSelect={handleSlotSelect}
+                        onConfirmSlot={handleConfirmSlot}
+                      />
+                    </div>
+                  )
                 ) : (
                   /* Enter details form */
                   <BookingDetailsForm

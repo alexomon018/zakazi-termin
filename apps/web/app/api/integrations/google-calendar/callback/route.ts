@@ -4,7 +4,7 @@ import {
   type GoogleCredential,
   exchangeCodeForTokens,
 } from "@salonko/calendar";
-import { logger } from "@salonko/config";
+import { getAppUrl, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
@@ -46,8 +46,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL(`${returnTo}?error=google_not_configured`, request.url));
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
+  const baseUrl = getAppUrl();
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const redirectUri = `${normalizedBaseUrl}/api/integrations/google-calendar/callback`;
 
   try {
     // Exchange code for tokens

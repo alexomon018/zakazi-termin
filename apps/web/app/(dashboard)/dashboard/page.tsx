@@ -1,6 +1,6 @@
 import { UpcomingBookings } from "@/components/dashboard/UpcomingBookings";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@salonko/prisma";
+import { createServerCaller } from "@/lib/trpc/server";
 import { getAppOriginFromHeaders } from "@salonko/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { Calendar, Clock, Users } from "lucide-react";
@@ -13,46 +13,23 @@ export default async function DashboardPage() {
     return null;
   }
 
-  const origin = getAppOriginFromHeaders(await headers());
-
-  // Fetch stats
-  const [upcomingBookings, eventTypes, todayBookings] = await Promise.all([
-    prisma.booking.count({
-      where: {
-        userId: session.user.id,
-        startTime: { gte: new Date() },
-        status: { in: ["ACCEPTED", "PENDING"] },
-      },
-    }),
-    prisma.eventType.count({
-      where: { userId: session.user.id },
-    }),
-    prisma.booking.count({
-      where: {
-        userId: session.user.id,
-        startTime: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lt: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
-        status: { in: ["ACCEPTED", "PENDING"] },
-      },
-    }),
+  const [origin, caller] = await Promise.all([
+    getAppOriginFromHeaders(await headers()),
+    createServerCaller(),
   ]);
 
-  // Fetch upcoming bookings list
-  const bookings = await prisma.booking.findMany({
-    where: {
-      userId: session.user.id,
-      startTime: { gte: new Date() },
-      status: { in: ["ACCEPTED", "PENDING"] },
-    },
-    include: {
-      eventType: true,
-      attendees: true,
-    },
-    orderBy: { startTime: "asc" },
-    take: 5,
-  });
+  // Fetch stats and bookings via tRPC
+  const [stats, upcomingData, userProfile] = await Promise.all([
+    caller.booking.dashboardStats(),
+    caller.booking.upcoming({ skip: 0, take: 5 }),
+    caller.user.me(),
+  ]);
+
+  const { upcomingBookings, eventTypes, todayBookings } = stats;
+  const { bookings } = upcomingData;
+
+  // Determine the booking link slug (salonName or organization slug) with a safe fallback
+  const displaySlug = userProfile?.salonName || userProfile?.membership?.organization?.slug || null;
 
   return (
     <div className="space-y-8">
@@ -107,13 +84,13 @@ export default async function DashboardPage() {
       <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
 
       {/* Quick links */}
-      <div className="p-6 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+      <div className="p-6 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
         <h3 className="mb-2 font-medium text-foreground">Link za zakazivanje</h3>
         <p className="mb-3 text-sm text-muted-foreground">
           Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
         </p>
-        <code className="block px-3 py-2 text-sm text-foreground bg-white rounded border border-gray-200 dark:bg-card dark:border-border break-all">
-          {origin}/{session.user.salonName}
+        <code className="block px-3 py-2 text-sm break-all bg-white rounded border border-gray-200 text-foreground dark:bg-card dark:border-border">
+          {displaySlug ? `${origin}/${displaySlug}` : "Link nije dostupan"}
         </code>
       </div>
     </div>

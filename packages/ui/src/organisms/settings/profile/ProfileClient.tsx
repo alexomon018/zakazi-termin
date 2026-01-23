@@ -6,6 +6,7 @@ import { Button, useDebounce } from "@salonko/ui";
 import { AlertCircle, Check } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AccountInfoCard } from "./AccountInfoCard";
@@ -17,8 +18,14 @@ import { TimeZoneCard } from "./TimeZoneCard";
 import { toSalonNameSlug } from "./slug";
 import type { User } from "./types";
 
-const profileSchema = z.object({
+// Base schema for all users
+const baseProfileSchema = z.object({
   name: z.string().min(1, "Ime je obavezno"),
+  timeZone: z.string(),
+});
+
+// Extended schema for salon owners (includes salon name and bio)
+const ownerProfileSchema = baseProfileSchema.extend({
   salonName: z
     .string()
     .min(3, "Naziv salona mora imati najmanje 3 karaktera")
@@ -26,10 +33,16 @@ const profileSchema = z.object({
     .regex(/^[a-zA-Z0-9\s_-]+$/, "Naziv salona može sadržati samo slova, brojeve, razmake, _ i -")
     .transform(toSalonNameSlug),
   bio: z.string().optional(),
-  timeZone: z.string(),
 });
 
-export type ProfileFormValues = z.infer<typeof profileSchema>;
+// Team member schema (no salon name or bio)
+const memberProfileSchema = baseProfileSchema;
+
+export type OwnerProfileFormValues = z.infer<typeof ownerProfileSchema>;
+export type MemberProfileFormValues = z.infer<typeof memberProfileSchema>;
+
+// Union type for the form - using owner values as the base since it's a superset
+export type ProfileFormValues = OwnerProfileFormValues;
 
 type ProfileClientProps = {
   initialUser: User;
@@ -46,12 +59,21 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     initialData: initialUser,
   });
 
+  // Check if user is a salon owner (can edit salon-level fields like logo & salon name)
+  // Users without membership or with OWNER role can edit salon fields
+  const isSalonOwner = !user?.membership || user.membership.role === "OWNER";
+
+  // Use the appropriate schema based on role - cast through unknown to satisfy TypeScript
+  const resolver = zodResolver(
+    isSalonOwner ? ownerProfileSchema : memberProfileSchema
+  ) as unknown as Resolver<ProfileFormValues>;
+
   const updateProfile = trpc.user.update.useMutation({
     onSuccess: async (_data, variables) => {
       utils.user.me.invalidate();
       await updateSession({
         name: variables.name,
-        salonName: variables.salonName,
+        salonName: isSalonOwner ? (variables as ProfileFormValues).salonName : undefined,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -80,13 +102,18 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
     control,
     formState: { errors, isDirty },
   } = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
-      name: user?.name || "",
-      salonName: user?.salonName || "",
-      bio: user?.bio || "",
-      timeZone: user?.timeZone || "Europe/Belgrade",
-    },
+    resolver,
+    defaultValues: isSalonOwner
+      ? {
+          name: user?.name || "",
+          salonName: user?.salonName || "",
+          bio: user?.bio || "",
+          timeZone: user?.timeZone || "Europe/Belgrade",
+        }
+      : {
+          name: user?.name || "",
+          timeZone: user?.timeZone || "Europe/Belgrade",
+        },
   });
 
   useEffect(() => {
@@ -99,26 +126,37 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
       currentUserId !== null && previousUserId !== null && currentUserId !== previousUserId;
 
     if (!isDirty || identityChanged) {
-      reset({
-        name: user.name || "",
-        salonName: user.salonName || "",
-        bio: user.bio || "",
-        timeZone: user.timeZone,
-      });
+      if (isSalonOwner) {
+        reset({
+          name: user.name || "",
+          salonName: user.salonName || "",
+          bio: user.bio || "",
+          timeZone: user.timeZone,
+        });
+      } else {
+        reset({
+          name: user.name || "",
+          timeZone: user.timeZone,
+        });
+      }
     }
 
     // Track identity for the next run (only if we have an id).
     if (currentUserId !== null) {
       lastUserIdRef.current = currentUserId;
     }
-  }, [user, reset, isDirty]);
+  }, [user, reset, isDirty, isSalonOwner]);
 
-  const watchedSalonName = watch("salonName");
+  // Only track salon name for owners
+  const watchedSalonName = isSalonOwner ? watch("salonName") : "";
   const debouncedSalonName = useDebounce(watchedSalonName, 300);
   const salonNameSlug = debouncedSalonName ? toSalonNameSlug(debouncedSalonName) : "";
 
   const shouldCheckSalonName =
-    !!salonNameSlug && salonNameSlug.length >= 3 && salonNameSlug !== user?.salonName;
+    isSalonOwner &&
+    !!salonNameSlug &&
+    salonNameSlug.length >= 3 &&
+    salonNameSlug !== user?.salonName;
 
   const { data: salonNameCheck } = trpc.user.checkSalonName.useQuery(
     { salonName: salonNameSlug },
@@ -159,16 +197,19 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
       )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <SalonLogoCard user={user} onUploadSuccess={handleUploadSuccess} />
+        {/* Salon logo is only editable by owner */}
+        {isSalonOwner && <SalonLogoCard user={user} onUploadSuccess={handleUploadSuccess} />}
 
         <BasicInfoCard
           register={register}
           errors={errors}
           salonNameSlug={salonNameSlug}
           salonNameAvailable={salonNameAvailable}
+          showSalonName={isSalonOwner}
         />
 
-        <TimeZoneCard control={control} />
+        {/* Timezone is only editable by owner (team members use organization timezone) */}
+        {isSalonOwner && <TimeZoneCard control={control} />}
 
         <AccountInfoCard user={user} />
 

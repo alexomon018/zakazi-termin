@@ -253,12 +253,12 @@ export function BookingsClient({
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Termini</h1>
-          <p className="text-muted-foreground mt-1">Upravljajte zakazanim terminima</p>
+          <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
         </div>
 
         {/* Filters */}
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
+        <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-2 pb-4 min-w-max border-b border-gray-200 dark:border-border sm:min-w-0">
             {filters.map((f) => (
               <TabFilter
                 key={f.key}
@@ -281,12 +281,12 @@ export function BookingsClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Termini</h1>
-        <p className="text-muted-foreground mt-1">Upravljajte zakazanim terminima</p>
+        <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
       </div>
 
       {/* Filters */}
-      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 border-b border-gray-200 dark:border-border pb-4 min-w-max sm:min-w-0">
+      <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 pb-4 min-w-max border-b border-gray-200 dark:border-border sm:min-w-0">
           {filters.map((f) => (
             <TabFilter
               key={f.key}
@@ -303,7 +303,7 @@ export function BookingsClient({
         <Card>
           <CardContent className="py-12 text-center">
             <Calendar
-              className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-muted-foreground/40"
+              className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
               aria-hidden="true"
             />
             <p className="text-muted-foreground">{getEmptyMessage()}</p>
@@ -315,10 +315,10 @@ export function BookingsClient({
             <Card key={booking.id}>
               <CardContent className="p-0">
                 <div className="p-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
                       {/* Title and status */}
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex gap-3 items-center mb-2">
                         <h3 className="font-semibold text-foreground">{booking.title}</h3>
                         <StatusBadge
                           status={
@@ -327,15 +327,22 @@ export function BookingsClient({
                         />
                       </div>
 
-                      {/* Event type */}
-                      {booking.eventType && (
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {booking.eventType.title}
-                        </p>
-                      )}
+                      {/* Event type and staff */}
+                      <div className="flex flex-wrap gap-2 items-center mb-3">
+                        {booking.eventType && (
+                          <p className="text-sm text-muted-foreground">{booking.eventType.title}</p>
+                        )}
+                        {(booking.assignedHost?.name || booking.user?.name) && (
+                          <span className="text-xs text-muted-foreground/70 bg-muted px-2 py-0.5 rounded">
+                            {booking.assignedHost?.name
+                              ? `Host: ${booking.assignedHost.name}`
+                              : `Guest: ${booking.user?.name}`}
+                          </span>
+                        )}
+                      </div>
 
                       {/* Details */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                         <DateTimeDisplay date={booking.startTime} />
                         <TimeRangeDisplay startTime={booking.startTime} endTime={booking.endTime} />
                         {booking.location && <LocationDisplay location={booking.location} />}
@@ -343,8 +350,8 @@ export function BookingsClient({
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">GOST</p>
+                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-border">
+                          <p className="mb-2 text-xs font-medium text-muted-foreground">GOST</p>
                           {booking.attendees.map(
                             (attendee: {
                               id: string;
@@ -352,7 +359,7 @@ export function BookingsClient({
                               email: string;
                               phoneNumber: string | null;
                             }) => (
-                              <div key={attendee.id} className="flex items-center gap-2">
+                              <div key={attendee.id} className="flex gap-2 items-center">
                                 <UserAvatar name={attendee.name} />
                                 <UserInfoDisplay name={attendee.name} email={attendee.email} />
                               </div>
@@ -363,15 +370,15 @@ export function BookingsClient({
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-border">
-                          <p className="text-xs font-medium text-muted-foreground mb-1">NAPOMENA</p>
+                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-border">
+                          <p className="mb-1 text-xs font-medium text-muted-foreground">NAPOMENA</p>
                           <p className="text-sm text-muted-foreground">{booking.description}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex gap-2 items-center ml-4">
                       {booking.status === "PENDING" && (
                         <>
                           <Button
@@ -380,7 +387,7 @@ export function BookingsClient({
                             disabled={confirmBooking.isPending}
                             className="bg-emerald-600 hover:bg-emerald-700"
                           >
-                            <Check className="w-4 h-4 mr-1" aria-hidden="true" />
+                            <Check className="mr-1 w-4 h-4" aria-hidden="true" />
                             Potvrdi
                           </Button>
                           <Button
@@ -390,7 +397,7 @@ export function BookingsClient({
                             disabled={rejectBooking.isPending}
                             className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                           >
-                            <X className="w-4 h-4 mr-1" aria-hidden="true" />
+                            <X className="mr-1 w-4 h-4" aria-hidden="true" />
                             Odbij
                           </Button>
                         </>
@@ -411,7 +418,7 @@ export function BookingsClient({
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="bg-gray-50 dark:bg-muted/50 px-4 py-2 text-xs text-muted-foreground rounded-b-lg">
+                <div className="px-4 py-2 text-xs bg-gray-50 rounded-b-lg dark:bg-muted/50 text-muted-foreground">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>
@@ -420,7 +427,7 @@ export function BookingsClient({
 
           {/* Load more button */}
           {hasMore && (
-            <div className="text-center pt-4">
+            <div className="pt-4 text-center">
               <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? "Učitavanje..." : "Vidi još"}
               </Button>

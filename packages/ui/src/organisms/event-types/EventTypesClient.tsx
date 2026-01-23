@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { getAppUrl } from "@salonko/config";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, ConfirmDialog, cn } from "@salonko/ui";
 import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
@@ -8,12 +9,28 @@ import Link from "next/link";
 import { useState } from "react";
 
 type EventType = RouterOutputs["eventType"]["list"][number];
-type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "salonName" | "name">;
+type User = Pick<
+  NonNullable<RouterOutputs["user"]["me"]>,
+  "id" | "salonName" | "name" | "membership"
+>;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
   currentUser: User | null;
 };
+
+/**
+ * Get the booking page slug for the current user.
+ * - For salon owners: use their salonName
+ * - For team members: use the organization slug
+ */
+function getBookingSlug(user: User | null): string | null {
+  if (!user) return null;
+  // If user has their own salonName, use it (salon owners)
+  if (user.salonName) return user.salonName;
+  // Otherwise use the organization slug (team members)
+  return user.membership?.organization?.slug ?? null;
+}
 
 export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
@@ -37,14 +54,15 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     },
   });
 
+  const bookingSlug = getBookingSlug(currentUser);
+  const canShare = Boolean(bookingSlug);
+
   const handleCopyLink = async (eventType: { id: string; slug: string }) => {
+    if (!bookingSlug) return;
     // Use window.location.origin for client-side (always correct)
     // Fall back to NEXT_PUBLIC_APP_URL for SSR
-    const baseUrl =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_APP_URL || "";
-    const link = `${baseUrl}/${currentUser?.salonName}/${eventType.slug}`;
+    const baseUrl = getAppUrl();
+    const link = `${baseUrl}/${bookingSlug}/${eventType.slug}`;
 
     try {
       await navigator.clipboard.writeText(link);
@@ -81,8 +99,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
   // Use window.location.origin for client-side (always correct)
   // Fall back to NEXT_PUBLIC_APP_URL for SSR
-  const baseUrl =
-    typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || "";
+  const baseUrl = getAppUrl();
 
   return (
     <div className="space-y-6">
@@ -143,7 +160,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                       />
                       <div className="min-w-0">
                         <div className="flex flex-wrap gap-2 items-center">
-                          <h3 className="font-medium text-foreground truncate">
+                          <h3 className="font-medium truncate text-foreground">
                             {eventType.title}
                           </h3>
                           {eventType.hidden && (
@@ -157,7 +174,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center mt-1 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap gap-y-1 gap-x-4 items-center mt-1 text-sm text-muted-foreground">
                           <span className="flex gap-1 items-center">
                             <Clock className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                             {formatDuration(eventType.length)}
@@ -182,13 +199,17 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                     </div>
 
                     {/* Right section - Actions */}
-                    <div className="flex gap-1 items-center flex-shrink-0 ml-5 sm:ml-0">
+                    <div className="flex flex-shrink-0 gap-1 items-center ml-5 sm:ml-0">
                       {/* Copy link button */}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyLink(eventType)}
-                        className="text-muted-foreground hover:text-foreground px-2"
+                        disabled={!canShare}
+                        className={cn(
+                          "text-muted-foreground hover:text-foreground px-2",
+                          !canShare && "opacity-50 cursor-not-allowed"
+                        )}
                       >
                         {copySuccess === eventType.id ? (
                           <span className="text-xs text-emerald-600 dark:text-emerald-400">
@@ -201,9 +222,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
                       {/* Preview link */}
                       <Link
-                        href={`/${currentUser?.salonName}/${eventType.slug}`}
+                        href={canShare ? `/${bookingSlug}/${eventType.slug}` : "#"}
+                        aria-disabled={!canShare}
+                        onClick={(e) => {
+                          if (!canShare) e.preventDefault();
+                        }}
                         target="_blank"
-                        className="p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted"
+                        className={cn(
+                          "p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted",
+                          !canShare && "pointer-events-none opacity-50"
+                        )}
                       >
                         <ExternalLink className="w-4 h-4" aria-hidden="true" />
                       </Link>
@@ -213,7 +241,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
-                        className="text-muted-foreground hover:text-foreground px-2"
+                        className="px-2 text-muted-foreground hover:text-foreground"
                       >
                         {eventType.hidden ? (
                           <Eye className="w-4 h-4" aria-hidden="true" />
@@ -227,7 +255,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-muted-foreground hover:text-foreground px-2"
+                          className="px-2 text-muted-foreground hover:text-foreground"
                         >
                           <Pencil className="w-4 h-4" aria-hidden="true" />
                         </Button>
@@ -238,7 +266,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(eventType.id)}
-                        className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400 px-2"
+                        className="px-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                         data-testid={`delete-event-type-${eventType.id}`}
                       >
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -248,9 +276,9 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                 </div>
 
                 {/* Public URL bar */}
-                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50 overflow-hidden">
-                  <code className="text-xs text-muted-foreground block truncate">
-                    {baseUrl}/{currentUser?.salonName}/{eventType.slug}
+                <div className="overflow-hidden px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50">
+                  <code className="block text-xs truncate text-muted-foreground">
+                    {canShare ? `${baseUrl}/${bookingSlug}/${eventType.slug}` : "—"}
                   </code>
                 </div>
               </CardContent>
@@ -261,7 +289,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
       {/* Help section */}
       {eventTypes && eventTypes.length > 0 && (
-        <div className="p-4 bg-gray-50 rounded-lg dark:bg-muted/30 border border-gray-100 dark:border-border">
+        <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
           <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
           <p className="text-sm text-muted-foreground">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše
