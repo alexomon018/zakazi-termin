@@ -90,6 +90,7 @@ export async function verifyEmailAction(
           name: pending.name,
           email: pending.email,
           salonName: isTeamMemberSignup ? null : pending.salonName,
+          salonSlug: isTeamMemberSignup ? null : pending.salonSlug,
           identityProvider: "EMAIL",
           emailVerified: new Date(),
           autoLoginToken,

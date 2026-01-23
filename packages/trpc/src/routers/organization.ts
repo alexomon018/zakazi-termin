@@ -1,23 +1,8 @@
+import { normalizeToSlug } from "@salonko/config";
 import { MembershipRole, Prisma } from "@salonko/prisma";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-/**
- * Generate a URL-friendly slug from a name
- */
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[čć]/g, "c")
-    .replace(/[šś]/g, "s")
-    .replace(/[žź]/g, "z")
-    .replace(/đ/g, "dj")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
-}
 
 export const organizationRouter = router({
   /**
@@ -53,7 +38,7 @@ export const organizationRouter = router({
       }
 
       // Generate slug if not provided
-      const slug = input.slug || generateSlug(input.name);
+      const slug = input.slug || normalizeToSlug(input.name);
 
       // Handle empty slug (e.g., name contains only punctuation/special characters)
       if (!slug || slug.length < 3) {

@@ -1,4 +1,4 @@
-import { logger } from "@salonko/config";
+import { logger, normalizeToSlug } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
 import { Redis } from "@upstash/redis";
@@ -436,13 +436,15 @@ export const authOptions: NextAuthOptions = {
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "");
           const safeSlug = baseSlug || "salon";
-          const generatedSalonName = await generateUniqueSalonName(safeSlug);
+          const generatedSalonSlug = await generateUniqueSalonSlug(safeSlug);
+          const generatedSalonName = generatedSalonSlug; // Use slug as display name for OAuth users
 
           await prisma.user.create({
             data: {
               email,
               name: user.name,
               salonName: generatedSalonName,
+              salonSlug: generatedSalonSlug,
               avatarUrl: user.image,
               emailVerified: new Date(),
               identityProvider: "GOOGLE",
@@ -482,16 +484,17 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-const MAX_SALON_NAME_ATTEMPTS = 100;
+const MAX_SALON_SLUG_ATTEMPTS = 100;
 
-async function generateUniqueSalonName(base: string): Promise<string> {
-  const salonName = base.slice(0, 20);
+async function generateUniqueSalonSlug(base: string): Promise<string> {
+  const normalizedBase = normalizeToSlug(base).slice(0, 20);
+  const baseSlug = normalizedBase || "salon";
   let counter = 0;
 
-  while (counter < MAX_SALON_NAME_ATTEMPTS) {
-    const candidate = counter === 0 ? salonName : `${salonName}${counter}`;
+  while (counter < MAX_SALON_SLUG_ATTEMPTS) {
+    const candidate = counter === 0 ? baseSlug : `${baseSlug}${counter}`;
     const existing = await prisma.user.findUnique({
-      where: { salonName: candidate },
+      where: { salonSlug: candidate },
     });
     if (!existing) return candidate;
     counter++;
@@ -499,5 +502,5 @@ async function generateUniqueSalonName(base: string): Promise<string> {
 
   // Fallback: append random string if too many attempts
   const randomSuffix = Math.random().toString(36).substring(2, 8);
-  return `${salonName.slice(0, 14)}${randomSuffix}`;
+  return `${baseSlug.slice(0, 14)}${randomSuffix}`;
 }

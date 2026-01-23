@@ -18,7 +18,16 @@ export default async function DashboardPage() {
     createServerCaller(),
   ]);
 
-  // Fetch stats and bookings via tRPC
+  // First, ensure the user has a subscription/trial
+  // This handles the race condition where new users might hit the page before their trial is created
+  // The layout also calls startTrial(), but we need to ensure it exists before calling subscription-protected procedures
+  const subscriptionStatus = await caller.subscription.getStatus();
+  if (!subscriptionStatus.hasSubscription) {
+    // Start trial for new users - this is idempotent (safe to call multiple times)
+    await caller.subscription.startTrial();
+  }
+
+  // Now fetch stats and bookings - the subscription is guaranteed to exist
   const [stats, upcomingData, userProfile] = await Promise.all([
     caller.booking.dashboardStats(),
     caller.booking.upcoming({ skip: 0, take: 5 }),
@@ -28,8 +37,8 @@ export default async function DashboardPage() {
   const { upcomingBookings, eventTypes, todayBookings } = stats;
   const { bookings } = upcomingData;
 
-  // Determine the booking link slug (salonName or organization slug) with a safe fallback
-  const displaySlug = userProfile?.salonName || userProfile?.membership?.organization?.slug || null;
+  // Determine the booking link slug (salonSlug or organization slug) with a safe fallback
+  const displaySlug = userProfile?.salonSlug || userProfile?.membership?.organization?.slug || null;
 
   return (
     <div className="space-y-8">

@@ -5,3 +5,4 @@ export * from "./logger";
 export * from "./pricing";
 export * from "./ratelimit";
 export * from "./salon-types";
+export * from "./slug";

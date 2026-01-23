@@ -13,7 +13,7 @@ const baseUrl = getAppUrl();
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { salonName } = await params;
   const caller = await createPublicServerCaller();
-  const user = await caller.user.getPublicProfile({ salonName });
+  const user = await caller.user.getPublicProfile({ salonSlug: salonName });
 
   if (!user) {
     return {
@@ -56,7 +56,7 @@ export default async function UserBookingPage({ params }: Props) {
   const caller = await createPublicServerCaller();
 
   // Fetch user's public profile
-  const user = await caller.user.getPublicProfile({ salonName });
+  const user = await caller.user.getPublicProfile({ salonSlug: salonName });
 
   if (!user) {
     return <UserNotFound />;
