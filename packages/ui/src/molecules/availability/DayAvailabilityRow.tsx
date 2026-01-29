@@ -44,7 +44,7 @@ export function DayAvailabilityRow({
       )}
     >
       {/* Toggle and day name */}
-      <div className="flex items-center gap-3 h-9">
+      <div className="flex gap-3 items-center h-9">
         <Switch checked={enabled} onCheckedChange={onToggle} activeColor="blue" />
         <span
           className={cn(
@@ -59,36 +59,54 @@ export function DayAvailabilityRow({
       {/* Time ranges */}
       {enabled ? (
         <div className="flex flex-col gap-2">
-          {timeRanges.map((range, index) => (
-            <div
-              key={`${range.startTime}-${range.endTime}-${index}`}
-              className="flex items-center gap-2 flex-wrap sm:flex-nowrap"
-            >
-              <TimeRangeInput
-                startTime={range.startTime}
-                endTime={range.endTime}
-                onStartChange={(value) => onUpdateTimeRange(index, "startTime", value)}
-                onEndChange={(value) => onUpdateTimeRange(index, "endTime", value)}
-                onRemove={() => onRemoveTimeRange(index)}
-                showRemove={timeRanges.length > 1}
-              />
-              {/* Show add button and copy button only on first row */}
-              {index === 0 && (
-                <div className="flex items-center gap-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={onAddTimeRange}
-                    className="size-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  >
-                    <Plus className="size-4" />
-                  </Button>
-                  <CopyTimesDropdown currentDay={dayValue} onCopyTo={onCopyToOtherDays} />
-                </div>
-              )}
+          {timeRanges.length === 0 ? (
+            <div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
+              <span className="text-sm text-muted-foreground shrink-0">Nema unetih vremena</span>
+              <div className="flex gap-1 items-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onAddTimeRange}
+                  className="size-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                >
+                  <Plus className="size-4" />
+                </Button>
+                <CopyTimesDropdown currentDay={dayValue} onCopyTo={onCopyToOtherDays} />
+              </div>
             </div>
-          ))}
+          ) : (
+            timeRanges.map((range, index) => (
+              <div
+                key={`${range.startTime}-${range.endTime}-${index}`}
+                className="flex flex-wrap gap-2 items-center sm:flex-nowrap"
+              >
+                <TimeRangeInput
+                  startTime={range.startTime}
+                  endTime={range.endTime}
+                  onStartChange={(value) => onUpdateTimeRange(index, "startTime", value)}
+                  onEndChange={(value) => onUpdateTimeRange(index, "endTime", value)}
+                  onRemove={() => onRemoveTimeRange(index)}
+                  showRemove={timeRanges.length > 1}
+                />
+                {/* Show add button and copy button only on first row */}
+                {index === 0 && (
+                  <div className="flex gap-1 items-center">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={onAddTimeRange}
+                      className="size-8 shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    >
+                      <Plus className="size-4" />
+                    </Button>
+                    <CopyTimesDropdown currentDay={dayValue} onCopyTo={onCopyToOtherDays} />
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       ) : (
         <div className="flex items-center h-9 text-sm text-muted-foreground/70">Nedostupan</div>

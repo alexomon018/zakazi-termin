@@ -7,6 +7,7 @@ import {
   router,
   subscriptionProtectedProcedure,
 } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const availabilityRouter = router({
@@ -99,7 +100,10 @@ export const availabilityRouter = router({
         include: { availability: true },
       });
       if (!original) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Raspored nije pronađen.",
+        });
       }
 
       const newSchedule = await ctx.prisma.schedule.create({

@@ -38,6 +38,7 @@ export function DateOverrideDialog({
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [markAsUnavailable, setMarkAsUnavailable] = useState(false);
+  const [timeError, setTimeError] = useState<string | undefined>(undefined);
 
   const handleSave = () => {
     if (!selectedDate) return;
@@ -45,6 +46,11 @@ export function DateOverrideDialog({
     if (markAsUnavailable) {
       onBlock(selectedDate);
     } else {
+      if (startTime >= endTime) {
+        setTimeError("Vreme početka mora biti pre vremena završetka.");
+        return;
+      }
+      setTimeError(undefined);
       onSave(selectedDate, startTime, endTime);
     }
 
@@ -53,6 +59,7 @@ export function DateOverrideDialog({
     setStartTime("09:00");
     setEndTime("17:00");
     setMarkAsUnavailable(false);
+    setTimeError(undefined);
     onOpenChange(false);
   };
 
@@ -61,6 +68,7 @@ export function DateOverrideDialog({
     setStartTime("09:00");
     setEndTime("17:00");
     setMarkAsUnavailable(false);
+    setTimeError(undefined);
     onOpenChange(false);
   };
 
@@ -74,7 +82,7 @@ export function DateOverrideDialog({
           <DialogTitle>Dodaj izuzetak</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="py-4 space-y-4">
           {/* Calendar */}
           <div className="flex justify-center">
             <Calendar
@@ -95,7 +103,7 @@ export function DateOverrideDialog({
               </p>
 
               {/* Mark as unavailable toggle */}
-              <div className="flex items-center justify-between py-2">
+              <div className="flex justify-between items-center py-2">
                 <Label htmlFor="unavailable" className="text-sm font-medium">
                   Označi kao nedostupan
                 </Label>
@@ -109,29 +117,38 @@ export function DateOverrideDialog({
 
               {/* Time inputs (only if not marked as unavailable) */}
               {!markAsUnavailable && (
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 space-y-1.5">
-                    <Label htmlFor="start-time" className="text-sm">
-                      Od
-                    </Label>
-                    <Input
-                      id="start-time"
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                    />
+                <div className="space-y-1.5">
+                  <div className="flex gap-3 items-center">
+                    <div className="flex-1 space-y-1.5">
+                      <Label htmlFor="start-time" className="text-sm">
+                        Od
+                      </Label>
+                      <Input
+                        id="start-time"
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => {
+                          setStartTime(e.target.value);
+                          setTimeError(undefined);
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <Label htmlFor="end-time" className="text-sm">
+                        Do
+                      </Label>
+                      <Input
+                        id="end-time"
+                        type="time"
+                        value={endTime}
+                        onChange={(e) => {
+                          setEndTime(e.target.value);
+                          setTimeError(undefined);
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-1.5">
-                    <Label htmlFor="end-time" className="text-sm">
-                      Do
-                    </Label>
-                    <Input
-                      id="end-time"
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                    />
-                  </div>
+                  {timeError && <p className="text-sm text-destructive">{timeError}</p>}
                 </div>
               )}
             </>

@@ -162,7 +162,12 @@ export function AvailabilityListClient({
                 placeholder="npr. Radno vreme"
                 value={newScheduleName}
                 onChange={(e) => setNewScheduleName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateSchedule()}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  if (createSchedule.isPending || !newScheduleName.trim()) return;
+                  handleCreateSchedule();
+                }}
               />
             </div>
           </div>
