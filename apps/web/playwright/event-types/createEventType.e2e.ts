@@ -115,15 +115,4 @@ test.describe("Create Event Type", () => {
     // Should navigate to event types list
     await expect(page).toHaveURL(/\/dashboard\/event-types$/);
   });
-
-  test("should have cancel button", async ({ page }) => {
-    const createPage = new CreateEventTypePage(page);
-    await createPage.goto();
-
-    // Click cancel button
-    await createPage.cancel();
-
-    // Should navigate to event types list
-    await expect(page).toHaveURL(/\/dashboard\/event-types$/);
-  });
 });

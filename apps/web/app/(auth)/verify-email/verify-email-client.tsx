@@ -243,7 +243,7 @@ export default function VerifyEmailClient() {
               isLoading={isLoading}
               loadingText="Verifikovanje..."
             >
-              Verifikovanje...
+              Verifikujte email
             </LoadingButton>
           </form>
 

@@ -71,6 +71,26 @@ export { GoogleIcon } from "./atoms/Icons";
 export { FormErrorMessage } from "./atoms/FormErrorMessage";
 export { ServerErrorAlert } from "./atoms/ServerErrorAlert";
 export { LoadingButton } from "./atoms/LoadingButton";
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./atoms/Tooltip";
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from "./atoms/DropdownMenu";
+export { Separator } from "./atoms/Separator";
+export { Calendar, type CalendarProps } from "./atoms/Calendar";
 
 // Molecules - Auth
 export { AuthHeader } from "./molecules/auth/AuthHeader";
@@ -108,9 +128,34 @@ export { EmptyState } from "./molecules/empty-states/EmptyState";
 // Molecules - Navigation
 export { NavItem } from "./molecules/navigation/NavItem";
 export { MobileNavItem } from "./molecules/navigation/MobileNavItem";
+export { SidebarNavItem } from "./molecules/navigation/SidebarNavItem";
+export { SidebarUserDropdown } from "./molecules/navigation/SidebarUserDropdown";
+export { SidebarFooter } from "./molecules/navigation/SidebarFooter";
+export { MobileBottomNav } from "./molecules/navigation/MobileBottomNav";
+export { MobileTopBar } from "./molecules/navigation/MobileTopBar";
+export { MobileSettingsNav } from "./molecules/navigation/MobileSettingsNav";
 
 // Molecules - Filters
 export { TabFilter } from "./molecules/filters/TabFilter";
+
+// Molecules - Availability
+export {
+  CopyTimesDropdown,
+  DateOverrideDialog,
+  DateOverrideItem,
+  DayAvailabilityRow,
+  ScheduleListItem,
+  TimeRangeInput,
+  TimezoneSelector,
+  type CopyTimesDropdownProps,
+  type DateOverrideDialogProps,
+  type DateOverrideItemProps,
+  type DayAvailabilityRowProps,
+  type ScheduleListItemProps,
+  type TimeRange,
+  type TimeRangeInputProps,
+  type TimezoneSelectorProps,
+} from "./molecules/availability";
 
 // Molecules - Dialogs
 export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
@@ -134,7 +179,12 @@ export { TrialBadge } from "./molecules/landing/TrialBadge";
 export { NavLink } from "./molecules/landing/NavLink";
 
 // Organisms - Navigation
+/** @deprecated Use DashboardShell instead */
 export { DashboardNav } from "./organisms/navigation/DashboardNav";
+export { DashboardSidebar } from "./organisms/navigation/DashboardSidebar";
+export { DashboardMobileNav } from "./organisms/navigation/DashboardMobileNav";
+export { DashboardShell } from "./organisms/navigation/DashboardShell";
+export { SettingsSidebar } from "./organisms/navigation/SettingsSidebar";
 
 // Organisms - Auth
 export { SignupForm } from "./organisms/auth/SignupForm";
@@ -152,6 +202,8 @@ export { EditEventTypeClient } from "./organisms/event-types/EditEventTypeClient
 
 // Organisms - Availability
 export { AvailabilityClient } from "./organisms/availability/AvailabilityClient";
+export { AvailabilityListClient } from "./organisms/availability/AvailabilityListClient";
+export { AvailabilityEditorClient } from "./organisms/availability/AvailabilityEditorClient";
 
 // Organisms - Settings
 export { AppearanceClient } from "./organisms/settings/AppearanceClient";

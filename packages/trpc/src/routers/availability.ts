@@ -90,6 +90,37 @@ export const availabilityRouter = router({
       return { success: true };
     }),
 
+  // Duplicate a schedule (copy name + availability)
+  duplicateSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const original = await ctx.prisma.schedule.findFirst({
+        where: { id: input.id, userId: ctx.session.user.id },
+        include: { availability: true },
+      });
+      if (!original) {
+        throw new Error("Raspored nije pronađen.");
+      }
+
+      const newSchedule = await ctx.prisma.schedule.create({
+        data: {
+          name: `${original.name} (kopija)`,
+          timeZone: original.timeZone,
+          userId: ctx.session.user.id,
+          availability: {
+            create: original.availability.map((a) => ({
+              days: a.days,
+              startTime: a.startTime,
+              endTime: a.endTime,
+              date: a.date,
+            })),
+          },
+        },
+        include: { availability: true },
+      });
+      return newSchedule;
+    }),
+
   // Set availability for a schedule
   setAvailability: subscriptionProtectedProcedure
     .input(

@@ -88,7 +88,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
       <div className="space-y-4">
         <Link
           href="/dashboard/event-types"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          className="inline-flex gap-2 items-center text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           data-testid="event-type-back-button"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -105,14 +105,6 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
             Kreirajte novu vrstu termina za vaše klijente
           </p>
         </div>
-      </div>
-
-      <div className="flex gap-4 items-center">
-        <Link href="/dashboard/event-types">
-          <Button variant="outline" type="button" data-testid="event-type-cancel-button">
-            Otkaži
-          </Button>
-        </Link>
       </div>
 
       <EventTypeForm

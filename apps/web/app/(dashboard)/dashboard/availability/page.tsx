@@ -1,5 +1,5 @@
 import { createServerCaller } from "@/lib/trpc/server";
-import { AvailabilityClient } from "@salonko/ui";
+import { AvailabilityListClient } from "@salonko/ui";
 
 export default async function AvailabilityPage() {
   const caller = await createServerCaller();
@@ -10,5 +10,5 @@ export default async function AvailabilityPage() {
     caller.user.me(),
   ]);
 
-  return <AvailabilityClient initialSchedules={schedules} currentUser={currentUser} />;
+  return <AvailabilityListClient initialSchedules={schedules} currentUser={currentUser} />;
 }

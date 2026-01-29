@@ -133,7 +133,11 @@ yarn lint:fix
 
 17. **Never use window prompts or alerts always use the components from the ui package**: use shadcn/ui Dialog component for alerts.
 
-**Never hardcode SVGs; always use the ones from the ui package or lucide-react.**: If you need to use an SVG, always use the ones from the ui package or lucide-react.
+18. **Never hardcode SVGs; always use the ones from the ui package or lucide-react.**: If you need to use an SVG, always use the ones from the ui package or lucide-react.
+
+19. **Never use window.location.href to navigate; always use the router from the nextjs package.**: If you need to navigate, always use the router from the nextjs package.
+
+20. **Never run dev server or try to build the project that work is done usually by software engineer.**: 
 
 ## Dependency and Constant Management
 
