@@ -39,7 +39,7 @@ export function DayAvailabilityRow({
   return (
     <div
       className={cn(
-        "grid grid-cols-[auto_1fr] sm:grid-cols-[140px_1fr] items-start gap-3 py-3.5 border-b border-border/60 last:border-b-0",
+        "grid grid-cols-1 sm:grid-cols-[140px_1fr] items-start gap-3 py-3.5 border-b border-border/60 last:border-b-0",
         className
       )}
     >
@@ -60,9 +60,9 @@ export function DayAvailabilityRow({
       {enabled ? (
         <div className="flex flex-col gap-2">
           {timeRanges.length === 0 ? (
-            <div className="flex flex-wrap gap-2 items-center sm:flex-nowrap">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <span className="text-sm text-muted-foreground shrink-0">Nema unetih vremena</span>
-              <div className="flex gap-1 items-center">
+              <div className="flex gap-1 items-center sm:ml-1">
                 <Button
                   type="button"
                   variant="ghost"
@@ -79,7 +79,7 @@ export function DayAvailabilityRow({
             timeRanges.map((range, index) => (
               <div
                 key={`${range.startTime}-${range.endTime}-${index}`}
-                className="flex flex-wrap gap-2 items-center sm:flex-nowrap"
+                className="flex flex-col gap-2 sm:flex-row sm:items-center"
               >
                 <TimeRangeInput
                   startTime={range.startTime}
@@ -91,7 +91,7 @@ export function DayAvailabilityRow({
                 />
                 {/* Show add button and copy button only on first row */}
                 {index === 0 && (
-                  <div className="flex gap-1 items-center">
+                  <div className="flex gap-1 items-center sm:ml-1">
                     <Button
                       type="button"
                       variant="ghost"

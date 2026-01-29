@@ -380,7 +380,7 @@ export function AvailabilityEditorClient({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex gap-3 items-start">
+        <div className="flex gap-3 items-start flex-1 min-w-0">
           <Link href="/dashboard/availability">
             <Button variant="ghost" size="icon" className="size-9 shrink-0">
               <ArrowLeft className="size-5" />
@@ -410,9 +410,9 @@ export function AvailabilityEditorClient({
           </div>
         </div>
 
-        <div className="flex gap-2 items-center shrink-0">
-          <div className="flex gap-2 items-center mr-2">
-            <span className="text-sm text-muted-foreground">Podrazumevani</span>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-2 sm:shrink-0">
+          <div className="flex gap-2 items-center text-sm text-muted-foreground">
+            <span>Podrazumevani</span>
             <Switch
               checked={isDefault}
               onCheckedChange={(checked) => {
@@ -424,17 +424,19 @@ export function AvailabilityEditorClient({
               disabled={isDefault}
             />
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setDeleteDialogOpen(true)}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-          <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
-            {isSaving ? "Čuvanje..." : "Sačuvaj"}
-          </Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+            <Button onClick={handleSave} disabled={!hasChanges || isSaving}>
+              {isSaving ? "Čuvanje..." : "Sačuvaj"}
+            </Button>
+          </div>
         </div>
       </div>
 

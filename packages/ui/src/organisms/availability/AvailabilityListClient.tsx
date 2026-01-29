@@ -106,16 +106,16 @@ export function AvailabilityListClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-foreground">Dostupnost</h1>
           <p className="mt-1 text-muted-foreground">
             Konfigurišite vremena kada ste dostupni za zakazivanje.
           </p>
         </div>
-        <Button onClick={() => setNewScheduleDialogOpen(true)}>
+        <Button onClick={() => setNewScheduleDialogOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 size-4" />
-          Novo
+          Novi
         </Button>
       </div>
 
@@ -154,7 +154,7 @@ export function AvailabilityListClient({
           <DialogHeader>
             <DialogTitle>Novi raspored</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="schedule-name">Naziv rasporeda</Label>
               <Input

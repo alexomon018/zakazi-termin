@@ -24,7 +24,9 @@ export function TimeRangeInput({
   className,
 }: TimeRangeInputProps) {
   return (
-    <div className={cn("flex items-center gap-2 shrink-0", className)}>
+    <div
+      className={cn("flex flex-wrap items-center justify-center gap-2 sm:justify-start", className)}
+    >
       <Input
         type="time"
         value={startTime}
