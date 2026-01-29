@@ -154,7 +154,6 @@ export class CreateEventTypePage extends BasePage {
   readonly locationAddressInput: Locator;
   readonly durationInput: Locator;
   readonly submitButton: Locator;
-  readonly cancelButton: Locator;
   readonly backButton: Locator;
 
   // Duration preset buttons
@@ -193,10 +192,6 @@ export class CreateEventTypePage extends BasePage {
     this.submitButton = page
       .locator('[data-testid="event-type-submit-button"]')
       .or(page.locator('button[type="submit"]'))
-      .first();
-    this.cancelButton = page
-      .locator('[data-testid="event-type-cancel-button"]')
-      .or(page.locator('button:has-text("Otkaži")'))
       .first();
     this.backButton = page
       .locator('[data-testid="event-type-back-button"]')
@@ -309,14 +304,6 @@ export class CreateEventTypePage extends BasePage {
   }
 
   /**
-   * Click cancel button
-   */
-  async cancel(): Promise<void> {
-    await this.clickButton(this.cancelButton);
-    await this.waitForUrl(/\/dashboard\/event-types$/);
-  }
-
-  /**
    * Click back button
    */
   async goBack(): Promise<void> {
@@ -367,7 +354,6 @@ export class EditEventTypePage extends BasePage {
   readonly locationAddressInput: Locator;
   readonly durationInput: Locator;
   readonly saveButton: Locator;
-  readonly cancelButton: Locator;
   readonly deleteButton: Locator;
 
   constructor(page: Page) {
@@ -399,7 +385,7 @@ export class EditEventTypePage extends BasePage {
       .locator('[data-testid="event-type-save-button"]')
       .or(page.locator('button:has-text("Sačuvaj izmene")'))
       .first();
-    this.cancelButton = page.locator('[data-testid="event-type-cancel-button"]');
+
     this.deleteButton = page.locator('[data-testid="event-type-delete-button"]');
   }
 

@@ -91,17 +91,6 @@ export default async function DashboardPage() {
 
       {/* Upcoming bookings */}
       <UpcomingBookings initialBookings={bookings} totalBookings={upcomingBookings} />
-
-      {/* Quick links */}
-      <div className="p-6 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
-        <h3 className="mb-2 font-medium text-foreground">Link za zakazivanje</h3>
-        <p className="mb-3 text-sm text-muted-foreground">
-          Podelite ovaj link sa klijentima kako bi mogli da zakazuju termine:
-        </p>
-        <code className="block px-3 py-2 text-sm break-all bg-white rounded border border-gray-200 text-foreground dark:bg-card dark:border-border">
-          {displaySlug ? `${origin}/${displaySlug}` : "Link nije dostupan"}
-        </code>
-      </div>
     </div>
   );
 }

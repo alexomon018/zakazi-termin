@@ -1,7 +1,9 @@
 import { getSession } from "@/lib/auth";
 import { createServerCaller } from "@/lib/trpc/server";
 import { logger } from "@salonko/config";
-import { DashboardNav, TrialBanner } from "@salonko/ui";
+import { getAppOriginFromHeaders } from "@salonko/trpc";
+import { DashboardShell, TrialBanner } from "@salonko/ui";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({
@@ -49,16 +51,23 @@ export default async function DashboardLayout({
   }
 
   const isSubscribed = subscriptionStatus.isActive || subscriptionStatus.isInTrial;
+  const origin = getAppOriginFromHeaders(await headers());
+
+  // Merge session user with userData to get salonSlug
+  const user = {
+    ...session.user,
+    salonSlug: userData?.salonSlug ?? null,
+  };
 
   return (
-    <div className="bg-gray-50 min-h-dvh dark:bg-gray-900">
-      <DashboardNav
-        user={session.user}
-        isSubscribed={isSubscribed}
-        salonIconUrl={userData?.salonIconUrl}
-      />
+    <DashboardShell
+      user={user}
+      isSubscribed={isSubscribed}
+      salonIconUrl={userData?.salonIconUrl}
+      origin={origin}
+    >
       <TrialBanner />
-      <main className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</main>
-    </div>
+      <div className="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
+    </DashboardShell>
   );
 }

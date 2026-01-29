@@ -54,6 +54,13 @@ export const SELECTORS = {
     BOOKINGS_LINK: 'a[href="/dashboard/bookings"]',
     AVAILABILITY_LINK: 'a[href="/dashboard/availability"]',
     SETTINGS_LINK: 'a[href="/dashboard/settings"]',
+    // Sidebar specific selectors
+    SIDEBAR: '[data-testid="dashboard-sidebar"]',
+    SIDEBAR_NAV: '[data-testid="sidebar-nav"]',
+    SIDEBAR_USER_DROPDOWN: '[data-testid="sidebar-user-dropdown"]',
+    // Mobile specific selectors
+    MOBILE_TOP_BAR: '[data-testid="mobile-top-bar"]',
+    MOBILE_BOTTOM_NAV: '[data-testid="mobile-bottom-nav"]',
   },
 
   // Common UI elements
