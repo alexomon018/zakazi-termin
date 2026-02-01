@@ -773,6 +773,25 @@ export const bookingRouter = router({
             });
           }
 
+          // Determine which user to check for out-of-office (userId is required, assignedHostId is optional)
+          const conflictUserId = originalBooking.assignedHostId ?? originalBooking.userId!;
+
+          // Check for out-of-office conflicts
+          const outOfOfficeConflict = await tx.outOfOffice.findFirst({
+            where: {
+              userId: conflictUserId,
+              start: { lte: input.newEndTime },
+              end: { gte: input.newStartTime },
+            },
+          });
+
+          if (outOfOfficeConflict) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Izabrani termin nije dostupan zbog odsustva.",
+            });
+          }
+
           // Update booking with new time
           const updated = await tx.booking.update({
             where: { uid: input.uid },
