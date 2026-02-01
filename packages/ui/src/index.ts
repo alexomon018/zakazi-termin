@@ -163,6 +163,18 @@ export { ConfirmDialog } from "./molecules/dialogs/ConfirmDialog";
 export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";
 export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
 
+// Molecules - Out of Office
+export {
+  OutOfOfficeDialog,
+  OutOfOfficeEntryItem,
+  ReasonSelector,
+  type OutOfOfficeDialogProps,
+  type OutOfOfficeEntryItemProps,
+  type OutOfOfficeFormValues,
+  type Reason,
+  type ReasonSelectorProps,
+} from "./molecules/out-of-office";
+
 // Molecules - Settings
 export { ThemeOption } from "./molecules/settings/ThemeOption";
 export { ThemeSelector, type Theme } from "./molecules/settings/ThemeSelector";

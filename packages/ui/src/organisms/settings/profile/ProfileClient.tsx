@@ -14,7 +14,6 @@ import { BasicInfoCard } from "./BasicInfoCard";
 import { DangerZoneCard } from "./DangerZoneCard";
 import { LogoutCard } from "./LogoutCard";
 import { SalonLogoCard } from "./SalonLogoCard";
-import { TimeZoneCard } from "./TimeZoneCard";
 import { toSalonNameSlug } from "./slug";
 import type { User } from "./types";
 
@@ -207,9 +206,6 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
           salonNameAvailable={salonNameAvailable}
           showSalonName={isSalonOwner}
         />
-
-        {/* Timezone is only editable by owner (team members use organization timezone) */}
-        {isSalonOwner && <TimeZoneCard control={control} />}
 
         <AccountInfoCard user={user} />
 

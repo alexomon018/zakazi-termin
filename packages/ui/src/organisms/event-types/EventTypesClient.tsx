@@ -60,8 +60,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
 
   const handleCopyLink = async (eventType: { id: string; slug: string }) => {
     if (!bookingSlug) return;
-    // Use window.location.origin for client-side (always correct)
-    // Fall back to NEXT_PUBLIC_APP_URL for SSR
+
     const baseUrl = getAppUrl();
     const link = `${baseUrl}/${bookingSlug}/${eventType.slug}`;
 
@@ -98,8 +97,6 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     return `${hours}h ${mins}min`;
   };
 
-  // Use window.location.origin for client-side (always correct)
-  // Fall back to NEXT_PUBLIC_APP_URL for SSR
   const baseUrl = getAppUrl();
 
   return (

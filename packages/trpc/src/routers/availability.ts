@@ -415,6 +415,33 @@ export const availabilityRouter = router({
       // Get busy times from bookings
       const bookingBusyTimes = getBookingBusyTimes(bookings);
 
+      // Get out-of-office entries for the target user
+      const outOfOfficeEntries = await ctx.prisma.outOfOffice.findMany({
+        where: {
+          userId: targetUserId,
+          start: { lte: input.dateTo },
+          end: { gte: input.dateFrom },
+        },
+        select: {
+          start: true,
+          end: true,
+        },
+      });
+
+      // Convert out-of-office entries to busy times (full day blocks)
+      // Out-of-office dates are stored as date-only, so we need to cover the full day
+      const outOfOfficeBusyTimes = outOfOfficeEntries.map((entry) => {
+        // Start at beginning of start date
+        const start = new Date(entry.start);
+        start.setHours(0, 0, 0, 0);
+
+        // End at end of end date (23:59:59.999)
+        const end = new Date(entry.end);
+        end.setHours(23, 59, 59, 999);
+
+        return { start, end };
+      });
+
       // Get busy times from connected calendars for the target user
       const calendarBusyTimes: { start: Date; end: Date }[] = [];
 
@@ -468,7 +495,7 @@ export const availabilityRouter = router({
       }
 
       // Combine all busy times
-      const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes];
+      const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes, ...outOfOfficeBusyTimes];
 
       // Use scheduling package to calculate available slots
       const timeZone = targetSchedule?.timeZone || targetUserTimeZone;

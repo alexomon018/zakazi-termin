@@ -487,6 +487,22 @@ export const bookingRouter = router({
             });
           }
 
+          // Check for out-of-office conflicts
+          const outOfOfficeConflict = await tx.outOfOffice.findFirst({
+            where: {
+              userId: conflictUserId,
+              start: { lte: input.endTime },
+              end: { gte: input.startTime },
+            },
+          });
+
+          if (outOfOfficeConflict) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Izabrani termin nije dostupan zbog odsustva.",
+            });
+          }
+
           // Determine initial status
           const status = eventType.requiresConfirmation ? "PENDING" : "ACCEPTED";
 
