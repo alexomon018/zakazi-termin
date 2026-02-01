@@ -1,9 +1,6 @@
-"use client";
-
 import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { memo } from "react";
 
 interface NavItemProps {
   href: string;
@@ -14,7 +11,7 @@ interface NavItemProps {
   isSubscribed?: boolean;
 }
 
-export const NavItem = memo(function NavItem({
+export function NavItem({
   href,
   label,
   icon: Icon,
@@ -57,4 +54,4 @@ export const NavItem = memo(function NavItem({
       <span className="lg:hidden truncate max-w-[80px]">{label}</span>
     </Link>
   );
-});
+}

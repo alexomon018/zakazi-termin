@@ -1,5 +1,3 @@
-"use client";
-
 import { PLAN_TIERS, PRICING_CONFIG } from "@salonko/config";
 import type { PlanTier } from "@salonko/config";
 import { Button } from "@salonko/ui/atoms/Button";

@@ -1,5 +1,3 @@
-"use client";
-
 import { Loader2 } from "lucide-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Button } from "./Button";

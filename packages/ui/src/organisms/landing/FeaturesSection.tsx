@@ -1,5 +1,3 @@
-"use client";
-
 import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
 
 const features = [
