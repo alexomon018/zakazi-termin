@@ -1,5 +1,3 @@
-"use client";
-
 import { Link2, Settings, UserPlus } from "lucide-react";
 
 const steps = [

@@ -1,5 +1,3 @@
-"use client";
-
 import { CircleX } from "lucide-react";
 import { cn } from "../utils";
 

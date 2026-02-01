@@ -62,7 +62,7 @@ export function TimeSlotsList({
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
-              className="overflow-y-auto space-y-3 max-h-96 pr-1"
+              className="overflow-y-auto space-y-3 max-h-96 pt-0.5 pl-0.5 pr-1"
             >
               {slots.length > 0 ? (
                 slots.map((slot) => {

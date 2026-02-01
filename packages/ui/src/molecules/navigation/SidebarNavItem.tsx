@@ -1,9 +1,6 @@
-"use client";
-
 import { cn } from "@salonko/ui/utils";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { memo } from "react";
 
 interface SidebarNavItemProps {
   href: string;
@@ -15,7 +12,7 @@ interface SidebarNavItemProps {
   isSubscribed?: boolean;
 }
 
-export const SidebarNavItem = memo(function SidebarNavItem({
+export function SidebarNavItem({
   href,
   label,
   icon: Icon,
@@ -57,4 +54,4 @@ export const SidebarNavItem = memo(function SidebarNavItem({
       {!isCollapsed && <span className="truncate">{label}</span>}
     </Link>
   );
-});
+}

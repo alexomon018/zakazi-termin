@@ -1,5 +1,3 @@
-"use client";
-
 import { Calendar, CreditCard, Mail, MessageSquare } from "lucide-react";
 
 const integrations = [
