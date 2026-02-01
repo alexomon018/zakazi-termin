@@ -9,10 +9,17 @@ import {
   CardHeader,
   CardTitle,
   ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
   GoogleIcon,
 } from "@salonko/ui";
 import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 type Connection = RouterOutputs["calendar"]["listConnections"][number];
@@ -22,6 +29,7 @@ type SettingsClientProps = {
 };
 
 export function SettingsClient({ initialConnections }: SettingsClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const successParam = searchParams.get("success");
   const errorParam = searchParams.get("error");
@@ -50,8 +58,14 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       );
       const data = await response.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (data.url.startsWith("http")) {
+          window.location.href = data.url;
+        } else {
+          router.push(data.url);
+        }
+        return;
       }
+      setConnectingCalendar(false);
     } catch (error) {
       console.error("Failed to initiate Google Calendar connection:", error);
       setConnectingCalendar(false);
@@ -103,7 +117,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
 
       {/* Calendar Integrations */}
       <Card>
-        <CardHeader>
+        <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex gap-2 items-center text-lg">
             <Calendar className="w-5 h-5" />
             Kalendar integracije
@@ -148,17 +162,30 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                 </div>
               ))
             ) : (
-              <p className="py-2 text-sm text-gray-500 dark:text-gray-400">
-                Nemate povezanih kalendara.
-              </p>
+              <div className="flex flex-col gap-3 p-4 text-sm text-gray-500 rounded-lg border border-gray-200 border-dashed dark:border-gray-700 dark:text-gray-400">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    Nema povezanih kalendara
+                  </p>
+                  <p>Povežite Google Calendar da bismo automatski blokirali zauzete termine.</p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <Button
+                    onClick={handleConnectGoogle}
+                    disabled={connectingCalendar}
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    <GoogleIcon className="mr-2 w-4 h-4" />
+                    {connectingCalendar ? "Povezivanje..." : "Poveži Google Calendar"}
+                  </Button>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Možete odabrati kalendare nakon povezivanja.
+                  </span>
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Connect Button */}
-          <Button onClick={handleConnectGoogle} disabled={connectingCalendar} className="w-full">
-            <GoogleIcon className="mr-2 w-5 h-5" />
-            {connectingCalendar ? "Povezivanje..." : "Poveži Google Calendar"}
-          </Button>
         </CardContent>
       </Card>
 
@@ -191,25 +218,22 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
     },
   });
 
-  if (!isOpen) {
-    return (
-      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        <ExternalLink className="mr-1 w-4 h-4" />
-        Kalendari
-      </Button>
-    );
-  }
-
   return (
-    <div className="flex fixed inset-0 z-50 justify-center items-center bg-black/50">
-      <div className="mx-4 w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-white">Odaberite kalendare</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Odabrani kalendari će se koristiti za proveru zauzetosti
-          </p>
-        </div>
-        <div className="overflow-y-auto p-4 max-h-80">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <ExternalLink className="mr-1 w-4 h-4" />
+          Kalendari
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Odaberite kalendare</DialogTitle>
+          <DialogDescription>
+            Odabrani kalendari će se koristiti za proveru zauzetosti.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="overflow-y-auto max-h-80">
           {isLoading ? (
             <div className="py-4 text-center text-gray-500 dark:text-gray-400">Učitavanje...</div>
           ) : (
@@ -249,12 +273,10 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
             </div>
           )}
         </div>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <Button onClick={() => setIsOpen(false)} className="w-full">
-            Zatvori
-          </Button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button onClick={() => setIsOpen(false)}>Zatvori</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
