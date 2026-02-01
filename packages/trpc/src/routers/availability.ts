@@ -1,5 +1,5 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
-import { logger } from "@salonko/config";
+import { dayjs, logger } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
 import {
   protectedProcedure,
@@ -430,14 +430,16 @@ export const availabilityRouter = router({
 
       // Convert out-of-office entries to busy times (full day blocks)
       // Out-of-office dates are stored as date-only, so we need to cover the full day
+      // Use timezone-aware manipulation to ensure full-day blocks align with user's timezone
+      const userTz = targetSchedule?.timeZone || targetUserTimeZone;
       const outOfOfficeBusyTimes = outOfOfficeEntries.map((entry) => {
-        // Start at beginning of start date
-        const start = new Date(entry.start);
-        start.setHours(0, 0, 0, 0);
+        // Start at beginning of start date in user's timezone
+        const startDateStr = entry.start.toISOString().split("T")[0];
+        const start = dayjs.tz(`${startDateStr} 00:00:00`, userTz).toDate();
 
-        // End at end of end date (23:59:59.999)
-        const end = new Date(entry.end);
-        end.setHours(23, 59, 59, 999);
+        // End at end of end date in user's timezone (23:59:59.999)
+        const endDateStr = entry.end.toISOString().split("T")[0];
+        const end = dayjs.tz(`${endDateStr} 23:59:59.999`, userTz).toDate();
 
         return { start, end };
       });

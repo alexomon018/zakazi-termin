@@ -18,6 +18,7 @@ import type { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Calendar } from "../../atoms/Calendar";
+import { formatLocalDateForInput } from "../../lib/utils/formatLocalDateForInput";
 import { type Reason, ReasonSelector } from "./ReasonSelector";
 
 const outOfOfficeSchema = z.object({
@@ -42,10 +43,6 @@ export type OutOfOfficeDialogProps = {
     notes?: string;
   } | null;
 };
-
-function formatDateForForm(date: Date) {
-  return date.toISOString().split("T")[0];
-}
 
 export function OutOfOfficeDialog({
   open,
@@ -95,12 +92,12 @@ export function OutOfOfficeDialog({
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
     if (range?.from) {
-      setValue("startDate", formatDateForForm(range.from));
+      setValue("startDate", formatLocalDateForInput(range.from));
     } else {
       setValue("startDate", "");
     }
     if (range?.to) {
-      setValue("endDate", formatDateForForm(range.to));
+      setValue("endDate", formatLocalDateForInput(range.to));
     } else {
       setValue("endDate", "");
     }

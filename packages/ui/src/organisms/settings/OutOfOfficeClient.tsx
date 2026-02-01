@@ -5,6 +5,7 @@ import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent, CardHeader, CardTitle, ConfirmDialog } from "@salonko/ui";
 import { AlertCircle, CalendarDays, Check, Plus } from "lucide-react";
 import { useState } from "react";
+import { formatLocalDateForInput } from "../../lib/utils/formatLocalDateForInput";
 import {
   OutOfOfficeDialog,
   OutOfOfficeEntryItem,
@@ -18,11 +19,6 @@ type OutOfOfficeClientProps = {
   initialEntries: RouterOutputs["outOfOffice"]["list"];
   initialReasons: Reason[];
 };
-
-function formatDateForInput(date: Date | string) {
-  const d = new Date(date);
-  return d.toISOString().split("T")[0];
-}
 
 export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOfficeClientProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -98,8 +94,8 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
 
   const dialogEditingEntry = editingEntry
     ? {
-        startDate: formatDateForInput(editingEntry.start),
-        endDate: formatDateForInput(editingEntry.end),
+        startDate: formatLocalDateForInput(editingEntry.start),
+        endDate: formatLocalDateForInput(editingEntry.end),
         reasonId: editingEntry.reasonId || undefined,
         notes: editingEntry.notes || undefined,
       }
@@ -144,7 +140,6 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
               {entries.entries.map((entry: OutOfOfficeEntry) => (
                 <OutOfOfficeEntryItem
                   key={entry.uuid}
-                  uuid={entry.uuid}
                   start={entry.start}
                   end={entry.end}
                   reason={entry.reason}

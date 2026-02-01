@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
   GoogleIcon,
 } from "@salonko/ui";
 import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
@@ -57,7 +58,11 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       );
       const data = await response.json();
       if (data.url) {
-        router.push(data.url);
+        if (data.url.startsWith("http")) {
+          window.location.href = data.url;
+        } else {
+          router.push(data.url);
+        }
         return;
       }
       setConnectingCalendar(false);
@@ -215,10 +220,12 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        <ExternalLink className="mr-1 w-4 h-4" />
-        Kalendari
-      </Button>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <ExternalLink className="mr-1 w-4 h-4" />
+          Kalendari
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Odaberite kalendare</DialogTitle>

@@ -1,5 +1,6 @@
 // Utils
 export { cn } from "./utils";
+export { formatLocalDateForInput } from "./lib/utils/formatLocalDateForInput";
 
 // Atoms
 export { Button, buttonVariants } from "./atoms/Button";

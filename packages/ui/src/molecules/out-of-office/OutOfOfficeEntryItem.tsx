@@ -5,7 +5,6 @@ import { cn } from "@salonko/ui/utils";
 import { Edit2, Trash2 } from "lucide-react";
 
 export type OutOfOfficeEntryItemProps = {
-  uuid: string;
   start: Date | string;
   end: Date | string;
   reason?: {
@@ -83,7 +82,7 @@ export function OutOfOfficeEntryItem({
         </div>
       </div>
       <div className="flex gap-2 items-center">
-        <Button variant="ghost" size="sm" onClick={onEdit}>
+        <Button variant="ghost" size="sm" onClick={onEdit} disabled={isDeleting}>
           <Edit2 className="w-4 h-4" />
         </Button>
         <Button variant="ghost" size="sm" onClick={onDelete} disabled={isDeleting}>
