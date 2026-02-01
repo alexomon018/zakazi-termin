@@ -103,15 +103,17 @@ export async function canViewAllBookings(
 }
 
 /**
- * Check if user can manage event types (create, edit, delete)
- * OWNER and ADMIN can manage all, MEMBER can only manage their own assignments
+ * Check if user can manage event types (create, edit, delete).
+ * OWNER and ADMIN can manage all; MEMBER can only manage event types they own or host.
+ * When eventTypeId is provided, MEMBER is allowed only for that specific event type.
  */
 export async function canManageEventTypes(
   prisma: PrismaClient,
   userId: string,
-  organizationId: string
+  organizationId: string,
+  eventTypeId?: string
 ): Promise<boolean> {
-  // First, allow organization OWNERs and ADMINs to manage all event types
+  // Allow organization OWNERs and ADMINs to manage all event types
   const isOwner = await isOrganizationOwner(prisma, userId, organizationId);
   if (isOwner) return true;
 
@@ -124,21 +126,20 @@ export async function canManageEventTypes(
     return false;
   }
 
-  // A "member assignment" is modeled via ownership or Host linking the user to an EventType
+  // If checking a specific event type, verify assignment (owner or host of that event type)
+  const whereClause = eventTypeId
+    ? {
+        id: eventTypeId,
+        organizationId,
+        OR: [{ userId }, { hosts: { some: { userId } } }],
+      }
+    : {
+        organizationId,
+        OR: [{ userId }, { hosts: { some: { userId } } }],
+      };
+
   const assignedEventType = await prisma.eventType.findFirst({
-    where: {
-      organizationId,
-      OR: [
-        { userId },
-        {
-          hosts: {
-            some: {
-              userId,
-            },
-          },
-        },
-      ],
-    },
+    where: whereClause,
     select: { id: true },
   });
 

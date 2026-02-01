@@ -89,7 +89,8 @@ export async function inviteSignupAction(
     }
 
     // If this is an email-specific invite, verify the email matches
-    if (verificationToken.invitedEmail && verificationToken.invitedEmail !== normalizedEmail) {
+    const invitedEmail = verificationToken.invitedEmail?.toLowerCase();
+    if (invitedEmail && invitedEmail !== normalizedEmail) {
       return {
         success: false,
         error:

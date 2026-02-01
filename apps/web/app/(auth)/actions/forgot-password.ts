@@ -1,6 +1,6 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import {
   checkoutRateLimiter,
   forgotPasswordEmailRateLimiter,
@@ -83,11 +83,12 @@ export async function forgotPasswordAction(
       return { success: true, data: { message: "OK" } };
     }
 
-    // Generate reset token
+    // Generate reset token; store only hash so plaintext is never persisted
     const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Store token (one active reset token per email)
+    // Store token hash (one active reset token per email)
     await prisma.$transaction([
       prisma.verificationToken.deleteMany({
         where: { identifier: normalizedEmail },
@@ -95,7 +96,7 @@ export async function forgotPasswordAction(
       prisma.verificationToken.create({
         data: {
           identifier: normalizedEmail,
-          token,
+          token: tokenHash,
           expires,
         },
       }),

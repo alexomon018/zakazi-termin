@@ -99,9 +99,13 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
                   <div key={booking.id} className="flex justify-between items-center py-4">
                     <div>
                       <p className="font-medium text-foreground">{booking.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
-                      </p>
+                      {booking.attendees[0] ? (
+                        <p className="text-sm text-muted-foreground">
+                          {booking.attendees[0]?.name} ({booking.attendees[0]?.email})
+                        </p>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Nema podataka o klijentu</p>
+                      )}
                       {staffName && (
                         <p className="text-xs text-muted-foreground/70 mt-0.5">
                           Zaposleni: {staffName}

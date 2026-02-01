@@ -51,10 +51,11 @@ export async function resendVerificationAction(
     );
 
     if (cooldownExpires > new Date()) {
-      const secondsRemaining = Math.ceil((cooldownExpires.getTime() - Date.now()) / 1000);
       return {
-        success: false,
-        error: `Sačekajte ${secondsRemaining} sekundi pre ponovnog slanja`,
+        success: true,
+        data: {
+          message: "Ako postoji registracija, novi kod je poslat na vašu email adresu",
+        },
       };
     }
 

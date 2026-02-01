@@ -14,15 +14,15 @@ import type { BillingInterval, SubscriptionStatus } from "@salonko/prisma";
  * Note: This is optional validation - webhook handlers may already enforce transition rules
  */
 const ALLOWED_TRANSITIONS: Record<SubscriptionStatus, SubscriptionStatus[]> = {
-  TRIALING: ["ACTIVE", "EXPIRED"],
-  ACTIVE: ["PAST_DUE", "CANCELED", "EXPIRED", "PAUSED"],
-  PAST_DUE: ["ACTIVE", "CANCELED", "EXPIRED", "UNPAID"],
-  CANCELED: ["ACTIVE"], // resubscribe
-  EXPIRED: ["TRIALING", "ACTIVE"], // new subscription
-  INCOMPLETE: ["ACTIVE", "INCOMPLETE_EXPIRED"], // payment pending
-  INCOMPLETE_EXPIRED: ["TRIALING", "ACTIVE"], // can restart
-  UNPAID: ["ACTIVE", "CANCELED", "EXPIRED"], // payment failed after retries
-  PAUSED: ["ACTIVE", "CANCELED"], // resume or cancel
+  TRIALING: ["TRIALING", "ACTIVE", "EXPIRED"], // self-transition for renewals/no-op updates
+  ACTIVE: ["ACTIVE", "PAST_DUE", "CANCELED", "EXPIRED", "PAUSED"], // self-transition for renewals/no-op updates
+  PAST_DUE: ["PAST_DUE", "ACTIVE", "CANCELED", "EXPIRED", "UNPAID"], // self-transition for webhook retries
+  CANCELED: ["CANCELED", "ACTIVE"], // self-transition + resubscribe
+  EXPIRED: ["EXPIRED", "TRIALING", "ACTIVE"], // self-transition + new subscription
+  INCOMPLETE: ["INCOMPLETE", "ACTIVE", "INCOMPLETE_EXPIRED"], // self-transition + payment pending
+  INCOMPLETE_EXPIRED: ["INCOMPLETE_EXPIRED", "TRIALING", "ACTIVE"], // self-transition + can restart
+  UNPAID: ["UNPAID", "ACTIVE", "CANCELED", "EXPIRED"], // self-transition + payment failed after retries
+  PAUSED: ["PAUSED", "ACTIVE", "CANCELED"], // self-transition + resume or cancel
 };
 
 export interface SubscriptionData {
@@ -94,9 +94,20 @@ export function validateStatusTransition(
   newData?: Partial<SubscriptionData>
 ): ValidationResult {
   const errors: string[] = [];
+  const currentStatus = currentData.status;
+
+  // Self-transitions are always allowed (renewals, webhook retries, no-op updates)
+  // Skip transition validation and only validate field requirements
+  if (currentStatus === newStatus) {
+    const mergedData: SubscriptionData = {
+      ...currentData,
+      ...newData,
+      status: newStatus,
+    };
+    return validateSubscriptionData(mergedData);
+  }
 
   // Check if transition is allowed (optional validation)
-  const currentStatus = currentData.status;
   const allowedTargets = ALLOWED_TRANSITIONS[currentStatus];
   if (allowedTargets && !allowedTargets.includes(newStatus)) {
     errors.push(

@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 export default async function TeamSettingsPage() {
   const caller = await createServerCaller();
 
-  // Pre-fetch organization and members data
   const [organization, user] = await Promise.all([caller.organization.get(), caller.user.me()]);
 
-  // Check user's role - only OWNER and ADMIN can access team settings
-  const userRole = user?.membership?.role ?? "OWNER"; // No membership = solo owner
+  if (!user) {
+    redirect("/login");
+  }
+
+  const userRole = user.membership?.role ?? "OWNER"; // No membership = solo owner
 
   if (userRole === "MEMBER") {
     // Regular team members cannot access team settings - redirect to profile

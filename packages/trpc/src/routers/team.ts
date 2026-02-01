@@ -71,13 +71,14 @@ export const teamRouter = router({
       }
 
       const emails = Array.isArray(input.emails) ? input.emails : [input.emails];
+      const normalizedEmails = [...new Set(emails.map((e) => e.trim().toLowerCase()))];
       const results: {
         email: string;
         status: "invited" | "already_member" | "already_invited" | "email_failed";
         message?: string;
       }[] = [];
 
-      for (const email of emails) {
+      for (const email of normalizedEmails) {
         // Check if user with this email already exists and is a member
         const existingUser = await ctx.prisma.user.findUnique({
           where: { email },

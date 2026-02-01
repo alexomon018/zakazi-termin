@@ -475,7 +475,10 @@ export const bookingRouter = router({
                       // For assigned host, check both their owned bookings and assigned bookings
                       OR: [{ userId: assignedHostId }, { assignedHostId: assignedHostId }],
                     }
-                  : { userId: conflictUserId, assignedHostId: null },
+                  : {
+                      // For owner, check their owned bookings AND any bookings where they're assigned
+                      OR: [{ userId: conflictUserId }, { assignedHostId: conflictUserId }],
+                    },
               ],
             },
           });
@@ -747,17 +750,19 @@ export const bookingRouter = router({
           }
 
           // Check for conflicts with new time within transaction
+          // Include assigned host so we detect conflicts with that host's other bookings
           const conflictingBooking = await tx.booking.findFirst({
             where: {
-              userId: originalBooking.userId,
+              OR: originalBooking.assignedHostId
+                ? [
+                    { userId: originalBooking.assignedHostId },
+                    { assignedHostId: originalBooking.assignedHostId },
+                  ]
+                : [{ userId: originalBooking.userId }, { assignedHostId: originalBooking.userId }],
               status: { in: ["PENDING", "ACCEPTED"] },
               id: { not: originalBooking.id },
-              OR: [
-                {
-                  startTime: { lt: input.newEndTime },
-                  endTime: { gt: input.newStartTime },
-                },
-              ],
+              startTime: { lt: input.newEndTime },
+              endTime: { gt: input.newStartTime },
             },
           });
 

@@ -167,11 +167,6 @@ export async function POST(req: Request) {
         (subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      await prisma.subscription.update({
-        where: { id: subscription.id },
-        data: { lastReminderSentAt: now },
-      });
-
       try {
         await emailService.sendTrialEndingEmail({
           userEmail: subscription.user.email,
@@ -179,6 +174,12 @@ export async function POST(req: Request) {
           salonName: subscription.user.salonName,
           daysRemaining,
           billingUrl: `${APP_URL}/dashboard/settings/billing`,
+        });
+
+        // Only mark as sent after successful email delivery
+        await prisma.subscription.update({
+          where: { id: subscription.id },
+          data: { lastReminderSentAt: now },
         });
 
         results.emailsSent++;
