@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { formatDate, formatTime } from "@salonko/config";
 import type { RouterOutputs } from "@salonko/trpc";
 import { Button, Card, CardContent } from "@salonko/ui";
 import { formatSalonName } from "@salonko/ui/lib/utils/formatSalonName";
@@ -42,22 +43,6 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
       setShowCancelDialog(false);
     },
   });
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("sr-RS", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {

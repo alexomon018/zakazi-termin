@@ -1,6 +1,7 @@
 import { Section, Text } from "@react-email/components";
+import { BookingInfoBox } from "../components/BookingInfoBox";
 import type { BookingEmailData } from "../types";
-import { BaseEmail, infoBox, infoRow, label, text } from "./base-email";
+import { BaseEmail, label, text } from "./base-email";
 
 export function BookingCancelledEmail(props: BookingEmailData) {
   const {
@@ -13,45 +14,18 @@ export function BookingCancelledEmail(props: BookingEmailData) {
     cancellationReason,
   } = props;
 
-  const formattedDate = new Date(startTime).toLocaleDateString("sr-RS", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const formattedTime = new Date(startTime).toLocaleTimeString("sr-RS", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   return (
     <BaseEmail preview={`Termin "${eventTypeTitle}" je otkazan`} heading="Termin je otkazan">
       <Text style={text}>Poštovani/a {attendeeName},</Text>
       <Text style={text}>Obaveštavamo Vas da je sledeći termin otkazan.</Text>
 
-      <Section style={infoBox}>
-        <Text style={infoRow}>
-          <span style={label}>Usluga:</span> {eventTypeTitle}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Datum:</span> {formattedDate}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Vreme:</span> {formattedTime}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Trajanje:</span> {eventTypeDuration} minuta
-        </Text>
-        {location && (
-          <Text style={infoRow}>
-            <span style={label}>Lokacija:</span> {location}
-          </Text>
-        )}
-        <Text style={infoRow}>
-          <span style={label}>Sa:</span> {organizerName}
-        </Text>
-      </Section>
+      <BookingInfoBox
+        eventTypeTitle={eventTypeTitle}
+        eventTypeDuration={eventTypeDuration}
+        startTime={startTime}
+        location={location}
+        organizerName={organizerName}
+      />
 
       {cancellationReason && (
         <Section style={{ padding: "0", marginTop: "16px" }}>

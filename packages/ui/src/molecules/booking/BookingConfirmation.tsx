@@ -1,3 +1,4 @@
+import { formatDate, formatTime } from "@salonko/config";
 import { Card, CardContent } from "@salonko/ui";
 import { Calendar, CalendarPlus, CheckCircle, Clock, Download, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -29,21 +30,6 @@ export function BookingConfirmation({
   requiresConfirmation,
   calendarLinks,
 }: BookingConfirmationProps) {
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("sr-RS", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  };
-
   return (
     <div className="flex justify-center items-center px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-lg">
@@ -71,7 +57,7 @@ export function BookingConfirmation({
             <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex gap-2 items-center">
                 <Calendar className="w-4 h-4" />
-                <span>{selectedSlot && formatDate(new Date(selectedSlot))}</span>
+                <span>{selectedSlot && formatDate(selectedSlot, "shortDate")}</span>
               </div>
               <div className="flex gap-2 items-center">
                 <Clock className="w-4 h-4" />

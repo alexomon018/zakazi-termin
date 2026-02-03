@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@salonko/config";
 import { Button } from "@salonko/ui/atoms/Button";
 import { cn } from "@salonko/ui/utils";
 import { Edit2, Trash2 } from "lucide-react";
@@ -16,14 +17,6 @@ export type OutOfOfficeEntryItemProps = {
   onDelete: () => void;
   isDeleting?: boolean;
 };
-
-function formatDateDisplay(date: Date | string) {
-  return new Date(date).toLocaleDateString("sr-RS", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 function isActiveOrUpcoming(end: Date | string) {
   const today = new Date();
@@ -69,7 +62,7 @@ export function OutOfOfficeEntryItem({
         <div>
           <div className="flex gap-2 items-center">
             <p className="font-medium text-gray-900 dark:text-white">
-              {formatDateDisplay(start)} - {formatDateDisplay(end)}
+              {formatDate(start, "dateOnly")} - {formatDate(end, "dateOnly")}
             </p>
             {isCurrent && (
               <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full">

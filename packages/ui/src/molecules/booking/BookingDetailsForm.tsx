@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { formatDate, formatTime } from "@salonko/config";
 import { Button, Input, Label, PhoneInput } from "@salonko/ui";
 import {
   type BookingDetailsFormData,
@@ -45,21 +46,6 @@ export function BookingDetailsForm({
     },
   });
 
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("sr-RS", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  };
-
   return (
     <div className="p-4 sm:p-5 md:p-6 w-full md:w-[420px] lg:w-[480px]">
       <button
@@ -75,7 +61,7 @@ export function BookingDetailsForm({
       <div className="p-3 sm:p-4 mb-4 sm:mb-6 bg-gray-50 rounded-lg dark:bg-gray-800">
         <div className="flex gap-2 items-center mb-1 text-sm text-gray-600 dark:text-gray-400">
           <Calendar className="w-4 h-4" />
-          <span>{selectedSlot && formatDate(new Date(selectedSlot))}</span>
+          <span>{selectedSlot && formatDate(selectedSlot, "shortDate")}</span>
         </div>
         <div className="flex gap-2 items-center text-sm text-gray-600 dark:text-gray-400">
           <Clock className="w-4 h-4" />

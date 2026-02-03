@@ -1,4 +1,5 @@
 import type { MembershipRole, PrismaClient } from "@salonko/prisma";
+import { TRPCError } from "@trpc/server";
 
 export type TeamPermission = {
   organizationId: string;
@@ -100,6 +101,67 @@ export async function canViewAllBookings(
   organizationId: string
 ): Promise<boolean> {
   return isOrganizationAdmin(prisma, userId, organizationId);
+}
+
+/**
+ * Require user to be OWNER or ADMIN of an organization.
+ * Throws FORBIDDEN error if not authorized.
+ */
+export async function requireOrganizationAdmin(
+  prisma: PrismaClient,
+  userId: string,
+  organizationId: string,
+  errorMessage = "Nemate dozvolu za ovu akciju."
+): Promise<TeamPermission> {
+  const membership = await getUserMembership(prisma, userId, organizationId);
+
+  if (
+    !membership ||
+    !membership.accepted ||
+    (membership.role !== "OWNER" && membership.role !== "ADMIN")
+  ) {
+    throw new TRPCError({ code: "FORBIDDEN", message: errorMessage });
+  }
+
+  return membership;
+}
+
+/**
+ * Require user to be the OWNER of an organization.
+ * Throws FORBIDDEN error if not authorized.
+ */
+export async function requireOrganizationOwner(
+  prisma: PrismaClient,
+  userId: string,
+  organizationId: string,
+  errorMessage = "Samo vlasnik može izvršiti ovu akciju."
+): Promise<TeamPermission> {
+  const membership = await getUserMembership(prisma, userId, organizationId);
+
+  if (!membership || !membership.accepted || membership.role !== "OWNER") {
+    throw new TRPCError({ code: "FORBIDDEN", message: errorMessage });
+  }
+
+  return membership;
+}
+
+/**
+ * Require user to be a member (any role) of an organization.
+ * Throws FORBIDDEN error if not authorized.
+ */
+export async function requireOrganizationMember(
+  prisma: PrismaClient,
+  userId: string,
+  organizationId: string,
+  errorMessage = "Niste član ove organizacije."
+): Promise<TeamPermission> {
+  const membership = await getUserMembership(prisma, userId, organizationId);
+
+  if (!membership || !membership.accepted) {
+    throw new TRPCError({ code: "FORBIDDEN", message: errorMessage });
+  }
+
+  return membership;
 }
 
 /**

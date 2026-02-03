@@ -3,12 +3,11 @@
 import { trpc } from "@/lib/trpc/client";
 import {
   Button,
-  CancelBookingDialog,
   Card,
   CardContent,
+  ConfirmDialog,
   DateTimeDisplay,
   LocationDisplay,
-  RejectBookingDialog,
   StatusBadge,
   TabFilter,
   TimeRangeDisplay,
@@ -437,17 +436,33 @@ export function BookingsClient({
       )}
 
       {/* Dialogs */}
-      <CancelBookingDialog
+      <ConfirmDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         onConfirm={handleCancelConfirm}
         isLoading={cancelBooking.isPending}
+        title="Otkaži termin"
+        description="Da li ste sigurni da želite da otkažete ovaj termin?"
+        confirmText="Otkaži termin"
+        loadingText="Otkazivanje..."
+        inputConfig={{
+          label: "Razlog otkazivanja (opciono)",
+          placeholder: "Unesite razlog otkazivanja...",
+        }}
       />
-      <RejectBookingDialog
+      <ConfirmDialog
         open={rejectDialogOpen}
         onOpenChange={setRejectDialogOpen}
         onConfirm={handleRejectConfirm}
         isLoading={rejectBooking.isPending}
+        title="Odbij termin"
+        description="Da li ste sigurni da želite da odbijete ovaj zahtev za termin?"
+        confirmText="Odbij termin"
+        loadingText="Odbijanje..."
+        inputConfig={{
+          label: "Razlog odbijanja (opciono)",
+          placeholder: "Unesite razlog odbijanja...",
+        }}
       />
     </div>
   );

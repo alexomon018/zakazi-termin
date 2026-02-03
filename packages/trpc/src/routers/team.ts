@@ -6,6 +6,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { getAppOriginFromRequest } from "../lib/app-origin";
+import {
+  requireOrganizationAdmin,
+  requireOrganizationMember,
+  requireOrganizationOwner,
+} from "../lib/permissions";
 
 const MAX_BULK_INVITES = 50;
 
@@ -179,26 +184,12 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER or ADMIN
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (
-        !membership ||
-        !membership.accepted ||
-        (membership.role !== MembershipRole.OWNER && membership.role !== MembershipRole.ADMIN)
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Nemate dozvolu za kreiranje pozivnica.",
-        });
-      }
+      await requireOrganizationAdmin(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Nemate dozvolu za kreiranje pozivnica."
+      );
 
       const token = randomBytes(32).toString("hex");
 
@@ -313,22 +304,7 @@ export const teamRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is a member of this organization
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (!membership || !membership.accepted) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Niste član ove organizacije.",
-        });
-      }
+      await requireOrganizationMember(ctx.prisma, userId, input.organizationId);
 
       const members = await ctx.prisma.membership.findMany({
         where: {
@@ -375,25 +351,26 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER
-      const membership = await ctx.prisma.membership.findUnique({
+      await requireOrganizationOwner(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Samo vlasnik može menjati uloge članova."
+      );
+
+      // Get calling user's membership to check if they're trying to change their own role
+      const callerMembership = await ctx.prisma.membership.findUnique({
         where: {
           userId_organizationId: {
             userId,
             organizationId: input.organizationId,
           },
         },
+        select: { id: true },
       });
 
-      if (!membership || !membership.accepted || membership.role !== MembershipRole.OWNER) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Samo vlasnik može menjati uloge članova.",
-        });
-      }
-
       // Cannot change own role
-      if (input.memberId === membership.id) {
+      if (input.memberId === callerMembership?.id) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Ne možete promeniti sopstvenu ulogu.",
@@ -451,26 +428,12 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER or ADMIN
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (
-        !membership ||
-        !membership.accepted ||
-        (membership.role !== MembershipRole.OWNER && membership.role !== MembershipRole.ADMIN)
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Nemate dozvolu za uklanjanje članova.",
-        });
-      }
+      const membership = await requireOrganizationAdmin(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Nemate dozvolu za uklanjanje članova."
+      );
 
       // Get target membership
       const targetMembership = await ctx.prisma.membership.findUnique({
@@ -565,26 +528,12 @@ export const teamRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER or ADMIN
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (
-        !membership ||
-        !membership.accepted ||
-        (membership.role !== MembershipRole.OWNER && membership.role !== MembershipRole.ADMIN)
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Nemate dozvolu za pregled pozivnica.",
-        });
-      }
+      await requireOrganizationAdmin(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Nemate dozvolu za pregled pozivnica."
+      );
 
       const invites = await ctx.prisma.verificationToken.findMany({
         where: {
@@ -698,26 +647,12 @@ export const teamRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER or ADMIN
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (
-        !membership ||
-        !membership.accepted ||
-        (membership.role !== MembershipRole.OWNER && membership.role !== MembershipRole.ADMIN)
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Nemate dozvolu za brisanje pozivnica.",
-        });
-      }
+      await requireOrganizationAdmin(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Nemate dozvolu za brisanje pozivnica."
+      );
 
       // Extract token from URL
       const url = new URL(input.inviteUrl);

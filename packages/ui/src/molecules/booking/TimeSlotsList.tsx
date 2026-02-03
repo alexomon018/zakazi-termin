@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, formatTime } from "@salonko/config";
 import { Button } from "@salonko/ui";
 import {
   confirmButtonAnimation,
@@ -28,21 +29,6 @@ export function TimeSlotsList({
   onSlotSelect,
   onConfirmSlot,
 }: TimeSlotsListProps) {
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("sr-RS", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  };
-
   return (
     <AnimatePresence>
       {(bookingState === "selecting_time" || bookingState === "booking") && (
@@ -54,7 +40,7 @@ export function TimeSlotsList({
           className="px-5 py-6 md:px-6 md:py-8 w-full md:w-[280px] lg:w-[320px]"
         >
           <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {selectedDate ? formatDate(selectedDate) : "Izaberite datum"}
+            {selectedDate ? formatDate(selectedDate, "shortDate") : "Izaberite datum"}
           </h3>
 
           {selectedDate ? (

@@ -1,4 +1,4 @@
-import { PRICING_CONFIG } from "@salonko/config";
+import { PRICING_CONFIG, formatDate } from "@salonko/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
 import { formatTrialTimeRemaining } from "@salonko/ui/lib/utils/formatTrialTime";
 import { Crown } from "lucide-react";
@@ -62,12 +62,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             </p>
             {status.currentPeriodEnd && (
               <p className="text-xs text-gray-500">
-                Sledeća naplata:{" "}
-                {new Date(status.currentPeriodEnd).toLocaleDateString("sr-RS", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
+                Sledeća naplata: {formatDate(status.currentPeriodEnd, "dateOnly")}
               </p>
             )}
           </div>
