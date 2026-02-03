@@ -1,5 +1,5 @@
 import { Link, Section, Text } from "@react-email/components";
-import { getAppUrl } from "@salonko/config";
+import { formatDate, formatTime, getAppUrl } from "@salonko/config";
 import type { BookingEmailData } from "../types";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
@@ -17,17 +17,8 @@ export function BookingConfirmedOrganizerEmail(props: BookingEmailData) {
     attendeeNotes,
   } = props;
 
-  const formattedDate = new Date(startTime).toLocaleDateString("sr-RS", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const formattedTime = new Date(startTime).toLocaleTimeString("sr-RS", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedDate = formatDate(startTime);
+  const formattedTime = formatTime(startTime);
 
   const dashboardUrl = `${getAppUrl()}/dashboard/bookings`;
 

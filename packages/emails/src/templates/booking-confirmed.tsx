@@ -1,7 +1,8 @@
-import { Button, Link, Section, Text } from "@react-email/components";
+import { Link, Section, Text } from "@react-email/components";
 import { getAppUrl } from "@salonko/config";
+import { BookingInfoBox } from "../components/BookingInfoBox";
 import type { BookingEmailData } from "../types";
-import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
+import { BaseEmail, button, text } from "./base-email";
 
 export function BookingConfirmedEmail(props: BookingEmailData) {
   const {
@@ -15,18 +16,6 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
     attendeeNotes,
   } = props;
 
-  const formattedDate = new Date(startTime).toLocaleDateString("sr-RS", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const formattedTime = new Date(startTime).toLocaleTimeString("sr-RS", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   const bookingUrl = `${getAppUrl()}/booking/${bookingUid}`;
 
   return (
@@ -36,33 +25,14 @@ export function BookingConfirmedEmail(props: BookingEmailData) {
         Vaš termin je uspešno zakazan. U nastavku se nalaze detalji Vaše rezervacije.
       </Text>
 
-      <Section style={infoBox}>
-        <Text style={infoRow}>
-          <span style={label}>Usluga:</span> {eventTypeTitle}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Datum:</span> {formattedDate}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Vreme:</span> {formattedTime}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Trajanje:</span> {eventTypeDuration} minuta
-        </Text>
-        {location && (
-          <Text style={infoRow}>
-            <span style={label}>Lokacija:</span> {location}
-          </Text>
-        )}
-        <Text style={infoRow}>
-          <span style={label}>Sa:</span> {organizerName}
-        </Text>
-        {attendeeNotes && (
-          <Text style={infoRow}>
-            <span style={label}>Napomena:</span> {attendeeNotes}
-          </Text>
-        )}
-      </Section>
+      <BookingInfoBox
+        eventTypeTitle={eventTypeTitle}
+        eventTypeDuration={eventTypeDuration}
+        startTime={startTime}
+        location={location}
+        organizerName={organizerName}
+        attendeeNotes={attendeeNotes}
+      />
 
       <Text style={text}>
         Referentni broj rezervacije: <strong>{bookingUid.slice(0, 8).toUpperCase()}</strong>

@@ -10,6 +10,27 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+/**
+ * Reusable Prisma include for booking list queries
+ * Used by: upcoming, list, listPaginated
+ */
+const BOOKING_LIST_INCLUDE = {
+  eventType: true,
+  attendees: true,
+  user: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  assignedHost: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} as const;
+
 // Helper to extract location from event type
 function getLocationString(locations: unknown): string | null {
   if (!locations) return null;
@@ -230,22 +251,7 @@ export const bookingRouter = router({
       const [bookings, total] = await Promise.all([
         ctx.prisma.booking.findMany({
           where: baseWhere,
-          include: {
-            eventType: true,
-            attendees: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            assignedHost: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          include: BOOKING_LIST_INCLUDE,
           orderBy: { startTime: "asc" },
           skip,
           take,
@@ -288,22 +294,7 @@ export const bookingRouter = router({
           ...(input?.dateFrom && { startTime: { gte: input.dateFrom } }),
           ...(input?.dateTo && { endTime: { lte: input.dateTo } }),
         },
-        include: {
-          eventType: true,
-          attendees: true,
-          user: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assignedHost: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
+        include: BOOKING_LIST_INCLUDE,
         orderBy: { startTime: "asc" },
       });
       return bookings;
@@ -338,22 +329,7 @@ export const bookingRouter = router({
       const [bookings, total] = await Promise.all([
         ctx.prisma.booking.findMany({
           where,
-          include: {
-            eventType: true,
-            attendees: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            assignedHost: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
+          include: BOOKING_LIST_INCLUDE,
           orderBy: { startTime: input.dateTo ? "desc" : "asc" },
           skip: input.skip,
           take: input.take,

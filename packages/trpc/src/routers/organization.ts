@@ -4,6 +4,8 @@ import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { requireOrganizationAdmin, requireOrganizationMember } from "../lib/permissions";
+
 export const organizationRouter = router({
   /**
    * Create a new organization (user becomes OWNER)
@@ -134,26 +136,12 @@ export const organizationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is OWNER or ADMIN
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (
-        !membership ||
-        !membership.accepted ||
-        (membership.role !== MembershipRole.OWNER && membership.role !== MembershipRole.ADMIN)
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Nemate dozvolu za izmenu postavki organizacije.",
-        });
-      }
+      await requireOrganizationAdmin(
+        ctx.prisma,
+        userId,
+        input.organizationId,
+        "Nemate dozvolu za izmenu postavki organizacije."
+      );
 
       const organization = await ctx.prisma.organization.update({
         where: { id: input.organizationId },
@@ -196,22 +184,7 @@ export const organizationRouter = router({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user is a member of this organization
-      const membership = await ctx.prisma.membership.findUnique({
-        where: {
-          userId_organizationId: {
-            userId,
-            organizationId: input.organizationId,
-          },
-        },
-      });
-
-      if (!membership || !membership.accepted) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Niste član ove organizacije.",
-        });
-      }
+      const membership = await requireOrganizationMember(ctx.prisma, userId, input.organizationId);
 
       const organization = await ctx.prisma.organization.findUnique({
         where: { id: input.organizationId },

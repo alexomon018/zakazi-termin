@@ -1,6 +1,7 @@
 import { Section, Text } from "@react-email/components";
+import { BookingInfoBox } from "../components/BookingInfoBox";
 import type { BookingEmailData } from "../types";
-import { BaseEmail, infoBox, infoRow, label, text } from "./base-email";
+import { BaseEmail, infoBox, infoRow, text } from "./base-email";
 
 export function BookingPendingEmail(props: BookingEmailData) {
   const {
@@ -13,18 +14,6 @@ export function BookingPendingEmail(props: BookingEmailData) {
     attendeeNotes,
   } = props;
 
-  const formattedDate = new Date(startTime).toLocaleDateString("sr-RS", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const formattedTime = new Date(startTime).toLocaleTimeString("sr-RS", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   return (
     <BaseEmail
       preview={`Zahtev za termin "${eventTypeTitle}" je poslat`}
@@ -35,33 +24,14 @@ export function BookingPendingEmail(props: BookingEmailData) {
         Vaš zahtev za termin je primljen i čeka potvrdu. Obavestićemo Vas čim bude odobren.
       </Text>
 
-      <Section style={infoBox}>
-        <Text style={infoRow}>
-          <span style={label}>Usluga:</span> {eventTypeTitle}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Datum:</span> {formattedDate}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Vreme:</span> {formattedTime}
-        </Text>
-        <Text style={infoRow}>
-          <span style={label}>Trajanje:</span> {eventTypeDuration} minuta
-        </Text>
-        {location && (
-          <Text style={infoRow}>
-            <span style={label}>Lokacija:</span> {location}
-          </Text>
-        )}
-        <Text style={infoRow}>
-          <span style={label}>Sa:</span> {organizerName}
-        </Text>
-        {attendeeNotes && (
-          <Text style={infoRow}>
-            <span style={label}>Napomena:</span> {attendeeNotes}
-          </Text>
-        )}
-      </Section>
+      <BookingInfoBox
+        eventTypeTitle={eventTypeTitle}
+        eventTypeDuration={eventTypeDuration}
+        startTime={startTime}
+        location={location}
+        organizerName={organizerName}
+        attendeeNotes={attendeeNotes}
+      />
 
       <Section style={{ ...infoBox, backgroundColor: "#fef3c7" }}>
         <Text style={{ ...infoRow, margin: 0 }}>

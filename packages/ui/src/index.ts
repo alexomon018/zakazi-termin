@@ -159,10 +159,8 @@ export {
 } from "./molecules/availability";
 
 // Molecules - Dialogs
-export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
 export { ConfirmDialog } from "./molecules/dialogs/ConfirmDialog";
 export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";
-export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
 
 // Molecules - Out of Office
 export {
