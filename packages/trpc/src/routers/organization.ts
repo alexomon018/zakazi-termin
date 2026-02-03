@@ -22,21 +22,6 @@ export const organizationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Check if user already has an organization
-      const existingMembership = await ctx.prisma.membership.findFirst({
-        where: {
-          userId,
-          role: MembershipRole.OWNER,
-        },
-      });
-
-      if (existingMembership) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Već imate organizaciju.",
-        });
-      }
-
       // Generate slug if not provided
       const slug = input.slug || normalizeToSlug(input.name);
 
@@ -51,6 +36,8 @@ export const organizationRouter = router({
 
       try {
         // Create organization and membership in a transaction
+        // The DB-level partial unique index on Membership(userId) WHERE role = 'OWNER'
+        // enforces that a user can only have one OWNER membership, handling race conditions
         const organization = await ctx.prisma.$transaction(async (tx) => {
           const org = await tx.organization.create({
             data: {
@@ -74,6 +61,19 @@ export const organizationRouter = router({
         return organization;
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+          // Check which unique constraint was violated
+          const target = error.meta?.target as string[] | string | undefined;
+          const targetStr = Array.isArray(target) ? target.join(",") : target;
+
+          // Partial unique index on userId for OWNER role
+          if (targetStr?.includes("userId_owner_unique") || targetStr?.includes("userId")) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Već imate organizaciju.",
+            });
+          }
+
+          // Organization slug unique constraint
           throw new TRPCError({
             code: "CONFLICT",
             message: "Ovaj slug je već zauzet. Izaberite drugi.",

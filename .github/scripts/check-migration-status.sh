@@ -35,10 +35,16 @@ echo "Found $MIGRATION_COUNT migration(s)"
 STATUS=$(yarn workspace @salonko/prisma prisma migrate status 2>&1) || true
 echo "$STATUS"
 
-if echo "$STATUS" | grep -qiE 'up to date|no migrat'; then
+# Match documented Prisma migrate status output:
+# - Pending: "Following migration have not yet been applied:"
+# - Up-to-date: "Database schema is up to date!"
+if echo "$STATUS" | grep -qiE 'not yet been applied'; then
+  echo "has_pending=true" >> "$GITHUB_OUTPUT"
+  echo "⚠️ Pending migrations detected"
+elif echo "$STATUS" | grep -qiE 'schema is up to date'; then
   echo "has_pending=false" >> "$GITHUB_OUTPUT"
   echo "✅ No pending migrations"
 else
   echo "has_pending=true" >> "$GITHUB_OUTPUT"
-  echo "⚠️ Pending migrations detected"
+  echo "⚠️ Unknown migration status - assuming pending"
 fi

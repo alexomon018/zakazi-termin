@@ -124,20 +124,24 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
 
   // If user has completed onboarding, redirect away from onboarding page
   if (isOnboardingPage && token) {
-    const cookie = req.headers.get("cookie") ?? "";
-    const profileRes = await fetch(new URL("/api/profile/complete", req.url), {
-      headers: { cookie },
-      cache: "no-store",
-    });
+    try {
+      const cookie = req.headers.get("cookie") ?? "";
+      const profileRes = await fetch(new URL("/api/profile/complete", req.url), {
+        headers: { cookie },
+        cache: "no-store",
+      });
 
-    if (profileRes.ok) {
-      const profileData = (await profileRes.json()) as {
-        ok: boolean;
-        isComplete?: boolean;
-      };
-      if (profileData.ok && profileData.isComplete === true) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
+      if (profileRes.ok) {
+        const profileData = (await profileRes.json()) as {
+          ok: boolean;
+          isComplete?: boolean;
+        };
+        if (profileData.ok && profileData.isComplete === true) {
+          return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
       }
+    } catch {
+      // Allow onboarding to proceed if the check fails
     }
   }
 
@@ -155,25 +159,33 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
       // Do NOT trust JWT claims for subscription gating (token can be long-lived and stale).
       // Validate against the current database state via a server (Node) API route.
       const cookie = req.headers.get("cookie") ?? "";
-      const res = await fetch(new URL("/api/subscription/access", req.url), {
-        headers: { cookie },
-        cache: "no-store",
-      });
+      try {
+        const res = await fetch(new URL("/api/subscription/access", req.url), {
+          headers: { cookie },
+          cache: "no-store",
+        });
 
-      if (res.status === 401) {
-        const loginUrl = new URL("/login", req.url);
-        loginUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(loginUrl);
-      }
+        if (res.status === 401) {
+          const loginUrl = new URL("/login", req.url);
+          loginUrl.searchParams.set("callbackUrl", pathname);
+          return NextResponse.redirect(loginUrl);
+        }
 
-      const data = (await res.json()) as { ok: boolean; canAccess?: boolean };
-      const canAccess = data.ok && data.canAccess === true;
+        if (!res.ok) {
+          return NextResponse.next();
+        }
 
-      if (!canAccess) {
-        // Redirect to billing page with lock message
-        const billingUrl = new URL("/dashboard/settings/billing", req.url);
-        billingUrl.searchParams.set("locked", "true");
-        return NextResponse.redirect(billingUrl);
+        const data = (await res.json()) as { ok: boolean; canAccess?: boolean };
+        const canAccess = data.ok && data.canAccess === true;
+
+        if (!canAccess) {
+          // Redirect to billing page with lock message
+          const billingUrl = new URL("/dashboard/settings/billing", req.url);
+          billingUrl.searchParams.set("locked", "true");
+          return NextResponse.redirect(billingUrl);
+        }
+      } catch {
+        return NextResponse.next();
       }
     }
   }

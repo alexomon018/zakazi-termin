@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { hashPassword } from "@salonko/auth/server";
 import { logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
@@ -33,6 +34,24 @@ export async function resetPasswordAction(
     const normalizedEmail = parsed.data.email.toLowerCase();
     const { token, password } = parsed.data;
 
+    // Validate token first (DB stores hash only) so we never leak identity-provider info
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: {
+        identifier_token: {
+          identifier: normalizedEmail,
+          token: tokenHash,
+        },
+      },
+    });
+
+    if (!verificationToken || verificationToken.expires < new Date()) {
+      return {
+        success: false,
+        error: "Link za resetovanje lozinke je nevažeći ili je istekao.",
+      };
+    }
+
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
     });
@@ -45,22 +64,6 @@ export async function resetPasswordAction(
     }
 
     if (user.identityProvider !== "EMAIL") {
-      return {
-        success: false,
-        error: "Ovaj nalog koristi prijavu preko Google naloga. Lozinka ne može biti resetovana.",
-      };
-    }
-
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: {
-        identifier_token: {
-          identifier: normalizedEmail,
-          token,
-        },
-      },
-    });
-
-    if (!verificationToken || verificationToken.expires < new Date()) {
       return {
         success: false,
         error: "Link za resetovanje lozinke je nevažeći ili je istekao.",

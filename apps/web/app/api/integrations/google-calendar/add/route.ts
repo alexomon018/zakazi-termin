@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const returnTo = searchParams.get("returnTo") || "/dashboard/settings";
 
-  const baseUrl = getAppUrl();
+  const baseUrl = getAppUrl().replace(/\/+$/, "");
   const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
 
   // Encode state with returnTo URL

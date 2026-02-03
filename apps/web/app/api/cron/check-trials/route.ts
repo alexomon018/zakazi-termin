@@ -167,11 +167,6 @@ export async function POST(req: Request) {
         (subscription.trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
       );
 
-      await prisma.subscription.update({
-        where: { id: subscription.id },
-        data: { lastReminderSentAt: now },
-      });
-
       try {
         await emailService.sendTrialEndingEmail({
           userEmail: subscription.user.email,
@@ -180,6 +175,23 @@ export async function POST(req: Request) {
           daysRemaining,
           billingUrl: `${APP_URL}/dashboard/settings/billing`,
         });
+
+        // Only mark as sent after successful email delivery
+        // Use conditional update to guard against duplicate reminders if DB update fails
+        try {
+          await prisma.subscription.update({
+            where: { id: subscription.id, lastReminderSentAt: null },
+            data: { lastReminderSentAt: now },
+          });
+        } catch (updateError) {
+          logger.error("Failed to mark trial reminder as sent", {
+            error: updateError instanceof Error ? updateError.message : String(updateError),
+            subscriptionId: subscription.id,
+          });
+          // Email was sent successfully, but we couldn't mark it - continue to avoid blocking
+          // The conditional update (lastReminderSentAt: null) prevents duplicate sends
+          continue;
+        }
 
         results.emailsSent++;
         results.trialReminders++;

@@ -86,6 +86,7 @@ export default function VerifyEmailClient() {
       });
 
       if (signInResult?.error) {
+        setIsLoading(false);
         // Fallback to login page if auto-login fails
         router.push("/login?verified=true");
         return;

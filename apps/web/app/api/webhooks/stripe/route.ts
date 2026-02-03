@@ -252,7 +252,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const stripeSubscription = await stripe!.subscriptions.retrieve(subscriptionId);
 
   // Map Stripe status to our status
-  const statusMap: Record<string, "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"> = {
+  const statusMap: Record<
+    string,
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED" | "PAUSED"
+  > = {
     active: "ACTIVE",
     trialing: "TRIALING",
     past_due: "PAST_DUE",
@@ -260,6 +263,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     incomplete: "EXPIRED",
     incomplete_expired: "EXPIRED",
     unpaid: "PAST_DUE",
+    paused: "PAUSED",
   };
 
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
@@ -355,10 +359,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 }
 
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
+  const statusMap: Record<
+    string,
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED" | "PAUSED"
+  > = {
+    active: "ACTIVE",
+    trialing: "TRIALING",
+    past_due: "PAST_DUE",
+    canceled: "CANCELED",
+    incomplete: "EXPIRED",
+    incomplete_expired: "EXPIRED",
+    unpaid: "PAST_DUE",
+    paused: "PAUSED",
+  };
+
   const customerId = stripeSubscription.customer as string;
   const priceId = stripeSubscription.items.data[0]?.price.id;
   const interval = stripeSubscription.items.data[0]?.price.recurring?.interval;
-  const status = stripeSubscription.status === "trialing" ? "TRIALING" : "ACTIVE";
+  const status = statusMap[stripeSubscription.status] || "ACTIVE";
   const billingInterval = interval === "year" ? "YEAR" : "MONTH";
 
   // Access period dates from the subscription item (Stripe SDK v20+)
@@ -434,7 +452,10 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
     });
   }
 
-  const statusMap: Record<string, "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED"> = {
+  const statusMap: Record<
+    string,
+    "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED" | "PAUSED"
+  > = {
     active: "ACTIVE",
     trialing: "TRIALING",
     past_due: "PAST_DUE",
@@ -442,6 +463,7 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
     incomplete: "EXPIRED",
     incomplete_expired: "EXPIRED",
     unpaid: "PAST_DUE",
+    paused: "PAUSED",
   };
 
   // Access period dates from the subscription item (Stripe SDK v20+)

@@ -85,6 +85,9 @@ const CountrySelect = ({
           variant="outline"
           className="flex gap-1 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10"
           disabled={disabled}
+          aria-label="Izaberite zemlju"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
         >
           <FlagComponent country={selectedCountry} countryName={selectedCountry} />
           <ChevronsUpDown

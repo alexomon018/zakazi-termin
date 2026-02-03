@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
@@ -81,7 +79,10 @@ function InviteSignupPageContent() {
   useEffect(() => {
     async function validateToken() {
       if (!token) {
-        setTokenValidation({ valid: false, error: "Nedostaje token pozivnice" });
+        setTokenValidation({
+          valid: false,
+          error: "Nedostaje token pozivnice",
+        });
         setIsValidating(false);
         return;
       }
