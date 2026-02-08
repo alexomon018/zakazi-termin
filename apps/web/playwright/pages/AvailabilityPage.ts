@@ -72,13 +72,13 @@ export class AvailabilityPage extends BasePage {
     await this.clickAddSchedule();
 
     const nameInput = this.page
-      .locator('[data-testid="schedule-name-input"], input[name="name"], input[id="name"]')
+      .locator('[data-testid="schedule-name-input"], input[id="schedule-name"]')
       .first();
     await expect(nameInput).toBeVisible();
     await this.fillField(nameInput, name);
 
     const createButton = this.page
-      .locator('[data-testid="create-schedule-button"], button[type="submit"]')
+      .locator('[data-testid="create-schedule-button"], button:has-text("Kreiraj")')
       .first();
     await this.waitForMutation(async () => {
       await this.clickButton(createButton);
@@ -150,43 +150,12 @@ export class AvailabilityPage extends BasePage {
    * Check if days of the week are visible
    */
   async expectDaysVisible(): Promise<void> {
-    // Look for day labels in Serbian (short form: Ned, Pon, Uto, Sre, Čet, Pet, Sub)
-    // Check for at least one day button being visible
-    const dayButtons = [
-      this.page.getByRole("button", { name: /^Ned$/i }),
-      this.page.getByRole("button", { name: /^Pon$/i }),
-      this.page.getByRole("button", { name: /^Uto$/i }),
-      this.page.getByRole("button", { name: /^Sre$/i }),
-      this.page.getByRole("button", { name: /^Čet$/i }),
-      this.page.getByRole("button", { name: /^Pet$/i }),
-      this.page.getByRole("button", { name: /^Sub$/i }),
-    ];
+    // The editor page shows full Serbian day names as span elements
+    const dayLabels = ["Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota", "Nedelja"];
 
-    // Check if at least one day button is visible
-    let hasDays = false;
-    for (const button of dayButtons) {
-      if (await button.isVisible().catch(() => false)) {
-        hasDays = true;
-        break;
-      }
-    }
-
-    // Fallback: check for text patterns
-    if (!hasDays) {
-      hasDays =
-        (await this.page
-          .locator("text=/^Ned$|^Pon$|^Uto$|^Sre$|^Čet$|^Pet$|^Sub$/i")
-          .first()
-          .isVisible()
-          .catch(() => false)) ||
-        (await this.page
-          .locator("text=/[Pp]onedeljak|Monday/")
-          .isVisible()
-          .catch(() => false));
-    }
-
-    if (!hasDays) {
-      throw new Error("Days of the week are not visible on the availability page");
+    for (const label of dayLabels) {
+      const dayElement = this.page.locator(`text=${label}`).first();
+      await expect(dayElement).toBeVisible({ timeout: 5000 });
     }
   }
 

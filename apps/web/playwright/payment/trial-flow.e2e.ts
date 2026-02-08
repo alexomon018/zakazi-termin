@@ -11,7 +11,7 @@ test.describe("Trial Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription with 15 days remaining
     await subscription.createWithTrial(user.id, { daysRemaining: 15 });
@@ -28,7 +28,7 @@ test.describe("Trial Flow", () => {
 
   test("should show plan picker when user is in trial", async ({ page, users, subscription }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -53,7 +53,7 @@ test.describe("Trial Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 1 });
@@ -73,7 +73,7 @@ test.describe("Trial Flow", () => {
 
   test("should show plan picker when trial is expired", async ({ page, users, subscription }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription and expire it
     await subscription.createWithTrial(user.id, { daysRemaining: 1 });
@@ -94,7 +94,7 @@ test.describe("Trial Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
