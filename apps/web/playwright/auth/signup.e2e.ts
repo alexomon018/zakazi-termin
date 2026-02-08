@@ -7,8 +7,8 @@ test.describe("Signup", () => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Check form elements are visible (expands all sections)
-    await signupPage.expectFormVisible();
+    // Verify all form fields are accessible (navigates through sections)
+    await signupPage.verifyFormFieldsAccessible();
   });
 
   test("should show validation errors for empty form", async ({ page }) => {
@@ -111,7 +111,9 @@ test.describe("Signup", () => {
 
     // Cleanup - delete the pending registration
     if (pendingRegistration) {
-      await prisma.pendingRegistration.delete({ where: { id: pendingRegistration.id } });
+      await prisma.pendingRegistration.delete({
+        where: { id: pendingRegistration.id },
+      });
     }
   });
 

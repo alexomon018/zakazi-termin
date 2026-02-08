@@ -49,28 +49,33 @@ export class SignupPage extends BasePage {
     this.ownerSection = page.locator("button", { hasText: "Vas nalog" });
 
     // Google section - skip button
-    this.manualFillButton = page.locator("button", { hasText: "ili popuni rucno" });
+    this.manualFillButton = page.getByTestId("signup-manual-fill-button");
 
     // Salon info fields
-    this.salonNameInput = page.locator('[data-testid="signup-salon-name-input"]');
-    this.salonCityInput = page.locator('input[id="salonCity"]');
-    this.salonAddressInput = page.locator('input[id="salonAddress"]');
+    this.salonNameInput = page.getByTestId("signup-salon-name-input");
+    this.salonCityInput = page.getByTestId("signup-salon-city-input");
+    this.salonAddressInput = page.getByTestId("signup-salon-address-input");
+    // PhoneInput is a third-party wrapper that doesn't forward data-testid; use id selector
     this.salonPhoneInput = page.locator('input[id="salonPhone"]');
-    this.salonTypesButton = page.locator('button[id="salon-types-trigger"]');
-    this.continueButton = page.getByRole("button", { name: "Nastavi", exact: true });
+    this.salonTypesButton = page.getByTestId("signup-salon-types-trigger");
+    this.continueButton = page.getByRole("button", {
+      name: "Nastavi",
+      exact: true,
+    });
 
     // Owner info fields
-    this.firstNameInput = page.locator('[data-testid="signup-first-name-input"]');
-    this.lastNameInput = page.locator('[data-testid="signup-last-name-input"]');
-    this.emailInput = page.locator('[data-testid="signup-email-input"]');
+    this.firstNameInput = page.getByTestId("signup-first-name-input");
+    this.lastNameInput = page.getByTestId("signup-last-name-input");
+    this.emailInput = page.getByTestId("signup-email-input");
+    // PhoneInput is a third-party wrapper that doesn't forward data-testid; use id selector
     this.ownerPhoneInput = page.locator('input[id="ownerPhone"]');
-    this.passwordInput = page.locator('[data-testid="signup-password-input"]');
-    this.confirmPasswordInput = page.locator('[data-testid="signup-confirm-password-input"]');
+    this.passwordInput = page.getByTestId("signup-password-input");
+    this.confirmPasswordInput = page.getByTestId("signup-confirm-password-input");
 
     // Form actions
-    this.submitButton = page.locator('[data-testid="signup-submit-button"]');
-    this.googleButton = page.locator('[data-testid="signup-google-button"]');
-    this.loginLink = page.locator('[data-testid="signup-login-link"]');
+    this.submitButton = page.getByTestId("signup-submit-button");
+    this.googleButton = page.getByTestId("signup-google-button");
+    this.loginLink = page.getByTestId("signup-login-link");
   }
 
   async goto(): Promise<void> {
@@ -166,7 +171,7 @@ export class SignupPage extends BasePage {
     await expect(firstCheckbox).toBeVisible({ timeout: 3000 });
     await firstCheckbox.click();
     // Close the popover by clicking the confirm button
-    await this.page.locator('button:has-text("Potvrdi")').click();
+    await this.page.getByTestId("signup-salon-types-confirm").click();
   }
 
   async submit(): Promise<void> {
@@ -247,10 +252,11 @@ export class SignupPage extends BasePage {
   }
 
   /**
-   * Check if the signup form is displayed correctly.
-   * Expands all sections to verify fields are present.
+   * Verify all form fields are accessible by navigating through each section.
+   * NOTE: This method has side effects — it expands sections, leaving the form
+   * on the owner info section when complete.
    */
-  async expectFormVisible(): Promise<void> {
+  async verifyFormFieldsAccessible(): Promise<void> {
     // Verify the submit button and login link are always visible
     await expect(this.submitButton).toBeVisible();
     await expect(this.loginLink).toBeVisible();
@@ -276,10 +282,14 @@ export class SignupPage extends BasePage {
     const hasServerError = await serverErrorLocator.isVisible().catch(() => false);
 
     if (hasServerError) {
-      await expect(serverErrorLocator).toContainText(message, { timeout: 10000 });
+      await expect(serverErrorLocator).toContainText(message, {
+        timeout: 10000,
+      });
     } else {
       // Fallback to checking for text anywhere on the page
-      await expect(this.page.locator(`text=${message}`)).toBeVisible({ timeout: 10000 });
+      await expect(this.page.locator(`text=${message}`)).toBeVisible({
+        timeout: 10000,
+      });
     }
   }
 

@@ -153,17 +153,9 @@ export class AvailabilityPage extends BasePage {
     // The editor page shows full Serbian day names as span elements
     const dayLabels = ["Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota", "Nedelja"];
 
-    let hasDays = false;
     for (const label of dayLabels) {
       const dayElement = this.page.locator(`text=${label}`).first();
-      if (await dayElement.isVisible().catch(() => false)) {
-        hasDays = true;
-        break;
-      }
-    }
-
-    if (!hasDays) {
-      throw new Error("Days of the week are not visible on the availability editor page");
+      await expect(dayElement).toBeVisible({ timeout: 5000 });
     }
   }
 

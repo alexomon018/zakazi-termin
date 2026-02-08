@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures";
+import { TIMEOUTS } from "../lib/constants";
 import { AvailabilityPage } from "../pages";
 
 test.describe("Schedule Management", () => {
@@ -37,7 +38,9 @@ test.describe("Schedule Management", () => {
       await availabilityPage.createSchedule(scheduleName);
 
       // After creation, the app navigates to the editor page for the new schedule
-      await page.waitForURL(/\/dashboard\/availability\//, { timeout: 10000 });
+      await page.waitForURL(/\/dashboard\/availability\//, {
+        timeout: TIMEOUTS.NAVIGATION,
+      });
 
       // Verify schedule name is visible on the editor page
       await availabilityPage.expectScheduleVisible(scheduleName);
@@ -71,7 +74,9 @@ test.describe("Schedule Management", () => {
     await scheduleLink.click();
 
     // Wait for the editor page to load
-    await page.waitForURL(/\/dashboard\/availability\//, { timeout: 10000 });
+    await page.waitForURL(/\/dashboard\/availability\//, {
+      timeout: TIMEOUTS.NAVIGATION,
+    });
     await availabilityPage.waitForPageLoad();
 
     // Should see days of the week on the editor page

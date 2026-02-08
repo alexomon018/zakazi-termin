@@ -289,6 +289,7 @@ export class AppearanceSettingsPage extends BasePage {
     const appearanceLink = this.page
       .locator('a[href="/dashboard/settings/appearance"]')
       .filter({ hasText: "Izgled" })
+      .filter({ visible: true })
       .first();
 
     // Wait for the link to be visible

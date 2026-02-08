@@ -4,7 +4,10 @@ import { EventTypeBookingPage, PublicProfilePage } from "../pages";
 test.describe("Create Booking", () => {
   test("should display public booking page", async ({ page, users }) => {
     // Create a user with schedule and event type
-    const user = await users.create({ withSchedule: true, withEventType: true });
+    const user = await users.create({
+      withSchedule: true,
+      withEventType: true,
+    });
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);
@@ -16,7 +19,10 @@ test.describe("Create Booking", () => {
 
   test("should navigate to specific event type booking", async ({ page, users }) => {
     // Create a user with schedule and event type
-    const user = await users.create({ withSchedule: true, withEventType: true });
+    const user = await users.create({
+      withSchedule: true,
+      withEventType: true,
+    });
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);
@@ -26,12 +32,16 @@ test.describe("Create Booking", () => {
     await profilePage.selectEventType("30 Minute Meeting");
 
     // Should navigate to event type booking page
-    await expect(page).toHaveURL(new RegExp(`/${user.salonSlug}/30-minute-meeting`));
+    const escapedSlug = user.salonSlug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    await expect(page).toHaveURL(new RegExp(`/${escapedSlug}/30-minute-meeting`));
   });
 
   test("should display calendar for booking", async ({ page, users }) => {
     // Create a user with schedule and event type
-    const user = await users.create({ withSchedule: true, withEventType: true });
+    const user = await users.create({
+      withSchedule: true,
+      withEventType: true,
+    });
 
     // Navigate to the event type booking page using page object
     const bookingPage = new EventTypeBookingPage(page);
@@ -54,7 +64,10 @@ test.describe("Create Booking", () => {
 
   test("should show user profile info on booking page", async ({ page, users }) => {
     // Create a user with schedule and event type
-    const user = await users.create({ withSchedule: true, withEventType: true });
+    const user = await users.create({
+      withSchedule: true,
+      withEventType: true,
+    });
 
     // Navigate to the public booking page using page object
     const profilePage = new PublicProfilePage(page);

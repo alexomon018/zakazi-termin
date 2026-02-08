@@ -112,6 +112,7 @@ export function SalonInfoSection({
             <PopoverTrigger asChild>
               <Button
                 id="salon-types-trigger"
+                data-testid="signup-salon-types-trigger"
                 type="button"
                 variant="outline"
                 className="w-full justify-between font-normal h-11 text-left"
@@ -150,6 +151,7 @@ export function SalonInfoSection({
               <div className="p-2 border-t dark:border-gray-700">
                 <Button
                   type="button"
+                  data-testid="signup-salon-types-confirm"
                   className="w-full"
                   size="sm"
                   onClick={() => onSetSalonTypePopoverOpen(false)}
@@ -172,6 +174,7 @@ export function SalonInfoSection({
           >
             <Input
               id="salonCity"
+              data-testid="signup-salon-city-input"
               type="text"
               placeholder="Beograd"
               disabled={isLoading}
@@ -183,6 +186,7 @@ export function SalonInfoSection({
           <SignupFormField label="Adresa" error={errors.salonAddress?.message}>
             <Input
               id="salonAddress"
+              data-testid="signup-salon-address-input"
               type="text"
               placeholder="Ulica i broj"
               disabled={isLoading}
