@@ -62,7 +62,12 @@ export function BasicInfoCard({
             <Label htmlFor="name" className="text-gray-900 dark:text-white">
               Ime i prezime
             </Label>
-            <Input id="name" {...register("name")} placeholder="Marko Marković" />
+            <Input
+              id="name"
+              data-testid="profile-name-input"
+              {...register("name")}
+              placeholder="Marko Marković"
+            />
             {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
           </div>
 
@@ -74,6 +79,7 @@ export function BasicInfoCard({
               <div className="relative">
                 <Input
                   id="salonName"
+                  data-testid="profile-salon-name-input"
                   {...register("salonName")}
                   placeholder="Moj Salon"
                   className={cn(
@@ -141,6 +147,7 @@ export function BasicInfoCard({
             </Label>
             <Textarea
               id="bio"
+              data-testid="profile-bio-input"
               {...register("bio")}
               rows={3}
               className="text-gray-900 bg-white resize-none dark:bg-gray-800 dark:text-white"

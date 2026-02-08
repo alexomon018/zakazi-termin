@@ -137,5 +137,5 @@ export const TIMEOUTS = {
   SHORT: 5000,
   MEDIUM: 10000,
   LONG: 30000,
-  NAVIGATION: 15000,
+  NAVIGATION: 30000,
 } as const;

@@ -108,19 +108,25 @@ export function AvailabilityListClient({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-foreground">Dostupnost</h1>
+          <h1 data-testid="availability-title" className="text-2xl font-bold text-foreground">
+            Dostupnost
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Konfigurišite vremena kada ste dostupni za zakazivanje.
           </p>
         </div>
-        <Button onClick={() => setNewScheduleDialogOpen(true)} className="w-full sm:w-auto">
+        <Button
+          data-testid="add-schedule-button"
+          onClick={() => setNewScheduleDialogOpen(true)}
+          className="w-full sm:w-auto"
+        >
           <Plus className="mr-2 size-4" />
           Novi
         </Button>
       </div>
 
       {/* Schedule List */}
-      <div className="space-y-3">
+      <div data-testid="schedules-list" className="space-y-3">
         {schedules && schedules.length > 0 ? (
           schedules.map((schedule) => (
             <ScheduleListItem

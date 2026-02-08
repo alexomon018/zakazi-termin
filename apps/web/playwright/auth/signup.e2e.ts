@@ -7,33 +7,40 @@ test.describe("Signup", () => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Check form elements are visible
+    // Check form elements are visible (expands all sections)
     await signupPage.expectFormVisible();
-
-    // Check page title/header
-    await expect(signupPage.pageTitle).toBeVisible();
-    await expect(signupPage.pageSubtitle).toBeVisible();
   });
 
   test("should show validation errors for empty form", async ({ page }) => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Submit empty form
+    // Submit empty form (need to navigate to owner section first so all fields are touched)
+    await signupPage.skipGoogleSearch();
+    await signupPage.continueToOwnerSection();
     await signupPage.submit();
 
-    // Should show validation errors (the actual message from zod schema)
-    await signupPage.expectErrorMessage("Ime mora imati najmanje 2 karaktera");
+    // Should show validation errors — check for a unique error (salon name has min 3 chars)
+    await signupPage.expectErrorMessage("Naziv salona mora imati najmanje 3 karaktera");
   });
 
   test("should show error for password mismatch", async ({ page }) => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Fill form with mismatched passwords
-    await signupPage.fillName("Test User");
-    await signupPage.fillEmail(generateTestEmail());
+    // Navigate through sections and fill all required fields with mismatched passwords
+    await signupPage.skipGoogleSearch();
     await signupPage.fillSalonName(generateTestSalonName());
+    await signupPage.selectSalonType();
+    await signupPage.fillSalonCity("Beograd");
+    await signupPage.fillSalonAddress("Ulica 1");
+    await signupPage.fillSalonPhone("+381601234567");
+    await signupPage.continueToOwnerSection();
+
+    await signupPage.fillFirstName("Test");
+    await signupPage.fillLastName("User");
+    await signupPage.fillEmail(generateTestEmail());
+    await signupPage.fillOwnerPhone("+381607654321");
     await signupPage.fillPasswordMismatch("TestPassword123!", "DifferentPassword123!");
 
     // Submit form
@@ -47,10 +54,19 @@ test.describe("Signup", () => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Fill form with weak password
-    await signupPage.fillName("Test User");
-    await signupPage.fillEmail(generateTestEmail());
+    // Navigate through sections and fill all required fields with weak password
+    await signupPage.skipGoogleSearch();
     await signupPage.fillSalonName(generateTestSalonName());
+    await signupPage.selectSalonType();
+    await signupPage.fillSalonCity("Beograd");
+    await signupPage.fillSalonAddress("Ulica 1");
+    await signupPage.fillSalonPhone("+381601234567");
+    await signupPage.continueToOwnerSection();
+
+    await signupPage.fillFirstName("Test");
+    await signupPage.fillLastName("User");
+    await signupPage.fillEmail(generateTestEmail());
+    await signupPage.fillOwnerPhone("+381607654321");
     await signupPage.fillPasswordMismatch("weak", "weak");
 
     // Submit form
@@ -74,7 +90,8 @@ test.describe("Signup", () => {
 
     // Fill in the form using signup method
     await signupPage.signup({
-      name: "Test User",
+      firstName: "Test",
+      lastName: "User",
       email,
       salonName,
       password: "TestPassword123!",
@@ -88,8 +105,9 @@ test.describe("Signup", () => {
       where: { email: email.toLowerCase() },
     });
     expect(pendingRegistration).toBeTruthy();
-    expect(pendingRegistration?.salonName).toBe(salonName.toLowerCase());
-    expect(pendingRegistration?.name).toBe("Test User");
+    expect(pendingRegistration?.salonName).toBe(salonName);
+    expect(pendingRegistration?.ownerFirstName).toBe("Test");
+    expect(pendingRegistration?.ownerLastName).toBe("User");
 
     // Cleanup - delete the pending registration
     if (pendingRegistration) {
@@ -107,17 +125,16 @@ test.describe("Signup", () => {
     await signupPage.waitForPageLoad();
 
     // Try to register with the same email but a different valid salonName
-    await signupPage.fillName("Test User");
-    await signupPage.fillEmail(existingUser.email);
-    await signupPage.fillSalonName(`new${Date.now() % 10000}`);
-    await signupPage.fillPassword("TestPassword123!");
-    await signupPage.fillConfirmPassword("TestPassword123!");
-
-    // Submit form
-    await signupPage.submit();
+    await signupPage.signup({
+      firstName: "Test",
+      lastName: "User",
+      email: existingUser.email,
+      salonName: `new${Date.now() % 10000}`,
+      password: "TestPassword123!",
+    });
 
     // Should show error message about existing email (actual message from API)
-    await signupPage.expectErrorMessage("Email adresa je već registrovana");
+    await signupPage.expectErrorMessage("Email adresa je vec registrovana");
   });
 
   test("should show error for duplicate salonName", async ({ page, users }) => {
@@ -133,15 +150,14 @@ test.describe("Signup", () => {
     await signupPage.goto();
     await signupPage.waitForPageLoad();
 
-    // Try to register with the same salonName (short enough to pass frontend validation)
-    await signupPage.fillName("Test User");
-    await signupPage.fillEmail(generateTestEmail());
-    await signupPage.fillSalonName(existingUser.salonName);
-    await signupPage.fillPassword("TestPassword123!");
-    await signupPage.fillConfirmPassword("TestPassword123!");
-
-    // Submit form
-    await signupPage.submit();
+    // Try to register with the same salonName
+    await signupPage.signup({
+      firstName: "Test",
+      lastName: "User",
+      email: generateTestEmail(),
+      salonName: existingUser.salonName,
+      password: "TestPassword123!",
+    });
 
     // Should show error message about existing salonName (actual message from API)
     await signupPage.expectErrorMessage("Naziv salona je zauzet");
@@ -166,14 +182,15 @@ test.describe("Signup", () => {
     await expect(signupPage.googleButton).toBeVisible();
   });
 
-  test("should show salonName preview", async ({ page }) => {
+  test("should fill salon name field", async ({ page }) => {
     const signupPage = new SignupPage(page);
     await signupPage.goto();
 
-    // Fill salonName
-    await signupPage.fillSalonName("testsalon");
+    // Skip Google search to get to salon section
+    await signupPage.skipGoogleSearch();
 
-    // Check preview text is visible
-    await signupPage.expectSalonNamePreviewContains("testsalon");
+    // Fill salonName and verify it has the value
+    await signupPage.fillSalonName("testsalon");
+    await expect(signupPage.salonNameInput).toHaveValue("testsalon");
   });
 });

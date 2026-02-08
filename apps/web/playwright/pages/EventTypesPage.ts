@@ -57,38 +57,14 @@ export class EventTypesListPage extends BasePage {
    * Delete an event type by title using the delete button
    */
   async deleteEventType(title: string): Promise<void> {
-    // Find the event type card by title, then find the delete button with data-testid within it
-    const titleLocator = this.page.locator(`text=${title}`).first();
+    // Scope to the card containing the event type title, then find its delete button
+    const card = this.eventTypeList.locator("> div").filter({ hasText: title });
+    const deleteButton = card.locator('[data-testid^="delete-event-type-"]').first();
 
-    // Navigate up to find the card containing this title, then find the delete button
-    // The button has data-testid="delete-event-type-{id}" pattern
-    const cardContainingTitle = titleLocator
-      .locator("..")
-      .locator("..")
-      .locator("..")
-      .locator("..");
-    const deleteButton = cardContainingTitle.locator('[data-testid^="delete-event-type-"]').first();
-
-    const deleteButtonVisible = await deleteButton.isVisible().catch(() => false);
-
-    if (!deleteButtonVisible) {
-      throw new Error(`Could not find delete button for event type: ${title}`);
-    }
-
-    // Set up response waiter for the delete mutation
-    const responsePromise = this.page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/trpc") &&
-        response.request().method() === "POST" &&
-        (response.url().includes("eventType.delete") ||
-          (response.request().postData()?.includes("eventType.delete") ?? false)),
-      { timeout: 30000 }
-    );
-
-    // Click the delete button
+    await expect(deleteButton).toBeVisible({ timeout: 5000 });
     await deleteButton.click();
 
-    // Wait for custom confirm dialog to appear (ConfirmDialog component)
+    // Wait for confirm dialog to appear (ConfirmDialog component)
     const confirmDialog = this.page.locator('[role="dialog"]').filter({
       hasText: "Obriši tip termina",
     });
@@ -100,19 +76,13 @@ export class EventTypesListPage extends BasePage {
     });
     await expect(confirmButton).toBeVisible({ timeout: 2000 });
 
-    // Wait for the delete response to complete
-    await Promise.all([
-      responsePromise.catch(() => {
-        // Response might have already completed, that's ok
-      }),
-      confirmButton.click(),
-    ]);
+    // Wait for the delete mutation to complete
+    await this.waitForMutation(async () => {
+      await confirmButton.click();
+    });
 
     // Wait for dialog to close
     await expect(confirmDialog).toBeHidden({ timeout: 5000 });
-
-    // Give the UI a moment to update
-    await this.page.waitForTimeout(500);
   }
 
   /**

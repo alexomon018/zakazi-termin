@@ -284,9 +284,12 @@ export class AppearanceSettingsPage extends BasePage {
    * Navigate from settings index
    */
   async navigateFromSettingsIndex(): Promise<void> {
-    // Look for the appearance link in the sidebar navigation
-    // The link has href="/dashboard/settings/appearance" and contains "Izgled"
-    const appearanceLink = this.page.locator('a[href="/dashboard/settings/appearance"]').first();
+    // The sidebar renders two versions of each link (collapsed + expanded).
+    // Use getByRole to find the visible one matching "Izgled" text.
+    const appearanceLink = this.page
+      .locator('a[href="/dashboard/settings/appearance"]')
+      .filter({ hasText: "Izgled" })
+      .first();
 
     // Wait for the link to be visible
     await expect(appearanceLink).toBeVisible({ timeout: 5000 });

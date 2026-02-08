@@ -175,7 +175,12 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Moj profil</h1>
+        <h1
+          data-testid="profile-settings-title"
+          className="text-2xl font-bold text-gray-900 dark:text-white"
+        >
+          Moj profil
+        </h1>
         <p className="mt-1 text-gray-600 dark:text-gray-400">
           Upravljajte informacijama vašeg profila
         </p>
@@ -220,6 +225,7 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
         <div className="flex justify-end">
           <Button
             type="submit"
+            data-testid="profile-save-button"
             disabled={
               !isDirty ||
               updateProfile.isPending ||
