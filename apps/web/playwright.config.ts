@@ -31,7 +31,17 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: "**/payment/**", // Payment tests run in separate project
+      testIgnore: "**/payment/**",
+    },
+    {
+      name: "mobile-chrome",
+      use: { ...devices["Pixel 5"] },
+      testIgnore: "**/payment/**",
+    },
+    {
+      name: "mobile-safari",
+      use: { ...devices["iPhone 13"] },
+      testIgnore: "**/payment/**",
     },
     {
       name: "chromium-payment",

@@ -47,20 +47,15 @@ export function processWorkingHours(
       continue;
     }
 
-    let start = dateInTz
-      .add(item.startTime.getUTCHours(), "hours")
-      .add(item.startTime.getUTCMinutes(), "minutes");
+    // Construct wall-clock times directly in the target timezone (handles DST correctly)
+    const dateStr = dateInTz.format("YYYY-MM-DD");
+    const startHour = String(item.startTime.getUTCHours()).padStart(2, "0");
+    const startMin = String(item.startTime.getUTCMinutes()).padStart(2, "0");
+    const endHour = String(item.endTime.getUTCHours()).padStart(2, "0");
+    const endMin = String(item.endTime.getUTCMinutes()).padStart(2, "0");
 
-    let end = dateInTz
-      .add(item.endTime.getUTCHours(), "hours")
-      .add(item.endTime.getUTCMinutes(), "minutes");
-
-    // Handle DST offset differences
-    const offsetBeginningOfDay = dayjs(start.format("YYYY-MM-DD hh:mm")).tz(timeZone).utcOffset();
-    const offsetDiff = start.utcOffset() - offsetBeginningOfDay;
-
-    start = start.add(offsetDiff, "minute");
-    end = end.add(offsetDiff, "minute");
+    const start = dayjs.tz(`${dateStr} ${startHour}:${startMin}`, timeZone);
+    const end = dayjs.tz(`${dateStr} ${endHour}:${endMin}`, timeZone);
 
     const startResult = dayjs.max(start, dateFrom)!;
     let endResult = dayjs.min(end, dateTo.tz(timeZone))!;

@@ -20,7 +20,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { RouterOutputs } from "@salonko/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
-type Booking = RouterOutputs["booking"]["list"][number];
+type Booking = RouterOutputs["booking"]["listPaginated"]["bookings"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
