@@ -1,4 +1,4 @@
-import { logger } from "@salonko/config";
+import { bookingMutationRateLimiter, logger } from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
 import type { Context } from "@salonko/trpc/context";
 import {
@@ -9,6 +9,24 @@ import {
 } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+function getClientIp(req?: Request): string {
+  if (!req) return "unknown";
+  const forwarded = req.headers.get("x-forwarded-for");
+  return forwarded?.split(",")[0]?.trim() || "unknown";
+}
+
+async function checkBookingMutationRateLimit(req?: Request): Promise<void> {
+  if (!bookingMutationRateLimiter) return;
+  const ip = getClientIp(req);
+  const { success } = await bookingMutationRateLimiter.limit(`booking-mutation:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za 15 minuta.",
+    });
+  }
+}
 
 /**
  * Reusable Prisma include for booking list queries
@@ -401,6 +419,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       // Use transaction with serializable isolation to prevent race conditions
       const booking = await ctx.prisma.$transaction(
         async (tx) => {
@@ -658,6 +678,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       const booking = await ctx.prisma.booking.update({
         where: { uid: input.uid },
         data: {
@@ -698,6 +720,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       // Use transaction with serializable isolation to prevent race conditions
       const { updatedBooking, originalStartTime } = await ctx.prisma.$transaction(
         async (tx) => {
@@ -816,6 +840,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       const booking = await ctx.prisma.booking.findUnique({
         where: { uid: input.uid },
         include: {

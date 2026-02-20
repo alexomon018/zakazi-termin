@@ -5,6 +5,7 @@ import {
 } from "@salonko/calendar";
 import { logger } from "@salonko/config";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const calendarRouter = router({
@@ -49,14 +50,17 @@ export const calendarRouter = router({
       });
 
       if (!credential) {
-        throw new Error("Credential not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
       }
 
       const clientId = process.env.GOOGLE_CLIENT_ID;
       const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
       if (!clientId || !clientSecret) {
-        throw new Error("Google Calendar not configured");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Google Calendar not configured",
+        });
       }
 
       const key = googleCredentialSchema.parse(credential.key);
@@ -113,7 +117,7 @@ export const calendarRouter = router({
       });
 
       if (!credential) {
-        throw new Error("Credential not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
       }
 
       if (input.selected) {

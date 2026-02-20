@@ -290,7 +290,16 @@ export const eventTypeRouter = router({
         slug: z.string().min(1),
         description: z.string().optional(),
         length: z.number().min(1),
-        locations: z.any().optional(),
+        locations: z
+          .array(
+            z.object({
+              type: z.enum(["inPerson", "phone", "link"]),
+              address: z.string().optional(),
+              phone: z.string().optional(),
+              link: z.string().optional(),
+            })
+          )
+          .optional(),
         minimumBookingNotice: z.number().optional(),
         beforeEventBuffer: z.number().optional(),
         afterEventBuffer: z.number().optional(),
@@ -319,7 +328,16 @@ export const eventTypeRouter = router({
         description: z.string().optional(),
         length: z.number().min(1).optional(),
         hidden: z.boolean().optional(),
-        locations: z.any().optional(),
+        locations: z
+          .array(
+            z.object({
+              type: z.enum(["inPerson", "phone", "link"]),
+              address: z.string().optional(),
+              phone: z.string().optional(),
+              link: z.string().optional(),
+            })
+          )
+          .optional(),
         minimumBookingNotice: z.number().optional(),
         beforeEventBuffer: z.number().optional(),
         afterEventBuffer: z.number().optional(),

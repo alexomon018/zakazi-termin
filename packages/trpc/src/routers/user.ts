@@ -338,30 +338,29 @@ export const userRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Generate slug if salonName is being updated
       const salonSlug = input.salonName ? generateSalonSlug(input.salonName) : undefined;
 
-      // Check if salonSlug is already taken (if changing)
-      if (salonSlug) {
-        const existingUser = await ctx.prisma.user.findFirst({
-          where: {
+      return await ctx.prisma.$transaction(async (tx) => {
+        if (salonSlug) {
+          const existingUser = await tx.user.findFirst({
+            where: {
+              salonSlug,
+              NOT: { id: ctx.session.user.id },
+            },
+          });
+          if (existingUser) {
+            throw new TRPCError({ code: "CONFLICT", message: "Naziv salona je već zauzet." });
+          }
+        }
+
+        return await tx.user.update({
+          where: { id: ctx.session.user.id },
+          data: {
+            ...input,
             salonSlug,
-            NOT: { id: ctx.session.user.id },
           },
         });
-        if (existingUser) {
-          throw new Error("Naziv salona je već zauzet.");
-        }
-      }
-
-      const user = await ctx.prisma.user.update({
-        where: { id: ctx.session.user.id },
-        data: {
-          ...input,
-          salonSlug,
-        },
       });
-      return user;
     }),
 
   // Update appearance settings
@@ -409,7 +408,7 @@ export const userRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       const user = await ctx.prisma.user.update({

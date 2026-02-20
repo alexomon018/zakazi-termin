@@ -54,3 +54,23 @@ export const forgotPasswordEmailRateLimiter: Ratelimit | null = sharedRedis
       ephemeralCache: sharedEphemeralCache,
     })
   : null;
+
+/** Rate limiter for public booking mutations (create, cancel, reschedule). */
+export const bookingMutationRateLimiter: Ratelimit | null = sharedRedis
+  ? new Ratelimit({
+      redis: sharedRedis,
+      limiter: Ratelimit.slidingWindow(5, "15 m"), // 5 mutations per 15 minutes per IP
+      prefix: SHARED_PREFIX,
+      ephemeralCache: sharedEphemeralCache,
+    })
+  : null;
+
+/** Rate limiter for high-frequency public read endpoints (getSlots). */
+export const publicApiRateLimiter: Ratelimit | null = sharedRedis
+  ? new Ratelimit({
+      redis: sharedRedis,
+      limiter: Ratelimit.slidingWindow(30, "1 m"), // 30 requests per minute per IP
+      prefix: SHARED_PREFIX,
+      ephemeralCache: sharedEphemeralCache,
+    })
+  : null;

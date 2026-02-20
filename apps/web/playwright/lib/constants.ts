@@ -6,6 +6,7 @@ export const ROUTES = {
   SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
   VERIFY_EMAIL: "/verify-email",
+  RESET_PASSWORD: "/reset-password",
 
   // Dashboard routes
   DASHBOARD: "/dashboard",

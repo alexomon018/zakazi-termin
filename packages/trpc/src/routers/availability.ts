@@ -1,5 +1,5 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
-import { dayjs, logger } from "@salonko/config";
+import { dayjs, logger, publicApiRateLimiter } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
 import {
   protectedProcedure,
@@ -149,7 +149,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete existing availability
@@ -192,7 +192,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -235,7 +235,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       await ctx.prisma.availability.deleteMany({
@@ -266,7 +266,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -333,6 +333,17 @@ export const availabilityRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      if (publicApiRateLimiter && ctx.req) {
+        const ip = ctx.req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
+        if (!success) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "Previše zahteva. Pokušajte ponovo za minut.",
+          });
+        }
+      }
+
       const eventType = await ctx.prisma.eventType.findUnique({
         where: { id: input.eventTypeId },
         include: {
