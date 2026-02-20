@@ -286,38 +286,6 @@ export const bookingRouter = router({
       };
     }),
 
-  // List bookings for current user
-  // Shows bookings where user is owner OR assigned host (for team members)
-  // For OWNER/ADMIN: shows all bookings from organization members
-  list: subscriptionProtectedProcedure
-    .input(
-      z
-        .object({
-          status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),
-          dateFrom: z.date().optional(),
-          dateTo: z.date().optional(),
-        })
-        .optional()
-    )
-    .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      // Build where clause based on user's role
-      const roleBasedWhere = await buildBookingWhereClause(ctx.prisma, userId);
-
-      const bookings = await ctx.prisma.booking.findMany({
-        where: {
-          ...roleBasedWhere,
-          ...(input?.status && { status: input.status }),
-          ...(input?.dateFrom && { startTime: { gte: input.dateFrom } }),
-          ...(input?.dateTo && { endTime: { lte: input.dateTo } }),
-        },
-        include: BOOKING_LIST_INCLUDE,
-        orderBy: { startTime: "asc" },
-      });
-      return bookings;
-    }),
-
   // List bookings with pagination
   // Shows bookings where user is owner OR assigned host (for team members)
   // For OWNER/ADMIN: shows all bookings from organization members

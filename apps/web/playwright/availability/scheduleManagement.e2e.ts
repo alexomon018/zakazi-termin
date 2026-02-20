@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures";
+import { TIMEOUTS } from "../lib/constants";
 import { AvailabilityPage } from "../pages";
 
 test.describe("Schedule Management", () => {
@@ -36,7 +37,12 @@ test.describe("Schedule Management", () => {
       const scheduleName = `Test Schedule ${Date.now()}`;
       await availabilityPage.createSchedule(scheduleName);
 
-      // Verify schedule was created
+      // After creation, the app navigates to the editor page for the new schedule
+      await page.waitForURL(/\/dashboard\/availability\//, {
+        timeout: TIMEOUTS.NAVIGATION,
+      });
+
+      // Verify schedule name is visible on the editor page
       await availabilityPage.expectScheduleVisible(scheduleName);
 
       // Cleanup
@@ -59,23 +65,21 @@ test.describe("Schedule Management", () => {
     // Wait for the page to fully load
     await availabilityPage.waitForPageLoad();
 
-    // The default schedule should be automatically selected, but if not, select it
+    // The default schedule should be visible on the list page
     const scheduleName = "Working Hours";
     await availabilityPage.expectScheduleVisible(scheduleName);
 
-    // Check if schedule is already selected by looking for the availability editor
-    const availabilityEditor = page.locator('text="Radno vreme"');
-    const isScheduleSelected = await availabilityEditor.isVisible().catch(() => false);
+    // Click on the schedule to navigate to the editor page
+    const scheduleLink = page.locator(`text=${scheduleName}`).first();
+    await scheduleLink.click();
 
-    if (!isScheduleSelected) {
-      // Click on the schedule name to select it (the schedule card is clickable)
-      const scheduleText = page.locator(`text=${scheduleName}`).first();
-      await scheduleText.click();
-      // Wait for the schedule to load
-      await page.waitForTimeout(1000);
-    }
+    // Wait for the editor page to load
+    await page.waitForURL(/\/dashboard\/availability\//, {
+      timeout: TIMEOUTS.NAVIGATION,
+    });
+    await availabilityPage.waitForPageLoad();
 
-    // Should see days of the week (in Serbian or English)
+    // Should see days of the week on the editor page
     await availabilityPage.expectDaysVisible();
   });
 

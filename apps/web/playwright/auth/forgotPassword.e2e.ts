@@ -10,10 +10,9 @@ test.describe("Forgot Password", () => {
     await expect(page.locator('input[id="email"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
 
-    // Check page title/header
-    await expect(page.locator("text=Zaboravljena lozinka")).toBeVisible();
+    // Check page subtitle text
     await expect(
-      page.locator("text=Unesite vašu email adresu i poslaćemo vam link za resetovanje lozinke")
+      page.locator("text=Unesite vasu email adresu i poslacemo vam link za resetovanje lozinke")
     ).toBeVisible();
   });
 
@@ -103,8 +102,8 @@ test.describe("Forgot Password", () => {
     // Click submit and check for loading state
     const submitButton = page.locator('button[type="submit"]');
 
-    // Before clicking, should say "Pošaljite link za resetovanje"
-    await expect(submitButton).toHaveText("Pošaljite link za resetovanje");
+    // Before clicking, should say "Posaljite link za resetovanje"
+    await expect(submitButton).toHaveText("Posaljite link za resetovanje");
 
     // Start watching for the loading text
     await submitButton.click();

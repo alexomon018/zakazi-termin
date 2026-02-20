@@ -20,7 +20,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { RouterOutputs } from "@salonko/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
-type Booking = RouterOutputs["booking"]["list"][number];
+type Booking = RouterOutputs["booking"]["listPaginated"]["bookings"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
@@ -251,7 +251,9 @@ export function BookingsClient({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Termini</h1>
+          <h1 data-testid="bookings-title" className="text-2xl font-bold text-foreground">
+            Termini
+          </h1>
           <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
         </div>
 
@@ -264,6 +266,7 @@ export function BookingsClient({
                 label={f.label}
                 isActive={filter === f.key}
                 onClick={() => handleFilterChange(f.key)}
+                data-testid={`bookings-tab-${f.key}`}
               />
             ))}
           </div>
@@ -299,7 +302,7 @@ export function BookingsClient({
 
       {/* Bookings list */}
       {currentBookings.length === 0 ? (
-        <Card>
+        <Card data-testid="bookings-empty-state">
           <CardContent className="py-12 text-center">
             <Calendar
               className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
@@ -309,7 +312,7 @@ export function BookingsClient({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div data-testid="bookings-list" className="space-y-4">
           {currentBookings.map((booking: Booking) => (
             <Card key={booking.id}>
               <CardContent className="p-0">

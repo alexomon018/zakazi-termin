@@ -12,7 +12,7 @@ test.describe("Subscription Management", () => {
       subscription,
     }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -27,7 +27,7 @@ test.describe("Subscription Management", () => {
 
     test("should open cancel confirmation dialog", async ({ page, users, subscription }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -46,7 +46,7 @@ test.describe("Subscription Management", () => {
 
     test("should cancel subscription when confirmed", async ({ page, users, subscription }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -67,7 +67,7 @@ test.describe("Subscription Management", () => {
 
     test("should close dialog when dismiss is clicked", async ({ page, users, subscription }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -97,7 +97,7 @@ test.describe("Subscription Management", () => {
       subscription,
     }) => {
       // Create a user with canceled subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, {
         planTier: "starter",
         canceledAtPeriodEnd: true,
@@ -114,7 +114,7 @@ test.describe("Subscription Management", () => {
 
     test("should resume subscription when clicked", async ({ page, users, subscription }) => {
       // Create a user with canceled subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, {
         planTier: "starter",
         canceledAtPeriodEnd: true,
@@ -144,7 +144,7 @@ test.describe("Subscription Management", () => {
       subscription,
     }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
       await users.login(user);
@@ -161,7 +161,7 @@ test.describe("Subscription Management", () => {
   test.describe("Invoice History", () => {
     test("should show invoice history card", async ({ page, users, subscription }) => {
       // Create a user with active subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
       await users.login(user);

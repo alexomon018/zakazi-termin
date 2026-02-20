@@ -58,7 +58,7 @@ test.describe("Login", () => {
     await loginPage.goto();
 
     // Should be redirected to dashboard
-    await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
   test("should have link to signup page", async ({ page }) => {

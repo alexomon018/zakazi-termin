@@ -12,7 +12,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with starter subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -30,7 +30,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with growth subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
       await users.login(user);
@@ -48,7 +48,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with growth_yearly subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
 
       await users.login(user);
@@ -66,7 +66,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with canceled subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, {
         planTier: "starter",
         canceledAtPeriodEnd: true,
@@ -89,7 +89,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with starter subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -106,7 +106,7 @@ test.describe("Plan Changes", () => {
 
     test("should show plan change confirmation text", async ({ page, users, subscription }) => {
       // Create a user with starter subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -131,7 +131,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with starter subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
       await users.login(user);
@@ -163,7 +163,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with growth subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
       await users.login(user);
@@ -190,7 +190,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with growth_yearly subscription
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
 
       await users.login(user);
@@ -215,7 +215,7 @@ test.describe("Plan Changes", () => {
   test.describe("Plan Change Not Available", () => {
     test("should hide change plan card for trial users", async ({ page, users, subscription }) => {
       // Create a user with trial subscription (no paid subscription yet)
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithTrial(user.id, { daysRemaining: 30 });
 
       await users.login(user);
@@ -234,7 +234,7 @@ test.describe("Plan Changes", () => {
       subscription,
     }) => {
       // Create a user with expired trial
-      const user = await users.create({ withSchedule: true });
+      const user = await users.create({ withSchedule: true, withTrial: false });
       await subscription.createWithTrial(user.id, { daysRemaining: 30 });
       await subscription.expireTrial(user.id);
 

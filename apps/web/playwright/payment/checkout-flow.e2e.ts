@@ -7,7 +7,7 @@ test.describe.configure({ mode: "serial" });
 test.describe("Checkout Flow", () => {
   test("should show subscribe button during trial", async ({ page, users, subscription }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -28,7 +28,7 @@ test.describe("Checkout Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -68,7 +68,7 @@ test.describe("Checkout Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -102,7 +102,7 @@ test.describe("Checkout Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -136,7 +136,7 @@ test.describe("Checkout Flow", () => {
     subscription,
   }) => {
     // Create a user and log in
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create a trial subscription
     await subscription.createWithTrial(user.id, { daysRemaining: 30 });
@@ -162,7 +162,7 @@ test.describe("Checkout Flow", () => {
     subscription,
   }) => {
     // Create a user with active subscription
-    const user = await users.create({ withSchedule: true });
+    const user = await users.create({ withSchedule: true, withTrial: false });
 
     // Create an active subscription directly
     await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });

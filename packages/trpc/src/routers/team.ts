@@ -83,39 +83,45 @@ export const teamRouter = router({
         message?: string;
       }[] = [];
 
-      for (const email of normalizedEmails) {
-        // Check if user with this email already exists and is a member
-        const existingUser = await ctx.prisma.user.findUnique({
-          where: { email },
-          select: { id: true },
-        });
-
-        if (existingUser) {
-          const existingMembership = await ctx.prisma.membership.findUnique({
-            where: {
-              userId_organizationId: {
-                userId: existingUser.id,
-                organizationId: input.organizationId,
-              },
+      // Batch read queries to avoid N+1 (3 queries instead of ~4 per email)
+      const [existingUsers, pendingInvites] = await Promise.all([
+        ctx.prisma.user.findMany({
+          where: { email: { in: normalizedEmails } },
+          select: {
+            id: true,
+            email: true,
+            memberships: {
+              where: { organizationId: input.organizationId },
+              select: { id: true },
             },
-          });
-
-          if (existingMembership) {
-            results.push({ email, status: "already_member" });
-            continue;
-          }
-        }
-
-        // Check if there's already a pending invitation for this email
-        const existingInvite = await ctx.prisma.verificationToken.findFirst({
+          },
+        }),
+        ctx.prisma.verificationToken.findMany({
           where: {
             organizationId: input.organizationId,
-            invitedEmail: email,
+            invitedEmail: { in: normalizedEmails },
             expires: { gte: new Date() },
           },
-        });
+          select: { invitedEmail: true },
+        }),
+      ]);
 
-        if (existingInvite) {
+      const memberEmails = new Set(
+        existingUsers.filter((u) => u.memberships.length > 0).map((u) => u.email)
+      );
+      const pendingEmails = new Set(
+        pendingInvites.map((i) => i.invitedEmail).filter(Boolean) as string[]
+      );
+
+      const appOrigin = getAppOriginFromRequest(ctx.req);
+
+      for (const email of normalizedEmails) {
+        if (memberEmails.has(email)) {
+          results.push({ email, status: "already_member" });
+          continue;
+        }
+
+        if (pendingEmails.has(email)) {
           results.push({ email, status: "already_invited" });
           continue;
         }
@@ -137,7 +143,6 @@ export const teamRouter = router({
         });
 
         // Send email invitation - rollback token on failure
-        const appOrigin = getAppOriginFromRequest(ctx.req);
         try {
           await emailService.sendTeamInviteEmail({
             recipientEmail: email,

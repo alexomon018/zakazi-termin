@@ -46,6 +46,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
   const deleteEventType = trpc.eventType.delete.useMutation({
     onSuccess: () => {
       utils.eventType.list.invalidate();
+      setDeleteDialogOpen(false);
     },
   });
 
@@ -103,12 +104,18 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Tipovi termina</h1>
+          <h1 data-testid="event-types-title" className="text-2xl font-bold text-foreground">
+            Tipovi termina
+          </h1>
           <p className="mt-1 text-muted-foreground">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
         </div>
-        <Link href="/dashboard/event-types/new" className="w-full sm:w-auto">
+        <Link
+          href="/dashboard/event-types/new"
+          data-testid="event-types-create-button"
+          className="w-full sm:w-auto"
+        >
           <Button className="w-full sm:w-auto">
             <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
             Novi tip termina
@@ -117,7 +124,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
       </div>
 
       {eventTypes?.length === 0 ? (
-        <Card>
+        <Card data-testid="event-types-empty-state">
           <CardContent className="py-12">
             <div className="text-center">
               <Clock
@@ -138,7 +145,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div data-testid="event-types-list" className="space-y-4">
           {eventTypes?.map((eventType: EventType, index: number) => (
             <Card
               key={eventType.id}

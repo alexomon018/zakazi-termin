@@ -7,7 +7,29 @@ export interface TestUser {
   email: string;
   password: string;
   salonName: string;
+  salonSlug: string;
   name: string;
+}
+
+/**
+ * Generate a URL-safe slug from a salon name.
+ * Mirrors `generateSalonSlug` from `@/lib/salon-utils` to avoid cross-package imports.
+ */
+function toSalonSlug(salonName: string): string {
+  return salonName
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/[čć]/g, "c")
+    .replace(/[šś]/g, "s")
+    .replace(/[žź]/g, "z")
+    .replace(/đ/g, "dj")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .trim()
+    .slice(0, 30);
 }
 
 export interface CreateUserOptions {
@@ -17,6 +39,8 @@ export interface CreateUserOptions {
   name?: string;
   withSchedule?: boolean;
   withEventType?: boolean;
+  /** Auto-create a trial subscription (defaults to true). Set to false for payment tests that manage subscriptions explicitly. */
+  withTrial?: boolean;
 }
 
 export interface UsersFixture {
@@ -28,10 +52,6 @@ export interface UsersFixture {
 export type UsersFixtureType = {
   users: UsersFixture;
 };
-
-// Keep track of created users for cleanup
-const createdUserIds: string[] = [];
-let userCounter = 0;
 
 // Shared Prisma instance
 let prismaInstance: PrismaClient | null = null;
@@ -46,6 +66,9 @@ function getPrismaClient(): PrismaClient {
 export const test = base.extend<UsersFixtureType>({
   users: async ({ page }, use) => {
     const prisma = getPrismaClient();
+    // Per-test tracking to avoid cross-test contamination
+    const createdUserIds: string[] = [];
+    let userCounter = 0;
 
     const users: UsersFixture = {
       create: async (options: CreateUserOptions = {}): Promise<TestUser> => {
@@ -56,19 +79,24 @@ export const test = base.extend<UsersFixtureType>({
         const password = options.password || "TestPassword123!";
         // Limit salon name to 30 characters to pass validation
         const salonName = options.salonName || `salon${userCounter}${random}`.slice(0, 30);
+        const salonSlug = toSalonSlug(salonName);
         const name = options.name || `Test User ${userCounter}`;
 
         // Hash password
         const passwordHash = await hash(password, 12);
 
-        // Create user
+        // Create user with complete profile to skip onboarding redirect
         const user = await prisma.user.create({
           data: {
             email,
             salonName,
+            salonSlug,
             name,
             identityProvider: "EMAIL",
             emailVerified: new Date(),
+            salonTypes: ["frizerski_salon"],
+            salonCity: "Beograd",
+            salonAddress: "Testna Ulica 1",
             password: {
               create: {
                 hash: passwordHash,
@@ -78,6 +106,21 @@ export const test = base.extend<UsersFixtureType>({
         });
 
         createdUserIds.push(user.id);
+
+        // Auto-create trial subscription (defaults to true)
+        if (options.withTrial !== false) {
+          const now = new Date();
+          const trialEndsAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          await prisma.subscription.create({
+            data: {
+              userId: user.id,
+              stripeCustomerId: `cus_test_${timestamp}_${userCounter}_${random}`,
+              status: "TRIALING",
+              trialStartedAt: now,
+              trialEndsAt,
+            },
+          });
+        }
 
         // Create default schedule if requested
         if (options.withSchedule) {
@@ -125,6 +168,7 @@ export const test = base.extend<UsersFixtureType>({
           email,
           password,
           salonName,
+          salonSlug,
           name,
         };
       },
@@ -152,7 +196,7 @@ export const test = base.extend<UsersFixtureType>({
   },
 });
 
-async function loginUser(page: Page, user: TestUser): Promise<void> {
+async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void> {
   // Set cookie consent before navigating to avoid banner blocking interactions
   await page.context().addCookies([
     {
@@ -168,16 +212,42 @@ async function loginUser(page: Page, user: TestUser): Promise<void> {
     },
   ]);
 
-  // Navigate to login page
-  await page.goto("/login");
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    // Navigate to login page
+    await page.goto("/login");
 
-  // Fill in credentials (using id selectors to match the actual form)
-  await page.fill('input[id="email"]', user.email);
-  await page.fill('input[id="password"]', user.password);
+    // Fill in credentials (using id selectors to match the actual form)
+    await page.fill('input[id="email"]', user.email);
+    await page.fill('input[id="password"]', user.password);
 
-  // Submit the form
-  await page.click('button[type="submit"]');
+    // Submit the form
+    await page.click('button[type="submit"]');
 
-  // Wait for navigation to dashboard
-  await page.waitForURL(/\/dashboard/, { timeout: 15000 });
+    try {
+      // Wait for navigation to dashboard
+      await page.waitForURL(/\/dashboard/, { timeout: 30000 });
+      return;
+    } catch {
+      if (attempt === retries) {
+        throw new Error(
+          `Login failed after ${retries + 1} attempts for user ${user.email}. Page URL: ${page.url()}`
+        );
+      }
+      // Clear state and retry
+      await page.context().clearCookies();
+      await page.context().addCookies([
+        {
+          name: "cookie-consent",
+          value: JSON.stringify({
+            version: 1,
+            necessary: true,
+            analytics: false,
+            timestamp: Date.now(),
+          }),
+          domain: "localhost",
+          path: "/",
+        },
+      ]);
+    }
+  }
 }

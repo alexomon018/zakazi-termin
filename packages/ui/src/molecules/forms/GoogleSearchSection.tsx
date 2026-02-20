@@ -36,6 +36,7 @@ export function GoogleSearchSection({
       <GooglePlacesSearch apiKey={apiKey} onPlaceSelect={onPlaceSelect} disabled={isLoading} />
       <button
         type="button"
+        data-testid="signup-manual-fill-button"
         onClick={onManualFill}
         className="w-full mt-3 text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
       >
