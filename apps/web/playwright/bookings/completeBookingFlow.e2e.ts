@@ -41,7 +41,7 @@ test.describe("Complete Booking Flow", () => {
     await bookingPage.completeBooking({
       day: nextWeekday,
       name: "Test Attendee",
-      email: "attendee@test.com",
+      email: `attendee-${Date.now()}@test.com`,
       notes: "Test booking notes",
     });
 
@@ -73,18 +73,35 @@ test.describe("Complete Booking Flow", () => {
       email: attendeeEmail,
     });
 
-    // Wait for confirmation to appear
-    await page.waitForTimeout(2000);
+    // Wait for confirmation before querying DB
+    await expect(
+      page
+        .locator("text=potvrđen")
+        .or(page.locator("text=zakazan"))
+        .or(page.getByTestId("booking-success-message"))
+    ).toBeVisible({ timeout: 15000 });
 
-    // Verify booking exists in database
-    const attendee = await prisma.attendee.findFirst({
-      where: { email: attendeeEmail },
-      include: { booking: true },
-    });
+    try {
+      // Verify booking exists in database
+      const attendee = await prisma.attendee.findFirst({
+        where: { email: attendeeEmail },
+        include: { booking: true },
+      });
 
-    expect(attendee).toBeTruthy();
-    expect(attendee?.booking).toBeTruthy();
-    expect(attendee?.booking?.status).toBe("ACCEPTED");
+      expect(attendee).toBeTruthy();
+      expect(attendee?.booking).toBeTruthy();
+      expect(attendee?.booking?.status).toBe("ACCEPTED");
+    } finally {
+      // Clean up created booking and attendee records
+      const attendee = await prisma.attendee.findFirst({
+        where: { email: attendeeEmail },
+        select: { id: true, bookingId: true },
+      });
+      if (attendee) {
+        await prisma.attendee.delete({ where: { id: attendee.id } });
+        await prisma.booking.delete({ where: { id: attendee.bookingId } });
+      }
+    }
   });
 
   test("should navigate from public profile to booking page", async ({ page, users }) => {
@@ -95,7 +112,7 @@ test.describe("Complete Booking Flow", () => {
     await profilePage.expectEventTypeVisible("30 Minute Meeting");
     await profilePage.selectEventType("30 Minute Meeting");
 
-    await expect(page).toHaveURL(new RegExp(`/${user.salonName}/30-minute-meeting`));
+    await expect(page.url()).toContain(`/${user.salonName}/30-minute-meeting`);
 
     const bookingPage = new EventTypeBookingPage(page);
     await bookingPage.expectEventDetailsVisible();

@@ -158,6 +158,9 @@ export {
   type TimezoneSelectorProps,
 } from "./molecules/availability";
 
+// Molecules - Error
+export { ErrorBoundaryUI } from "./molecules/error/ErrorBoundaryUI";
+
 // Molecules - Dialogs
 export { ConfirmDialog } from "./molecules/dialogs/ConfirmDialog";
 export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";

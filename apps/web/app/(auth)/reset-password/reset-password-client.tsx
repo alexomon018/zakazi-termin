@@ -128,7 +128,10 @@ export default function ResetPasswordClient() {
           )}
 
           {error && (
-            <div className="p-4 mb-6 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800/50 animate-fade-in">
+            <div
+              data-testid="reset-password-error"
+              className="p-4 mb-6 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200 dark:text-red-400 dark:bg-red-900/20 dark:border-red-800/50 animate-fade-in"
+            >
               <div className="flex gap-2 items-center">
                 <XCircle className="flex-shrink-0 w-4 h-4" aria-hidden="true" />
                 {error}

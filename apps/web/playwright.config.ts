@@ -15,7 +15,7 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
   reporter: [["html", { open: "never" }], ["list"]],
-  timeout: isCI ? 60000 : 60000,
+  timeout: 60000,
   expect: {
     timeout: isCI ? 15000 : 10000,
   },

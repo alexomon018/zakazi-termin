@@ -13,12 +13,10 @@ import { SelectField, type SelectOption } from "../../molecules/forms/SelectFiel
 
 export type LocationType = "inPerson" | "phone" | "link";
 
-export interface Location {
-  type: LocationType;
-  address?: string;
-  phone?: string;
-  link?: string;
-}
+export type Location =
+  | { type: "inPerson"; address: string }
+  | { type: "phone"; phone: string }
+  | { type: "link"; link: string };
 
 export type Schedule = {
   id: string;

@@ -7,6 +7,12 @@ import {
 } from "@salonko/trpc/trpc";
 import { z } from "zod";
 
+const locationSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("inPerson"), address: z.string() }),
+  z.object({ type: z.literal("phone"), phone: z.string() }),
+  z.object({ type: z.literal("link"), link: z.string() }),
+]);
+
 export const eventTypeRouter = router({
   // List user's event types
   // Shows event types where user is owner OR is assigned as a host
@@ -15,8 +21,8 @@ export const eventTypeRouter = router({
     .input(
       z
         .object({
-          skip: z.number().default(0),
-          take: z.number().default(50),
+          skip: z.number().min(0).default(0),
+          take: z.number().min(1).max(100).default(50),
         })
         .optional()
     )
@@ -40,97 +46,87 @@ export const eventTypeRouter = router({
 
       if (membership) {
         // OWNER/ADMIN: show all event types from organization members
-        const allEventTypes = await ctx.prisma.eventType.findMany({
-          where: {
-            user: {
-              memberships: {
-                some: {
-                  organizationId: membership.organizationId,
-                  accepted: true,
-                },
+        const orgMemberWhere = {
+          user: {
+            memberships: {
+              some: {
+                organizationId: membership.organizationId,
+                accepted: true,
               },
             },
           },
+        };
+
+        const [allEventTypes, total] = await Promise.all([
+          ctx.prisma.eventType.findMany({
+            where: orgMemberWhere,
+            orderBy: { position: "asc" },
+            skip,
+            take,
+            include: {
+              hosts: { select: { userId: true } },
+              user: { select: { id: true, name: true, salonName: true } },
+            },
+          }),
+          ctx.prisma.eventType.count({ where: orgMemberWhere }),
+        ]);
+
+        // Mark which are owned by current user vs owned by team members
+        return {
+          items: allEventTypes.map((et) => ({
+            ...et,
+            isOwner: et.userId === userId,
+            ownerName: et.userId === userId ? null : et.user?.salonName || et.user?.name,
+          })),
+          total,
+        };
+      }
+
+      // Regular user or MEMBER: only their own event types + hosted event types
+      const ownedWhere = { userId };
+      const hostedWhere = {
+        hosts: { some: { userId } },
+        userId: { not: userId },
+      };
+
+      const [ownedEventTypes, hostedEventTypes, ownedCount, hostedCount] = await Promise.all([
+        ctx.prisma.eventType.findMany({
+          where: ownedWhere,
+          orderBy: { position: "asc" },
+          skip,
+          take,
+          include: { hosts: { select: { userId: true } } },
+        }),
+        ctx.prisma.eventType.findMany({
+          where: hostedWhere,
           orderBy: { position: "asc" },
           skip,
           take,
           include: {
-            hosts: {
-              select: {
-                userId: true,
-              },
-            },
-            user: {
-              select: {
-                id: true,
-                name: true,
-                salonName: true,
-              },
-            },
+            hosts: { select: { userId: true } },
+            user: { select: { name: true, salonName: true } },
           },
-        });
-
-        // Mark which are owned by current user vs owned by team members
-        return allEventTypes.map((et) => ({
-          ...et,
-          isOwner: et.userId === userId,
-          ownerName: et.userId === userId ? null : et.user?.name || et.user?.salonName,
-        }));
-      }
-
-      // Regular user or MEMBER: only their own event types + hosted event types
-      // Get event types where user is owner
-      const ownedEventTypes = await ctx.prisma.eventType.findMany({
-        where: { userId: userId },
-        orderBy: { position: "asc" },
-        skip,
-        take,
-        include: {
-          hosts: {
-            select: {
-              userId: true,
-            },
-          },
-        },
-      });
-
-      // Get event types where user is assigned as a host (but not owner)
-      const hostedEventTypes = await ctx.prisma.eventType.findMany({
-        where: {
-          hosts: {
-            some: {
-              userId: userId,
-            },
-          },
-          userId: { not: userId }, // Exclude owned event types
-        },
-        orderBy: { position: "asc" },
-        skip,
-        take,
-        include: {
-          hosts: {
-            select: {
-              userId: true,
-            },
-          },
-          user: {
-            select: {
-              name: true,
-              salonName: true,
-            },
-          },
-        },
-      });
+        }),
+        ctx.prisma.eventType.count({ where: ownedWhere }),
+        ctx.prisma.eventType.count({ where: hostedWhere }),
+      ]);
 
       // Combine and mark which are owned vs hosted
-      return [
-        ...ownedEventTypes.map((et) => ({ ...et, isOwner: true, ownerName: null })),
-        ...hostedEventTypes.map((et) => ({
-          ...et,
-          isOwner: false,
-          ownerName: et.user?.salonName || et.user?.name,
-        })),
-      ];
+      return {
+        items: [
+          ...ownedEventTypes.map((et) => ({
+            ...et,
+            isOwner: true,
+            ownerName: null as string | null,
+          })),
+          ...hostedEventTypes.map((et) => ({
+            ...et,
+            isOwner: false,
+            ownerName: (et.user?.salonName || et.user?.name) as string | null,
+          })),
+        ],
+        total: ownedCount + hostedCount,
+      };
     }),
 
   // Get single event type by ID
@@ -307,16 +303,7 @@ export const eventTypeRouter = router({
         slug: z.string().min(1),
         description: z.string().optional(),
         length: z.number().min(1),
-        locations: z
-          .array(
-            z.object({
-              type: z.enum(["inPerson", "phone", "link"]),
-              address: z.string().optional(),
-              phone: z.string().optional(),
-              link: z.string().optional(),
-            })
-          )
-          .optional(),
+        locations: z.array(locationSchema).optional(),
         minimumBookingNotice: z.number().optional(),
         beforeEventBuffer: z.number().optional(),
         afterEventBuffer: z.number().optional(),
@@ -345,16 +332,7 @@ export const eventTypeRouter = router({
         description: z.string().optional(),
         length: z.number().min(1).optional(),
         hidden: z.boolean().optional(),
-        locations: z
-          .array(
-            z.object({
-              type: z.enum(["inPerson", "phone", "link"]),
-              address: z.string().optional(),
-              phone: z.string().optional(),
-              link: z.string().optional(),
-            })
-          )
-          .optional(),
+        locations: z.array(locationSchema).optional(),
         minimumBookingNotice: z.number().optional(),
         beforeEventBuffer: z.number().optional(),
         afterEventBuffer: z.number().optional(),

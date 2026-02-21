@@ -17,7 +17,7 @@ export class ResetPasswordPage extends BasePage {
     this.passwordInput = page.locator('input[id="password"]');
     this.confirmPasswordInput = page.locator('input[id="confirmPassword"]');
     this.submitButton = page.locator('button[type="submit"]');
-    this.errorMessage = page.locator(".text-red-700, .dark\\:text-red-400");
+    this.errorMessage = page.getByTestId("reset-password-error");
     this.invalidLinkWarning = page.locator("text=Link je nevazeci");
     this.successMessage = page.locator("text=Lozinka je resetovana");
     this.loginLink = page.locator('a[href="/login"]');

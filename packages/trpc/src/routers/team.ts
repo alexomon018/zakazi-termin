@@ -91,7 +91,7 @@ export const teamRouter = router({
             id: true,
             email: true,
             memberships: {
-              where: { organizationId: input.organizationId },
+              where: { organizationId: input.organizationId, accepted: true },
               select: { id: true },
             },
           },

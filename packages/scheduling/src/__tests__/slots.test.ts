@@ -9,10 +9,8 @@ const BELGRADE_TZ = "Europe/Belgrade";
 // Spring-forward 2026: Sunday March 29, 02:00→03:00 (UTC+1 → UTC+2)
 // Fall-back 2026: Sunday October 25, 03:00→02:00 (UTC+2 → UTC+1)
 
-/** Get a future date string for non-DST testing (3 months from now) */
-function getFutureDate(): string {
-  return dayjs().add(3, "months").format("YYYY-MM-DD");
-}
+/** Fixed future date for non-DST testing (Monday, no DST transition, always in the future) */
+const FUTURE_DATE = "2030-01-07";
 
 /** Create a DateRange in Belgrade timezone */
 function makeRange(dateStr: string, startHour: number, endHour: number): DateRange {
@@ -24,9 +22,8 @@ function makeRange(dateStr: string, startHour: number, endHour: number): DateRan
 
 describe("getSlots - DST transitions", () => {
   it("generates slots on a normal day without DST", () => {
-    const futureDate = getFutureDate();
-    const inviteeDate = dayjs.tz(futureDate, BELGRADE_TZ);
-    const dateRanges = [makeRange(futureDate, 9, 12)]; // 3 hours
+    const inviteeDate = dayjs.tz(FUTURE_DATE, BELGRADE_TZ);
+    const dateRanges = [makeRange(FUTURE_DATE, 9, 12)]; // 3 hours
 
     const slots = getSlots({
       inviteeDate,
@@ -61,16 +58,9 @@ describe("getSlots - DST transitions", () => {
     const uniqueUtcTimes = new Set(utcTimes);
     expect(utcTimes.length).toBe(uniqueUtcTimes.size);
 
-    // No slot should have wall-clock time in the skipped hour (02:00-02:59 Belgrade)
+    // No slot should fall in the skipped hour (02:00-02:59 doesn't exist on spring-forward day)
     for (const slot of slots) {
-      const belgradeHour = slot.time.tz(BELGRADE_TZ).hour();
-      const belgradeMinute = slot.time.tz(BELGRADE_TZ).minute();
-      if (belgradeHour === 2) {
-        // On spring-forward, 02:xx doesn't exist - dayjs normalizes to 03:xx
-        // So if hour is 2, it should actually be valid (pre-transition, CET)
-        // Verify UTC is consistent
-        expect(slot.time.utc().isValid()).toBe(true);
-      }
+      expect(slot.time.tz(BELGRADE_TZ).hour()).not.toBe(2);
     }
   });
 

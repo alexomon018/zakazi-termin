@@ -21,7 +21,6 @@ test.describe("Verify Email", () => {
   test("should show error for invalid verification code", async ({ page, prisma }) => {
     const email = generateTestEmail();
 
-    // Create a pending registration directly in DB
     await prisma.pendingRegistration.create({
       data: {
         email: email.toLowerCase(),
@@ -33,19 +32,20 @@ test.describe("Verify Email", () => {
       },
     });
 
-    const verifyPage = new VerifyEmailPage(page);
-    await verifyPage.goto(email);
+    try {
+      const verifyPage = new VerifyEmailPage(page);
+      await verifyPage.goto(email);
 
-    // Enter wrong code
-    await verifyPage.verify("999999");
+      // Enter wrong code
+      await verifyPage.verify("999999");
 
-    // Should show error
-    await expect(
-      page.locator("text=nevažeći").or(page.locator("text=pogrešan")).or(verifyPage.errorMessage)
-    ).toBeVisible({ timeout: 10000 });
-
-    // Cleanup
-    await prisma.pendingRegistration.deleteMany({ where: { email: email.toLowerCase() } });
+      // Should show error
+      await expect(
+        page.locator("text=nevažeći").or(page.locator("text=pogrešan")).or(verifyPage.errorMessage)
+      ).toBeVisible({ timeout: 10000 });
+    } finally {
+      await prisma.pendingRegistration.deleteMany({ where: { email: email.toLowerCase() } });
+    }
   });
 
   test("should have resend button that is clickable", async ({ page }) => {

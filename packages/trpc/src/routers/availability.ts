@@ -1,5 +1,5 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
-import { dayjs, logger, publicApiRateLimiter } from "@salonko/config";
+import { dayjs, getClientIp, logger, publicApiRateLimiter } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
 import {
   protectedProcedure,
@@ -334,7 +334,7 @@ export const availabilityRouter = router({
     )
     .query(async ({ ctx, input }) => {
       if (publicApiRateLimiter && ctx.req) {
-        const ip = ctx.req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        const ip = getClientIp(ctx.req);
         const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
         if (!success) {
           throw new TRPCError({

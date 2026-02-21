@@ -1,4 +1,9 @@
-import { bookingMutationRateLimiter, logger } from "@salonko/config";
+import {
+  bookingCancelRateLimiter,
+  bookingMutationRateLimiter,
+  getClientIp,
+  logger,
+} from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
 import type { Context } from "@salonko/trpc/context";
 import {
@@ -10,16 +15,22 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-function getClientIp(req?: Request): string {
-  if (!req) return "unknown";
-  const forwarded = req.headers.get("x-forwarded-for");
-  return forwarded?.split(",")[0]?.trim() || "unknown";
-}
-
 async function checkBookingMutationRateLimit(req?: Request): Promise<void> {
   if (!bookingMutationRateLimiter) return;
   const ip = getClientIp(req);
   const { success } = await bookingMutationRateLimiter.limit(`booking-mutation:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za 15 minuta.",
+    });
+  }
+}
+
+async function checkBookingCancelRateLimit(req?: Request): Promise<void> {
+  if (!bookingCancelRateLimiter) return;
+  const ip = getClientIp(req);
+  const { success } = await bookingCancelRateLimiter.limit(`booking-cancel:${ip}`);
   if (!success) {
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
@@ -646,7 +657,7 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      await checkBookingMutationRateLimit(ctx.req);
+      await checkBookingCancelRateLimit(ctx.req);
 
       const booking = await ctx.prisma.booking.update({
         where: { uid: input.uid },

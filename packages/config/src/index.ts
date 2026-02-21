@@ -5,5 +5,6 @@ export * from "./dayjs";
 export * from "./logger";
 export * from "./pricing";
 export * from "./ratelimit";
+export * from "./request";
 export * from "./salon-types";
 export * from "./slug";

@@ -81,7 +81,7 @@ describe("processWorkingHours", () => {
   });
 
   it("handles multi-day range spanning spring-forward transition", () => {
-    // March 28 (Saturday, UTC+1) to March 30 (Monday, UTC+2)
+    // March 28 (Saturday, UTC+1) to March 31 (Tuesday, UTC+2)
     const dateFrom = dayjs.tz("2026-03-28", BELGRADE_TZ);
     const dateTo = dayjs.tz("2026-03-31", BELGRADE_TZ);
     // Mon-Sat = days [1,2,3,4,5,6], 09:00-17:00

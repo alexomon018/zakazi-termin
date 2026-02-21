@@ -353,13 +353,23 @@ export const userRouter = router({
           }
         }
 
-        return await tx.user.update({
-          where: { id: ctx.session.user.id },
-          data: {
-            ...input,
-            salonSlug,
-          },
-        });
+        return await tx.user
+          .update({
+            where: { id: ctx.session.user.id },
+            data: {
+              ...input,
+              salonSlug,
+            },
+          })
+          .catch((error) => {
+            if (error.code === "P2002" && error.meta?.target?.includes("salonSlug")) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "Naziv salona je već zauzet.",
+              });
+            }
+            throw error;
+          });
       });
     }),
 

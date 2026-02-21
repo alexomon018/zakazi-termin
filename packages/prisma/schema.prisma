@@ -442,7 +442,6 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   @@index([eventTypeId])
-  @@index([userId])
   @@index([uid])
   @@index([status])
   @@index([startTime, endTime])
@@ -461,7 +460,6 @@ model Attendee {
   booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([email])
-  @@index([bookingId])
   @@index([bookingId, email])
 }
 

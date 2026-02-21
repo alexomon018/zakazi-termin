@@ -8,7 +8,7 @@ import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } 
 import Link from "next/link";
 import { useState } from "react";
 
-type EventType = RouterOutputs["eventType"]["list"][number];
+type EventType = RouterOutputs["eventType"]["list"]["items"][number];
 type User = Pick<
   NonNullable<RouterOutputs["user"]["me"]>,
   "id" | "salonName" | "name" | "membership"
@@ -39,9 +39,10 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
   const [eventTypeToDelete, setEventTypeToDelete] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
-  const { data: eventTypes } = trpc.eventType.list.useQuery(undefined, {
-    initialData: initialEventTypes,
+  const { data } = trpc.eventType.list.useQuery(undefined, {
+    initialData: { items: initialEventTypes, total: initialEventTypes.length },
   });
+  const eventTypes = data?.items ?? [];
 
   const deleteEventType = trpc.eventType.delete.useMutation({
     onSuccess: () => {
