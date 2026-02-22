@@ -47,7 +47,7 @@ export function EventTypesClient({
   const { data } = trpc.eventType.list.useQuery(undefined, {
     initialData: { items: initialEventTypes, total: initialTotal },
   });
-  const eventTypes = data?.items ?? [];
+  const eventTypes = data.items;
 
   const deleteEventType = trpc.eventType.delete.useMutation({
     onSuccess: () => {
@@ -129,7 +129,7 @@ export function EventTypesClient({
         </Link>
       </div>
 
-      {eventTypes?.length === 0 ? (
+      {eventTypes.length === 0 ? (
         <Card data-testid="event-types-empty-state">
           <CardContent className="py-12">
             <div className="text-center">
@@ -152,7 +152,7 @@ export function EventTypesClient({
         </Card>
       ) : (
         <div data-testid="event-types-list" className="space-y-4">
-          {eventTypes?.map((eventType: EventType, index: number) => (
+          {eventTypes.map((eventType: EventType) => (
             <Card
               key={eventType.id}
               className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
@@ -299,7 +299,7 @@ export function EventTypesClient({
       )}
 
       {/* Help section */}
-      {eventTypes && eventTypes.length > 0 && (
+      {eventTypes.length > 0 && (
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
           <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
           <p className="text-sm text-muted-foreground">

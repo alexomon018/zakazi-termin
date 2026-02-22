@@ -10,6 +10,22 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+async function checkPublicApiRateLimit(req?: Request): Promise<void> {
+  if (!publicApiRateLimiter) return;
+  const ip = getClientIp(req);
+  if (!ip) {
+    logger.warn("Could not resolve client IP for public API rate limiting");
+    return;
+  }
+  const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za minut.",
+    });
+  }
+}
+
 export const availabilityRouter = router({
   // List user's schedules
   listSchedules: subscriptionProtectedProcedure.query(async ({ ctx }) => {
@@ -333,18 +349,7 @@ export const availabilityRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      if (publicApiRateLimiter) {
-        const ip = getClientIp(ctx.req);
-        if (ip) {
-          const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
-          if (!success) {
-            throw new TRPCError({
-              code: "TOO_MANY_REQUESTS",
-              message: "Previše zahteva. Pokušajte ponovo za minut.",
-            });
-          }
-        }
-      }
+      await checkPublicApiRateLimit(ctx.req);
 
       const eventType = await ctx.prisma.eventType.findUnique({
         where: { id: input.eventTypeId },

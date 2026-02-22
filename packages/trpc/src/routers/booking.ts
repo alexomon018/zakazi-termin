@@ -650,7 +650,9 @@ export const bookingRouter = router({
       return booking;
     }),
 
-  // Cancel a booking (can be done by organizer or attendee via uid)
+  // Cancel a booking (can be done by organizer, assigned host, or attendee via uid)
+  // The booking UID (UUID) acts as a bearer token for unauthenticated attendees.
+  // Authenticated users must be the organizer or assigned host.
   cancel: publicProcedure
     .input(
       z.object({
@@ -660,6 +662,29 @@ export const bookingRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       await checkBookingCancelRateLimit(ctx.req);
+
+      // Fetch booking to verify it exists and check authorization
+      const existingBooking = await ctx.prisma.booking.findUnique({
+        where: { uid: input.uid },
+        select: { id: true, status: true, userId: true, assignedHostId: true },
+      });
+
+      if (!existingBooking) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Termin nije pronađen." });
+      }
+
+      // If the caller is authenticated, they must be the organizer or assigned host
+      const sessionUserId = ctx.session?.user?.id;
+      if (
+        sessionUserId &&
+        sessionUserId !== existingBooking.userId &&
+        sessionUserId !== existingBooking.assignedHostId
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Nemate dozvolu za otkazivanje ovog termina.",
+        });
+      }
 
       const booking = await ctx.prisma.booking.update({
         where: { uid: input.uid },
