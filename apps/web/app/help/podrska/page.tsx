@@ -2,6 +2,7 @@ import { BreadcrumbSchema } from "@/components/StructuredData";
 import { getAppUrl } from "@/lib/utils";
 import { LandingFooter, LandingHeader, SupportRequestClient } from "@salonko/ui";
 import type { Metadata } from "next";
+import { submitSupportRequest } from "./actions";
 
 const baseUrl = getAppUrl();
 
@@ -41,7 +42,7 @@ export default function SupportRequestPage() {
       />
       <LandingHeader />
       <main>
-        <SupportRequestClient />
+        <SupportRequestClient onSubmit={submitSupportRequest} />
       </main>
       <LandingFooter />
     </div>

@@ -280,7 +280,10 @@ export {
 // Organisms - Help Center
 export { HelpArticleClient } from "./organisms/help-center/HelpArticleClient";
 export { HelpCenterClient } from "./organisms/help-center/HelpCenterClient";
-export { SupportRequestClient } from "./organisms/help-center/SupportRequestClient";
+export {
+  SupportRequestClient,
+  type SupportRequestFormData,
+} from "./organisms/help-center/SupportRequestClient";
 export {
   helpCategories,
   supportCategories,

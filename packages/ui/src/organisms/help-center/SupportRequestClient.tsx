@@ -15,7 +15,7 @@ import {
 } from "@salonko/ui/atoms/Select";
 import { Textarea } from "@salonko/ui/atoms/Textarea";
 import { cn } from "@salonko/ui/utils";
-import { ArrowLeft, CheckCircle2, Clock, Mail, Send } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Mail, Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -36,7 +36,11 @@ const supportRequestSchema = z.object({
     .max(2000, "Opis može imati najviše 2000 karaktera"),
 });
 
-type SupportRequestFormData = z.infer<typeof supportRequestSchema>;
+export type SupportRequestFormData = z.infer<typeof supportRequestSchema>;
+
+interface SupportRequestClientProps {
+  onSubmit?: (data: SupportRequestFormData) => Promise<{ success: boolean; error?: string }>;
+}
 
 function FormField({
   label,
@@ -61,8 +65,9 @@ function FormField({
   );
 }
 
-export function SupportRequestClient() {
+export function SupportRequestClient({ onSubmit: onSubmitProp }: SupportRequestClientProps = {}) {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -80,9 +85,21 @@ export function SupportRequestClient() {
     },
   });
 
-  const onSubmit = async (_data: SupportRequestFormData) => {
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  const onSubmit = async (data: SupportRequestFormData) => {
+    setSubmitError(null);
+
+    if (!onSubmitProp) {
+      setIsSubmitted(true);
+      return;
+    }
+
+    const result = await onSubmitProp(data);
+
+    if (!result.success) {
+      setSubmitError(result.error ?? "Došlo je do greške. Pokušaj ponovo.");
+      return;
+    }
+
     setIsSubmitted(true);
   };
 
@@ -145,6 +162,16 @@ export function SupportRequestClient() {
         {/* Form */}
         <Card>
           <CardContent className="p-6 sm:p-8">
+            {submitError && (
+              <div className="flex gap-3 items-start p-4 mb-6 rounded-lg border bg-destructive/5 border-destructive/20">
+                <AlertCircle
+                  className="w-5 h-5 text-destructive shrink-0 mt-0.5"
+                  aria-hidden="true"
+                />
+                <p className="text-sm text-destructive">{submitError}</p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Email */}
               <FormField label="Tvoj email" error={errors.email?.message} required>

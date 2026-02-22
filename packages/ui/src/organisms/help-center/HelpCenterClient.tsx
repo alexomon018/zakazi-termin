@@ -124,6 +124,7 @@ export function HelpCenterClient() {
             <Input
               type="search"
               placeholder="Pretraži članke, vodiče ili funkcije..."
+              aria-label="Pretraži članke, vodiče ili funkcije"
               className="pr-4 pl-12 h-12 text-base rounded-xl border-border shadow-elevated"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
