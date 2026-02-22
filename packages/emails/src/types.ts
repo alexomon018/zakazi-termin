@@ -70,3 +70,13 @@ export interface TeamInviteEmailData {
   inviteUrl: string;
   recipientEmail: string;
 }
+
+// Support-related email types
+export interface SupportRequestEmailData {
+  email: string;
+  subject: string;
+  salonName?: string;
+  category: string;
+  categoryLabel: string;
+  description: string;
+}

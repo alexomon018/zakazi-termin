@@ -277,6 +277,22 @@ export {
   homepageFAQs,
 } from "./organisms/faq/faq-data";
 
+// Organisms - Help Center
+export { HelpArticleClient } from "./organisms/help-center/HelpArticleClient";
+export { HelpCenterClient } from "./organisms/help-center/HelpCenterClient";
+export { SupportRequestClient } from "./organisms/help-center/SupportRequestClient";
+export {
+  helpCategories,
+  supportCategories,
+  type HelpArticle,
+  type HelpCategory,
+  type SupportCategoryValue,
+} from "./organisms/help-center/help-center-data";
+export {
+  supportRequestSchema,
+  type SupportRequestFormData,
+} from "./organisms/help-center/support-request-schema";
+
 // Hooks
 export { useCookieConsent } from "./hooks/useCookieConsent";
 export { useDebounce } from "./hooks/useDebounce";

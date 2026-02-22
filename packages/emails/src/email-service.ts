@@ -18,6 +18,7 @@ import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
 import { SubscriptionSuccessEmail } from "./templates/subscription-success";
+import { SupportRequestEmail } from "./templates/support-request";
 import { TeamInviteEmail } from "./templates/team-invite";
 import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
@@ -27,6 +28,7 @@ import type {
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
   SubscriptionSuccessEmailData,
+  SupportRequestEmailData,
   TeamInviteEmailData,
   TrialEndingEmailData,
 } from "./types";
@@ -36,6 +38,8 @@ export interface SendEmailOptions {
   subject: string;
   react: ReactElement;
 }
+
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "salonko.rs@gmail.com";
 
 class EmailService {
   private resend: Resend | null = null;
@@ -293,6 +297,20 @@ class EmailService {
       to: data.userEmail,
       subject: "Pretplata uspešno aktivirana - Salonko",
       react: createElement(SubscriptionSuccessEmail, data),
+    });
+  }
+
+  // Support-related emails
+
+  // Send support request notification to the support team
+  async sendSupportRequestEmail(
+    data: SupportRequestEmailData,
+    supportEmail = SUPPORT_EMAIL
+  ): Promise<{ success: boolean; error?: string }> {
+    return this.send({
+      to: supportEmail,
+      subject: `Zahtev za podršku: ${data.subject}`,
+      react: createElement(SupportRequestEmail, data),
     });
   }
 

@@ -23,9 +23,9 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
   }, []);
 
   const navLinks = [
-    { href: "#funkcije", label: "Funkcije" },
-    { href: "#kako-radi", label: "Kako radi" },
-    { href: "#cene", label: "Cene" },
+    { href: "/#funkcije", label: "Funkcije" },
+    { href: "/#kako-radi", label: "Kako radi" },
+    { href: "/#cene", label: "Cene" },
   ];
 
   return (
