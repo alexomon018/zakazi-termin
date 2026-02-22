@@ -2,15 +2,11 @@
 
 import { logger } from "@salonko/config";
 import { SUPPORT_EMAIL, emailService } from "@salonko/emails";
-import { supportCategories, supportRequestSchema } from "@salonko/ui";
+import { type SupportRequestFormData, supportCategories, supportRequestSchema } from "@salonko/ui";
 
-export async function submitSupportRequest(data: {
-  email: string;
-  subject: string;
-  salonName?: string;
-  category: string;
-  description: string;
-}): Promise<{ success: boolean; error?: string }> {
+export async function submitSupportRequest(
+  data: SupportRequestFormData
+): Promise<{ success: boolean; error?: string }> {
   const parsed = supportRequestSchema.safeParse(data);
 
   if (!parsed.success) {

@@ -133,9 +133,9 @@ export function HelpCenterClient() {
         </div>
       </section>
 
-      {/* Search Results */}
-      {showSearchResults && (
-        <section aria-live="polite" className="px-4 py-8 sm:px-6 lg:px-8">
+      {/* Search Results — container always in DOM for aria-live */}
+      <section aria-live="polite" className={showSearchResults ? "px-4 py-8 sm:px-6 lg:px-8" : ""}>
+        {showSearchResults && (
           <div className="mx-auto max-w-3xl">
             {searchResults.length > 0 ? (
               <>
@@ -146,7 +146,7 @@ export function HelpCenterClient() {
                 <Card className="divide-y divide-border">
                   {searchResults.map(({ article, categoryId, categoryTitle }) => (
                     <SearchResultItem
-                      key={article.id}
+                      key={`${categoryId}-${article.id}`}
                       article={article}
                       categoryId={categoryId}
                       categoryTitle={categoryTitle}
@@ -171,13 +171,14 @@ export function HelpCenterClient() {
               </div>
             )}
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Categories Grid */}
       {!showSearchResults && (
         <section className="px-4 py-16 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
+            <h2 className="sr-only">Kategorije</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {helpCategories.map((category, index) => (
                 <CategoryCard key={category.id} category={category} delay={index * 80} />

@@ -45,7 +45,11 @@ function FormField({
     <div className="space-y-2">
       <Label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
         {label}
-        {required && <span className="ml-1 text-destructive">*</span>}
+        {required && (
+          <span className="ml-1 text-destructive" aria-hidden="true">
+            *
+          </span>
+        )}
       </Label>
       {children}
       {error && <FormErrorMessage message={error} />}
