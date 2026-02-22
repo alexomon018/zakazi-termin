@@ -1,6 +1,6 @@
 export { HelpArticleClient } from "./HelpArticleClient";
 export { HelpCenterClient } from "./HelpCenterClient";
-export { SupportRequestClient, type SupportRequestFormData } from "./SupportRequestClient";
+export { SupportRequestClient } from "./SupportRequestClient";
 export {
   helpCategories,
   supportCategories,
@@ -8,3 +8,7 @@ export {
   type HelpCategory,
   type SupportCategoryValue,
 } from "./help-center-data";
+export {
+  supportRequestSchema,
+  type SupportRequestFormData,
+} from "./support-request-schema";

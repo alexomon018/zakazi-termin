@@ -19,24 +19,10 @@ import { AlertCircle, ArrowLeft, CheckCircle2, Clock, Mail, Send } from "lucide-
 import Link from "next/link";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 import { supportCategories } from "./help-center-data";
+import { type SupportRequestFormData, supportRequestSchema } from "./support-request-schema";
 
-const supportRequestSchema = z.object({
-  email: z.string().min(1, "Email je obavezan").email("Nevažeća email adresa"),
-  subject: z
-    .string()
-    .min(3, "Naslov mora imati najmanje 3 karaktera")
-    .max(100, "Naslov može imati najviše 100 karaktera"),
-  salonName: z.string().optional(),
-  category: z.string().min(1, "Izaberi kategoriju"),
-  description: z
-    .string()
-    .min(10, "Opis mora imati najmanje 10 karaktera")
-    .max(2000, "Opis može imati najviše 2000 karaktera"),
-});
-
-export type SupportRequestFormData = z.infer<typeof supportRequestSchema>;
+export type { SupportRequestFormData };
 
 interface SupportRequestClientProps {
   onSubmit?: (data: SupportRequestFormData) => Promise<{ success: boolean; error?: string }>;
@@ -44,18 +30,20 @@ interface SupportRequestClientProps {
 
 function FormField({
   label,
+  htmlFor,
   error,
   required,
   children,
 }: {
   label: string;
+  htmlFor?: string;
   error?: string;
   required?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-foreground">
+      <Label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </Label>
@@ -89,7 +77,12 @@ export function SupportRequestClient({ onSubmit: onSubmitProp }: SupportRequestC
     setSubmitError(null);
 
     if (!onSubmitProp) {
-      setIsSubmitted(true);
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "SupportRequestClient: onSubmit prop is required. The form will not submit without it."
+        );
+      }
+      setSubmitError("Slanje zahteva trenutno nije dostupno. Pokušaj ponovo kasnije.");
       return;
     }
 
@@ -174,15 +167,17 @@ export function SupportRequestClient({ onSubmit: onSubmitProp }: SupportRequestC
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Email */}
-              <FormField label="Tvoj email" error={errors.email?.message} required>
+              <FormField label="Tvoj email" htmlFor="email" error={errors.email?.message} required>
                 <div className="relative">
                   <Mail
                     className="absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted-foreground"
                     aria-hidden="true"
                   />
                   <Input
+                    id="email"
                     type="email"
                     placeholder="ime@primer.com"
+                    aria-required="true"
                     className={cn("pl-10", errors.email && "border-destructive")}
                     {...register("email")}
                   />
@@ -190,27 +185,42 @@ export function SupportRequestClient({ onSubmit: onSubmitProp }: SupportRequestC
               </FormField>
 
               {/* Subject */}
-              <FormField label="Naslov" error={errors.subject?.message} required>
+              <FormField label="Naslov" htmlFor="subject" error={errors.subject?.message} required>
                 <Input
+                  id="subject"
                   placeholder="Kratak opis problema ili pitanja"
+                  aria-required="true"
                   className={cn(errors.subject && "border-destructive")}
                   {...register("subject")}
                 />
               </FormField>
 
               {/* Salon Name */}
-              <FormField label="Naziv salona" error={errors.salonName?.message}>
-                <Input placeholder="Naziv tvog salona (opciono)" {...register("salonName")} />
+              <FormField label="Naziv salona" htmlFor="salonName" error={errors.salonName?.message}>
+                <Input
+                  id="salonName"
+                  placeholder="Naziv tvog salona (opciono)"
+                  {...register("salonName")}
+                />
               </FormField>
 
               {/* Category */}
-              <FormField label="Kategorija" error={errors.category?.message} required>
+              <FormField
+                label="Kategorija"
+                htmlFor="category"
+                error={errors.category?.message}
+                required
+              >
                 <Controller
                   name="category"
                   control={control}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className={cn(errors.category && "border-destructive")}>
+                      <SelectTrigger
+                        id="category"
+                        aria-required="true"
+                        className={cn(errors.category && "border-destructive")}
+                      >
                         <SelectValue placeholder="Izaberi kategoriju" />
                       </SelectTrigger>
                       <SelectContent>
@@ -226,10 +236,17 @@ export function SupportRequestClient({ onSubmit: onSubmitProp }: SupportRequestC
               </FormField>
 
               {/* Description */}
-              <FormField label="Opis" error={errors.description?.message} required>
+              <FormField
+                label="Opis"
+                htmlFor="description"
+                error={errors.description?.message}
+                required
+              >
                 <Textarea
+                  id="description"
                   placeholder="Opiši detaljno šta se dešava, koje korake si preduzeo/la, i šta očekuješ da se desi..."
                   rows={6}
+                  aria-required="true"
                   className={cn("resize-none", errors.description && "border-destructive")}
                   {...register("description")}
                 />

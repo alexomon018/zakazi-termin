@@ -39,6 +39,8 @@ export interface SendEmailOptions {
   react: ReactElement;
 }
 
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "salonko.rs@gmail.com";
+
 class EmailService {
   private resend: Resend | null = null;
   private fromEmail = "Salonko <noreply@salonko.rs>";
@@ -303,7 +305,7 @@ class EmailService {
   // Send support request notification to the support team
   async sendSupportRequestEmail(
     data: SupportRequestEmailData,
-    supportEmail = "salonko.rs@gmail.com"
+    supportEmail = SUPPORT_EMAIL
   ): Promise<{ success: boolean; error?: string }> {
     return this.send({
       to: supportEmail,

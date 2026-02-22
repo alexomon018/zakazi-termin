@@ -1,4 +1,4 @@
-export { emailService, type SendEmailOptions } from "./email-service";
+export { SUPPORT_EMAIL, emailService, type SendEmailOptions } from "./email-service";
 export { BookingConfirmedEmail } from "./templates/booking-confirmed";
 export { BookingPendingEmail } from "./templates/booking-pending";
 export { BookingCancelledEmail } from "./templates/booking-cancelled";

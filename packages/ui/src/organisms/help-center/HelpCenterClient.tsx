@@ -135,17 +135,13 @@ export function HelpCenterClient() {
 
       {/* Search Results */}
       {showSearchResults && (
-        <section className="px-4 py-8 sm:px-6 lg:px-8">
+        <section aria-live="polite" className="px-4 py-8 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl">
             {searchResults.length > 0 ? (
               <>
                 <p className="mb-4 text-sm text-muted-foreground">
                   Pronađeno {searchResults.length}{" "}
-                  {searchResults.length === 1
-                    ? "rezultat"
-                    : searchResults.length < 5
-                      ? "rezultata"
-                      : "rezultata"}
+                  {searchResults.length === 1 ? "rezultat" : "rezultata"}
                 </p>
                 <Card className="divide-y divide-border">
                   {searchResults.map(({ article, categoryId, categoryTitle }) => (
