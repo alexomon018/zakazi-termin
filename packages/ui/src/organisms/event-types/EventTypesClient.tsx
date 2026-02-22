@@ -8,7 +8,7 @@ import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } 
 import Link from "next/link";
 import { useState } from "react";
 
-type EventType = RouterOutputs["eventType"]["list"][number];
+type EventType = RouterOutputs["eventType"]["list"]["items"][number];
 type User = Pick<
   NonNullable<RouterOutputs["user"]["me"]>,
   "id" | "salonName" | "name" | "membership"
@@ -16,6 +16,7 @@ type User = Pick<
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
+  initialTotal: number;
   currentUser: User | null;
 };
 
@@ -33,15 +34,20 @@ function getBookingSlug(user: User | null): string | null {
   return user.membership?.organization?.slug ?? null;
 }
 
-export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
+export function EventTypesClient({
+  initialEventTypes,
+  initialTotal,
+  currentUser,
+}: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventTypeToDelete, setEventTypeToDelete] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
-  const { data: eventTypes } = trpc.eventType.list.useQuery(undefined, {
-    initialData: initialEventTypes,
+  const { data } = trpc.eventType.list.useQuery(undefined, {
+    initialData: { items: initialEventTypes, total: initialTotal },
   });
+  const eventTypes = data.items;
 
   const deleteEventType = trpc.eventType.delete.useMutation({
     onSuccess: () => {
@@ -123,7 +129,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
         </Link>
       </div>
 
-      {eventTypes?.length === 0 ? (
+      {eventTypes.length === 0 ? (
         <Card data-testid="event-types-empty-state">
           <CardContent className="py-12">
             <div className="text-center">
@@ -146,7 +152,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
         </Card>
       ) : (
         <div data-testid="event-types-list" className="space-y-4">
-          {eventTypes?.map((eventType: EventType, index: number) => (
+          {eventTypes.map((eventType: EventType) => (
             <Card
               key={eventType.id}
               className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
@@ -293,7 +299,7 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
       )}
 
       {/* Help section */}
-      {eventTypes && eventTypes.length > 0 && (
+      {eventTypes.length > 0 && (
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
           <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
           <p className="text-sm text-muted-foreground">

@@ -1,5 +1,5 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
-import { dayjs, logger } from "@salonko/config";
+import { dayjs, getClientIp, logger, publicApiRateLimiter } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
 import {
   protectedProcedure,
@@ -9,6 +9,22 @@ import {
 } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+async function checkPublicApiRateLimit(req?: Request): Promise<void> {
+  if (!publicApiRateLimiter) return;
+  const ip = getClientIp(req);
+  if (!ip) {
+    logger.warn("Could not resolve client IP for public API rate limiting");
+    return;
+  }
+  const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za minut.",
+    });
+  }
+}
 
 export const availabilityRouter = router({
   // List user's schedules
@@ -149,7 +165,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete existing availability
@@ -192,7 +208,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -235,7 +251,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       await ctx.prisma.availability.deleteMany({
@@ -266,7 +282,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -333,6 +349,8 @@ export const availabilityRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
+      await checkPublicApiRateLimit(ctx.req);
+
       const eventType = await ctx.prisma.eventType.findUnique({
         where: { id: input.eventTypeId },
         include: {

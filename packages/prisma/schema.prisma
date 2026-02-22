@@ -411,11 +411,11 @@ model Booking {
   userId      String?
   user        User?      @relation("organizer", fields: [userId], references: [id], onDelete: Cascade)
   eventTypeId String?
-  eventType   EventType? @relation(fields: [eventTypeId], references: [id])
+  eventType   EventType? @relation(fields: [eventTypeId], references: [id], onDelete: SetNull)
 
   // Assigned staff member (for team bookings)
   assignedHostId String?
-  assignedHost   User?   @relation("assignedHost", fields: [assignedHostId], references: [id])
+  assignedHost   User?   @relation("assignedHost", fields: [assignedHostId], references: [id], onDelete: SetNull)
 
   title       String
   description String?
@@ -442,11 +442,11 @@ model Booking {
   updatedAt DateTime @updatedAt
 
   @@index([eventTypeId])
-  @@index([userId])
   @@index([uid])
   @@index([status])
   @@index([startTime, endTime])
   @@index([assignedHostId])
+  @@index([userId, status])
 }
 
 model Attendee {
@@ -460,7 +460,7 @@ model Attendee {
   booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([email])
-  @@index([bookingId])
+  @@index([bookingId, email])
 }
 
 model BookingReference {

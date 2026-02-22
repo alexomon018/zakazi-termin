@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
+import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
-import { MembershipRole } from "@salonko/prisma";
+import { MembershipRole, Prisma } from "@salonko/prisma";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -13,6 +14,7 @@ import {
 } from "../lib/permissions";
 
 const MAX_BULK_INVITES = 50;
+const MAX_SERIALIZABLE_RETRIES = 3;
 
 export const teamRouter = router({
   /**
@@ -83,86 +85,138 @@ export const teamRouter = router({
         message?: string;
       }[] = [];
 
-      for (const email of normalizedEmails) {
-        // Check if user with this email already exists and is a member
-        const existingUser = await ctx.prisma.user.findUnique({
-          where: { email },
-          select: { id: true },
-        });
-
-        if (existingUser) {
-          const existingMembership = await ctx.prisma.membership.findUnique({
-            where: {
-              userId_organizationId: {
-                userId: existingUser.id,
-                organizationId: input.organizationId,
-              },
+      // Batch read queries to avoid N+1 (3 queries instead of ~4 per email)
+      const [existingUsers, pendingInvites] = await Promise.all([
+        ctx.prisma.user.findMany({
+          where: { email: { in: normalizedEmails } },
+          select: {
+            id: true,
+            email: true,
+            memberships: {
+              where: { organizationId: input.organizationId, accepted: true },
+              select: { id: true },
             },
-          });
-
-          if (existingMembership) {
-            results.push({ email, status: "already_member" });
-            continue;
-          }
-        }
-
-        // Check if there's already a pending invitation for this email
-        const existingInvite = await ctx.prisma.verificationToken.findFirst({
+          },
+        }),
+        ctx.prisma.verificationToken.findMany({
           where: {
             organizationId: input.organizationId,
-            invitedEmail: email,
+            invitedEmail: { in: normalizedEmails },
             expires: { gte: new Date() },
           },
-        });
+          select: { invitedEmail: true },
+        }),
+      ]);
 
-        if (existingInvite) {
+      const memberEmails = new Set(
+        existingUsers.filter((u) => u.memberships.length > 0).map((u) => u.email.toLowerCase())
+      );
+      const pendingEmails = new Set(
+        pendingInvites.map((i) => i.invitedEmail?.toLowerCase()).filter(Boolean) as string[]
+      );
+
+      const appOrigin = getAppOriginFromRequest(ctx.req);
+
+      // Phase 1: Create all verification tokens (serial per-email, with retry)
+      const createdTokens: { email: string; token: string }[] = [];
+
+      for (const email of normalizedEmails) {
+        if (memberEmails.has(email)) {
+          results.push({ email, status: "already_member" });
+          continue;
+        }
+
+        if (pendingEmails.has(email)) {
           results.push({ email, status: "already_invited" });
           continue;
         }
 
-        // Create invitation token
+        // Serialized transaction with retry on P2034 (serialization failure)
         const token = randomBytes(32).toString("hex");
         const expiresInDays = 7;
 
-        await ctx.prisma.verificationToken.create({
-          data: {
-            identifier: email,
-            token,
-            expires: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
-            expiresInDays,
-            organizationId: input.organizationId,
-            invitedEmail: email,
-            invitedRole: input.role,
-          },
-        });
+        let created: { token: string } | null = null;
+        for (let attempt = 0; attempt < MAX_SERIALIZABLE_RETRIES; attempt++) {
+          try {
+            created = await ctx.prisma.$transaction(
+              async (tx) => {
+                const existing = await tx.verificationToken.findFirst({
+                  where: {
+                    organizationId: input.organizationId,
+                    invitedEmail: email,
+                    expires: { gte: new Date() },
+                  },
+                  select: { token: true },
+                });
+                if (existing) return null;
 
-        // Send email invitation - rollback token on failure
-        const appOrigin = getAppOriginFromRequest(ctx.req);
-        try {
-          await emailService.sendTeamInviteEmail({
+                return await tx.verificationToken.create({
+                  data: {
+                    identifier: email,
+                    token,
+                    expires: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
+                    expiresInDays,
+                    organizationId: input.organizationId,
+                    invitedEmail: email,
+                    invitedRole: input.role,
+                  },
+                });
+              },
+              { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+            );
+            break;
+          } catch (err) {
+            const isSerializationFailure =
+              err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2034";
+            if (isSerializationFailure && attempt < MAX_SERIALIZABLE_RETRIES - 1) continue;
+            throw err;
+          }
+        }
+
+        if (!created) {
+          results.push({ email, status: "already_invited" });
+          continue;
+        }
+
+        createdTokens.push({ email, token });
+      }
+
+      // Phase 2: Send all invitation emails concurrently
+      const emailResults = await Promise.allSettled(
+        createdTokens.map(({ email, token }) =>
+          emailService.sendTeamInviteEmail({
             recipientEmail: email,
             organizationName: membership.organization.name,
             inviterName: membership.user.name || "Član tima",
             inviteUrl: `${appOrigin}/signup?token=${token}`,
             role: input.role,
-          });
-        } catch (emailError) {
-          // Rollback: delete the created token since email failed
-          await ctx.prisma.verificationToken.delete({
-            where: {
-              identifier_token: {
-                identifier: email,
-                token,
-              },
-            },
-          });
-          const message =
-            emailError instanceof Error ? emailError.message : "Failed to send invite email";
-          results.push({ email, status: "email_failed", message });
-          continue;
-        }
+          })
+        )
+      );
 
-        results.push({ email, status: "invited" });
+      // Phase 3: Map results — rollback tokens for failed emails
+      for (let i = 0; i < createdTokens.length; i++) {
+        const { email, token } = createdTokens[i];
+        const result = emailResults[i];
+
+        if (result.status === "fulfilled") {
+          results.push({ email, status: "invited" });
+        } else {
+          // Rollback: delete the created token since email failed
+          try {
+            await ctx.prisma.verificationToken.delete({
+              where: { identifier_token: { identifier: email, token } },
+            });
+          } catch (deleteError) {
+            logger.error("Failed to rollback invite token after email failure", {
+              error: deleteError,
+              organizationId: input.organizationId,
+            });
+          }
+          const message =
+            result.reason instanceof Error ? result.reason.message : "Failed to send invite email";
+          results.push({ email, status: "email_failed", message });
+        }
       }
 
       return {
@@ -242,8 +296,11 @@ export const teamRouter = router({
         });
       }
 
-      // If this is an email-specific invite, verify the email matches
-      if (verificationToken.invitedEmail && verificationToken.invitedEmail !== userEmail) {
+      // If this is an email-specific invite, verify the email matches (case-insensitive)
+      if (
+        verificationToken.invitedEmail &&
+        verificationToken.invitedEmail.toLowerCase() !== userEmail?.toLowerCase()
+      ) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Ova pozivnica je namenjena drugom korisniku.",
@@ -592,11 +649,13 @@ export const teamRouter = router({
         });
       }
 
+      const normalizedEmail = input.email.trim().toLowerCase();
+
       // Find the existing invite
       const existingInvite = await ctx.prisma.verificationToken.findFirst({
         where: {
           organizationId: input.organizationId,
-          invitedEmail: input.email,
+          invitedEmail: normalizedEmail,
           expires: { gte: new Date() },
         },
       });
@@ -612,17 +671,16 @@ export const teamRouter = router({
       const appOrigin = getAppOriginFromRequest(ctx.req);
       try {
         await emailService.sendTeamInviteEmail({
-          recipientEmail: input.email,
+          recipientEmail: normalizedEmail,
           organizationName: membership.organization.name,
           inviterName: membership.user.name || "Član tima",
           inviteUrl: `${appOrigin}/signup?token=${existingInvite.token}`,
           role: existingInvite.invitedRole || MembershipRole.MEMBER,
         });
       } catch (error) {
-        console.error("Failed to send invite email", {
+        logger.error("Failed to send invite email", {
           error,
           organizationId: input.organizationId,
-          email: input.email,
         });
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",

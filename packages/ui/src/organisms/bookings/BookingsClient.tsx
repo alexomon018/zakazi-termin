@@ -20,7 +20,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { RouterOutputs } from "@salonko/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
-type Booking = RouterOutputs["booking"]["list"][number];
+type Booking = RouterOutputs["booking"]["listPaginated"]["bookings"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
@@ -81,15 +81,6 @@ export function BookingsClient({
   const currentBookings = bookingsPerFilter[filter];
   const currentTotal = totalsPerFilter[filter];
   const hasMore = currentBookings.length < currentTotal;
-
-  // Query for loading more or changing filters
-  const { refetch } = trpc.booking.listPaginated.useQuery(
-    getQueryParams(filter, currentBookings.length),
-    {
-      enabled: false,
-      refetchOnWindowFocus: false,
-    }
-  );
 
   const handleFilterChange = async (newFilter: BookingFilter) => {
     if (newFilter === filter) return;
@@ -354,19 +345,12 @@ export function BookingsClient({
                       {booking.attendees && booking.attendees.length > 0 && (
                         <div className="pt-4 mt-4 border-t border-gray-100 dark:border-border">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">GOST</p>
-                          {booking.attendees.map(
-                            (attendee: {
-                              id: string;
-                              name: string;
-                              email: string;
-                              phoneNumber: string | null;
-                            }) => (
-                              <div key={attendee.id} className="flex gap-2 items-center">
-                                <UserAvatar name={attendee.name} />
-                                <UserInfoDisplay name={attendee.name} email={attendee.email} />
-                              </div>
-                            )
-                          )}
+                          {booking.attendees.map((attendee) => (
+                            <div key={attendee.id} className="flex gap-2 items-center">
+                              <UserAvatar name={attendee.name} />
+                              <UserInfoDisplay name={attendee.name} email={attendee.email} />
+                            </div>
+                          ))}
                         </div>
                       )}
 

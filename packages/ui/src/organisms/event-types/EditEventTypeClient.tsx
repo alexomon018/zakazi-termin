@@ -52,7 +52,7 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
     length: eventType.length,
     hidden: eventType.hidden,
     locationType: firstLocation?.type || "inPerson",
-    locationAddress: firstLocation?.address || "",
+    locationAddress: firstLocation?.type === "inPerson" ? firstLocation.address : "",
     minimumBookingNotice: eventType.minimumBookingNotice,
     beforeEventBuffer: eventType.beforeEventBuffer,
     afterEventBuffer: eventType.afterEventBuffer,

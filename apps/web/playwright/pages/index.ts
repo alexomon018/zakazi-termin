@@ -5,6 +5,7 @@ export { BasePage } from "./BasePage";
 export { LoginPage } from "./LoginPage";
 export { SignupPage } from "./SignupPage";
 export { VerifyEmailPage } from "./VerifyEmailPage";
+export { ResetPasswordPage } from "./ResetPasswordPage";
 
 // Dashboard Pages
 export {

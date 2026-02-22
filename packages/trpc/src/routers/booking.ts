@@ -1,4 +1,9 @@
-import { logger } from "@salonko/config";
+import {
+  bookingCancelRateLimiter,
+  bookingMutationRateLimiter,
+  getClientIp,
+  logger,
+} from "@salonko/config";
 import { type BookingEmailData, emailService } from "@salonko/emails";
 import type { Context } from "@salonko/trpc/context";
 import {
@@ -9,6 +14,32 @@ import {
 } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+async function checkBookingMutationRateLimit(req?: Request): Promise<void> {
+  if (!bookingMutationRateLimiter) return;
+  const ip = getClientIp(req);
+  if (!ip) return;
+  const { success } = await bookingMutationRateLimiter.limit(`booking-mutation:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za 15 minuta.",
+    });
+  }
+}
+
+async function checkBookingCancelRateLimit(req?: Request): Promise<void> {
+  if (!bookingCancelRateLimiter) return;
+  const ip = getClientIp(req);
+  if (!ip) return;
+  const { success } = await bookingCancelRateLimiter.limit(`booking-cancel:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za 15 minuta.",
+    });
+  }
+}
 
 /**
  * Reusable Prisma include for booking list queries
@@ -268,38 +299,6 @@ export const bookingRouter = router({
       };
     }),
 
-  // List bookings for current user
-  // Shows bookings where user is owner OR assigned host (for team members)
-  // For OWNER/ADMIN: shows all bookings from organization members
-  list: subscriptionProtectedProcedure
-    .input(
-      z
-        .object({
-          status: z.enum(["PENDING", "ACCEPTED", "CANCELLED", "REJECTED"]).optional(),
-          dateFrom: z.date().optional(),
-          dateTo: z.date().optional(),
-        })
-        .optional()
-    )
-    .query(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-
-      // Build where clause based on user's role
-      const roleBasedWhere = await buildBookingWhereClause(ctx.prisma, userId);
-
-      const bookings = await ctx.prisma.booking.findMany({
-        where: {
-          ...roleBasedWhere,
-          ...(input?.status && { status: input.status }),
-          ...(input?.dateFrom && { startTime: { gte: input.dateFrom } }),
-          ...(input?.dateTo && { endTime: { lte: input.dateTo } }),
-        },
-        include: BOOKING_LIST_INCLUDE,
-        orderBy: { startTime: "asc" },
-      });
-      return bookings;
-    }),
-
   // List bookings with pagination
   // Shows bookings where user is owner OR assigned host (for team members)
   // For OWNER/ADMIN: shows all bookings from organization members
@@ -401,6 +400,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       // Use transaction with serializable isolation to prevent race conditions
       const booking = await ctx.prisma.$transaction(
         async (tx) => {
@@ -649,7 +650,9 @@ export const bookingRouter = router({
       return booking;
     }),
 
-  // Cancel a booking (can be done by organizer or attendee via uid)
+  // Cancel a booking (can be done by organizer, assigned host, or attendee via uid)
+  // The booking UID (UUID) acts as a bearer token for unauthenticated attendees.
+  // Authenticated users must be the organizer or assigned host.
   cancel: publicProcedure
     .input(
       z.object({
@@ -658,6 +661,31 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingCancelRateLimit(ctx.req);
+
+      // Fetch booking to verify it exists and check authorization
+      const existingBooking = await ctx.prisma.booking.findUnique({
+        where: { uid: input.uid },
+        select: { id: true, status: true, userId: true, assignedHostId: true },
+      });
+
+      if (!existingBooking) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Termin nije pronađen." });
+      }
+
+      // If the caller is authenticated, they must be the organizer or assigned host
+      const sessionUserId = ctx.session?.user?.id;
+      if (
+        sessionUserId &&
+        sessionUserId !== existingBooking.userId &&
+        sessionUserId !== existingBooking.assignedHostId
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Nemate dozvolu za otkazivanje ovog termina.",
+        });
+      }
+
       const booking = await ctx.prisma.booking.update({
         where: { uid: input.uid },
         data: {
@@ -698,6 +726,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       // Use transaction with serializable isolation to prevent race conditions
       const { updatedBooking, originalStartTime } = await ctx.prisma.$transaction(
         async (tx) => {
@@ -816,6 +846,8 @@ export const bookingRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await checkBookingMutationRateLimit(ctx.req);
+
       const booking = await ctx.prisma.booking.findUnique({
         where: { uid: input.uid },
         include: {
