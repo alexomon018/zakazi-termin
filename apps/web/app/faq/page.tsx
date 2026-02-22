@@ -1,3 +1,5 @@
+import { BreadcrumbSchema, FAQSchema } from "@/components/StructuredData";
+import { getAppUrl } from "@/lib/utils";
 import {
   FAQSection,
   LandingFooter,
@@ -7,16 +9,46 @@ import {
   salonOwnerFAQs,
 } from "@salonko/ui";
 import type { Metadata } from "next";
+import Link from "next/link";
+
+const baseUrl = getAppUrl();
 
 export const metadata: Metadata = {
-  title: "Često postavljena pitanja | Salonko",
+  title: "Često postavljena pitanja",
   description:
     "Pronađi odgovore na najčešća pitanja o Salonko platformi za online zakazivanje termina.",
+  alternates: {
+    canonical: `${baseUrl}/faq`,
+  },
+  openGraph: {
+    title: "Često postavljena pitanja",
+    description:
+      "Pronađi odgovore na najčešća pitanja o Salonko platformi za online zakazivanje termina.",
+    url: `${baseUrl}/faq`,
+    type: "website",
+    siteName: "Salonko",
+    locale: "sr_RS",
+  },
+  twitter: {
+    card: "summary",
+    title: "Često postavljena pitanja",
+    description:
+      "Pronađi odgovore na najčešća pitanja o Salonko platformi za online zakazivanje termina.",
+  },
 };
 
 export default function FAQPage() {
+  const allFAQItems = [...generalFAQs, ...salonOwnerFAQs, ...clientFAQs];
+
   return (
     <div className="min-h-dvh">
+      <BreadcrumbSchema
+        items={[
+          { name: "Početna", url: baseUrl },
+          { name: "Često postavljena pitanja", url: `${baseUrl}/faq` },
+        ]}
+      />
+      <FAQSchema items={allFAQItems} />
       <LandingHeader />
       <main>
         <FAQSection
@@ -48,12 +80,12 @@ export default function FAQPage() {
               Ako nisi pronašao odgovor na svoje pitanje, slobodno nas kontaktiraj. Tu smo da
               pomognemo!
             </p>
-            <a
-              href="mailto:salonko.rs@gmail.com"
+            <Link
+              href="/help/podrska"
               className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Kontaktiraj nas
-            </a>
+              Kontaktiraj podršku
+            </Link>
           </div>
         </section>
       </main>

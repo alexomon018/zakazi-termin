@@ -6,16 +6,16 @@ export function LandingFooter() {
     {
       title: "Proizvod",
       links: [
-        { label: "Funkcije", href: "#funkcije" },
-        { label: "Cene", href: "#cene" },
-        { label: "Kako radi", href: "#kako-radi" },
+        { label: "Funkcije", href: "/#funkcije" },
+        { label: "Cene", href: "/#cene" },
+        { label: "Kako radi", href: "/#kako-radi" },
       ],
     },
     {
       title: "Podrška",
       links: [
-        { label: "Pomoć", href: "#" },
-        { label: "Kontakt", href: "#kontakt" },
+        { label: "Centar za pomoć", href: "/help" },
+        { label: "Kontaktiraj podršku", href: "/help/podrska" },
         { label: "FAQ", href: "/faq" },
       ],
     },

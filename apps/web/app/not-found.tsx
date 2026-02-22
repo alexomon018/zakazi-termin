@@ -26,7 +26,7 @@ export default function NotFound() {
           <Link href="/">
             <Button size="lg">Nazad na početnu</Button>
           </Link>
-          <Link href="/faq">
+          <Link href="/help">
             <Button variant="outline" size="lg">
               Pomoć i podrška
             </Button>

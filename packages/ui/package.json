@@ -29,7 +29,9 @@
     "lucide-react": "^0.562.0",
     "react-day-picker": "^9.13.0",
     "react-hook-form": "^7.68.0",
+    "react-markdown": "^10.1.0",
     "react-phone-number-input": "^3.4.14",
+    "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.5.5",
     "zod": "^3.23.8",
     "zustand": "^5.0.9"

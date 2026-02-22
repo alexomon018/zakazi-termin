@@ -181,3 +181,79 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
     />
   );
 }
+
+type HelpArticleSchemaProps = {
+  title: string;
+  description: string;
+  url: string;
+  categoryName: string;
+};
+
+export function HelpArticleSchema({
+  title,
+  description,
+  url,
+  categoryName,
+}: HelpArticleSchemaProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    url,
+    author: {
+      "@type": "Organization",
+      name: "Salonko",
+      url: baseUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Salonko",
+      url: baseUrl,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    articleSection: categoryName,
+    inLanguage: "sr",
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe for JSON-LD structured data
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+type FAQSchemaProps = {
+  items: Array<{
+    question: string;
+    answer: string;
+  }>;
+};
+
+export function FAQSchema({ items }: FAQSchemaProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe for JSON-LD structured data
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
