@@ -333,14 +333,16 @@ export const availabilityRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      if (publicApiRateLimiter && ctx.req) {
+      if (publicApiRateLimiter) {
         const ip = getClientIp(ctx.req);
-        const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
-        if (!success) {
-          throw new TRPCError({
-            code: "TOO_MANY_REQUESTS",
-            message: "Previše zahteva. Pokušajte ponovo za minut.",
-          });
+        if (ip) {
+          const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
+          if (!success) {
+            throw new TRPCError({
+              code: "TOO_MANY_REQUESTS",
+              message: "Previše zahteva. Pokušajte ponovo za minut.",
+            });
+          }
         }
       }
 

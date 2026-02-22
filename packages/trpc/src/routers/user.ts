@@ -340,17 +340,23 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const salonSlug = input.salonName ? generateSalonSlug(input.salonName) : undefined;
 
+      // No salonSlug change — skip transactional uniqueness check
+      if (!salonSlug) {
+        return await ctx.prisma.user.update({
+          where: { id: ctx.session.user.id },
+          data: input,
+        });
+      }
+
       return await ctx.prisma.$transaction(async (tx) => {
-        if (salonSlug) {
-          const existingUser = await tx.user.findFirst({
-            where: {
-              salonSlug,
-              NOT: { id: ctx.session.user.id },
-            },
-          });
-          if (existingUser) {
-            throw new TRPCError({ code: "CONFLICT", message: "Naziv salona je već zauzet." });
-          }
+        const existingUser = await tx.user.findFirst({
+          where: {
+            salonSlug,
+            NOT: { id: ctx.session.user.id },
+          },
+        });
+        if (existingUser) {
+          throw new TRPCError({ code: "CONFLICT", message: "Naziv salona je već zauzet." });
         }
 
         return await tx.user

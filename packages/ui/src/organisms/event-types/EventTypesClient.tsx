@@ -16,6 +16,7 @@ type User = Pick<
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
+  initialTotal: number;
   currentUser: User | null;
 };
 
@@ -33,14 +34,18 @@ function getBookingSlug(user: User | null): string | null {
   return user.membership?.organization?.slug ?? null;
 }
 
-export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
+export function EventTypesClient({
+  initialEventTypes,
+  initialTotal,
+  currentUser,
+}: EventTypesClientProps) {
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [eventTypeToDelete, setEventTypeToDelete] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
   const { data } = trpc.eventType.list.useQuery(undefined, {
-    initialData: { items: initialEventTypes, total: initialEventTypes.length },
+    initialData: { items: initialEventTypes, total: initialTotal },
   });
   const eventTypes = data?.items ?? [];
 

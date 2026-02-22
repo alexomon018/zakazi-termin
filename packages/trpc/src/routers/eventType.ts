@@ -82,50 +82,32 @@ export const eventTypeRouter = router({
         };
       }
 
-      // Regular user or MEMBER: only their own event types + hosted event types
-      const ownedWhere = { userId };
-      const hostedWhere = {
-        hosts: { some: { userId } },
-        userId: { not: userId },
+      // Regular user or MEMBER: owned + hosted in a single query for correct pagination
+      const combinedWhere = {
+        OR: [{ userId }, { hosts: { some: { userId } }, userId: { not: userId } }],
       };
 
-      const [ownedEventTypes, hostedEventTypes, ownedCount, hostedCount] = await Promise.all([
+      const [eventTypes, total] = await Promise.all([
         ctx.prisma.eventType.findMany({
-          where: ownedWhere,
-          orderBy: { position: "asc" },
-          skip,
-          take,
-          include: { hosts: { select: { userId: true } } },
-        }),
-        ctx.prisma.eventType.findMany({
-          where: hostedWhere,
+          where: combinedWhere,
           orderBy: { position: "asc" },
           skip,
           take,
           include: {
             hosts: { select: { userId: true } },
-            user: { select: { name: true, salonName: true } },
+            user: { select: { id: true, name: true, salonName: true } },
           },
         }),
-        ctx.prisma.eventType.count({ where: ownedWhere }),
-        ctx.prisma.eventType.count({ where: hostedWhere }),
+        ctx.prisma.eventType.count({ where: combinedWhere }),
       ]);
 
-      // Combine and mark which are owned vs hosted
       return {
-        items: [
-          ...ownedEventTypes.map((et) => ({
-            ...et,
-            isOwner: true,
-            ownerName: null as string | null,
-          })),
-          ...hostedEventTypes.map((et) => ({
-            ...et,
-            isOwner: false,
-            ownerName: (et.user?.salonName || et.user?.name) as string | null,
-          })),
-        ],
-        total: ownedCount + hostedCount,
+        items: eventTypes.map((et) => ({
+          ...et,
+          isOwner: et.userId === userId,
+          ownerName: et.userId === userId ? null : et.user?.salonName || et.user?.name,
+        })),
+        total,
       };
     }),
 

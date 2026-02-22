@@ -107,10 +107,10 @@ export const teamRouter = router({
       ]);
 
       const memberEmails = new Set(
-        existingUsers.filter((u) => u.memberships.length > 0).map((u) => u.email)
+        existingUsers.filter((u) => u.memberships.length > 0).map((u) => u.email.toLowerCase())
       );
       const pendingEmails = new Set(
-        pendingInvites.map((i) => i.invitedEmail).filter(Boolean) as string[]
+        pendingInvites.map((i) => i.invitedEmail?.toLowerCase()).filter(Boolean) as string[]
       );
 
       const appOrigin = getAppOriginFromRequest(ctx.req);
@@ -126,21 +126,42 @@ export const teamRouter = router({
           continue;
         }
 
-        // Create invitation token
+        // Use a serialized transaction to prevent TOCTOU race where two
+        // concurrent requests both pass the batch check and create duplicate tokens.
         const token = randomBytes(32).toString("hex");
         const expiresInDays = 7;
 
-        await ctx.prisma.verificationToken.create({
-          data: {
-            identifier: email,
-            token,
-            expires: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
-            expiresInDays,
-            organizationId: input.organizationId,
-            invitedEmail: email,
-            invitedRole: input.role,
+        const created = await ctx.prisma.$transaction(
+          async (tx) => {
+            const existing = await tx.verificationToken.findFirst({
+              where: {
+                organizationId: input.organizationId,
+                invitedEmail: email,
+                expires: { gte: new Date() },
+              },
+              select: { token: true },
+            });
+            if (existing) return null;
+
+            return await tx.verificationToken.create({
+              data: {
+                identifier: email,
+                token,
+                expires: new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000),
+                expiresInDays,
+                organizationId: input.organizationId,
+                invitedEmail: email,
+                invitedRole: input.role,
+              },
+            });
           },
-        });
+          { isolationLevel: "Serializable" }
+        );
+
+        if (!created) {
+          results.push({ email, status: "already_invited" });
+          continue;
+        }
 
         // Send email invitation - rollback token on failure
         try {

@@ -18,6 +18,7 @@ import { z } from "zod";
 async function checkBookingMutationRateLimit(req?: Request): Promise<void> {
   if (!bookingMutationRateLimiter) return;
   const ip = getClientIp(req);
+  if (!ip) return;
   const { success } = await bookingMutationRateLimiter.limit(`booking-mutation:${ip}`);
   if (!success) {
     throw new TRPCError({
@@ -30,6 +31,7 @@ async function checkBookingMutationRateLimit(req?: Request): Promise<void> {
 async function checkBookingCancelRateLimit(req?: Request): Promise<void> {
   if (!bookingCancelRateLimiter) return;
   const ip = getClientIp(req);
+  if (!ip) return;
   const { success } = await bookingCancelRateLimiter.limit(`booking-cancel:${ip}`);
   if (!success) {
     throw new TRPCError({
