@@ -1,0 +1,21 @@
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native builds
+ios/
+android/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Metro
+.metro-health-check*
+
+# TypeScript
+*.tsbuildinfo
