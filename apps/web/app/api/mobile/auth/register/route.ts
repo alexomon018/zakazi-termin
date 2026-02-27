@@ -3,7 +3,7 @@ import { generateSalonSlug } from "@/lib/salon-utils";
 import { hashPassword } from "@salonko/auth/server";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
-import { Prisma, prisma } from "@salonko/prisma";
+import { Prisma, type User, prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -20,10 +20,7 @@ export async function POST(request: Request) {
     const result = registerSchema.safeParse(body);
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error.errors[0].message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: result.error.errors[0].message }, { status: 400 });
     }
 
     const { name, salonName, email, password } = result.data;
@@ -31,7 +28,7 @@ export async function POST(request: Request) {
     const salonSlug = generateSalonSlug(salonName);
     const hashedPassword = await hashPassword(password);
 
-    let user;
+    let user: User;
     try {
       user = await prisma.user.create({
         data: {
@@ -50,23 +47,25 @@ export async function POST(request: Request) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         return NextResponse.json(
           { error: "Email adresa ili naziv salona je već zauzet." },
-          { status: 409 },
+          { status: 409 }
         );
       }
       throw error;
     }
 
     // Send welcome email (non-blocking)
-    emailService.sendWelcomeEmail({
-      userName: name,
-      userEmail: normalizedEmail,
-      salonName,
-    }).catch((emailError: unknown) => {
-      logger.error("Failed to send welcome email from mobile register", {
-        error: emailError,
-        email: normalizedEmail,
+    emailService
+      .sendWelcomeEmail({
+        userName: name,
+        userEmail: normalizedEmail,
+        salonName,
+      })
+      .catch((emailError: unknown) => {
+        logger.error("Failed to send welcome email from mobile register", {
+          error: emailError,
+          email: normalizedEmail,
+        });
       });
-    });
 
     const token = createAccessToken({
       id: user.id,
@@ -88,9 +87,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("Mobile register error", { error });
-    return NextResponse.json(
-      { error: "Greška pri registraciji." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Greška pri registraciji." }, { status: 500 });
   }
 }

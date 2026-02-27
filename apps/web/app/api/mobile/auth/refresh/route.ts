@@ -9,19 +9,13 @@ export async function POST(request: Request) {
     const { refreshToken } = body;
 
     if (!refreshToken) {
-      return NextResponse.json(
-        { error: "Refresh token je obavezan." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Refresh token je obavezan." }, { status: 400 });
     }
 
     const payload = verifyRefreshToken(refreshToken);
 
     if (!payload) {
-      return NextResponse.json(
-        { error: "Nevažeći ili istekao refresh token." },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Nevažeći ili istekao refresh token." }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -29,10 +23,7 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Korisnik nije pronađen." },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Korisnik nije pronađen." }, { status: 401 });
     }
 
     const newToken = createAccessToken({
@@ -55,9 +46,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("Mobile refresh error", { error });
-    return NextResponse.json(
-      { error: "Greška pri osvežavanju tokena." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Greška pri osvežavanju tokena." }, { status: 500 });
   }
 }

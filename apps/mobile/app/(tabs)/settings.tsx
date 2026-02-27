@@ -1,96 +1,154 @@
+import { AppScreen, AppText } from "@/components/ui/primitives";
 import { useAuth } from "@/lib/auth-context";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "@/lib/theme-context";
+import { trpc } from "@/lib/trpc";
+import { router } from "expo-router";
+import { Calendar, ChevronRight, LogOut, Palette, Plane, User } from "lucide-react-native";
+import { useMemo } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+
+const MENU_ITEMS = [
+  { href: "/setting/profile", label: "Profil", icon: User, description: "Ime, salon, bio" },
+  { href: "/setting/appearance", label: "Izgled", icon: Palette, description: "Tema i boje" },
+  {
+    href: "/setting/calendar",
+    label: "Kalendar",
+    icon: Calendar,
+    description: "Povezani kalendari",
+  },
+  {
+    href: "/setting/out-of-office",
+    label: "Odsustvo",
+    icon: Plane,
+    description: "Periodi nedostupnosti",
+  },
+] as const;
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { theme } = useTheme();
+  const { logout, user } = useAuth();
+  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        content: {
+          padding: theme.spacing.lg,
+          gap: theme.spacing.lg,
+          paddingBottom: 120,
+        },
+        profileCard: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.radius.md,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          padding: theme.spacing.lg,
+        },
+        avatar: {
+          width: 48,
+          height: 48,
+          borderRadius: theme.radius.full,
+          backgroundColor: theme.colors.primary,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        profileInfo: { flex: 1, gap: 2 },
+        menuSection: {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.radius.md,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          overflow: "hidden",
+        },
+        menuItem: {
+          flexDirection: "row",
+          alignItems: "center",
+          padding: theme.spacing.lg,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: theme.colors.border,
+          gap: theme.spacing.md,
+        },
+        menuIconContainer: {
+          width: 36,
+          height: 36,
+          borderRadius: theme.radius.sm,
+          backgroundColor: theme.colors.surfaceMuted,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        menuContent: { flex: 1, gap: 2 },
+        logoutButton: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: theme.spacing.sm,
+          paddingVertical: theme.spacing.md,
+        },
+      }),
+    [theme]
+  );
 
   return (
-    <SafeAreaView style={styles.container} edges={["left", "right"]}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Profil</Text>
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <Text style={styles.label}>Ime</Text>
-            <Text style={styles.value}>{user?.name || "—"}</Text>
+    <AppScreen>
+      <ScrollView contentContainerStyle={styles.content}>
+        <AppText variant="title">Više</AppText>
+
+        <View style={styles.profileCard}>
+          <View style={styles.avatar}>
+            <AppText variant="h2" style={{ color: theme.colors.primaryForeground }}>
+              {(meQuery.data?.name ?? user?.name ?? "K").charAt(0).toUpperCase()}
+            </AppText>
           </View>
-          <View style={styles.separator} />
-          <View style={styles.row}>
-            <Text style={styles.label}>Email</Text>
-            <Text style={styles.value}>{user?.email || "—"}</Text>
-          </View>
-          <View style={styles.separator} />
-          <View style={styles.row}>
-            <Text style={styles.label}>Salon</Text>
-            <Text style={styles.value}>{user?.salonName || "—"}</Text>
+          <View style={styles.profileInfo}>
+            <AppText variant="body" style={{ fontWeight: "600" }}>
+              {meQuery.data?.name ?? user?.name ?? "Korisnik"}
+            </AppText>
+            <AppText variant="bodySm" muted>
+              {meQuery.data?.email ?? user?.email ?? ""}
+            </AppText>
+            {meQuery.data?.salonName && (
+              <AppText variant="caption" muted>
+                {meQuery.data.salonName}
+              </AppText>
+            )}
           </View>
         </View>
-      </View>
 
-      <View style={styles.section}>
+        <View style={styles.menuSection}>
+          {MENU_ITEMS.map((item, index) => (
+            <Pressable
+              key={item.href}
+              style={[styles.menuItem, index === MENU_ITEMS.length - 1 && { borderBottomWidth: 0 }]}
+              onPress={() => router.push(item.href)}
+            >
+              <View style={styles.menuIconContainer}>
+                <item.icon size={20} color={theme.colors.foreground} />
+              </View>
+              <View style={styles.menuContent}>
+                <AppText variant="body">{item.label}</AppText>
+                <AppText variant="caption" muted>
+                  {item.description}
+                </AppText>
+              </View>
+              <ChevronRight size={18} color={theme.colors.mutedForeground} />
+            </Pressable>
+          ))}
+        </View>
+
         <Pressable style={styles.logoutButton} onPress={logout}>
-          <Text style={styles.logoutText}>Odjavite se</Text>
+          <LogOut size={18} color={theme.colors.destructive} />
+          <AppText variant="body" style={{ color: theme.colors.destructive, fontWeight: "500" }}>
+            Odjavite se
+          </AppText>
         </Pressable>
-      </View>
-    </SafeAreaView>
+
+        <AppText variant="caption" muted centered>
+          Salonko v1.0.0
+        </AppText>
+      </ScrollView>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6b7280",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: "#e5e7eb",
-    marginLeft: 16,
-  },
-  label: {
-    fontSize: 16,
-    color: "#374151",
-  },
-  value: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
-  logoutButton: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#fecaca",
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ef4444",
-  },
-});

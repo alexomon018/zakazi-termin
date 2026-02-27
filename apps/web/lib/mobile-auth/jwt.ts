@@ -89,9 +89,7 @@ export function createRefreshToken(userId: string): string {
   });
 }
 
-export function verifyAccessToken(
-  token: string,
-): MobileTokenPayload | null {
+export function verifyAccessToken(token: string): MobileTokenPayload | null {
   const payload = verify(token);
   if (!payload || payload.type !== "access") return null;
   return {
@@ -103,9 +101,7 @@ export function verifyAccessToken(
   };
 }
 
-export function verifyRefreshToken(
-  token: string,
-): { sub: string } | null {
+export function verifyRefreshToken(token: string): { sub: string } | null {
   const payload = verify(token);
   if (!payload || payload.type !== "refresh") return null;
   return { sub: payload.sub as string };

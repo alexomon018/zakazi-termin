@@ -1,58 +1,86 @@
-import { Tabs } from "expo-router";
+import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
+import { useEnsureTrial } from "@/lib/use-ensure-trial";
+import { Redirect, Tabs } from "expo-router";
+import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
 import { Platform, StyleSheet } from "react-native";
 
 export default function TabsLayout() {
+  const { isLoading, isAuthenticated } = useAuth();
+  const { isReady, isLoading: isTrialLoading } = useEnsureTrial();
+  const { theme } = useTheme();
+
+  if (isLoading || isTrialLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  if (!isReady) {
+    return null;
+  }
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        tabBarActiveTintColor: "#111827",
-        tabBarInactiveTintColor: "#9ca3af",
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
-        headerTitleStyle: styles.headerTitle,
+        headerShown: false,
+        tabBarActiveTintColor: theme.colors.foreground,
+        tabBarInactiveTintColor: theme.colors.mutedForeground,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          paddingTop: 4,
+          height: Platform.OS === "ios" ? 86 : 62,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          elevation: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "500",
+          marginBottom: Platform.OS === "ios" ? 2 : 6,
+        },
+        tabBarItemStyle: { paddingTop: 2 },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Rezervacije",
-          tabBarLabel: "Rezervacije",
+          title: "Usluge",
+          tabBarLabel: "Usluge",
+          tabBarIcon: ({ color, size }) => <Link2 size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="events"
+        name="bookings"
         options={{
-          title: "Usluge",
-          tabBarLabel: "Usluge",
+          title: "Termini",
+          tabBarLabel: "Termini",
+          tabBarIcon: ({ color, size }) => <CalendarDays size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="availability"
+        options={{
+          title: "Dostupnost",
+          tabBarLabel: "Dostupnost",
+          tabBarIcon: ({ color, size }) => <Clock size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Podešavanja",
-          tabBarLabel: "Podešavanja",
+          title: "Više",
+          tabBarLabel: "Više",
+          tabBarIcon: ({ color, size }) => <MoreHorizontal size={size} color={color} />,
         }}
       />
+      {/* Hidden tabs — these files exist but are not shown in tab bar */}
+      <Tabs.Screen name="events" options={{ href: null }} />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: "#fff",
-    borderTopColor: "#e5e7eb",
-    borderTopWidth: 1,
-    paddingTop: 4,
-    height: Platform.OS === "ios" ? 88 : 60,
-  },
-  tabBarLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-  },
-});

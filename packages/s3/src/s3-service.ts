@@ -7,7 +7,6 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { logger } from "@salonko/config";
-import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import { S3_CONFIG } from "./config";
 import { ImageValidationError, S3ServiceError } from "./errors";
@@ -49,12 +48,29 @@ function getBucketName(): string {
 
 // Lazy initialization of S3 client
 let s3Client: S3Client | null = null;
+let sharpLoader: Promise<typeof import("sharp")> | null = null;
 
 function getS3Client(): S3Client {
   if (!s3Client) {
     s3Client = createS3Client();
   }
   return s3Client;
+}
+
+async function getSharp() {
+  if (!sharpLoader) {
+    sharpLoader = import("sharp")
+      .then((module) => module.default)
+      .catch((error: unknown) => {
+        sharpLoader = null;
+        throw new S3ServiceError(
+          "Image processing trenutno nije dostupna. Pokušajte ponovo kasnije.",
+          error
+        );
+      });
+  }
+
+  return sharpLoader;
 }
 
 /**
@@ -108,6 +124,7 @@ export async function uploadImage(
   } = options;
 
   try {
+    const sharp = await getSharp();
     // Process image with sharp
     const processedImage = sharp(buffer);
     const metadata = await processedImage.metadata();

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Zakazi Termin",
+    "name": "Salonko",
     "slug": "zakazi-termin",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -25,7 +25,12 @@
       "bundler": "metro",
       "output": "static"
     },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
+    ],
     "experiments": {
       "typedRoutes": true
     }

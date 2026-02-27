@@ -15,8 +15,7 @@ config.resolver.nodeModulesPaths = [
   path.resolve(monorepoRoot, "node_modules"),
 ];
 
-// Force Metro to resolve these from the app's node_modules
-// Prevents "multiple React instances" errors in monorepos
-config.resolver.disableHierarchicalLookup = true;
+// Allow resolving modern ESM packages that only expose "exports" (e.g. copy-anything v4).
+config.resolver.unstable_enablePackageExports = true;
 
 module.exports = config;

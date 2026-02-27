@@ -26,6 +26,7 @@
     "@salonko/auth": "workspace:*",
     "@salonko/calendar": "workspace:*",
     "@salonko/config": "workspace:*",
+    "@salonko/emails": "workspace:*",
     "@salonko/prisma": "workspace:*",
     "@salonko/scheduling": "workspace:*",
     "@salonko/trpc": "workspace:*",

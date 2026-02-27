@@ -10,10 +10,7 @@ export async function POST(request: Request) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: "Email i lozinka su obavezni." },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Email i lozinka su obavezni." }, { status: 400 });
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -24,26 +21,17 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Pogrešan email ili lozinka." },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Pogrešan email ili lozinka." }, { status: 401 });
     }
 
     if (user.identityProvider !== "EMAIL" || !user.password?.hash) {
-      return NextResponse.json(
-        { error: "Ovaj nalog koristi Google za prijavu." },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Ovaj nalog koristi Google za prijavu." }, { status: 401 });
     }
 
     const isValid = await verifyPassword(password, user.password.hash);
 
     if (!isValid) {
-      return NextResponse.json(
-        { error: "Pogrešan email ili lozinka." },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Pogrešan email ili lozinka." }, { status: 401 });
     }
 
     const token = createAccessToken({
@@ -66,9 +54,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("Mobile login error", { error });
-    return NextResponse.json(
-      { error: "Greška pri prijavi." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Greška pri prijavi." }, { status: 500 });
   }
 }

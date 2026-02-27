@@ -1,19 +1,13 @@
+import { AppButton, AppCard, AppInput, AppScreen, AppText } from "@/components/ui/primitives";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import { Link } from "expo-router";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Calendar } from "lucide-react-native";
+import { useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from "react-native";
 
 export default function LoginScreen() {
+  const { theme } = useTheme();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,162 +26,124 @@ export default function LoginScreen() {
     try {
       await login(email.trim().toLowerCase(), password);
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Prijava nije uspela. Pokušajte ponovo.",
-      );
+      setError(e instanceof Error ? e.message : "Prijava nije uspela. Pokušajte ponovo.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        keyboardView: {
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: theme.spacing.xl,
+        },
+        header: {
+          alignItems: "center",
+          gap: theme.spacing.sm,
+          marginBottom: theme.spacing.xl,
+        },
+        logoRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          marginBottom: theme.spacing.xs,
+        },
+        logoIcon: {
+          width: 40,
+          height: 40,
+          borderRadius: theme.radius.sm,
+          backgroundColor: theme.colors.primary,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        form: {
+          gap: theme.spacing.lg,
+        },
+        inputGroup: {
+          gap: theme.spacing.xs,
+        },
+        footer: {
+          flexDirection: "row",
+          justifyContent: "center",
+          marginTop: theme.spacing.sm,
+        },
+      }),
+    [theme]
+  );
+
   return (
-    <SafeAreaView style={styles.container}>
+    <AppScreen>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Zakazi Termin</Text>
-          <Text style={styles.subtitle}>Prijavite se na svoj nalog</Text>
-        </View>
-
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="vas@email.com"
-              placeholderTextColor="#9ca3af"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              editable={!isSubmitting}
-            />
+        <AppCard>
+          <View style={styles.header}>
+            <View style={styles.logoRow}>
+              <View style={styles.logoIcon}>
+                <Calendar size={22} color={theme.colors.primaryForeground} />
+              </View>
+              <AppText variant="h1">Salonko</AppText>
+            </View>
+            <AppText variant="bodySm" muted centered>
+              Prijavite se na svoj nalog
+            </AppText>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Lozinka</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#9ca3af"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              textContentType="password"
-              editable={!isSubmitting}
-              onSubmitEditing={handleLogin}
-            />
-          </View>
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <AppText variant="bodySm">Email</AppText>
+              <AppInput
+                placeholder="vas@email.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                editable={!isSubmitting}
+              />
+            </View>
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
+            <View style={styles.inputGroup}>
+              <AppText variant="bodySm">Lozinka</AppText>
+              <AppInput
+                placeholder="••••••••"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                textContentType="password"
+                editable={!isSubmitting}
+                onSubmitEditing={handleLogin}
+              />
+            </View>
 
-          <Pressable
-            style={[styles.button, isSubmitting && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Prijavite se</Text>
+            {error && (
+              <AppText variant="bodySm" centered style={{ color: theme.colors.destructive }}>
+                {error}
+              </AppText>
             )}
-          </Pressable>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Nemate nalog? </Text>
-            <Link href="/(auth)/signup" asChild>
-              <Pressable>
-                <Text style={styles.linkText}>Registrujte se</Text>
-              </Pressable>
-            </Link>
+            <AppButton label="Prijavite se" onPress={handleLogin} loading={isSubmitting} />
+
+            <View style={styles.footer}>
+              <AppText variant="bodySm" muted>
+                Nemate nalog?{" "}
+              </AppText>
+              <Link href="/(auth)/signup" asChild>
+                <Pressable>
+                  <AppText variant="bodySm" style={{ color: theme.colors.accent }}>
+                    Registrujte se
+                  </AppText>
+                </Pressable>
+              </Link>
+            </View>
           </View>
-        </View>
+        </AppCard>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  keyboardView: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
-  form: {
-    gap: 16,
-  },
-  inputGroup: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#374151",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#111827",
-    backgroundColor: "#fff",
-  },
-  errorText: {
-    color: "#ef4444",
-    fontSize: 14,
-    textAlign: "center",
-  },
-  button: {
-    backgroundColor: "#111827",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 16,
-  },
-  footerText: {
-    color: "#6b7280",
-    fontSize: 14,
-  },
-  linkText: {
-    color: "#111827",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});
