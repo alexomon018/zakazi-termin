@@ -95,7 +95,7 @@ export default function PublicEventBookingScreen() {
   return (
     <AppScreen>
       <View style={styles.container}>
-        {(eventQuery.isLoading || slotsQuery.isLoading) && (
+        {eventQuery.isLoading && (
           <View style={styles.centered}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>

@@ -159,6 +159,24 @@ export default function EventTypesScreen() {
             <View style={styles.centered}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
+          ) : eventsQuery.isError ? (
+            <View style={styles.centered}>
+              <AppText variant="h2" centered>
+                Greška pri učitavanju
+              </AppText>
+              <AppText variant="bodySm" centered muted>
+                Došlo je do greške prilikom učitavanja usluga.
+              </AppText>
+              <Pressable onPress={() => eventsQuery.refetch()}>
+                <AppText
+                  variant="bodySm"
+                  centered
+                  style={{ color: theme.colors.primary, marginTop: theme.spacing.sm }}
+                >
+                  Pokušajte ponovo
+                </AppText>
+              </Pressable>
+            </View>
           ) : (
             <View style={styles.centered}>
               <AppText variant="h2" centered>

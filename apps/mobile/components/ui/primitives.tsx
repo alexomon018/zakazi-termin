@@ -369,6 +369,7 @@ export type BottomSheetAction = {
   icon?: ReactNode;
   onPress: () => void;
   destructive?: boolean;
+  disabled?: boolean;
 };
 
 export function BottomSheet({
@@ -426,12 +427,14 @@ export function BottomSheet({
           {actions.map((action, index) => (
             <Pressable
               key={`${action.label}-${index}`}
+              disabled={action.disabled}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 paddingVertical: 14,
                 paddingHorizontal: theme.spacing.xl,
                 gap: theme.spacing.md,
+                opacity: action.disabled ? 0.5 : 1,
               }}
               onPress={() => {
                 action.onPress();

@@ -33,20 +33,26 @@ type OOOFormData = {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-const INITIAL_FORM: OOOFormData = {
+const createInitialForm = (): OOOFormData => ({
   startDate: new Date(),
   endDate: new Date(Date.now() + MS_PER_DAY),
   notes: "",
-};
+});
 
 export default function OutOfOfficeScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<OOOFormData>(INITIAL_FORM);
+  const [formData, setFormData] = useState<OOOFormData>(createInitialForm);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const closeForm = () => {
+    setShowForm(false);
+    setShowStartPicker(false);
+    setShowEndPicker(false);
+  };
 
   const listQuery = trpc.outOfOffice.list.useQuery(undefined, { retry: false });
   const reasonsQuery = trpc.outOfOffice.reasons.useQuery(undefined, { retry: false });
@@ -54,8 +60,8 @@ export default function OutOfOfficeScreen() {
   const createOrUpdateMutation = trpc.outOfOffice.createOrUpdate.useMutation({
     onSuccess: async () => {
       await utils.outOfOffice.list.invalidate();
-      setShowForm(false);
-      setFormData(INITIAL_FORM);
+      closeForm();
+      setFormData(createInitialForm());
     },
   });
 
@@ -94,7 +100,7 @@ export default function OutOfOfficeScreen() {
   };
 
   const handleAdd = () => {
-    setFormData(INITIAL_FORM);
+    setFormData(createInitialForm());
     setShowForm(true);
   };
 
@@ -172,6 +178,13 @@ export default function OutOfOfficeScreen() {
             <View style={styles.centered}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
+          ) : listQuery.isError ? (
+            <View style={styles.centered}>
+              <AppText variant="bodySm" centered muted>
+                Greška pri učitavanju perioda odsustva.
+              </AppText>
+              <AppButton label="Pokušaj ponovo" onPress={() => listQuery.refetch()} />
+            </View>
           ) : (
             <View style={styles.centered}>
               <AppText variant="bodySm" centered muted>
@@ -215,12 +228,12 @@ export default function OutOfOfficeScreen() {
         visible={showForm}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => setShowForm(false)}
+        onRequestClose={closeForm}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <AppText variant="h2">{formData.uuid ? "Uredi odsustvo" : "Novo odsustvo"}</AppText>
-            <AppButton label="Zatvori" onPress={() => setShowForm(false)} variant="outline" />
+            <AppButton label="Zatvori" onPress={closeForm} variant="outline" />
           </View>
 
           <ScrollView contentContainerStyle={styles.formContent}>

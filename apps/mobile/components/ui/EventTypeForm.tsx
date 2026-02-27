@@ -46,8 +46,13 @@ export function generateSlug(title: string): string {
 
 export function validateEventTypeForm(formData: EventTypeFormData): Record<string, string> {
   const errors: Record<string, string> = {};
+  const slug = formData.slug.trim();
   if (!formData.title.trim()) errors.title = "Naziv je obavezan";
-  if (!formData.slug.trim()) errors.slug = "Slug je obavezan";
+  if (!slug) {
+    errors.slug = "Slug je obavezan";
+  } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    errors.slug = "Slug može sadržati samo mala slova, brojeve i crtice";
+  }
   if (formData.length < 5) errors.length = "Trajanje mora biti najmanje 5 minuta";
   if (formData.locationType === "inPerson" && !formData.locationAddress.trim()) {
     errors.locationAddress = "Adresa je obavezna za termine uživo";

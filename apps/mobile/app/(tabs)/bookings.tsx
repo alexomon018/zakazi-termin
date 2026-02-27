@@ -62,6 +62,7 @@ export default function BookingsScreen() {
   const { theme } = useTheme();
   useAuth();
   const utils = trpc.useUtils();
+  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [search, setSearch] = useState("");
   const [activeBooking, setActiveBooking] = useState<BookingItem | null>(null);
@@ -88,20 +89,32 @@ export default function BookingsScreen() {
   );
 
   const confirmMutation = trpc.booking.confirm.useMutation({
-    onSuccess: () => invalidateAll(),
+    onSuccess: () => {
+      setActiveBooking(null);
+      invalidateAll();
+    },
     onError: (error) => {
+      setActiveBooking(null);
       Alert.alert("Greška", error.message || "Nije moguće potvrditi termin.");
     },
   });
   const rejectMutation = trpc.booking.reject.useMutation({
-    onSuccess: () => invalidateAll(),
+    onSuccess: () => {
+      setActiveBooking(null);
+      invalidateAll();
+    },
     onError: (error) => {
+      setActiveBooking(null);
       Alert.alert("Greška", error.message || "Nije moguće odbiti termin.");
     },
   });
   const cancelMutation = trpc.booking.cancel.useMutation({
-    onSuccess: () => invalidateAll(),
+    onSuccess: () => {
+      setActiveBooking(null);
+      invalidateAll();
+    },
     onError: (error) => {
+      setActiveBooking(null);
       Alert.alert("Greška", error.message || "Nije moguće otkazati termin.");
     },
   });
@@ -150,6 +163,9 @@ export default function BookingsScreen() {
     await Promise.all([statsQuery.refetch(), activeQuery.refetch()]);
   };
 
+  const isMutating =
+    confirmMutation.isPending || rejectMutation.isPending || cancelMutation.isPending;
+
   const sheetActions: BottomSheetAction[] = activeBooking
     ? [
         ...(activeBooking.status === "PENDING"
@@ -158,12 +174,14 @@ export default function BookingsScreen() {
                 label: "Potvrdi",
                 icon: <CheckCircle size={20} color={theme.colors.success} />,
                 onPress: () => confirmMutation.mutate({ uid: activeBooking.uid }),
+                disabled: isMutating,
               },
               {
                 label: "Odbij",
                 icon: <XCircle size={20} color={theme.colors.destructive} />,
                 onPress: () => rejectMutation.mutate({ uid: activeBooking.uid }),
                 destructive: true,
+                disabled: isMutating,
               },
             ]
           : []),
@@ -174,6 +192,7 @@ export default function BookingsScreen() {
                 icon: <XCircle size={20} color={theme.colors.destructive} />,
                 onPress: () => cancelMutation.mutate({ uid: activeBooking.uid }),
                 destructive: true,
+                disabled: isMutating,
               },
             ]
           : []),
@@ -369,12 +388,12 @@ export default function BookingsScreen() {
 
       <FAB
         onPress={() => {
-          if (!statsQuery.data) {
+          const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName;
+          if (!salonSlug) {
             Alert.alert("Informacija", "Za zakazivanje termina koristite stranicu za rezervacije.");
             return;
           }
-          // Open public booking page for this salon in the browser.
-          WebBrowser.openBrowserAsync(API_URL);
+          WebBrowser.openBrowserAsync(`${API_URL}/${encodeURIComponent(salonSlug)}`);
         }}
         icon={<CalendarPlus size={20} color={theme.colors.primaryForeground} />}
         label="Zakaži termin"

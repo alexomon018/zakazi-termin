@@ -17,6 +17,7 @@ import { Copy, Globe, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Pressable,
   RefreshControl,
@@ -86,16 +87,26 @@ export default function AvailabilityScreen() {
       setCreateDialogVisible(false);
       setCreateName("");
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće kreirati raspored.");
+    },
   });
   const deleteMutation = trpc.availability.deleteSchedule.useMutation({
     onSuccess: async () => {
       await utils.availability.listSchedules.invalidate();
       setDeleteTarget(null);
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće obrisati raspored.");
+      setDeleteTarget(null);
+    },
   });
   const duplicateMutation = trpc.availability.duplicateSchedule.useMutation({
     onSuccess: async () => {
       await utils.availability.listSchedules.invalidate();
+    },
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće duplirati raspored.");
     },
   });
   const setDefaultMutation = trpc.user.setDefaultSchedule.useMutation({
@@ -104,6 +115,9 @@ export default function AvailabilityScreen() {
         utils.availability.listSchedules.invalidate(),
         utils.user.me.invalidate(),
       ]);
+    },
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće postaviti podrazumevani raspored.");
     },
   });
 
@@ -207,6 +221,15 @@ export default function AvailabilityScreen() {
           schedulesQuery.isLoading ? (
             <View style={styles.centered}>
               <ActivityIndicator size="large" color={theme.colors.primary} />
+            </View>
+          ) : schedulesQuery.isError ? (
+            <View style={styles.centered}>
+              <AppText variant="h2" centered>
+                Greška pri učitavanju
+              </AppText>
+              <AppText variant="bodySm" centered muted>
+                {schedulesQuery.error?.message ?? "Povucite nadole da pokušate ponovo."}
+              </AppText>
             </View>
           ) : (
             <View style={styles.centered}>

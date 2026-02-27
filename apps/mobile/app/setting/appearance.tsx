@@ -2,7 +2,7 @@ import { AppCard, AppText, SectionHeader } from "@/components/ui/primitives";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { Check } from "lucide-react-native";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 const THEMES = [
@@ -36,6 +36,8 @@ export default function AppearanceSettingsScreen() {
     },
   });
 
+  const [optimisticBrandColor, setOptimisticBrandColor] = useState<string | null>(null);
+
   const handleThemeSelect = (value: "light" | "dark" | "system") => {
     const previous = preference;
     setPreference(value);
@@ -51,23 +53,17 @@ export default function AppearanceSettingsScreen() {
     );
   };
 
-  if (meQuery.isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+  const handleBrandColorSelect = (color: string) => {
+    const previous = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
+    setOptimisticBrandColor(color);
+    appearanceMutation.mutate(
+      { brandColor: color },
+      {
+        onSuccess: () => setOptimisticBrandColor(null),
+        onError: () => setOptimisticBrandColor(previous),
+      }
     );
-  }
-
-  const currentTheme = preference;
-  const currentBrandColor = meQuery.data?.brandColor ?? "#2563eb";
+  };
 
   const styles = useMemo(
     () =>
@@ -110,6 +106,24 @@ export default function AppearanceSettingsScreen() {
     [theme]
   );
 
+  if (meQuery.isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  const currentTheme = preference;
+  const currentBrandColor = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
+
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
       <SectionHeader title="Tema" />
@@ -142,7 +156,7 @@ export default function AppearanceSettingsScreen() {
                 { backgroundColor: color },
                 currentBrandColor === color && styles.colorSwatchActive,
               ]}
-              onPress={() => appearanceMutation.mutate({ brandColor: color })}
+              onPress={() => handleBrandColorSelect(color)}
             >
               {currentBrandColor === color && <Check size={18} color={"#ffffff"} />}
             </Pressable>
