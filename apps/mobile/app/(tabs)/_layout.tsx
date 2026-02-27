@@ -3,7 +3,7 @@ import { useTheme } from "@/lib/theme-context";
 import { useEnsureTrial } from "@/lib/use-ensure-trial";
 import { Redirect, Tabs } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
-import { Platform, StyleSheet } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -11,7 +11,18 @@ export default function TabsLayout() {
   const { theme } = useTheme();
 
   if (isLoading || isTrialLoading) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
   if (!isAuthenticated) {
@@ -19,7 +30,18 @@ export default function TabsLayout() {
   }
 
   if (!isReady) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
   }
 
   return (

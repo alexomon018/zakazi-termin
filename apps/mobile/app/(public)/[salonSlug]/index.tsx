@@ -42,53 +42,63 @@ export default function PublicSalonScreen() {
     [theme]
   );
 
-  return (
-    <AppScreen>
-      <View style={styles.container}>
-        {profileQuery.isLoading && (
+  if (profileQuery.isLoading) {
+    return (
+      <AppScreen>
+        <View style={styles.container}>
           <View style={styles.centered}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
-        )}
+        </View>
+      </AppScreen>
+    );
+  }
 
-        {profileQuery.error && (
+  if (profileQuery.error || !profileQuery.data) {
+    return (
+      <AppScreen>
+        <View style={styles.container}>
           <View style={styles.centered}>
             <AppText variant="bodySm" centered muted>
               Salon nije pronađen.
             </AppText>
           </View>
-        )}
+        </View>
+      </AppScreen>
+    );
+  }
 
-        {profileQuery.data && (
-          <ScrollView contentContainerStyle={styles.content}>
-            <AppCard>
-              <AppText variant="h2">{profileQuery.data.salonName ?? "Salon"}</AppText>
-              <AppText variant="bodySm" muted>
-                Odaberite uslugu za rezervaciju.
-              </AppText>
-            </AppCard>
+  return (
+    <AppScreen>
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <AppCard>
+            <AppText variant="h2">{profileQuery.data.salonName ?? "Salon"}</AppText>
+            <AppText variant="bodySm" muted>
+              Odaberite uslugu za rezervaciju.
+            </AppText>
+          </AppCard>
 
-            {profileQuery.data.eventTypes.map((eventType: any) => (
-              <AppCard key={eventType.id}>
-                <AppText variant="body">{eventType.title}</AppText>
-                {eventType.description && (
-                  <AppText variant="bodySm" muted>
-                    {eventType.description}
-                  </AppText>
-                )}
-                <AppText variant="caption" muted>
-                  Trajanje: {eventType.length} min
+          {profileQuery.data.eventTypes.map((eventType: any) => (
+            <AppCard key={eventType.id}>
+              <AppText variant="body">{eventType.title}</AppText>
+              {eventType.description && (
+                <AppText variant="bodySm" muted>
+                  {eventType.description}
                 </AppText>
-                <View style={styles.action}>
-                  <AppButton
-                    label="Izaberi termin"
-                    onPress={() => router.push(`/(public)/${salonSlug}/${eventType.slug}`)}
-                  />
-                </View>
-              </AppCard>
-            ))}
-          </ScrollView>
-        )}
+              )}
+              <AppText variant="caption" muted>
+                Trajanje: {eventType.length} min
+              </AppText>
+              <View style={styles.action}>
+                <AppButton
+                  label="Izaberi termin"
+                  onPress={() => router.push(`/(public)/${salonSlug}/${eventType.slug}`)}
+                />
+              </View>
+            </AppCard>
+          ))}
+        </ScrollView>
       </View>
     </AppScreen>
   );

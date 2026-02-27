@@ -5,13 +5,15 @@ const TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "auth_refresh_token";
 const USER_KEY = "auth_user";
 
+const webMemoryStore = new Map<string, string>();
+
 /**
  * Secure token storage abstraction.
- * Uses expo-secure-store on native, AsyncStorage-style on web.
+ * Uses expo-secure-store on native, in-memory store on web (non-persistent to avoid leaking tokens).
  */
 async function setItem(key: string, value: string): Promise<void> {
   if (Platform.OS === "web") {
-    localStorage.setItem(key, value);
+    webMemoryStore.set(key, value);
     return;
   }
   await SecureStore.setItemAsync(key, value);
@@ -19,14 +21,14 @@ async function setItem(key: string, value: string): Promise<void> {
 
 async function getItem(key: string): Promise<string | null> {
   if (Platform.OS === "web") {
-    return localStorage.getItem(key);
+    return webMemoryStore.get(key) ?? null;
   }
   return SecureStore.getItemAsync(key);
 }
 
 async function deleteItem(key: string): Promise<void> {
   if (Platform.OS === "web") {
-    localStorage.removeItem(key);
+    webMemoryStore.delete(key);
     return;
   }
   await SecureStore.deleteItemAsync(key);

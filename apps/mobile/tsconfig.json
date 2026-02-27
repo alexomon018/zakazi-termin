@@ -13,7 +13,15 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@salonko/trpc": ["../../packages/trpc/src"],
+      "@salonko/trpc/*": ["../../packages/trpc/src/*"],
+      "@salonko/prisma": ["../../packages/prisma/src"],
+      "@salonko/prisma/*": ["../../packages/prisma/src/*"],
+      "@salonko/config": ["../../packages/config/src"],
+      "@salonko/config/*": ["../../packages/config/src/*"],
+      "@salonko/scheduling": ["../../packages/scheduling/src"],
+      "@salonko/scheduling/*": ["../../packages/scheduling/src/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],

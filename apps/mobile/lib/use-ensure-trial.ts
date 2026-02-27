@@ -18,20 +18,19 @@ export function useEnsureTrial() {
       utils.subscription.getStatus.invalidate();
     },
   });
+  const { isPending, mutate } = startTrial;
   const attempted = useRef(false);
 
   useEffect(() => {
-    if (status?.needsSubscription && !attempted.current && !startTrial.isPending) {
+    if (status?.needsSubscription && !attempted.current && !isPending) {
       attempted.current = true;
-      startTrial.mutate();
+      mutate();
     }
-  }, [status?.needsSubscription, startTrial]);
+  }, [status?.needsSubscription, isPending, mutate]);
 
   const isReady = status?.hasSubscription === true && status?.isActive === true;
   const isLoading =
-    isStatusLoading ||
-    startTrial.isPending ||
-    (status?.needsSubscription === true && !startTrial.isError);
+    isStatusLoading || isPending || (status?.needsSubscription === true && !startTrial.isError);
 
   return { isReady, isLoading, error: startTrial.error };
 }

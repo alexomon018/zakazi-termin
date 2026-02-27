@@ -13,7 +13,7 @@ export interface TestUser {
 
 /**
  * Generate a URL-safe slug from a salon name.
- * Mirrors `generateSalonSlug` from `@/lib/salon-utils` to avoid cross-package imports.
+ * Mirrors `generateSalonSlug` from `@salonko/config` to avoid cross-package imports.
  */
 function toSalonSlug(salonName: string): string {
   return salonName

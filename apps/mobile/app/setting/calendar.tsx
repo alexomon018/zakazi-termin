@@ -9,8 +9,8 @@ import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as WebBrowser from "expo-web-browser";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, AppState, ScrollView, StyleSheet, Switch, View } from "react-native";
 
 export default function CalendarSettingsScreen() {
   const { theme } = useTheme();
@@ -34,9 +34,21 @@ export default function CalendarSettingsScreen() {
     },
   });
 
+  const pendingRefetch = useRef(false);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active" && pendingRefetch.current) {
+        pendingRefetch.current = false;
+        connectionsQuery.refetch();
+      }
+    });
+    return () => subscription.remove();
+  }, [connectionsQuery]);
+
   const handleConnect = async () => {
+    pendingRefetch.current = true;
     await WebBrowser.openBrowserAsync(`${API_URL}/api/calendar/google/connect`);
-    connectionsQuery.refetch();
   };
 
   const styles = useMemo(

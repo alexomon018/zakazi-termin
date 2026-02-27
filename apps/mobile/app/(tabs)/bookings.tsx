@@ -10,12 +10,14 @@ import {
   SectionDateHeader,
   uiStyles,
 } from "@/components/ui/primitives";
+import { API_URL } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import * as WebBrowser from "expo-web-browser";
 import { CalendarPlus, CheckCircle, Info, XCircle } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, View } from "react-native";
 
 type FilterKey = "upcoming" | "pending" | "history";
 
@@ -58,7 +60,7 @@ function startOfDay() {
 
 export default function BookingsScreen() {
   const { theme } = useTheme();
-  const { user } = useAuth();
+  useAuth();
   const utils = trpc.useUtils();
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [search, setSearch] = useState("");
@@ -87,12 +89,21 @@ export default function BookingsScreen() {
 
   const confirmMutation = trpc.booking.confirm.useMutation({
     onSuccess: () => invalidateAll(),
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće potvrditi termin.");
+    },
   });
   const rejectMutation = trpc.booking.reject.useMutation({
     onSuccess: () => invalidateAll(),
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće odbiti termin.");
+    },
   });
   const cancelMutation = trpc.booking.cancel.useMutation({
     onSuccess: () => invalidateAll(),
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće otkazati termin.");
+    },
   });
 
   function invalidateAll() {
@@ -129,6 +140,12 @@ export default function BookingsScreen() {
     return result;
   }, [grouped]);
 
+  const openBookingDetails = async (uid: string) => {
+    if (!uid) return;
+    const url = `${API_URL}/booking/${encodeURIComponent(uid)}`;
+    await WebBrowser.openBrowserAsync(url);
+  };
+
   const handleRefresh = async () => {
     await Promise.all([statsQuery.refetch(), activeQuery.refetch()]);
   };
@@ -163,7 +180,7 @@ export default function BookingsScreen() {
         {
           label: "Detalji",
           icon: <Info size={20} color={theme.colors.foreground} />,
-          onPress: () => {},
+          onPress: () => openBookingDetails(activeBooking.uid),
         },
       ]
     : [];
@@ -351,7 +368,14 @@ export default function BookingsScreen() {
       />
 
       <FAB
-        onPress={() => {}}
+        onPress={() => {
+          if (!statsQuery.data) {
+            Alert.alert("Informacija", "Za zakazivanje termina koristite stranicu za rezervacije.");
+            return;
+          }
+          // Open public booking page for this salon in the browser.
+          WebBrowser.openBrowserAsync(API_URL);
+        }}
         icon={<CalendarPlus size={20} color={theme.colors.primaryForeground} />}
         label="Zakaži termin"
       />

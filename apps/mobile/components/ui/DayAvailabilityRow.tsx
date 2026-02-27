@@ -11,14 +11,62 @@ export type TimeRange = {
 };
 
 function parseTimeToDate(time: string): Date {
-  const [hours, minutes] = time.split(":").map(Number);
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
   const d = new Date();
+  if (!match) {
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  const hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2], 10);
+
+  if (
+    !Number.isFinite(hours) ||
+    !Number.isFinite(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
   d.setHours(hours, minutes, 0, 0);
   return d;
 }
 
 function formatTimeFromDate(date: Date): string {
-  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+  return `${date.getHours().toString().padStart(2, "0")}:${date
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+function timeToMinutes(time: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})$/.exec(time);
+  if (!match) return null;
+  const hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2], 10);
+  if (
+    !Number.isFinite(hours) ||
+    !Number.isFinite(minutes) ||
+    hours < 0 ||
+    hours > 23 ||
+    minutes < 0 ||
+    minutes > 59
+  ) {
+    return null;
+  }
+  return hours * 60 + minutes;
+}
+
+function isValidRange(range: TimeRange): boolean {
+  const start = timeToMinutes(range.startTime);
+  const end = timeToMinutes(range.endTime);
+  if (start == null || end == null) return false;
+  return start < end;
 }
 
 function TimeButton({
@@ -81,7 +129,11 @@ export function DayAvailabilityRow({
 
   const updateRange = (index: number, field: "startTime" | "endTime", value: string) => {
     const updated = [...timeRanges];
-    updated[index] = { ...updated[index], [field]: value };
+    const nextRange: TimeRange = { ...updated[index], [field]: value };
+    if (!isValidRange(nextRange)) {
+      return;
+    }
+    updated[index] = nextRange;
     onTimeRangesChange(updated);
   };
 
@@ -139,7 +191,10 @@ export function DayAvailabilityRow({
       {enabled && (
         <View style={styles.rangesContainer}>
           {timeRanges.map((range, index) => (
-            <View key={`${label}-${range.startTime}-${range.endTime}`} style={styles.rangeRow}>
+            <View
+              key={`${label}-${index}-${range.startTime}-${range.endTime}`}
+              style={styles.rangeRow}
+            >
               <TimeButton
                 time={range.startTime}
                 onTimeChange={(v) => updateRange(index, "startTime", v)}

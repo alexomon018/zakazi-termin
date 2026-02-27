@@ -45,7 +45,16 @@ export default function PublicLandingScreen() {
             />
             <AppButton
               label="Prikaži usluge"
-              onPress={() => router.push(`/(public)/${salonSlug.trim().toLowerCase()}`)}
+              onPress={() => {
+                const safeSlug = salonSlug
+                  .trim()
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")
+                  .replace(/[^a-z0-9\-]/g, "");
+                if (safeSlug) {
+                  router.push(`/(public)/${encodeURIComponent(safeSlug)}`);
+                }
+              }}
               disabled={!salonSlug.trim()}
             />
           </View>

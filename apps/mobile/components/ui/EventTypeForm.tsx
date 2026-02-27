@@ -116,6 +116,7 @@ export function EventTypeForm({
   schedules,
   isPending,
   submitLabel,
+  submitError,
   showVisibilityToggle = false,
   onFormDataChange,
   onSubmit,
@@ -125,6 +126,7 @@ export function EventTypeForm({
   schedules: Schedule[];
   isPending: boolean;
   submitLabel: string;
+  submitError?: string | null;
   showVisibilityToggle?: boolean;
   onFormDataChange: (updater: (prev: EventTypeFormData) => EventTypeFormData) => void;
   onSubmit: () => void;
@@ -137,11 +139,14 @@ export function EventTypeForm({
   };
 
   const handleTitleChange = (title: string) => {
-    onFormDataChange((prev) => ({
-      ...prev,
-      title,
-      slug: generateSlug(title),
-    }));
+    onFormDataChange((prev) => {
+      const shouldUpdateSlug = prev.slug === generateSlug(prev.title);
+      return {
+        ...prev,
+        title,
+        ...(shouldUpdateSlug && { slug: generateSlug(title) }),
+      };
+    });
   };
 
   const styles = useMemo(
@@ -323,6 +328,11 @@ export function EventTypeForm({
       )}
 
       <AppButton label={submitLabel} onPress={onSubmit} loading={isPending} />
+      {submitError && (
+        <AppText variant="bodySm" centered muted>
+          {submitError}
+        </AppText>
+      )}
     </ScrollView>
   );
 }

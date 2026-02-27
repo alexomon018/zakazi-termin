@@ -1,5 +1,4 @@
-import { generateSalonSlug } from "@/lib/salon-utils";
-import { logger } from "@salonko/config";
+import { generateSalonSlug, logger } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";

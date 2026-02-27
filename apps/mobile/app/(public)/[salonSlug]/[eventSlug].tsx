@@ -126,17 +126,31 @@ export default function PublicEventBookingScreen() {
             <AppCard>
               <AppText variant="body">Dostupni termini</AppText>
               <View style={styles.slotsWrap}>
-                {(slotsQuery.data?.slots ?? []).slice(0, 15).map((slot: { time: string }) => (
+                {slotsQuery.isError && (
+                  <AppText variant="bodySm" centered muted>
+                    Greška pri učitavanju termina. Pokušajte ponovo.
+                  </AppText>
+                )}
+                {slotsQuery.isLoading && (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                )}
+                {slotsQuery.data?.slots?.slice(0, 15).map((slot: { time: string }) => (
                   <AppButton
                     key={slot.time}
                     label={new Date(slot.time).toLocaleString("sr-RS", {
                       dateStyle: "short",
                       timeStyle: "short",
+                      timeZone: "Europe/Belgrade",
                     })}
                     onPress={() => setSelectedSlot(slot.time)}
                     variant={selectedSlot === slot.time ? "primary" : "outline"}
                   />
                 ))}
+                {slotsQuery.data?.slots?.length === 0 && (
+                  <AppText variant="bodySm" centered muted>
+                    Nema dostupnih termina u narednih 14 dana.
+                  </AppText>
+                )}
               </View>
             </AppCard>
 

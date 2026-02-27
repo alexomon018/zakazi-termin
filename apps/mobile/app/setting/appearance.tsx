@@ -3,7 +3,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { Check } from "lucide-react-native";
 import { useMemo } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 const THEMES = [
   { value: "light", label: "Svetla" },
@@ -31,13 +31,24 @@ export default function AppearanceSettingsScreen() {
     onSuccess: async () => {
       await utils.user.me.invalidate();
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message || "Nije moguće sačuvati podešavanja izgleda.");
+    },
   });
 
   const handleThemeSelect = (value: "light" | "dark" | "system") => {
+    const previous = preference;
     setPreference(value);
-    appearanceMutation.mutate({
-      theme: value === "system" ? null : value,
-    });
+    appearanceMutation.mutate(
+      {
+        theme: value === "system" ? null : value,
+      },
+      {
+        onError: () => {
+          setPreference(previous);
+        },
+      }
+    );
   };
 
   if (meQuery.isLoading) {

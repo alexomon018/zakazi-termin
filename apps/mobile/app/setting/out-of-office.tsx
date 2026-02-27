@@ -31,9 +31,11 @@ type OOOFormData = {
   notes: string;
 };
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 const INITIAL_FORM: OOOFormData = {
   startDate: new Date(),
-  endDate: new Date(Date.now() + 86400000),
+  endDate: new Date(Date.now() + MS_PER_DAY),
   notes: "",
 };
 
@@ -74,11 +76,17 @@ export default function OutOfOfficeScreen() {
     });
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: {
+    uuid: string;
+    start: string | Date;
+    end: string | Date;
+    reasonId?: string | null;
+    notes?: string | null;
+  }) => {
     setFormData({
       uuid: item.uuid,
-      startDate: new Date(item.startDate),
-      endDate: new Date(item.endDate),
+      startDate: new Date(item.start),
+      endDate: new Date(item.end),
       reasonId: item.reasonId ?? undefined,
       notes: item.notes ?? "",
     });
@@ -90,7 +98,7 @@ export default function OutOfOfficeScreen() {
     setShowForm(true);
   };
 
-  const items = listQuery.data?.items ?? [];
+  const items = listQuery.data?.entries ?? [];
   const reasons = reasonsQuery.data ?? [];
 
   const styles = useMemo(
@@ -177,8 +185,8 @@ export default function OutOfOfficeScreen() {
           return (
             <AppCard>
               <AppText variant="body">
-                {new Date(item.startDate).toLocaleDateString("sr-RS")} —{" "}
-                {new Date(item.endDate).toLocaleDateString("sr-RS")}
+                {new Date(item.start).toLocaleDateString("sr-RS")} —{" "}
+                {new Date(item.end).toLocaleDateString("sr-RS")}
               </AppText>
               {reason && (
                 <AppText variant="bodySm" muted>

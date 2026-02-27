@@ -76,7 +76,19 @@ export default function ProfileSettingsScreen() {
     );
   }
 
-  const isOwner = meQuery.data?.role === "OWNER";
+  if (meQuery.error) {
+    return (
+      <View style={styles.centered}>
+        <AppText variant="bodySm" muted centered>
+          Greška pri učitavanju profila.
+        </AppText>
+        <AppButton label="Pokušaj ponovo" onPress={() => meQuery.refetch()} variant="outline" />
+      </View>
+    );
+  }
+
+  const role = meQuery.data?.membership?.role ?? "OWNER";
+  const isOwner = role === "OWNER";
 
   const handleSave = () => {
     const payload: { name?: string; salonName?: string; bio?: string } = {};
@@ -141,7 +153,7 @@ export default function ProfileSettingsScreen() {
             <AppText variant="bodySm" muted>
               Uloga
             </AppText>
-            <AppText variant="bodySm">{meQuery.data?.role ?? "—"}</AppText>
+            <AppText variant="bodySm">{role}</AppText>
           </View>
 
           <View style={styles.actions}>
@@ -175,7 +187,7 @@ export default function ProfileSettingsScreen() {
         confirmLabel="Obriši nalog"
         destructive
         loading={deleteAccountMutation.isPending}
-        onConfirm={() => deleteAccountMutation.mutate()}
+        onConfirm={() => deleteAccountMutation.mutate({ confirmText: "DELETE" })}
         onCancel={() => setShowDeleteConfirm(false)}
       />
     </>

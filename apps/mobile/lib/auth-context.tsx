@@ -44,12 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ]);
 
         if (storedToken && storedUser) {
+          const parsedUser = JSON.parse(storedUser) as User;
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(parsedUser);
+        } else if (storedToken || storedUser) {
+          await tokenStorage.clear();
         }
       } catch {
-        // Corrupted storage, clear it
         await tokenStorage.clear();
+        setToken(null);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

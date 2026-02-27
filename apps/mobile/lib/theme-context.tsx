@@ -20,7 +20,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const dbPreference = meQuery.data?.theme;
   const resolvedPreference: ColorSchemePreference =
-    dbPreference === null || dbPreference === undefined ? "system" : dbPreference;
+    dbPreference === "light" || dbPreference === "dark" ? dbPreference : "system";
 
   const [localPreference, setLocalPreference] = useState<ColorSchemePreference>("system");
 

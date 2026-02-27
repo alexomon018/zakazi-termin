@@ -42,14 +42,18 @@ export default function EditEventTypeScreen() {
   useEffect(() => {
     if (eventTypeQuery.data) {
       const et = eventTypeQuery.data;
-      const inPersonLocation = et.locations?.find((l: any) => l.type === "inPerson");
+      const locations = (et.locations as any[] | null) ?? [];
+      const inPersonLocation = locations.find((l: any) => l.type === "inPerson");
+      const firstLocation = locations[0] as { type?: string } | undefined;
       setFormData({
         title: et.title,
         slug: et.slug,
         description: et.description ?? "",
         length: et.length,
         hidden: et.hidden,
-        locationType: inPersonLocation ? "inPerson" : "inPerson",
+        locationType: inPersonLocation
+          ? "inPerson"
+          : ((firstLocation?.type ?? "inPerson") as EventTypeFormData["locationType"]),
         locationAddress: inPersonLocation?.address ?? "",
         minimumBookingNotice: et.minimumBookingNotice ?? 120,
         beforeEventBuffer: et.beforeEventBuffer ?? 0,
@@ -137,6 +141,7 @@ export default function EditEventTypeScreen() {
         schedules={schedules}
         isPending={updateMutation.isPending}
         submitLabel="Sačuvaj izmene"
+        submitError={updateMutation.error?.message}
         showVisibilityToggle
         onFormDataChange={setFormData}
         onSubmit={handleSubmit}

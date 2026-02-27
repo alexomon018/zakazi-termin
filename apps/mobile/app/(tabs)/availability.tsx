@@ -47,6 +47,8 @@ function getScheduleSummary(schedule: ScheduleItem) {
   if (!schedule.availability.length) return "Nema podešenih termina";
 
   const daySet = new Set<number>();
+  // formatTime returns zero-padded "HH:MM" strings, so lexicographic comparison
+  // on minStart/maxEnd is valid as long as this format is preserved.
   let minStart = "23:59";
   let maxEnd = "00:00";
 

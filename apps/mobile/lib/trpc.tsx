@@ -1,3 +1,4 @@
+import type { AppRouter } from "@salonko/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
@@ -6,7 +7,7 @@ import superjson from "superjson";
 import { API_URL } from "./api-url";
 import { tokenStorage } from "./secure-store";
 
-export const trpc: any = createTRPCReact<any>();
+export const trpc = createTRPCReact<AppRouter>();
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -26,13 +27,20 @@ async function refreshAccessToken(): Promise<string | null> {
         return null;
       }
 
-      const data = await response.json();
+      let data: { token: string; refreshToken: string; user: unknown };
+      try {
+        data = await response.json();
+      } catch {
+        await tokenStorage.clear();
+        return null;
+      }
+
       await Promise.all([
         tokenStorage.setToken(data.token),
         tokenStorage.setRefreshToken(data.refreshToken),
         tokenStorage.setUser(JSON.stringify(data.user)),
       ]);
-      return data.token as string;
+      return data.token;
     })().finally(() => {
       refreshPromise = null;
     });

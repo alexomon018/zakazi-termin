@@ -1,7 +1,7 @@
 "use server";
 
-import { generateSalonSlug } from "@/lib/salon-utils";
 import { generateOTP, getOTPExpiryDate, hashPassword } from "@salonko/auth/server";
+import { generateSalonSlug } from "@salonko/config";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { Prisma, prisma } from "@salonko/prisma";

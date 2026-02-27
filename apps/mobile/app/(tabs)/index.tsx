@@ -9,6 +9,7 @@ import {
   SearchBar,
   uiStyles,
 } from "@/components/ui/primitives";
+import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as Clipboard from "expo-clipboard";
@@ -63,7 +64,9 @@ export default function EventTypesScreen() {
   }, [allItems, search]);
 
   const handleCopyLink = async (slug: string) => {
-    const link = `${salonSlug}/${slug}`;
+    const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
+    const safeSlug = encodeURIComponent(slug);
+    const link = `${API_URL}/${safeSalonSlug}/${safeSlug}`;
     await Clipboard.setStringAsync(link);
     Alert.alert("Kopirano", "Link za rezervaciju je kopiran.");
   };

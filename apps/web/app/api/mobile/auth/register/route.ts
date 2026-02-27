@@ -1,6 +1,6 @@
 import { createAccessToken, createRefreshToken } from "@/lib/mobile-auth/jwt";
-import { generateSalonSlug } from "@/lib/salon-utils";
 import { hashPassword } from "@salonko/auth/server";
+import { generateSalonSlug } from "@salonko/config";
 import { logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { Prisma, type User, prisma } from "@salonko/prisma";
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       .catch((emailError: unknown) => {
         logger.error("Failed to send welcome email from mobile register", {
           error: emailError,
-          email: normalizedEmail,
+          userId: user.id,
         });
       });
 

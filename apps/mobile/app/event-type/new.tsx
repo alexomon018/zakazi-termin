@@ -84,6 +84,7 @@ export default function NewEventTypeScreen() {
       schedules={schedules}
       isPending={createMutation.isPending}
       submitLabel="Kreiraj uslugu"
+      submitError={createMutation.error?.message}
       onFormDataChange={setFormData}
       onSubmit={handleSubmit}
     />

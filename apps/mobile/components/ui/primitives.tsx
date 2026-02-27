@@ -5,7 +5,9 @@ import type { ReactNode } from "react";
 import { useMemo } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -14,7 +16,7 @@ import {
   type TextStyle,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 type TextVariant = "title" | "h1" | "h2" | "body" | "bodySm" | "caption";
 
@@ -149,7 +151,13 @@ export function AppButton({
         : theme.colors.primaryForeground;
 
   return (
-    <Pressable style={containerStyle} onPress={onPress} disabled={isDisabled}>
+    <Pressable
+      style={containerStyle}
+      onPress={onPress}
+      disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+    >
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
@@ -375,6 +383,7 @@ export function BottomSheet({
   onClose: () => void;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable
@@ -386,7 +395,7 @@ export function BottomSheet({
             backgroundColor: theme.colors.surface,
             borderTopLeftRadius: theme.radius.lg,
             borderTopRightRadius: theme.radius.lg,
-            paddingBottom: 34,
+            paddingBottom: Math.max(insets.bottom, 16),
             paddingTop: theme.spacing.md,
           }}
           onStartShouldSetResponder={() => true}
@@ -414,9 +423,9 @@ export function BottomSheet({
               {title}
             </Text>
           )}
-          {actions.map((action) => (
+          {actions.map((action, index) => (
             <Pressable
-              key={action.label}
+              key={`${action.label}-${index}`}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
@@ -504,11 +513,12 @@ export function FAB({
   label?: string;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   return (
     <Pressable
       style={{
         position: "absolute",
-        bottom: 100,
+        bottom: insets.bottom + 64,
         right: theme.spacing.xl,
         flexDirection: "row",
         alignItems: "center",
@@ -623,91 +633,102 @@ export function InputDialog({
   const { theme } = useTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: theme.spacing.xl,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={24}
+        style={{ flex: 1 }}
       >
         <View
           style={{
-            backgroundColor: theme.colors.surface,
-            borderRadius: theme.radius.lg,
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
             padding: theme.spacing.xl,
-            width: "100%",
-            maxWidth: 340,
           }}
         >
-          <Text
-            style={{
-              fontSize: theme.typography.h2,
-              fontWeight: "600",
-              color: theme.colors.foreground,
-              marginBottom: theme.spacing.sm,
-            }}
-          >
-            {title}
-          </Text>
-          <AppInput value={value} onChangeText={onChangeText} placeholder={placeholder} autoFocus />
           <View
             style={{
-              flexDirection: "row",
-              gap: theme.spacing.sm,
-              justifyContent: "flex-end",
-              marginTop: theme.spacing.lg,
+              backgroundColor: theme.colors.surface,
+              borderRadius: theme.radius.lg,
+              padding: theme.spacing.xl,
+              width: "100%",
+              maxWidth: 340,
             }}
           >
-            <Pressable
+            <Text
               style={{
-                paddingVertical: theme.spacing.sm,
-                paddingHorizontal: theme.spacing.lg,
-                borderRadius: theme.radius.sm,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
+                fontSize: theme.typography.h2,
+                fontWeight: "600",
+                color: theme.colors.foreground,
+                marginBottom: theme.spacing.sm,
               }}
-              onPress={onCancel}
-              disabled={loading}
             >
-              <Text
+              {title}
+            </Text>
+            <AppInput
+              value={value}
+              onChangeText={onChangeText}
+              placeholder={placeholder}
+              autoFocus
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                gap: theme.spacing.sm,
+                justifyContent: "flex-end",
+                marginTop: theme.spacing.lg,
+              }}
+            >
+              <Pressable
                 style={{
-                  fontSize: theme.typography.body,
-                  color: theme.colors.foreground,
-                  fontWeight: "500",
+                  paddingVertical: theme.spacing.sm,
+                  paddingHorizontal: theme.spacing.lg,
+                  borderRadius: theme.radius.sm,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
                 }}
+                onPress={onCancel}
+                disabled={loading}
               >
-                {cancelLabel}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={{
-                paddingVertical: theme.spacing.sm,
-                paddingHorizontal: theme.spacing.lg,
-                borderRadius: theme.radius.sm,
-                backgroundColor: theme.colors.primary,
-              }}
-              onPress={onConfirm}
-              disabled={loading || !value.trim()}
-            >
-              {loading ? (
-                <ActivityIndicator color={theme.colors.primaryForeground} size="small" />
-              ) : (
                 <Text
                   style={{
                     fontSize: theme.typography.body,
-                    color: theme.colors.primaryForeground,
-                    fontWeight: "600",
+                    color: theme.colors.foreground,
+                    fontWeight: "500",
                   }}
                 >
-                  {confirmLabel}
+                  {cancelLabel}
                 </Text>
-              )}
-            </Pressable>
+              </Pressable>
+              <Pressable
+                style={{
+                  paddingVertical: theme.spacing.sm,
+                  paddingHorizontal: theme.spacing.lg,
+                  borderRadius: theme.radius.sm,
+                  backgroundColor: theme.colors.primary,
+                }}
+                onPress={onConfirm}
+                disabled={loading || !value.trim()}
+              >
+                {loading ? (
+                  <ActivityIndicator color={theme.colors.primaryForeground} size="small" />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: theme.typography.body,
+                      color: theme.colors.primaryForeground,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {confirmLabel}
+                  </Text>
+                )}
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
