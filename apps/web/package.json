@@ -28,6 +28,7 @@
     "@salonko/config": "workspace:*",
     "@salonko/emails": "workspace:*",
     "@salonko/prisma": "workspace:*",
+    "@salonko/s3": "workspace:*",
     "@salonko/scheduling": "workspace:*",
     "@salonko/trpc": "workspace:*",
     "@salonko/ui": "workspace:*",

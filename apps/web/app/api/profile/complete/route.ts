@@ -1,4 +1,4 @@
-import { authOptions } from "@salonko/auth/server";
+import { authOptions } from "@/lib/auth-options";
 import { logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { getServerSession } from "next-auth";
