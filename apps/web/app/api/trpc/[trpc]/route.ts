@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/auth";
-import { verifyAccessToken } from "@/lib/mobile-auth/jwt";
+import { verifyOAuthAccessToken } from "@/lib/oauth/tokens";
 import { logger } from "@salonko/config";
 import type { Session } from "@salonko/trpc";
 import { type Context, appRouter, createTRPCContext } from "@salonko/trpc";
@@ -7,14 +7,13 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
 /**
  * Resolve session from either NextAuth cookie (web) or Bearer token (mobile).
- * Mobile clients send `Authorization: Bearer <jwt>` header.
+ * Mobile clients send `Authorization: Bearer <jwt>` header with OAuth access tokens.
  */
 async function resolveSession(req: Request): Promise<Session> {
-  // Check for mobile Bearer token first
   const authHeader = req.headers.get("Authorization");
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7);
-    const payload = verifyAccessToken(token);
+    const payload = verifyOAuthAccessToken(token);
     if (payload) {
       return {
         user: {

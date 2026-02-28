@@ -35,6 +35,11 @@ enum MembershipRole {
   MEMBER
 }
 
+enum OAuthClientType {
+  PUBLIC
+  CONFIDENTIAL
+}
+
 enum SubscriptionStatus {
   TRIALING
   ACTIVE
@@ -149,6 +154,11 @@ model User {
   subscription        Subscription?
   hosts               Host[]
 
+  // OAuth
+  oauthAuthorizationCodes OAuthAuthorizationCode[]
+  oauthAccessTokens       OAuthAccessToken[]
+  oauthRefreshTokens      OAuthRefreshToken[]
+
   @@index([email])
   @@index([salonSlug])
 }
@@ -244,6 +254,79 @@ model PendingRegistration {
   @@index([expires])
   @@index([inviteToken])
   @@index([salonSlug])
+}
+
+// ===== OAUTH =====
+
+model OAuthClient {
+  id           String          @id @default(dbgenerated("gen_random_uuid()"))
+  clientId     String          @unique @default(dbgenerated("gen_random_uuid()"))
+  name         String
+  redirectUri  String
+  type         OAuthClientType @default(PUBLIC)
+  firstParty   Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  authorizationCodes OAuthAuthorizationCode[]
+  accessTokens       OAuthAccessToken[]
+  refreshTokens      OAuthRefreshToken[]
+
+  @@index([clientId])
+}
+
+model OAuthAuthorizationCode {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()"))
+  code                String      @unique @default(dbgenerated("gen_random_uuid()"))
+  userId              String
+  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId            String
+  client              OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  codeChallenge       String
+  codeChallengeMethod String      @default("S256")
+  redirectUri         String
+  scope               String      @default("openid profile")
+  expiresAt           DateTime
+  used                Boolean     @default(false)
+  createdAt           DateTime    @default(now())
+
+  @@index([code])
+  @@index([userId])
+}
+
+model OAuthAccessToken {
+  id        String      @id @default(dbgenerated("gen_random_uuid()"))
+  jti       String      @unique @default(dbgenerated("gen_random_uuid()"))
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  scope     String      @default("openid profile")
+  expiresAt DateTime
+  createdAt DateTime    @default(now())
+
+  refreshToken OAuthRefreshToken?
+
+  @@index([jti])
+  @@index([userId])
+}
+
+model OAuthRefreshToken {
+  id            String           @id @default(dbgenerated("gen_random_uuid()"))
+  jti           String           @unique @default(dbgenerated("gen_random_uuid()"))
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        OAuthClient      @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  accessTokenId String           @unique
+  accessToken   OAuthAccessToken @relation(fields: [accessTokenId], references: [id], onDelete: Cascade)
+  scope         String           @default("openid profile")
+  expiresAt     DateTime
+  revoked       Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+
+  @@index([jti])
+  @@index([userId])
 }
 
 // ===== EVENT TYPES =====

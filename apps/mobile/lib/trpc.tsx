@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import superjson from "superjson";
 import { API_URL } from "./api-url";
+import { refreshTokens } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -12,35 +13,25 @@ export const trpc = createTRPCReact<AppRouter>();
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
-  const refreshToken = await tokenStorage.getRefreshToken();
-  if (!refreshToken) return null;
+  const storedRefreshToken = await tokenStorage.getRefreshToken();
+  if (!storedRefreshToken) return null;
 
   if (!refreshPromise) {
     refreshPromise = (async () => {
-      const response = await fetch(`${API_URL}/api/mobile/auth/refresh`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-      });
-      if (!response.ok) {
-        await tokenStorage.clear();
-        return null;
-      }
-
-      let data: { token: string; refreshToken: string; user: unknown };
       try {
-        data = await response.json();
+        const result = await refreshTokens(storedRefreshToken);
+        const expiresAt = Date.now() + result.expiresIn * 1000;
+
+        await Promise.all([
+          tokenStorage.setToken(result.accessToken),
+          tokenStorage.setRefreshToken(result.refreshToken),
+          tokenStorage.setTokenExpiry(expiresAt),
+        ]);
+        return result.accessToken;
       } catch {
         await tokenStorage.clear();
         return null;
       }
-
-      await Promise.all([
-        tokenStorage.setToken(data.token),
-        tokenStorage.setRefreshToken(data.refreshToken),
-        tokenStorage.setUser(JSON.stringify(data.user)),
-      ]);
-      return data.token;
     })().finally(() => {
       refreshPromise = null;
     });

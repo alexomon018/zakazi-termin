@@ -1,30 +1,22 @@
-import { AppButton, AppCard, AppInput, AppScreen, AppText } from "@/components/ui/primitives";
+import { AppButton, AppCard, AppScreen, AppText } from "@/components/ui/primitives";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
-import { Link } from "expo-router";
 import { Calendar } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function LoginScreen() {
   const { theme } = useTheme();
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { loginWithOAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleLogin() {
-    if (!email.trim() || !password.trim()) {
-      setError("Unesite email i lozinku.");
-      return;
-    }
-
     setError(null);
     setIsSubmitting(true);
 
     try {
-      await login(email.trim().toLowerCase(), password);
+      await loginWithOAuth();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Prijava nije uspela. Pokušajte ponovo.");
     } finally {
@@ -35,7 +27,7 @@ export default function LoginScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        keyboardView: {
+        container: {
           flex: 1,
           justifyContent: "center",
           paddingHorizontal: theme.spacing.xl,
@@ -59,16 +51,8 @@ export default function LoginScreen() {
           alignItems: "center",
           justifyContent: "center",
         },
-        form: {
+        actions: {
           gap: theme.spacing.lg,
-        },
-        inputGroup: {
-          gap: theme.spacing.xs,
-        },
-        footer: {
-          flexDirection: "row",
-          justifyContent: "center",
-          marginTop: theme.spacing.sm,
         },
       }),
     [theme]
@@ -76,10 +60,7 @@ export default function LoginScreen() {
 
   return (
     <AppScreen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
+      <View style={styles.container}>
         <AppCard>
           <View style={styles.header}>
             <View style={styles.logoRow}>
@@ -89,38 +70,11 @@ export default function LoginScreen() {
               <AppText variant="h1">Salonko</AppText>
             </View>
             <AppText variant="bodySm" muted centered>
-              Prijavite se na svoj nalog
+              Upravljajte zakazivanjem iz jednog mesta
             </AppText>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <AppText variant="bodySm">Email</AppText>
-              <AppInput
-                placeholder="vas@email.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                editable={!isSubmitting}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <AppText variant="bodySm">Lozinka</AppText>
-              <AppInput
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                textContentType="password"
-                editable={!isSubmitting}
-                onSubmitEditing={handleLogin}
-              />
-            </View>
-
+          <View style={styles.actions}>
             {error && (
               <AppText variant="bodySm" centered style={{ color: theme.colors.destructive }}>
                 {error}
@@ -128,22 +82,9 @@ export default function LoginScreen() {
             )}
 
             <AppButton label="Prijavite se" onPress={handleLogin} loading={isSubmitting} />
-
-            <View style={styles.footer}>
-              <AppText variant="bodySm" muted>
-                Nemate nalog?{" "}
-              </AppText>
-              <Link href="/(auth)/signup" asChild>
-                <Pressable>
-                  <AppText variant="bodySm" style={{ color: theme.colors.accent }}>
-                    Registrujte se
-                  </AppText>
-                </Pressable>
-              </Link>
-            </View>
           </View>
         </AppCard>
-      </KeyboardAvoidingView>
+      </View>
     </AppScreen>
   );
 }

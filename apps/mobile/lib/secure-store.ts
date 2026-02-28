@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 
 const TOKEN_KEY = "auth_token";
 const REFRESH_TOKEN_KEY = "auth_refresh_token";
+const TOKEN_EXPIRY_KEY = "auth_token_expiry";
 const USER_KEY = "auth_user";
 
 const webMemoryStore = new Map<string, string>();
@@ -51,6 +52,15 @@ export const tokenStorage = {
     return setItem(REFRESH_TOKEN_KEY, token);
   },
 
+  async getTokenExpiry(): Promise<number | null> {
+    const value = await getItem(TOKEN_EXPIRY_KEY);
+    return value ? Number(value) : null;
+  },
+
+  async setTokenExpiry(expiresAt: number): Promise<void> {
+    return setItem(TOKEN_EXPIRY_KEY, String(expiresAt));
+  },
+
   async getUser(): Promise<string | null> {
     return getItem(USER_KEY);
   },
@@ -62,6 +72,7 @@ export const tokenStorage = {
   async clear(): Promise<void> {
     await deleteItem(TOKEN_KEY);
     await deleteItem(REFRESH_TOKEN_KEY);
+    await deleteItem(TOKEN_EXPIRY_KEY);
     await deleteItem(USER_KEY);
   },
 };

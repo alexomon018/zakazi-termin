@@ -6239,6 +6239,7 @@ __metadata:
     expo: "npm:^54.0.0"
     expo-clipboard: "npm:~8.0.8"
     expo-constants: "npm:~18.0.13"
+    expo-crypto: "npm:~15.0.6"
     expo-linking: "npm:~8.0.11"
     expo-router: "npm:~6.0.23"
     expo-secure-store: "npm:~15.0.8"
@@ -6403,7 +6404,6 @@ __metadata:
     prisma: "npm:^5.22.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
-    react-hook-form: "npm:^7.68.0"
     react-i18next: "npm:^15.1.3"
     react-markdown: "npm:^10.1.0"
     server-only: "npm:^0.0.1"
@@ -10256,6 +10256,17 @@ __metadata:
     expo: "*"
     react-native: "*"
   checksum: 10c0/bbe33c0611b8085ecd965434d71d27f065427146fe23f3162d170812f8c917b032604c79e0cd129f39147f58f7dc581ee3c6b64a84bf865dd325595289dc77e6
+  languageName: node
+  linkType: hard
+
+"expo-crypto@npm:~15.0.6":
+  version: 15.0.8
+  resolution: "expo-crypto@npm:15.0.8"
+  dependencies:
+    base64-js: "npm:^1.3.0"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/714806a2245a0aa05b7ec0d7044cd6ec317f3da7d96298b3a4b39c3ef8f62f25fa0d64b5b9df4018151a6b65c4c4348f6a7f5ad23e09bd73364daab260745df5
   languageName: node
   linkType: hard
 

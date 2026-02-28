@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "zakazitermin",
+    "scheme": "salonko",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { API_URL } from "./api-url";
+import { authorize, isTokenExpired, refreshTokens, revokeToken } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
 
 interface User {
@@ -8,13 +9,10 @@ interface User {
   email: string;
   name?: string | null;
   salonName?: string | null;
-}
-
-interface RegisterParams {
-  name: string;
-  salonName: string;
-  email: string;
-  password: string;
+  salonSlug?: string | null;
+  avatarUrl?: string | null;
+  locale?: string;
+  timeZone?: string;
 }
 
 interface AuthContextValue {
@@ -22,12 +20,24 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (params: RegisterParams) => Promise<void>;
+  loginWithOAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+async function fetchUserProfile(accessToken: string): Promise<User> {
+  const response = await fetch(`${API_URL}/api/auth/oauth/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new Error("Nije moguće učitati profil korisnika.");
+  }
+
+  const json = await response.json();
+  return json.data;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -38,17 +48,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function restore() {
       try {
-        const [storedToken, storedUser] = await Promise.all([
+        const [storedToken, storedRefreshToken, storedExpiry, storedUser] = await Promise.all([
           tokenStorage.getToken(),
+          tokenStorage.getRefreshToken(),
+          tokenStorage.getTokenExpiry(),
           tokenStorage.getUser(),
         ]);
 
-        if (storedToken && storedUser) {
-          const parsedUser = JSON.parse(storedUser) as User;
-          setToken(storedToken);
-          setUser(parsedUser);
-        } else if (storedToken || storedUser) {
+        if (!storedToken || !storedRefreshToken) {
           await tokenStorage.clear();
+          return;
+        }
+
+        // If access token is expired, try to refresh
+        if (storedExpiry && isTokenExpired(storedExpiry)) {
+          try {
+            const result = await refreshTokens(storedRefreshToken);
+            const newExpiry = Date.now() + result.expiresIn * 1000;
+
+            await Promise.all([
+              tokenStorage.setToken(result.accessToken),
+              tokenStorage.setRefreshToken(result.refreshToken),
+              tokenStorage.setTokenExpiry(newExpiry),
+            ]);
+
+            const profile = await fetchUserProfile(result.accessToken);
+            await tokenStorage.setUser(JSON.stringify(profile));
+
+            setToken(result.accessToken);
+            setUser(profile);
+            return;
+          } catch {
+            // Refresh failed — clear and require re-login
+            await tokenStorage.clear();
+            return;
+          }
+        }
+
+        // Access token still valid
+        if (storedUser) {
+          setToken(storedToken);
+          setUser(JSON.parse(storedUser) as User);
+        } else {
+          // Have token but no cached user — fetch profile
+          try {
+            const profile = await fetchUserProfile(storedToken);
+            await tokenStorage.setUser(JSON.stringify(profile));
+            setToken(storedToken);
+            setUser(profile);
+          } catch {
+            await tokenStorage.clear();
+          }
         }
       } catch {
         await tokenStorage.clear();
@@ -62,53 +112,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restore();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/api/mobile/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Prijava nije uspela.");
-    }
+  const loginWithOAuth = useCallback(async () => {
+    const result = await authorize();
+    const expiresAt = Date.now() + result.expiresIn * 1000;
 
     await Promise.all([
-      tokenStorage.setToken(data.token),
-      tokenStorage.setRefreshToken(data.refreshToken),
-      tokenStorage.setUser(JSON.stringify(data.user)),
+      tokenStorage.setToken(result.accessToken),
+      tokenStorage.setRefreshToken(result.refreshToken),
+      tokenStorage.setTokenExpiry(expiresAt),
     ]);
 
-    setToken(data.token);
-    setUser(data.user);
-  }, []);
+    const profile = await fetchUserProfile(result.accessToken);
+    await tokenStorage.setUser(JSON.stringify(profile));
 
-  const register = useCallback(async (params: RegisterParams) => {
-    const response = await fetch(`${API_URL}/api/mobile/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(params),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Registracija nije uspela.");
-    }
-
-    await Promise.all([
-      tokenStorage.setToken(data.token),
-      tokenStorage.setRefreshToken(data.refreshToken),
-      tokenStorage.setUser(JSON.stringify(data.user)),
-    ]);
-
-    setToken(data.token);
-    setUser(data.user);
+    setToken(result.accessToken);
+    setUser(profile);
   }, []);
 
   const logout = useCallback(async () => {
+    // Revoke the current access token (best-effort)
+    const currentToken = await tokenStorage.getToken();
+    if (currentToken) {
+      await revokeToken(currentToken);
+    }
+
     await tokenStorage.clear();
     setToken(null);
     setUser(null);
@@ -120,11 +147,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!token && !!user,
       user,
       token,
-      login,
-      register,
+      loginWithOAuth,
       logout,
     }),
-    [isLoading, token, user, login, register, logout]
+    [isLoading, token, user, loginWithOAuth, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
