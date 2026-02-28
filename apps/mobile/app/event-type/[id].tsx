@@ -9,7 +9,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
 
 export default function EditEventTypeScreen() {
   const { theme } = useTheme();
@@ -36,6 +36,10 @@ export default function EditEventTypeScreen() {
       await utils.eventType.list.invalidate();
       setShowDelete(false);
       router.back();
+    },
+    onError: (error) => {
+      setShowDelete(false);
+      Alert.alert("Greška", error.message ?? "Brisanje usluge nije uspelo.");
     },
   });
 

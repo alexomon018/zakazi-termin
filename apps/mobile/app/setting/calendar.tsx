@@ -87,6 +87,21 @@ export default function CalendarSettingsScreen() {
     );
   }
 
+  if (connectionsQuery.isError) {
+    return (
+      <View style={styles.centered}>
+        <AppCard>
+          <AppText variant="bodySm" centered>
+            Neuspešno učitavanje kalendara.
+          </AppText>
+          <View style={styles.actions}>
+            <AppButton label="Pokušaj ponovo" onPress={() => connectionsQuery.refetch()} />
+          </View>
+        </AppCard>
+      </View>
+    );
+  }
+
   const connections = connectionsQuery.data ?? [];
 
   return (

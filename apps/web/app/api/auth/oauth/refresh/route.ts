@@ -69,18 +69,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Revoke old tokens (refresh token + cascade deletes access token)
-  await prisma.$transaction([
-    prisma.oAuthRefreshToken.update({
-      where: { id: refreshTokenRow.id },
-      data: { revoked: true },
-    }),
-    prisma.oAuthAccessToken.delete({
-      where: { id: refreshTokenRow.accessTokenId },
-    }),
-  ]);
-
-  // Look up user
   const user = await prisma.user.findUnique({
     select: { id: true, email: true, name: true, salonName: true },
     where: { id: refreshTokenRow.userId },
@@ -92,6 +80,17 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  // Revoke old tokens (refresh token + cascade deletes access token)
+  await prisma.$transaction([
+    prisma.oAuthRefreshToken.update({
+      where: { id: refreshTokenRow.id },
+      data: { revoked: true },
+    }),
+    prisma.oAuthAccessToken.delete({
+      where: { id: refreshTokenRow.accessTokenId },
+    }),
+  ]);
 
   // Create new token pair
   const tokens = await createTokenPair(user, clientId, refreshTokenRow.scope);

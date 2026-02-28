@@ -11,7 +11,15 @@ import { trpc } from "@/lib/trpc";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Ponedeljak" },
@@ -103,12 +111,19 @@ export default function ScheduleEditorScreen() {
     onSuccess: () => {
       utils.availability.listSchedules.invalidate();
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Ažuriranje rasporeda nije uspelo.");
+    },
   });
   const setAvailabilityMutation = trpc.availability.setAvailability.useMutation({
     onSuccess: () => {
       setHasChanges(false);
       utils.availability.getSchedule.invalidate({ id: id! });
       utils.availability.listSchedules.invalidate();
+    },
+    onError: (error) => {
+      setHasChanges(true);
+      Alert.alert("Greška", error.message ?? "Čuvanje rasporeda nije uspelo.");
     },
   });
   const deleteScheduleMutation = trpc.availability.deleteSchedule.useMutation({
@@ -117,26 +132,42 @@ export default function ScheduleEditorScreen() {
       setShowDelete(false);
       router.back();
     },
+    onError: (error) => {
+      setShowDelete(false);
+      Alert.alert("Greška", error.message ?? "Brisanje rasporeda nije uspelo.");
+    },
   });
   const setDefaultMutation = trpc.user.setDefaultSchedule.useMutation({
     onSuccess: () => {
       utils.user.me.invalidate();
       utils.availability.listSchedules.invalidate();
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Postavljanje podrazumevanog rasporeda nije uspelo.");
+    },
   });
   const addDateOverrideMutation = trpc.availability.addDateOverride.useMutation({
     onSuccess: () => {
       utils.availability.getSchedule.invalidate({ id: id! });
+    },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Dodavanje izuzetka nije uspelo.");
     },
   });
   const blockDateMutation = trpc.availability.blockDate.useMutation({
     onSuccess: () => {
       utils.availability.getSchedule.invalidate({ id: id! });
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Blokiranje datuma nije uspelo.");
+    },
   });
   const removeDateOverrideMutation = trpc.availability.removeDateOverride.useMutation({
     onSuccess: () => {
       utils.availability.getSchedule.invalidate({ id: id! });
+    },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Uklanjanje izuzetka nije uspelo.");
     },
   });
 

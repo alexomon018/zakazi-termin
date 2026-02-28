@@ -28,8 +28,12 @@ async function refreshAccessToken(): Promise<string | null> {
           tokenStorage.setTokenExpiry(expiresAt),
         ]);
         return result.accessToken;
-      } catch {
-        await tokenStorage.clear();
+      } catch (error) {
+        const isTransient =
+          error instanceof TypeError || (error instanceof Error && error.name === "AbortError");
+        if (!isTransient) {
+          await tokenStorage.clear();
+        }
         return null;
       }
     })().finally(() => {

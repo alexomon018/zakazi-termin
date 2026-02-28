@@ -83,11 +83,22 @@ export async function POST(request: Request) {
     );
   }
 
-  // Mark code as used
-  await prisma.oAuthAuthorizationCode.update({
-    where: { id: authCode.id },
+  // Atomically consume the code (single winner in a race)
+  const consumeResult = await prisma.oAuthAuthorizationCode.updateMany({
+    where: {
+      id: authCode.id,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
     data: { used: true },
   });
+
+  if (consumeResult.count !== 1) {
+    return NextResponse.json(
+      { error: "invalid_grant", error_description: "Invalid or expired authorization code" },
+      { status: 400 }
+    );
+  }
 
   // Look up user
   const user = await prisma.user.findUnique({
@@ -105,10 +116,18 @@ export async function POST(request: Request) {
   // Create token pair
   const tokens = await createTokenPair(user, clientId, authCode.scope);
 
-  return NextResponse.json({
-    access_token: tokens.accessToken,
-    refresh_token: tokens.refreshToken,
-    token_type: tokens.tokenType,
-    expires_in: tokens.expiresIn,
-  });
+  return NextResponse.json(
+    {
+      access_token: tokens.accessToken,
+      refresh_token: tokens.refreshToken,
+      token_type: tokens.tokenType,
+      expires_in: tokens.expiresIn,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        Pragma: "no-cache",
+      },
+    }
+  );
 }

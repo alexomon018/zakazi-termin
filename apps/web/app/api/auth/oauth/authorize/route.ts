@@ -32,11 +32,18 @@ export async function GET(request: Request) {
     );
   }
 
+  if (!codeChallengeMethod) {
+    return NextResponse.json(
+      { error: "invalid_request", error_description: "code_challenge_method is required" },
+      { status: 400 }
+    );
+  }
+
   if (codeChallengeMethod !== "S256") {
     return NextResponse.json(
       {
         error: "invalid_request",
-        error_description: "Only S256 code challenge method is supported",
+        error_description: "Unsupported code_challenge_method. Only S256 is supported",
       },
       { status: 400 }
     );

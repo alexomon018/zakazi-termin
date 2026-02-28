@@ -18,7 +18,8 @@ export default function LoginScreen() {
     try {
       await loginWithOAuth();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Prijava nije uspela. Pokušajte ponovo.");
+      console.error("Login failed:", e);
+      setError("Prijava nije uspela. Pokušajte ponovo.");
     } finally {
       setIsSubmitting(false);
     }

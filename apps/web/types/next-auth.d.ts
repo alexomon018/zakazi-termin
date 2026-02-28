@@ -9,8 +9,8 @@ declare module "next-auth" {
       salonName?: string | null;
       salonSlug?: string | null;
       image?: string | null;
-      locale: string;
-      timeZone: string;
+      locale?: string;
+      timeZone?: string;
     } & DefaultSession["user"];
   }
 

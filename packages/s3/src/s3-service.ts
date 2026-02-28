@@ -183,6 +183,10 @@ export async function uploadImage(
       throw error;
     }
 
+    if (error instanceof S3ServiceError) {
+      throw error;
+    }
+
     // Wrap other errors
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     logger.error("Error uploading image to S3", { error });
