@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { API_URL } from "./api-url";
-import { authorize, isTokenExpired, refreshTokens, revokeToken } from "./oauth-service";
+import { authorize, isTokenExpired, revokeToken } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
+import { refreshAccessToken } from "./token-refresh";
 
 interface User {
   id: string;
@@ -60,29 +61,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        // If access token is expired, try to refresh
         if (storedExpiry && isTokenExpired(storedExpiry)) {
+          const newAccessToken = await refreshAccessToken();
+          if (!newAccessToken) return;
+
           try {
-            const result = await refreshTokens(storedRefreshToken);
-            const newExpiry = Date.now() + result.expiresIn * 1000;
-
-            await Promise.all([
-              tokenStorage.setToken(result.accessToken),
-              tokenStorage.setRefreshToken(result.refreshToken),
-              tokenStorage.setTokenExpiry(newExpiry),
-            ]);
-
-            const profile = await fetchUserProfile(result.accessToken);
+            const profile = await fetchUserProfile(newAccessToken);
             await tokenStorage.setUser(JSON.stringify(profile));
-
-            setToken(result.accessToken);
+            setToken(newAccessToken);
             setUser(profile);
-            return;
           } catch {
-            // Refresh failed — clear and require re-login
             await tokenStorage.clear();
-            return;
           }
+          return;
         }
 
         // Access token still valid

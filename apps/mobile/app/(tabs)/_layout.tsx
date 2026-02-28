@@ -7,7 +7,7 @@ import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
-  const { isReady, isLoading: isTrialLoading } = useEnsureTrial();
+  const { isLoading: isTrialLoading } = useEnsureTrial();
   const { theme } = useTheme();
 
   if (isLoading || isTrialLoading) {
@@ -27,21 +27,6 @@ export default function TabsLayout() {
 
   if (!isAuthenticated) {
     return <Redirect href="/(auth)/login" />;
-  }
-
-  if (!isReady) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
   }
 
   return (

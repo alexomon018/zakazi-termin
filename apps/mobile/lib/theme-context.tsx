@@ -1,5 +1,6 @@
 import { type ReactNode, createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useColorScheme } from "react-native";
+import { useAuth } from "./auth-context";
 import { type Theme, getTheme } from "./theme";
 import { trpc } from "./trpc";
 
@@ -16,7 +17,11 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const systemScheme = useColorScheme() ?? "light";
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const meQuery = trpc.user.me.useQuery(undefined, {
+    retry: false,
+    enabled: isAuthenticated && !authLoading,
+  });
 
   const dbPreference = meQuery.data?.theme;
   const resolvedPreference: ColorSchemePreference =

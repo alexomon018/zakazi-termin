@@ -12,7 +12,11 @@ import { trpc } from "./trpc";
  */
 export function useEnsureTrial() {
   const utils = trpc.useUtils();
-  const { data: status, isLoading: isStatusLoading } = trpc.subscription.getStatus.useQuery();
+  const {
+    data: status,
+    isLoading: isStatusLoading,
+    error: statusError,
+  } = trpc.subscription.getStatus.useQuery();
   const startTrial = trpc.subscription.startTrial.useMutation({
     onSuccess: () => {
       utils.subscription.getStatus.invalidate();
@@ -28,9 +32,10 @@ export function useEnsureTrial() {
     }
   }, [status?.needsSubscription, isPending, mutate]);
 
-  const isReady = status?.hasSubscription === true && status?.isActive === true;
+  const error = statusError ?? startTrial.error;
+  const isReady = !!error || (status?.hasSubscription === true && status?.isActive === true);
   const isLoading =
     isStatusLoading || isPending || (status?.needsSubscription === true && !startTrial.isError);
 
-  return { isReady, isLoading, error: startTrial.error };
+  return { isReady, isLoading, error };
 }

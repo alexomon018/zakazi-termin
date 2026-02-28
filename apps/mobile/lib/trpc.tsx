@@ -5,44 +5,10 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import superjson from "superjson";
 import { API_URL } from "./api-url";
-import { refreshTokens } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
+import { refreshAccessToken } from "./token-refresh";
 
 export const trpc = createTRPCReact<AppRouter>();
-
-let refreshPromise: Promise<string | null> | null = null;
-
-async function refreshAccessToken(): Promise<string | null> {
-  const storedRefreshToken = await tokenStorage.getRefreshToken();
-  if (!storedRefreshToken) return null;
-
-  if (!refreshPromise) {
-    refreshPromise = (async () => {
-      try {
-        const result = await refreshTokens(storedRefreshToken);
-        const expiresAt = Date.now() + result.expiresIn * 1000;
-
-        await Promise.all([
-          tokenStorage.setToken(result.accessToken),
-          tokenStorage.setRefreshToken(result.refreshToken),
-          tokenStorage.setTokenExpiry(expiresAt),
-        ]);
-        return result.accessToken;
-      } catch (error) {
-        const isTransient =
-          error instanceof TypeError || (error instanceof Error && error.name === "AbortError");
-        if (!isTransient) {
-          await tokenStorage.clear();
-        }
-        return null;
-      }
-    })().finally(() => {
-      refreshPromise = null;
-    });
-  }
-
-  return refreshPromise;
-}
 
 async function authAwareFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const firstResponse = await fetch(input, init);
