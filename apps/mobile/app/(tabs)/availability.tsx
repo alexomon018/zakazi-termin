@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/primitives";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { formatTimeUTC } from "@salonko/config";
 import { router } from "expo-router";
 import { Copy, Globe, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
@@ -39,24 +40,19 @@ type ScheduleItem = {
   }[];
 };
 
-function formatTime(t: string | Date) {
-  const d = new Date(t);
-  return `${d.getUTCHours().toString().padStart(2, "0")}:${d.getUTCMinutes().toString().padStart(2, "0")}`;
-}
-
 function getScheduleSummary(schedule: ScheduleItem) {
   if (!schedule.availability.length) return "Nema podešenih termina";
 
   const daySet = new Set<number>();
-  // formatTime returns zero-padded "HH:MM" strings, so lexicographic comparison
+  // formatTimeUTC returns zero-padded "HH:MM" strings, so lexicographic comparison
   // on minStart/maxEnd is valid as long as this format is preserved.
   let minStart = "23:59";
   let maxEnd = "00:00";
 
   for (const a of schedule.availability) {
     for (const d of a.days) daySet.add(d);
-    const start = formatTime(a.startTime);
-    const end = formatTime(a.endTime);
+    const start = formatTimeUTC(a.startTime);
+    const end = formatTimeUTC(a.endTime);
     if (start < minStart) minStart = start;
     if (end > maxEnd) maxEnd = end;
   }

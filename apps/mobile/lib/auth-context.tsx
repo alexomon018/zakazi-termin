@@ -107,17 +107,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const result = await authorize();
     const expiresAt = Date.now() + result.expiresIn * 1000;
 
-    await Promise.all([
-      tokenStorage.setToken(result.accessToken),
-      tokenStorage.setRefreshToken(result.refreshToken),
-      tokenStorage.setTokenExpiry(expiresAt),
-    ]);
+    try {
+      await Promise.all([
+        tokenStorage.setToken(result.accessToken),
+        tokenStorage.setRefreshToken(result.refreshToken),
+        tokenStorage.setTokenExpiry(expiresAt),
+      ]);
 
-    const profile = await fetchUserProfile(result.accessToken);
-    await tokenStorage.setUser(JSON.stringify(profile));
+      const profile = await fetchUserProfile(result.accessToken);
+      await tokenStorage.setUser(JSON.stringify(profile));
 
-    setToken(result.accessToken);
-    setUser(profile);
+      setToken(result.accessToken);
+      setUser(profile);
+    } catch (error) {
+      await tokenStorage.clear();
+      throw error;
+    }
   }, []);
 
   const logout = useCallback(async () => {

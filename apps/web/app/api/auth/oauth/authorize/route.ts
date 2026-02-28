@@ -1,14 +1,11 @@
 import { getSession } from "@/lib/auth";
+import { getAppUrl } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const forwardedProto = request.headers.get("x-forwarded-proto");
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const host = request.headers.get("host");
-  const protocol = forwardedProto ?? url.protocol.replace(":", "");
-  const origin = (forwardedHost ?? host) ? `${protocol}://${forwardedHost ?? host}` : url.origin;
+  const origin = getAppUrl();
   const clientId = url.searchParams.get("client_id");
   const redirectUri = url.searchParams.get("redirect_uri");
   const responseType = url.searchParams.get("response_type");
@@ -16,6 +13,15 @@ export async function GET(request: Request) {
   const codeChallengeMethod = url.searchParams.get("code_challenge_method");
   const state = url.searchParams.get("state");
   const scope = url.searchParams.get("scope") ?? "openid profile";
+  const requestedScopes = scope.split(/\s+/).filter(Boolean);
+  const allowedScopes = new Set(["openid", "profile"]);
+
+  if (requestedScopes.some((s) => !allowedScopes.has(s))) {
+    return NextResponse.json(
+      { error: "invalid_scope", error_description: "One or more requested scopes are invalid" },
+      { status: 400 }
+    );
+  }
 
   // Validate required params
   if (!clientId || !redirectUri || !responseType || !codeChallenge || !state) {
@@ -89,7 +95,7 @@ export async function GET(request: Request) {
         codeChallenge,
         codeChallengeMethod: "S256",
         redirectUri,
-        scope,
+        scope: requestedScopes.join(" "),
         expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
       },
     });

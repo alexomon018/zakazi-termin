@@ -9,6 +9,7 @@ import {
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { formatTimeUTC } from "@salonko/config";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -44,11 +45,6 @@ type DateOverride = {
   isBlocked: boolean;
 };
 
-function formatTime(date: Date): string {
-  const d = new Date(date);
-  return `${d.getUTCHours().toString().padStart(2, "0")}:${d.getUTCMinutes().toString().padStart(2, "0")}`;
-}
-
 function initializeEditorState(schedule: any): EditorState {
   const state: EditorState = {};
   for (const day of DAYS_OF_WEEK) {
@@ -63,8 +59,8 @@ function initializeEditorState(schedule: any): EditorState {
   );
 
   for (const entry of workingHours) {
-    const startTime = formatTime(entry.startTime);
-    const endTime = formatTime(entry.endTime);
+    const startTime = formatTimeUTC(entry.startTime);
+    const endTime = formatTimeUTC(entry.endTime);
 
     for (const dayValue of entry.days) {
       if (!state[dayValue].enabled) {
@@ -82,9 +78,9 @@ function extractDateOverrides(schedule: any): DateOverride[] {
     .filter((a: any) => a.date !== null)
     .map((a: any) => ({
       date: new Date(a.date),
-      startTime: formatTime(a.startTime),
-      endTime: formatTime(a.endTime),
-      isBlocked: formatTime(a.startTime) === "00:00" && formatTime(a.endTime) === "00:00",
+      startTime: formatTimeUTC(a.startTime),
+      endTime: formatTimeUTC(a.endTime),
+      isBlocked: formatTimeUTC(a.startTime) === "00:00" && formatTimeUTC(a.endTime) === "00:00",
     }))
     .sort((a: DateOverride, b: DateOverride) => a.date.getTime() - b.date.getTime());
 }
@@ -106,6 +102,7 @@ export default function ScheduleEditorScreen() {
   const [hasChanges, setHasChanges] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pendingBlockDate, setPendingBlockDate] = useState<Date>(new Date());
 
   const updateScheduleMutation = trpc.availability.updateSchedule.useMutation({
     onSuccess: () => {
@@ -360,17 +357,46 @@ export default function ScheduleEditorScreen() {
         </View>
 
         {showDatePicker && (
-          <DateTimePicker
-            value={new Date()}
-            mode="date"
-            minimumDate={new Date()}
-            onChange={(_, selectedDate) => {
-              setShowDatePicker(Platform.OS === "ios");
-              if (selectedDate) {
-                handleBlockDate(selectedDate);
-              }
-            }}
-          />
+          <>
+            <DateTimePicker
+              value={pendingBlockDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              minimumDate={new Date()}
+              onChange={(_, selectedDate) => {
+                if (Platform.OS !== "ios") {
+                  setShowDatePicker(false);
+                  if (selectedDate) handleBlockDate(selectedDate);
+                  return;
+                }
+                if (selectedDate) setPendingBlockDate(selectedDate);
+              }}
+            />
+            {Platform.OS === "ios" && (
+              <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
+                <View style={{ flex: 1 }}>
+                  <AppButton
+                    label="Otkaži"
+                    onPress={() => {
+                      setShowDatePicker(false);
+                      setPendingBlockDate(new Date());
+                    }}
+                    variant="outline"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <AppButton
+                    label="Potvrdi"
+                    onPress={() => {
+                      setShowDatePicker(false);
+                      handleBlockDate(pendingBlockDate);
+                      setPendingBlockDate(new Date());
+                    }}
+                  />
+                </View>
+              </View>
+            )}
+          </>
         )}
 
         <AppButton

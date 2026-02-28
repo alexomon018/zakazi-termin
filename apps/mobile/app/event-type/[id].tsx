@@ -29,6 +29,9 @@ export default function EditEventTypeScreen() {
       await utils.eventType.list.invalidate();
       router.back();
     },
+    onError: (error) => {
+      Alert.alert("Greška", error.message ?? "Čuvanje izmena nije uspelo.");
+    },
   });
 
   const deleteMutation = trpc.eventType.delete.useMutation({
