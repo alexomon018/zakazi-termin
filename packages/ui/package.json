@@ -43,8 +43,12 @@
     "react-dom": "^19.0.0"
   },
   "peerDependenciesMeta": {
-    "next": { "optional": true },
-    "next-auth": { "optional": true }
+    "next": {
+      "optional": true
+    },
+    "next-auth": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/google.maps": "^3.58.1",

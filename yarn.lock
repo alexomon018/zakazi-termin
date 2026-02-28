@@ -6353,8 +6353,15 @@ __metadata:
     zod: "npm:^3.23.8"
     zustand: "npm:^5.0.9"
   peerDependencies:
+    next: ^15.1.11
+    next-auth: ^4.24.10
     react: ^19.0.0
     react-dom: ^19.0.0
+  peerDependenciesMeta:
+    next:
+      optional: true
+    next-auth:
+      optional: true
   languageName: unknown
   linkType: soft
 
