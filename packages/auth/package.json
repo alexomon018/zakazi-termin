@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@salonko/config": "workspace:*",
+    "@salonko/emails": "workspace:*",
     "@salonko/prisma": "workspace:*",
     "@upstash/redis": "^1.36.0",
     "bcryptjs": "^2.4.3",

@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["@types/google.maps"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -36,5 +35,5 @@
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "apps/mobile"]
 }

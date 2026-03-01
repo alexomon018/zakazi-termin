@@ -38,7 +38,7 @@ export function formatDate(
 }
 
 /**
- * Format a date to time only (HH:mm)
+ * Format a date to time only (HH:mm) in local timezone
  *
  * @param date - Date to format
  * @returns Time string in "HH:mm" format
@@ -48,6 +48,21 @@ export function formatDate(
  */
 export function formatTime(date: Date | string | number): string {
   return dayjs(date).format(DATE_FORMATS.timeOnly);
+}
+
+/**
+ * Format a date to time only (HH:mm) in UTC.
+ * Use for availability/schedule times stored as UTC.
+ *
+ * @param date - Date to format
+ * @returns Time string in "HH:mm" format (UTC)
+ *
+ * @example
+ * formatTimeUTC(new Date("2024-12-25T10:30:00Z")) // "10:30"
+ */
+export function formatTimeUTC(date: Date | string | number): string {
+  const d = new Date(date);
+  return `${d.getUTCHours().toString().padStart(2, "0")}:${d.getUTCMinutes().toString().padStart(2, "0")}`;
 }
 
 /**
