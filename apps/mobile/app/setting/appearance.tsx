@@ -1,4 +1,4 @@
-import { AppCard, AppText, SectionHeader } from "@/components/ui/primitives";
+import { AppCard, AppText, SectionHeader } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { Check } from "lucide-react-native";

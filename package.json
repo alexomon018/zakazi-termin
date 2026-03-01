@@ -9,6 +9,10 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
+    "dev:web": "yarn workspace @salonko/web dev",
+    "dev:mobile": "yarn workspace @salonko/mobile dev",
+    "prod:web": "yarn workspace @salonko/web build && yarn workspace @salonko/web start",
+    "prod:mobile": "yarn workspace @salonko/mobile build && yarn workspace @salonko/mobile start",
     "build": "turbo run build",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -26,6 +30,9 @@
     "test:db:start": "docker compose -f docker-compose.test.yml up -d",
     "test:db:stop": "docker compose -f docker-compose.test.yml down",
     "prepare": "husky"
+  },
+  "resolutions": {
+    "react-hook-form": "^7.68.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

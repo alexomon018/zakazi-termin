@@ -8,7 +8,7 @@ import {
   MoreButton,
   SearchBar,
   uiStyles,
-} from "@/components/ui/primitives";
+} from "@/components/atoms";
 import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";

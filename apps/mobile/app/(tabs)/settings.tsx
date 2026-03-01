@@ -1,15 +1,33 @@
-import { AppScreen, AppText } from "@/components/ui/primitives";
+import { AppScreen, AppText } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router } from "expo-router";
-import { Calendar, ChevronRight, LogOut, Palette, Plane, User } from "lucide-react-native";
+import { Calendar, ChevronRight, LogOut, Palette, Plane, User, Users } from "lucide-react-native";
+import type { LucideIcon } from "lucide-react-native";
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-const MENU_ITEMS = [
-  { href: "/setting/profile", label: "Profil", icon: User, description: "Ime, salon, bio" },
-  { href: "/setting/appearance", label: "Izgled", icon: Palette, description: "Tema i boje" },
+type MenuItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  description: string;
+};
+
+const BASE_MENU_ITEMS: MenuItem[] = [
+  {
+    href: "/setting/profile",
+    label: "Profil",
+    icon: User,
+    description: "Ime, salon, bio",
+  },
+  {
+    href: "/setting/appearance",
+    label: "Izgled",
+    icon: Palette,
+    description: "Tema i boje",
+  },
   {
     href: "/setting/calendar",
     label: "Kalendar",
@@ -22,12 +40,27 @@ const MENU_ITEMS = [
     icon: Plane,
     description: "Periodi nedostupnosti",
   },
-] as const;
+];
+
+const TEAM_MENU_ITEM: MenuItem = {
+  href: "/setting/team",
+  label: "Tim",
+  icon: Users,
+  description: "Upravljanje timom",
+};
 
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const { logout, user } = useAuth();
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+
+  const role = meQuery.data?.membership?.role;
+  const showTeamMenu = !role || role === "OWNER" || role === "ADMIN";
+
+  const menuItems = useMemo(
+    () => (showTeamMenu ? [...BASE_MENU_ITEMS, TEAM_MENU_ITEM] : BASE_MENU_ITEMS),
+    [showTeamMenu]
+  );
 
   const styles = useMemo(
     () =>
@@ -118,11 +151,11 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          {MENU_ITEMS.map((item, index) => (
+          {menuItems.map((item, index) => (
             <Pressable
               key={item.href}
-              style={[styles.menuItem, index === MENU_ITEMS.length - 1 && { borderBottomWidth: 0 }]}
-              onPress={() => router.push(item.href)}
+              style={[styles.menuItem, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
+              onPress={() => router.push(item.href as any)}
             >
               <View style={styles.menuIconContainer}>
                 <item.icon size={20} color={theme.colors.foreground} />

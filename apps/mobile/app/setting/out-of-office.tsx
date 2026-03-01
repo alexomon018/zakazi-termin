@@ -5,7 +5,7 @@ import {
   AppText,
   ConfirmDialog,
   SectionHeader,
-} from "@/components/ui/primitives";
+} from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import DateTimePicker from "@react-native-community/datetimepicker";

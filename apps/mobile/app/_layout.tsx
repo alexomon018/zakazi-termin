@@ -62,6 +62,10 @@ function RootLayoutNav() {
           name="setting/calendar"
           options={{ headerShown: true, title: "Kalendar", headerBackTitle: "Više" }}
         />
+        <Stack.Screen
+          name="setting/team"
+          options={{ headerShown: true, title: "Tim", headerBackTitle: "Više" }}
+        />
       </Stack>
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </>

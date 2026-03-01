@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
-    "@types/react-dom": "^19",
+    "@types/react-dom": "~19.1.7",
     "typescript": "^5.7.2"
   }
 }

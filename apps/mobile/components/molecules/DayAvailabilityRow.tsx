@@ -1,4 +1,4 @@
-import { AppButton, AppText } from "@/components/ui/primitives";
+import { AppButton, AppText } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Plus, Trash2 } from "lucide-react-native";

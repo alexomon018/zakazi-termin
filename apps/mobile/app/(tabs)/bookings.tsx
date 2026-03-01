@@ -9,7 +9,7 @@ import {
   SearchBar,
   SectionDateHeader,
   uiStyles,
-} from "@/components/ui/primitives";
+} from "@/components/atoms";
 import { API_URL } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
