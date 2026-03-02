@@ -1,19 +1,32 @@
 import { AppButton, AppText, InputDialog } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { Users } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 type TeamEmptyStateProps = {
   salonName: string | null;
   isCreating: boolean;
+  isCreated: boolean;
   onCreate: (name: string) => void;
 };
 
-export function TeamEmptyState({ salonName, isCreating, onCreate }: TeamEmptyStateProps) {
+export function TeamEmptyState({
+  salonName,
+  isCreating,
+  isCreated,
+  onCreate,
+}: TeamEmptyStateProps) {
   const { theme } = useTheme();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [nameInput, setNameInput] = useState("");
+
+  useEffect(() => {
+    if (isCreated) {
+      setDialogOpen(false);
+      setNameInput("");
+    }
+  }, [isCreated]);
 
   const features = ["Zajednicki kalendar", "Podela usluga", "Upravljanje ulogama"];
 

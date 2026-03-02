@@ -33,6 +33,7 @@ export function TeamInviteMemberModal({
   onClose,
 }: TeamInviteMemberModalProps) {
   const { theme } = useTheme();
+  const trimmedEmail = inviteEmail.trim();
 
   const styles = useMemo(
     () =>
@@ -114,7 +115,7 @@ export function TeamInviteMemberModal({
               autoCapitalize="none"
               autoCorrect={false}
             />
-            {inviteEmail.trim() !== "" && !isValidEmail(inviteEmail.trim()) && (
+            {trimmedEmail !== "" && !isValidEmail(trimmedEmail) && (
               <AppText variant="caption" style={{ color: theme.colors.destructive }}>
                 Unesite validnu email adresu
               </AppText>
@@ -148,7 +149,7 @@ export function TeamInviteMemberModal({
             label="Pošalji pozivnicu"
             onPress={onSubmit}
             loading={isInviting}
-            disabled={!inviteEmail.trim() || !isValidEmail(inviteEmail.trim())}
+            disabled={!trimmedEmail || !isValidEmail(trimmedEmail)}
           />
         </ScrollView>
       </View>

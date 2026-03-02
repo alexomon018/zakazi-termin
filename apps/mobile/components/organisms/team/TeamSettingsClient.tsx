@@ -280,6 +280,7 @@ export function TeamSettingsClient() {
       <TeamEmptyState
         salonName={meQuery.data?.salonName ?? null}
         isCreating={createOrgMutation.isPending}
+        isCreated={createOrgMutation.isSuccess}
         onCreate={(name) => createOrgMutation.mutate({ name })}
       />
     );

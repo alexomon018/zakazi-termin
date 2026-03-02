@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 type MenuItem = {
+  id: string;
   href: Href;
   label: string;
   icon: LucideIcon;
@@ -17,24 +18,28 @@ type MenuItem = {
 
 const BASE_MENU_ITEMS: MenuItem[] = [
   {
+    id: "profile",
     href: "/setting/profile",
     label: "Profil",
     icon: User,
     description: "Ime, salon, bio",
   },
   {
+    id: "appearance",
     href: "/setting/appearance",
     label: "Izgled",
     icon: Palette,
     description: "Tema i boje",
   },
   {
+    id: "calendar",
     href: "/setting/calendar",
     label: "Kalendar",
     icon: Calendar,
     description: "Povezani kalendari",
   },
   {
+    id: "out-of-office",
     href: "/setting/out-of-office",
     label: "Odsustvo",
     icon: Plane,
@@ -43,6 +48,7 @@ const BASE_MENU_ITEMS: MenuItem[] = [
 ];
 
 const TEAM_MENU_ITEM: MenuItem = {
+  id: "team",
   href: "/setting/team",
   label: "Tim",
   icon: Users,
@@ -155,7 +161,7 @@ export default function SettingsScreen() {
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
             <Pressable
-              key={item.label}
+              key={item.id}
               style={[styles.menuItem, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
               onPress={() => router.push(item.href)}
             >
