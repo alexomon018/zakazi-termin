@@ -1,7 +1,7 @@
 import { typography } from "@/lib/theme";
 import { useTheme } from "@/lib/theme-context";
 import type { ReactNode } from "react";
-import { Text, type TextStyle } from "react-native";
+import { type StyleProp, Text, type TextStyle } from "react-native";
 
 type TextVariant = "title" | "h1" | "h2" | "body" | "bodySm" | "caption";
 
@@ -25,7 +25,7 @@ export function AppText({
   variant?: TextVariant;
   muted?: boolean;
   centered?: boolean;
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
 }) {
   const { theme } = useTheme();
   return (

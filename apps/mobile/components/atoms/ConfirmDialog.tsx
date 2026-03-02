@@ -23,6 +23,10 @@ export function ConfirmDialog({
   onCancel: () => void;
 }) {
   const { theme } = useTheme();
+  const confirmForeground = destructive
+    ? theme.colors.destructiveForeground
+    : theme.colors.primaryForeground;
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View
@@ -102,12 +106,12 @@ export function ConfirmDialog({
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color={theme.colors.primaryForeground} size="small" />
+                <ActivityIndicator color={confirmForeground} size="small" />
               ) : (
                 <Text
                   style={{
                     fontSize: theme.typography.body,
-                    color: theme.colors.primaryForeground,
+                    color: confirmForeground,
                     fontWeight: "600",
                   }}
                 >

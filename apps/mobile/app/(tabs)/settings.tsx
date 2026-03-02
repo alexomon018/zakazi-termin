@@ -2,14 +2,14 @@ import { AppScreen, AppText } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
-import { router } from "expo-router";
+import { type Href, router } from "expo-router";
 import { Calendar, ChevronRight, LogOut, Palette, Plane, User, Users } from "lucide-react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 type MenuItem = {
-  href: string;
+  href: Href;
   label: string;
   icon: LucideIcon;
   description: string;
@@ -55,7 +55,9 @@ export default function SettingsScreen() {
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
 
   const role = meQuery.data?.membership?.role;
-  const showTeamMenu = !role || role === "OWNER" || role === "ADMIN";
+  const hasMembership = !!meQuery.data?.membership;
+  const showTeamMenu =
+    !meQuery.isLoading && hasMembership && (role === "OWNER" || role === "ADMIN");
 
   const menuItems = useMemo(
     () => (showTeamMenu ? [...BASE_MENU_ITEMS, TEAM_MENU_ITEM] : BASE_MENU_ITEMS),
@@ -153,9 +155,9 @@ export default function SettingsScreen() {
         <View style={styles.menuSection}>
           {menuItems.map((item, index) => (
             <Pressable
-              key={item.href}
+              key={item.label}
               style={[styles.menuItem, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
-              onPress={() => router.push(item.href as any)}
+              onPress={() => router.push(item.href)}
             >
               <View style={styles.menuIconContainer}>
                 <item.icon size={20} color={theme.colors.foreground} />

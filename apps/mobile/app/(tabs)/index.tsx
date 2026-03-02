@@ -227,6 +227,7 @@ export default function EventTypesScreen() {
       <FAB
         onPress={() => router.push("/event-type/new")}
         icon={<Plus size={20} color={theme.colors.primaryForeground} />}
+        accessibilityLabel="Novi tip termina"
       />
 
       <BottomSheet

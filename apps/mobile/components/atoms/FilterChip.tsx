@@ -13,6 +13,9 @@ export function FilterChip({
   const { theme } = useTheme();
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
       style={{
         paddingHorizontal: theme.spacing.md,
         paddingVertical: 6,

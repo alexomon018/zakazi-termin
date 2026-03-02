@@ -35,6 +35,7 @@ export function InputDialog({
   onCancel: () => void;
 }) {
   const { theme } = useTheme();
+  const confirmDisabled = loading || !value.trim();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <KeyboardAvoidingView
@@ -91,9 +92,11 @@ export function InputDialog({
                   borderRadius: theme.radius.sm,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
+                  opacity: loading ? 0.6 : 1,
                 }}
                 onPress={onCancel}
                 disabled={loading}
+                accessibilityState={{ disabled: loading }}
               >
                 <Text
                   style={{
@@ -111,9 +114,11 @@ export function InputDialog({
                   paddingHorizontal: theme.spacing.lg,
                   borderRadius: theme.radius.sm,
                   backgroundColor: theme.colors.primary,
+                  opacity: confirmDisabled ? 0.6 : 1,
                 }}
                 onPress={onConfirm}
-                disabled={loading || !value.trim()}
+                disabled={confirmDisabled}
+                accessibilityState={{ disabled: confirmDisabled }}
               >
                 {loading ? (
                   <ActivityIndicator color={theme.colors.primaryForeground} size="small" />

@@ -284,6 +284,7 @@ export default function AvailabilityScreen() {
       <FAB
         onPress={() => setCreateDialogVisible(true)}
         icon={<Plus size={20} color={theme.colors.primaryForeground} />}
+        accessibilityLabel="Novi raspored"
       />
 
       <BottomSheet

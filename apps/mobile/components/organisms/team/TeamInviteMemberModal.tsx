@@ -4,6 +4,11 @@ import { Mail } from "lucide-react-native";
 import { useMemo } from "react";
 import { Modal, ScrollView, StyleSheet, View } from "react-native";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(email: string): boolean {
+  return EMAIL_RE.test(email);
+}
+
 type TeamInviteMemberModalProps = {
   visible: boolean;
   inviteEmail: string;
@@ -109,6 +114,11 @@ export function TeamInviteMemberModal({
               autoCapitalize="none"
               autoCorrect={false}
             />
+            {inviteEmail.trim() !== "" && !isValidEmail(inviteEmail.trim()) && (
+              <AppText variant="caption" style={{ color: theme.colors.destructive }}>
+                Unesite validnu email adresu
+              </AppText>
+            )}
           </View>
 
           <View style={styles.formGroup}>
@@ -138,7 +148,7 @@ export function TeamInviteMemberModal({
             label="Pošalji pozivnicu"
             onPress={onSubmit}
             loading={isInviting}
-            disabled={!inviteEmail.trim()}
+            disabled={!inviteEmail.trim() || !isValidEmail(inviteEmail.trim())}
           />
         </ScrollView>
       </View>

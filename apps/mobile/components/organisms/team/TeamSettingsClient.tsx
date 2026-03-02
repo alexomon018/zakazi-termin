@@ -286,8 +286,8 @@ export function TeamSettingsClient() {
   }
 
   // --- Has organization ---
-  const members = (membersQuery.data ?? []) as Member[];
-  const invites = (invitesQuery.data ?? []) as Invite[];
+  const members = membersQuery.data ?? [];
+  const invites = invitesQuery.data ?? [];
 
   return (
     <>

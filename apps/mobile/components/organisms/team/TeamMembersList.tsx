@@ -1,4 +1,4 @@
-import { SectionHeader } from "@/components/atoms";
+import { type BottomSheetAction, SectionHeader } from "@/components/atoms";
 import { MemberRow } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { Users } from "lucide-react-native";
@@ -12,7 +12,7 @@ type TeamMembersListProps = {
   members: Member[];
   currentUserId: string | undefined;
   isLoading: boolean;
-  getMemberActions: (member: Member) => { length: number };
+  getMemberActions: (member: Member) => BottomSheetAction[];
   onMemberPress: (member: Member) => void;
 };
 
@@ -49,7 +49,7 @@ export function TeamMembersList({
       ) : (
         <View style={styles.list}>
           {members.map((member) => {
-            const RoleIcon = ROLE_ICONS[member.role as keyof typeof ROLE_ICONS] ?? Users;
+            const RoleIcon = ROLE_ICONS[member.role] ?? Users;
             const actions = getMemberActions(member);
             return (
               <MemberRow

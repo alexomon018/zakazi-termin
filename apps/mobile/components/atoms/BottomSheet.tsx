@@ -1,7 +1,15 @@
 import { useTheme } from "@/lib/theme-context";
 import type { ReactNode } from "react";
-import { useEffect, useRef } from "react";
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  type LayoutChangeEvent,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type BottomSheetAction = {
@@ -17,20 +25,47 @@ export function BottomSheet({
   title,
   actions,
   onClose,
+  cancelLabel = "Otkaži",
 }: {
   visible: boolean;
   title?: string;
   actions: BottomSheetAction[];
   onClose: () => void;
+  cancelLabel?: string;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const backdropAnim = useRef(new Animated.Value(0)).current;
+  const [sheetHeight, setSheetHeight] = useState<number | null>(null);
+
+  const onSheetLayout = useCallback((e: LayoutChangeEvent) => {
+    setSheetHeight(e.nativeEvent.layout.height);
+  }, []);
+
+  const runExitAnimation = useCallback(
+    (onComplete?: () => void) => {
+      return Animated.parallel([
+        Animated.timing(backdropAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start(onComplete);
+    },
+    [backdropAnim, slideAnim]
+  );
 
   useEffect(() => {
+    let animation: Animated.CompositeAnimation | null = null;
+
     if (visible) {
-      Animated.parallel([
+      animation = Animated.parallel([
         Animated.timing(backdropAnim, {
           toValue: 1,
           duration: 200,
@@ -42,26 +77,31 @@ export function BottomSheet({
           stiffness: 200,
           useNativeDriver: true,
         }),
-      ]).start();
+      ]);
+      animation.start();
     } else {
-      slideAnim.setValue(0);
-      backdropAnim.setValue(0);
+      animation = Animated.parallel([
+        Animated.timing(backdropAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]);
+      animation.start();
     }
+
+    return () => {
+      animation?.stop();
+    };
   }, [visible, slideAnim, backdropAnim]);
 
   const handleClose = () => {
-    Animated.parallel([
-      Animated.timing(backdropAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onClose());
+    runExitAnimation(() => onClose());
   };
 
   return (
@@ -77,6 +117,7 @@ export function BottomSheet({
           <Pressable style={{ flex: 1 }} onPress={handleClose} />
         </Animated.View>
         <Animated.View
+          onLayout={onSheetLayout}
           style={{
             backgroundColor: theme.colors.surface,
             borderTopLeftRadius: theme.radius.lg,
@@ -87,7 +128,7 @@ export function BottomSheet({
               {
                 translateY: slideAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [400, 0],
+                  outputRange: [sheetHeight ?? 800, 0],
                 }),
               },
             ],
@@ -165,7 +206,7 @@ export function BottomSheet({
                 textAlign: "center",
               }}
             >
-              Otkaži
+              {cancelLabel}
             </Text>
           </Pressable>
         </Animated.View>
