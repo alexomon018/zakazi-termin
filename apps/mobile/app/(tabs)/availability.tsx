@@ -9,10 +9,10 @@ import {
   MoreButton,
   SearchBar,
   uiStyles,
-} from "@/components/ui/primitives";
+} from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
-import { formatTimeUTC } from "@salonko/config";
+import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router } from "expo-router";
 import { Copy, Globe, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
@@ -284,6 +284,7 @@ export default function AvailabilityScreen() {
       <FAB
         onPress={() => setCreateDialogVisible(true)}
         icon={<Plus size={20} color={theme.colors.primaryForeground} />}
+        accessibilityLabel="Novi raspored"
       />
 
       <BottomSheet

@@ -1,4 +1,4 @@
-import { AppButton, AppInput, AppText, SectionHeader } from "@/components/ui/primitives";
+import { AppButton, AppInput, AppText, SectionHeader } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Switch, View } from "react-native";

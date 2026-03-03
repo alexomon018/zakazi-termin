@@ -1,4 +1,4 @@
-import { AppButton, AppCard, AppScreen, AppText } from "@/components/ui/primitives";
+import { AppButton, AppCard, AppScreen, AppText } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useLocalSearchParams, useRouter } from "expo-router";

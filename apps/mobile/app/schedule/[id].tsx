@@ -1,15 +1,9 @@
-import { DayAvailabilityRow, type TimeRange } from "@/components/ui/DayAvailabilityRow";
-import {
-  AppButton,
-  AppInput,
-  AppText,
-  ConfirmDialog,
-  SectionHeader,
-} from "@/components/ui/primitives";
+import { AppButton, AppInput, AppText, ConfirmDialog, SectionHeader } from "@/components/atoms";
+import { DayAvailabilityRow, type TimeRange } from "@/components/molecules/DayAvailabilityRow";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { formatTimeUTC } from "@salonko/config";
+import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {

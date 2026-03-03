@@ -5,7 +5,7 @@ import {
   AppText,
   ConfirmDialog,
   SectionHeader,
-} from "@/components/ui/primitives";
+} from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";

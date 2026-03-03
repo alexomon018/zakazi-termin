@@ -3,7 +3,7 @@ import {
   EventTypeForm,
   type EventTypeFormData,
   validateEventTypeForm,
-} from "@/components/ui/EventTypeForm";
+} from "@/components/organisms/EventTypeForm";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router } from "expo-router";

@@ -6235,7 +6235,7 @@ __metadata:
     "@trpc/react-query": "npm:^11.0.0-rc.660"
     "@trpc/server": "npm:^11.0.0-rc.660"
     "@types/react": "npm:~19.1.10"
-    "@types/react-dom": "npm:^19"
+    "@types/react-dom": "npm:~19.1.7"
     expo: "npm:^54.0.0"
     expo-clipboard: "npm:~8.0.8"
     expo-constants: "npm:~18.0.13"
@@ -7736,12 +7736,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^19, @types/react-dom@npm:^19.0.1, @types/react-dom@npm:^19.1.0":
+"@types/react-dom@npm:^19.0.1, @types/react-dom@npm:^19.1.0":
   version: 19.2.3
   resolution: "@types/react-dom@npm:19.2.3"
   peerDependencies:
     "@types/react": ^19.2.0
   checksum: 10c0/b486ebe0f4e2fb35e2e108df1d8fc0927ca5d6002d5771e8a739de11239fe62d0e207c50886185253c99eb9dedfeeb956ea7429e5ba17f6693c7acb4c02f8cd1
+  languageName: node
+  linkType: hard
+
+"@types/react-dom@npm:~19.1.7":
+  version: 19.1.11
+  resolution: "@types/react-dom@npm:19.1.11"
+  peerDependencies:
+    "@types/react": ^19.0.0
+  checksum: 10c0/417da6414f43ea2e416ab19666f78f8a29b349f4273ee6d8d468516606c65ee0e6f31939cd3255dfaf466a50a5cdf16b6fd988cf7e9aaf678c61d1fff81e5c20
   languageName: node
   linkType: hard
 

@@ -1,33 +1,74 @@
-import { AppScreen, AppText } from "@/components/ui/primitives";
+import { AppScreen, AppText } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
-import { router } from "expo-router";
-import { Calendar, ChevronRight, LogOut, Palette, Plane, User } from "lucide-react-native";
+import { type Href, router } from "expo-router";
+import { Calendar, ChevronRight, LogOut, Palette, Plane, User, Users } from "lucide-react-native";
+import type { LucideIcon } from "lucide-react-native";
 import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
-const MENU_ITEMS = [
-  { href: "/setting/profile", label: "Profil", icon: User, description: "Ime, salon, bio" },
-  { href: "/setting/appearance", label: "Izgled", icon: Palette, description: "Tema i boje" },
+type MenuItem = {
+  id: string;
+  href: Href;
+  label: string;
+  icon: LucideIcon;
+  description: string;
+};
+
+const BASE_MENU_ITEMS: MenuItem[] = [
   {
+    id: "profile",
+    href: "/setting/profile",
+    label: "Profil",
+    icon: User,
+    description: "Ime, salon, bio",
+  },
+  {
+    id: "appearance",
+    href: "/setting/appearance",
+    label: "Izgled",
+    icon: Palette,
+    description: "Tema i boje",
+  },
+  {
+    id: "calendar",
     href: "/setting/calendar",
     label: "Kalendar",
     icon: Calendar,
     description: "Povezani kalendari",
   },
   {
+    id: "out-of-office",
     href: "/setting/out-of-office",
     label: "Odsustvo",
     icon: Plane,
     description: "Periodi nedostupnosti",
   },
-] as const;
+];
+
+const TEAM_MENU_ITEM: MenuItem = {
+  id: "team",
+  href: "/setting/team",
+  label: "Tim",
+  icon: Users,
+  description: "Upravljanje timom",
+};
 
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const { logout, user } = useAuth();
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+
+  const role = meQuery.data?.membership?.role;
+  const hasMembership = !!meQuery.data?.membership;
+  const showTeamMenu =
+    !meQuery.isLoading && hasMembership && (role === "OWNER" || role === "ADMIN");
+
+  const menuItems = useMemo(
+    () => (showTeamMenu ? [...BASE_MENU_ITEMS, TEAM_MENU_ITEM] : BASE_MENU_ITEMS),
+    [showTeamMenu]
+  );
 
   const styles = useMemo(
     () =>
@@ -118,10 +159,10 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.menuSection}>
-          {MENU_ITEMS.map((item, index) => (
+          {menuItems.map((item, index) => (
             <Pressable
-              key={item.href}
-              style={[styles.menuItem, index === MENU_ITEMS.length - 1 && { borderBottomWidth: 0 }]}
+              key={item.id}
+              style={[styles.menuItem, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
               onPress={() => router.push(item.href)}
             >
               <View style={styles.menuIconContainer}>

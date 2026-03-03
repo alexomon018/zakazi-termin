@@ -1,4 +1,4 @@
-import { AppButton, AppCard, AppScreen, AppText } from "@/components/ui/primitives";
+import { AppButton, AppScreen, AppText } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { Calendar } from "lucide-react-native";
@@ -30,30 +30,26 @@ export default function LoginScreen() {
       StyleSheet.create({
         container: {
           flex: 1,
-          justifyContent: "center",
           paddingHorizontal: theme.spacing.xl,
         },
-        header: {
-          alignItems: "center",
-          gap: theme.spacing.sm,
-          marginBottom: theme.spacing.xl,
-        },
-        logoRow: {
-          flexDirection: "row",
+        center: {
+          flex: 1,
+          justifyContent: "center",
           alignItems: "center",
           gap: theme.spacing.md,
-          marginBottom: theme.spacing.xs,
         },
         logoIcon: {
-          width: 40,
-          height: 40,
-          borderRadius: theme.radius.sm,
+          width: 56,
+          height: 56,
+          borderRadius: theme.radius.md,
           backgroundColor: theme.colors.primary,
           alignItems: "center",
           justifyContent: "center",
+          marginBottom: theme.spacing.sm,
         },
-        actions: {
-          gap: theme.spacing.lg,
+        bottom: {
+          gap: theme.spacing.md,
+          paddingBottom: theme.spacing.xxl,
         },
       }),
     [theme]
@@ -62,29 +58,24 @@ export default function LoginScreen() {
   return (
     <AppScreen>
       <View style={styles.container}>
-        <AppCard>
-          <View style={styles.header}>
-            <View style={styles.logoRow}>
-              <View style={styles.logoIcon}>
-                <Calendar size={22} color={theme.colors.primaryForeground} />
-              </View>
-              <AppText variant="h1">Salonko</AppText>
-            </View>
-            <AppText variant="bodySm" muted centered>
-              Upravljajte zakazivanjem iz jednog mesta
+        <View style={styles.center}>
+          <View style={styles.logoIcon}>
+            <Calendar size={28} color={theme.colors.primaryForeground} />
+          </View>
+          <AppText variant="h1">Salonko</AppText>
+          <AppText variant="bodySm" muted centered>
+            Upravljajte zakazivanjem iz jednog mesta
+          </AppText>
+        </View>
+
+        <View style={styles.bottom}>
+          {error && (
+            <AppText variant="bodySm" centered style={{ color: theme.colors.destructive }}>
+              {error}
             </AppText>
-          </View>
-
-          <View style={styles.actions}>
-            {error && (
-              <AppText variant="bodySm" centered style={{ color: theme.colors.destructive }}>
-                {error}
-              </AppText>
-            )}
-
-            <AppButton label="Prijavite se" onPress={handleLogin} loading={isSubmitting} />
-          </View>
-        </AppCard>
+          )}
+          <AppButton label="Prijavite se" onPress={handleLogin} loading={isSubmitting} />
+        </View>
       </View>
     </AppScreen>
   );

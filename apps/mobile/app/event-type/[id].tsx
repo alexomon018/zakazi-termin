@@ -1,10 +1,10 @@
+import { AppButton, AppText, ConfirmDialog } from "@/components/atoms";
 import {
   DEFAULT_FORM_DATA,
   EventTypeForm,
   type EventTypeFormData,
   validateEventTypeForm,
-} from "@/components/ui/EventTypeForm";
-import { AppButton, AppText, ConfirmDialog } from "@/components/ui/primitives";
+} from "@/components/organisms/EventTypeForm";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router, useLocalSearchParams } from "expo-router";
