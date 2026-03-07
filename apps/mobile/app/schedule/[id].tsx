@@ -48,8 +48,8 @@ type DateOverride = {
 };
 
 type ScheduleAvailabilityEntry = {
-  days: number[] | null;
-  date: string | null;
+  days: number[];
+  date: Date | null;
   startTime: Date;
   endTime: Date;
 };
@@ -87,7 +87,7 @@ function initializeEditorState(schedule: ScheduleData): EditorState {
 
 function extractDateOverrides(schedule: ScheduleData): DateOverride[] {
   return schedule.availability
-    .filter((a) => a.date !== null)
+    .filter((a): a is ScheduleAvailabilityEntry & { date: Date } => a.date !== null)
     .map((a) => ({
       date: new Date(a.date),
       startTime: formatTimeUTC(a.startTime),
