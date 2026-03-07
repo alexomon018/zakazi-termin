@@ -4,24 +4,21 @@ import {
   BottomSheet,
   type BottomSheetAction,
   ConfirmDialog,
-  FAB,
   InputDialog,
-  MoreButton,
-  SearchBar,
   uiStyles,
 } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router } from "expo-router";
-import { Copy, Globe, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
+import { Copy, Globe, MoreHorizontal, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -44,8 +41,6 @@ function getScheduleSummary(schedule: ScheduleItem) {
   if (!schedule.availability.length) return "Nema podešenih termina";
 
   const daySet = new Set<number>();
-  // formatTimeUTC returns zero-padded "HH:MM" strings, so lexicographic comparison
-  // on minStart/maxEnd is valid as long as this format is preserved.
   let minStart = "23:59";
   let maxEnd = "00:00";
 
@@ -68,7 +63,6 @@ function getScheduleSummary(schedule: ScheduleItem) {
 export default function AvailabilityScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
-  const [search, setSearch] = useState("");
   const [createDialogVisible, setCreateDialogVisible] = useState(false);
   const [createName, setCreateName] = useState("");
   const [activeSchedule, setActiveSchedule] = useState<ScheduleItem | null>(null);
@@ -119,12 +113,7 @@ export default function AvailabilityScreen() {
 
   const defaultScheduleId = meQuery.data?.defaultScheduleId;
   const schedules = (schedulesQuery.data ?? []) as ScheduleItem[];
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return schedules;
-    const q = search.toLowerCase();
-    return schedules.filter((s) => s.name.toLowerCase().includes(q));
-  }, [schedules, search]);
+  const filtered = schedules;
 
   const sheetActions: BottomSheetAction[] = activeSchedule
     ? [
@@ -164,41 +153,168 @@ export default function AvailabilityScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        header: { gap: theme.spacing.md, marginBottom: theme.spacing.lg },
-        listContent: { padding: theme.spacing.lg, paddingBottom: 140 },
-        scheduleItem: {
+        content: { padding: theme.spacing.lg, paddingBottom: 140, gap: theme.spacing.md },
+        topBar: {
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginBottom: theme.spacing.md,
+        },
+        topControls: {
           flexDirection: "row",
           alignItems: "center",
-          paddingVertical: theme.spacing.md,
+          gap: 10,
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+          borderWidth: 1,
+          borderRadius: theme.radius.full,
+          paddingVertical: 6,
+          paddingHorizontal: 10,
+        },
+        iconButton: {
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        title: { marginBottom: theme.spacing.md },
+        cardContainer: {
+          borderRadius: theme.radius.lg,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          overflow: "hidden",
+        },
+        scheduleItem: {
+          flexDirection: "row",
+          alignItems: "flex-start",
+          paddingHorizontal: 18,
+          paddingVertical: 16,
           gap: theme.spacing.md,
         },
-        scheduleContent: { flex: 1, gap: 2 },
+        scheduleContent: { flex: 1, gap: 3 },
         defaultBadge: {
-          paddingHorizontal: theme.spacing.sm,
+          paddingHorizontal: 8,
           paddingVertical: 2,
           borderRadius: theme.radius.full,
-          backgroundColor: `${theme.colors.accent}10`,
+          borderWidth: 1,
+          borderColor: theme.colors.accent,
         },
         separator: {
           height: StyleSheet.hairlineWidth,
           backgroundColor: theme.colors.border,
+          marginLeft: 18,
+        },
+        rowMoreButton: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surfaceMuted,
+          alignItems: "center",
+          justifyContent: "center",
         },
         centered: {
-          flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          paddingVertical: theme.spacing.xxl,
+          paddingVertical: theme.spacing.xxl * 2,
           gap: theme.spacing.sm,
         },
       }),
     [theme]
   );
 
+  const renderContent = () => {
+    if (schedulesQuery.isLoading) {
+      return (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+
+    if (schedulesQuery.isError) {
+      return (
+        <View style={styles.centered}>
+          <AppText variant="h2" centered>
+            Greška pri učitavanju
+          </AppText>
+          <AppText variant="bodySm" centered muted>
+            {schedulesQuery.error?.message ?? "Povucite nadole da pokušate ponovo."}
+          </AppText>
+        </View>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <View style={styles.centered}>
+          <AppText variant="h2" centered>
+            Nema rasporeda
+          </AppText>
+          <AppText variant="bodySm" centered muted>
+            Kreirajte prvi raspored koristeći + dugme.
+          </AppText>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.cardContainer}>
+        {filtered.map((item, index) => {
+          const isDefault = item.id === defaultScheduleId;
+          const summary = getScheduleSummary(item);
+          const tz = item.timeZone ?? "Europe/Belgrade";
+
+          return (
+            <View key={item.id}>
+              {index > 0 && <View style={styles.separator} />}
+              <Pressable
+                style={styles.scheduleItem}
+                onPress={() => router.push(`/schedule/${item.id}`)}
+              >
+                <View style={styles.scheduleContent}>
+                  <View style={[uiStyles.row, { gap: theme.spacing.sm }]}>
+                    <AppText variant="body" style={{ fontWeight: "600" }}>
+                      {item.name}
+                    </AppText>
+                    {isDefault && (
+                      <View style={styles.defaultBadge}>
+                        <AppText
+                          variant="caption"
+                          style={{ color: theme.colors.accent, fontWeight: "600" }}
+                        >
+                          Podrazumevani
+                        </AppText>
+                      </View>
+                    )}
+                  </View>
+                  <AppText variant="bodySm" muted>
+                    {summary}
+                  </AppText>
+                  <View style={[uiStyles.row, { gap: theme.spacing.xs, marginTop: 2 }]}>
+                    <Globe size={12} color={theme.colors.mutedForeground} />
+                    <AppText variant="caption" muted>
+                      {tz}
+                    </AppText>
+                  </View>
+                </View>
+                <Pressable style={styles.rowMoreButton} onPress={() => setActiveSchedule(item)}>
+                  <MoreHorizontal size={18} color={theme.colors.mutedForeground} />
+                </Pressable>
+              </Pressable>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
     <AppScreen>
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.id}
+      <ScrollView
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={schedulesQuery.isRefetching}
@@ -206,86 +322,19 @@ export default function AvailabilityScreen() {
             tintColor={theme.colors.primary}
           />
         }
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <AppText variant="title">Dostupnost</AppText>
-            <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži rasporede" />
-          </View>
-        }
-        ListEmptyComponent={
-          schedulesQuery.isLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : schedulesQuery.isError ? (
-            <View style={styles.centered}>
-              <AppText variant="h2" centered>
-                Greška pri učitavanju
-              </AppText>
-              <AppText variant="bodySm" centered muted>
-                {schedulesQuery.error?.message ?? "Povucite nadole da pokušate ponovo."}
-              </AppText>
-            </View>
-          ) : (
-            <View style={styles.centered}>
-              <AppText variant="h2" centered>
-                Nema rasporeda
-              </AppText>
-              <AppText variant="bodySm" centered muted>
-                Kreirajte prvi raspored koristeći + dugme.
-              </AppText>
-            </View>
-          )
-        }
-        renderItem={({ item }) => {
-          const isDefault = item.id === defaultScheduleId;
-          const summary = getScheduleSummary(item);
-          const tz = item.timeZone ?? "Europe/Belgrade";
-
-          return (
-            <Pressable
-              style={styles.scheduleItem}
-              onPress={() => router.push(`/schedule/${item.id}`)}
-            >
-              <View style={styles.scheduleContent}>
-                <View style={[uiStyles.row, { gap: theme.spacing.sm }]}>
-                  <AppText variant="body" style={{ fontWeight: "600" }}>
-                    {item.name}
-                  </AppText>
-                  {isDefault && (
-                    <View style={styles.defaultBadge}>
-                      <AppText
-                        variant="caption"
-                        style={{ color: theme.colors.accent, fontWeight: "600" }}
-                      >
-                        Podrazumevani
-                      </AppText>
-                    </View>
-                  )}
-                </View>
-                <AppText variant="bodySm" muted>
-                  {summary}
-                </AppText>
-                <View style={[uiStyles.row, { gap: theme.spacing.xs, marginTop: 2 }]}>
-                  <Globe size={12} color={theme.colors.mutedForeground} />
-                  <AppText variant="caption" muted>
-                    {tz}
-                  </AppText>
-                </View>
-              </View>
-              <MoreButton onPress={() => setActiveSchedule(item)} />
+      >
+        <View style={styles.topBar}>
+          <View style={styles.topControls}>
+            <Pressable style={styles.iconButton} onPress={() => setCreateDialogVisible(true)}>
+              <Plus size={22} color={theme.colors.foreground} />
             </Pressable>
-          );
-        }}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
-
-      <FAB
-        onPress={() => setCreateDialogVisible(true)}
-        icon={<Plus size={20} color={theme.colors.primaryForeground} />}
-        accessibilityLabel="Novi raspored"
-      />
+          </View>
+        </View>
+        <AppText variant="title" style={styles.title}>
+          Dostupnost
+        </AppText>
+        {renderContent()}
+      </ScrollView>
 
       <BottomSheet
         visible={!!activeSchedule}
@@ -297,6 +346,7 @@ export default function AvailabilityScreen() {
       <InputDialog
         visible={createDialogVisible}
         title="Novi raspored"
+        description="Kreirajte raspored za vaše radno vreme."
         placeholder="Naziv rasporeda"
         value={createName}
         onChangeText={setCreateName}

@@ -49,8 +49,8 @@ export default function EditEventTypeScreen() {
   useEffect(() => {
     if (eventTypeQuery.data) {
       const et = eventTypeQuery.data;
-      const locations = (et.locations as any[] | null) ?? [];
-      const inPersonLocation = locations.find((l: any) => l.type === "inPerson");
+      const locations = (et.locations as { type: string; address?: string }[] | null) ?? [];
+      const inPersonLocation = locations.find((l) => l.type === "inPerson");
       const firstLocation = locations[0] as { type?: string } | undefined;
       setFormData({
         title: et.title,
@@ -135,7 +135,7 @@ export default function EditEventTypeScreen() {
     );
   }
 
-  const schedules = (schedulesQuery.data ?? []).map((s: any) => ({
+  const schedules = (schedulesQuery.data ?? []).map((s) => ({
     id: s.id,
     name: s.name,
   }));
@@ -147,9 +147,11 @@ export default function EditEventTypeScreen() {
         errors={errors}
         schedules={schedules}
         isPending={updateMutation.isPending}
-        submitLabel="Sačuvaj izmene"
+        submitLabel="Sačuvaj"
         submitError={updateMutation.error?.message}
+        headerTitle={formData.title.trim() || "Uredi uslugu"}
         showVisibilityToggle
+        onBackPress={() => router.back()}
         onFormDataChange={setFormData}
         onSubmit={handleSubmit}
       />

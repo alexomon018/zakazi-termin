@@ -4,6 +4,7 @@ import {
   AppInput,
   AppText,
   ConfirmDialog,
+  ScreenHeader,
   SectionHeader,
 } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
@@ -11,9 +12,11 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProfileSettingsScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { logout } = useAuth();
   const utils = trpc.useUtils();
 
@@ -48,7 +51,12 @@ export default function ProfileSettingsScreen() {
     () =>
       StyleSheet.create({
         scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.md,
+          paddingBottom: 100,
+        },
         centered: {
           flex: 1,
           justifyContent: "center",
@@ -65,7 +73,7 @@ export default function ProfileSettingsScreen() {
         },
         actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
       }),
-    [theme]
+    [theme, insets.top]
   );
 
   if (meQuery.isLoading) {
@@ -105,6 +113,7 @@ export default function ProfileSettingsScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <ScreenHeader title="Profil" />
         <SectionHeader title="Profil" />
         <AppCard>
           <View style={styles.formGroup}>

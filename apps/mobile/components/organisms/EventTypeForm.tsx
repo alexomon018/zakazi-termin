@@ -1,7 +1,9 @@
 import { AppButton, AppInput, AppText, SectionHeader } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
+import { ChevronLeft } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Switch, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type EventTypeFormData = {
   title: string;
@@ -122,7 +124,9 @@ export function EventTypeForm({
   isPending,
   submitLabel,
   submitError,
+  headerTitle,
   showVisibilityToggle = false,
+  onBackPress,
   onFormDataChange,
   onSubmit,
 }: {
@@ -132,11 +136,14 @@ export function EventTypeForm({
   isPending: boolean;
   submitLabel: string;
   submitError?: string | null;
+  headerTitle: string;
   showVisibilityToggle?: boolean;
+  onBackPress: () => void;
   onFormDataChange: (updater: (prev: EventTypeFormData) => EventTypeFormData) => void;
   onSubmit: () => void;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateField = <K extends keyof EventTypeFormData>(key: K, value: EventTypeFormData[K]) => {
@@ -158,7 +165,44 @@ export function EventTypeForm({
     () =>
       StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.md,
+          paddingBottom: 100,
+        },
+        topRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.sm,
+          marginBottom: theme.spacing.sm,
+        },
+        backButton: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        titleText: { flex: 1, fontWeight: "700" },
+        chip: {
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 16,
+        },
+        saveChip: {
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          opacity: isPending ? 0.7 : 1,
+        },
         card: {
           backgroundColor: theme.colors.surface,
           borderRadius: theme.radius.md,
@@ -175,7 +219,7 @@ export function EventTypeForm({
           alignItems: "center",
         },
       }),
-    [theme]
+    [theme, insets.top, isPending]
   );
 
   return (
@@ -184,6 +228,33 @@ export function EventTypeForm({
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <View style={styles.topRow}>
+        <Pressable style={styles.backButton} onPress={onBackPress}>
+          <ChevronLeft size={20} color={theme.colors.foreground} />
+        </Pressable>
+        <AppText variant="h2" style={styles.titleText}>
+          {headerTitle}
+        </AppText>
+        <View style={styles.chip}>
+          <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+            Osnovno
+          </AppText>
+        </View>
+        <Pressable
+          style={[styles.chip, styles.saveChip]}
+          onPress={onSubmit}
+          disabled={isPending}
+          accessibilityRole="button"
+          accessibilityLabel={submitLabel}
+        >
+          <AppText
+            variant="bodySm"
+            style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+          >
+            {isPending ? "Čuvanje..." : submitLabel}
+          </AppText>
+        </Pressable>
+      </View>
       <SectionHeader title="Osnovno" />
       <View style={styles.card}>
         <View style={styles.formGroup}>
@@ -332,7 +403,6 @@ export function EventTypeForm({
         </View>
       )}
 
-      <AppButton label={submitLabel} onPress={onSubmit} loading={isPending} />
       {submitError && (
         <AppText variant="bodySm" centered muted>
           {submitError}

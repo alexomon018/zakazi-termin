@@ -1,12 +1,15 @@
+import { ScreenHeader } from "@/components/atoms";
 import { TeamSettingsClient } from "@/components/organisms/team";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TeamScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
   const role = meQuery.data?.membership?.role;
   const isAuthorized = role === "OWNER" || role === "ADMIN";
@@ -36,5 +39,18 @@ export default function TeamScreen() {
     return null;
   }
 
-  return <TeamSettingsClient />;
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.background,
+        paddingTop: insets.top + theme.spacing.sm,
+      }}
+    >
+      <View style={{ paddingHorizontal: theme.spacing.lg }}>
+        <ScreenHeader title="Tim" />
+      </View>
+      <TeamSettingsClient />
+    </View>
+  );
 }

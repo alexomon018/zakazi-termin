@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@expo-google-fonts/lato": "^0.4.1",
+    "@expo-google-fonts/open-sans": "^0.4.2",
     "@react-native-community/datetimepicker": "8.4.4",
     "@react-navigation/native": "^7.0.14",
     "@salonko/trpc": "workspace:*",
@@ -21,9 +23,11 @@
     "@trpc/react-query": "^11.0.0-rc.660",
     "@trpc/server": "^11.0.0-rc.660",
     "expo": "^54.0.0",
+    "expo-blur": "~14.1.0",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.6",
+    "expo-font": "^55.0.4",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",

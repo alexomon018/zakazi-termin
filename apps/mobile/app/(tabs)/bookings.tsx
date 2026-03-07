@@ -4,20 +4,28 @@ import {
   BottomSheet,
   type BottomSheetAction,
   FAB,
-  FilterChip,
   MoreButton,
   SearchBar,
   SectionDateHeader,
-  uiStyles,
 } from "@/components/atoms";
 import { API_URL } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { CalendarPlus, CheckCircle, Info, XCircle } from "lucide-react-native";
+import { CalendarDays, CalendarPlus, CheckCircle, Info, Menu, XCircle } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from "react-native";
 
 type FilterKey = "upcoming" | "pending" | "history";
 
@@ -66,6 +74,7 @@ export default function BookingsScreen() {
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [search, setSearch] = useState("");
   const [activeBooking, setActiveBooking] = useState<BookingItem | null>(null);
+  const [filterPanelVisible, setFilterPanelVisible] = useState(false);
   const [historyDate] = useState(() => startOfDay());
 
   const statsQuery = trpc.booking.dashboardStats.useQuery(undefined, {
@@ -153,10 +162,10 @@ export default function BookingsScreen() {
     return result;
   }, [grouped]);
 
-  const openBookingDetails = async (uid: string) => {
+  const openBookingDetails = (uid: string) => {
     if (!uid) return;
     const url = `${API_URL}/booking/${encodeURIComponent(uid)}`;
-    await WebBrowser.openBrowserAsync(url);
+    WebBrowser.openBrowserAsync(url);
   };
 
   const handleRefresh = async () => {
@@ -237,34 +246,87 @@ export default function BookingsScreen() {
     () =>
       StyleSheet.create({
         header: { gap: theme.spacing.md, marginBottom: theme.spacing.sm },
-        listContent: { padding: theme.spacing.lg, paddingBottom: 140 },
-        statsRow: { flexDirection: "row", gap: theme.spacing.sm },
-        statPill: {
-          flex: 1,
+        topRow: { flexDirection: "row", justifyContent: "flex-end" },
+        topControls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.sm },
+        menuButton: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
           alignItems: "center",
-          paddingVertical: theme.spacing.md,
-          borderRadius: theme.radius.sm,
+          justifyContent: "center",
+        },
+        filterPill: {
+          height: 44,
+          borderRadius: 22,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 16,
+        },
+        title: {},
+        filterOverlay: {
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.15)",
+        },
+        filterPanelWrap: {
+          position: "absolute",
+          top: 104,
+          right: theme.spacing.lg,
+          left: theme.spacing.xl * 2,
+        },
+        filterPanel: {
           backgroundColor: theme.colors.surface,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          gap: 2,
+          borderRadius: theme.radius.lg,
+          padding: theme.spacing.md,
+          ...theme.shadow.md,
         },
-        filtersRow: { flexDirection: "row", gap: theme.spacing.sm },
+        filterPanelTitle: {
+          marginBottom: theme.spacing.sm,
+        },
+        filterOption: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderRadius: theme.radius.md,
+          paddingVertical: 10,
+          paddingHorizontal: 8,
+        },
+        listContent: { padding: theme.spacing.lg, paddingBottom: 140 },
         bookingItem: {
           flexDirection: "row",
           alignItems: "center",
-          paddingVertical: theme.spacing.md,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
           gap: theme.spacing.md,
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: theme.colors.border,
         },
-        bookingContent: { flex: 1, gap: 2 },
-        statusDot: {
+        bookingContent: { flex: 1, gap: 3 },
+        statusBadge: {
           alignSelf: "flex-start",
-          paddingHorizontal: theme.spacing.sm,
+          paddingHorizontal: 8,
           paddingVertical: 2,
-          borderRadius: theme.radius.full,
-          marginTop: theme.spacing.xs,
+          borderRadius: 6,
+          borderWidth: 1,
+          marginTop: 4,
+        },
+        cardContainer: {
+          borderRadius: theme.radius.md,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          overflow: "hidden",
+          marginBottom: theme.spacing.sm,
+        },
+        separator: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: theme.colors.border,
+          marginLeft: 16,
         },
         centered: {
           flex: 1,
@@ -273,9 +335,45 @@ export default function BookingsScreen() {
           paddingVertical: theme.spacing.xxl,
           gap: theme.spacing.sm,
         },
+        emptyIconWrap: {
+          width: 84,
+          height: 84,
+          borderRadius: 42,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surfaceMuted,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: theme.spacing.md,
+        },
+        emptyTitle: {
+          marginBottom: theme.spacing.xs,
+          maxWidth: 290,
+          lineHeight: 32,
+        },
+        emptyMessage: { maxWidth: 300 },
       }),
     [theme]
   );
+
+  const filterLabel = (value: FilterKey) => {
+    switch (value) {
+      case "upcoming":
+        return "Dolazeći";
+      case "pending":
+        return "Na čekanju";
+      case "history":
+        return "Istorija";
+      default:
+        return value;
+    }
+  };
+
+  const filterOptions: { key: FilterKey; label: string }[] = [
+    { key: "upcoming", label: "Dolazeći" },
+    { key: "pending", label: "Na čekanju" },
+    { key: "history", label: "Istorija" },
+  ];
 
   return (
     <AppScreen>
@@ -294,49 +392,25 @@ export default function BookingsScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View style={styles.header}>
-            <View style={[uiStyles.row, uiStyles.spaceBetween]}>
-              <AppText variant="title">Termini</AppText>
-            </View>
-
-            {statsQuery.data && (
-              <View style={styles.statsRow}>
-                {(
-                  [
-                    { label: "Danas", value: statsQuery.data.todayBookings },
-                    { label: "Predstojeći", value: statsQuery.data.upcomingBookings },
-                    { label: "Usluge", value: statsQuery.data.eventTypes },
-                  ] as const
-                ).map(({ label, value }) => (
-                  <View key={label} style={styles.statPill}>
-                    <AppText variant="bodySm" style={{ fontWeight: "700" }}>
-                      {value}
-                    </AppText>
-                    <AppText variant="caption" muted>
-                      {label}
-                    </AppText>
-                  </View>
-                ))}
+            <View style={styles.topRow}>
+              <View style={styles.topControls}>
+                <Pressable
+                  style={styles.menuButton}
+                  onPress={() => router.push("/(tabs)/settings")}
+                >
+                  <Menu size={20} color={theme.colors.foreground} />
+                </Pressable>
+                <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
+                  <AppText variant="h2" style={{ fontWeight: "700" }}>
+                    {filterLabel(filter)}
+                  </AppText>
+                </Pressable>
               </View>
-            )}
-
-            <View style={styles.filtersRow}>
-              {(
-                [
-                  { key: "upcoming", label: "Dolazeći" },
-                  { key: "pending", label: "Na čekanju" },
-                  { key: "history", label: "Istorija" },
-                ] as const
-              ).map(({ key, label }) => (
-                <FilterChip
-                  key={key}
-                  label={label}
-                  active={filter === key}
-                  onPress={() => setFilter(key)}
-                />
-              ))}
             </View>
-
-            <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži termine" />
+            <AppText variant="title" style={styles.title}>
+              Zakazivanja
+            </AppText>
+            <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
           </View>
         }
         ListEmptyComponent={
@@ -346,11 +420,14 @@ export default function BookingsScreen() {
             </View>
           ) : (
             <View style={styles.centered}>
-              <AppText variant="h2" centered>
-                Nema termina
+              <View style={styles.emptyIconWrap}>
+                <CalendarDays size={34} color={theme.colors.mutedForeground} />
+              </View>
+              <AppText variant="title" centered style={styles.emptyTitle}>
+                Nema zakazivanja
               </AppText>
-              <AppText variant="bodySm" centered muted>
-                Termini za izabrani filter će se pojaviti ovde.
+              <AppText variant="body" centered muted style={styles.emptyMessage}>
+                Čim neko zakaže termin kod vas, pojaviće se ovde.
               </AppText>
             </View>
           )
@@ -365,17 +442,18 @@ export default function BookingsScreen() {
             hour: "2-digit",
             minute: "2-digit",
           });
+          const color = statusColor(booking.status);
           return (
             <View style={styles.bookingItem}>
               <View style={styles.bookingContent}>
-                <AppText variant="body" style={{ fontWeight: "500" }}>
+                <AppText variant="body" style={{ fontWeight: "600" }}>
                   {booking.eventType?.title ?? booking.title ?? "Rezervacija"}
                 </AppText>
                 <AppText variant="bodySm" muted>
                   {attendee?.name ?? "Klijent"} · {time}
                 </AppText>
-                <View style={[styles.statusDot, { backgroundColor: statusColor(booking.status) }]}>
-                  <AppText variant="caption" style={{ color: "#fff", fontWeight: "600" }}>
+                <View style={[styles.statusBadge, { borderColor: color }]}>
+                  <AppText variant="caption" style={{ color, fontWeight: "600" }}>
                     {statusLabel(booking.status)}
                   </AppText>
                 </View>
@@ -405,6 +483,37 @@ export default function BookingsScreen() {
         actions={sheetActions}
         onClose={() => setActiveBooking(null)}
       />
+      <Modal
+        visible={filterPanelVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFilterPanelVisible(false)}
+      >
+        <Pressable style={styles.filterOverlay} onPress={() => setFilterPanelVisible(false)} />
+        <View style={styles.filterPanelWrap} pointerEvents="box-none">
+          <View style={styles.filterPanel}>
+            <AppText variant="body" muted style={styles.filterPanelTitle}>
+              Filtriraj po statusu
+            </AppText>
+            {filterOptions.map((option) => {
+              const selected = option.key === filter;
+              return (
+                <Pressable
+                  key={option.key}
+                  style={styles.filterOption}
+                  onPress={() => {
+                    setFilter(option.key);
+                    setFilterPanelVisible(false);
+                  }}
+                >
+                  <AppText variant="h2">{option.label}</AppText>
+                  {selected && <CheckCircle size={18} color={theme.colors.foreground} />}
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </Modal>
     </AppScreen>
   );
 }

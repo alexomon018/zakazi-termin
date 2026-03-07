@@ -3,25 +3,34 @@ import {
   AppCard,
   AppInput,
   AppText,
+  BottomSheet,
+  type BottomSheetAction,
   ConfirmDialog,
-  SectionHeader,
+  ScreenHeader,
 } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Plus } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  LayoutAnimation,
   Modal,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
+  UIManager,
   View,
 } from "react-native";
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type OOOFormData = {
   uuid?: string;
@@ -41,12 +50,47 @@ const createInitialForm = (): OOOFormData => ({
 
 export default function OutOfOfficeScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<OOOFormData>(createInitialForm);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<{
+    uuid: string;
+    start: string | Date;
+    end: string | Date;
+    reasonId?: string | null;
+    notes?: string | null;
+  } | null>(null);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
+
+  const animateLayout = useCallback(() => {
+    LayoutAnimation.configureNext({
+      duration: 300,
+      create: { type: "easeInEaseOut", property: "opacity" },
+      update: { type: "easeInEaseOut" },
+      delete: { type: "easeInEaseOut", property: "opacity" },
+    });
+  }, []);
+
+  const toggleStartPicker = useCallback(() => {
+    animateLayout();
+    setShowStartPicker((v) => !v);
+    if (!showStartPicker) {
+      animateLayout();
+      setShowEndPicker(false);
+    }
+  }, [showStartPicker, animateLayout]);
+
+  const toggleEndPicker = useCallback(() => {
+    animateLayout();
+    setShowEndPicker((v) => !v);
+    if (!showEndPicker) {
+      animateLayout();
+      setShowStartPicker(false);
+    }
+  }, [showEndPicker, animateLayout]);
 
   const closeForm = () => {
     setShowForm(false);
@@ -107,11 +151,32 @@ export default function OutOfOfficeScreen() {
   const items = listQuery.data?.entries ?? [];
   const reasons = reasonsQuery.data ?? [];
 
+  const sheetActions: BottomSheetAction[] = activeItem
+    ? [
+        {
+          label: "Uredi",
+          icon: <Pencil size={20} color={theme.colors.foreground} />,
+          onPress: () => handleEdit(activeItem),
+        },
+        {
+          label: "Obriši",
+          icon: <Trash2 size={20} color={theme.colors.destructive} />,
+          onPress: () => setDeleteTarget(activeItem.uuid),
+          destructive: true,
+        },
+      ]
+    : [];
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
         list: { flex: 1, backgroundColor: theme.colors.background },
-        listContent: { padding: theme.spacing.lg, gap: theme.spacing.sm, paddingBottom: 100 },
+        listContent: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.sm,
+          paddingBottom: 100,
+        },
         headerRow: {
           flexDirection: "row",
           justifyContent: "space-between",
@@ -124,7 +189,18 @@ export default function OutOfOfficeScreen() {
           padding: theme.spacing.sm,
         },
         centered: { paddingVertical: theme.spacing.xxl, alignItems: "center" },
-        actions: { marginTop: theme.spacing.sm, flexDirection: "row", gap: theme.spacing.sm },
+        cardRow: { flexDirection: "row", alignItems: "center" },
+        cardContent: { flex: 1, gap: 2 },
+        moreButton: {
+          width: 36,
+          height: 36,
+          borderRadius: theme.radius.sm,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          alignItems: "center",
+          justifyContent: "center",
+          marginLeft: theme.spacing.sm,
+        },
         modalContainer: { flex: 1, backgroundColor: theme.colors.background },
         modalHeader: {
           flexDirection: "row",
@@ -148,7 +224,7 @@ export default function OutOfOfficeScreen() {
         reasonRow: { flexDirection: "row", gap: theme.spacing.sm },
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
       }),
-    [theme]
+    [theme, insets.top]
   );
 
   return (
@@ -166,12 +242,19 @@ export default function OutOfOfficeScreen() {
         }
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <View style={styles.headerRow}>
-            <AppText variant="h2">Periodi odsustva</AppText>
-            <Pressable style={styles.addButton} onPress={handleAdd}>
-              <Plus size={20} color={theme.colors.primaryForeground} />
-            </Pressable>
-          </View>
+          <>
+            <ScreenHeader
+              title="Odsustvo"
+              rightContent={
+                <Pressable style={styles.addButton} onPress={handleAdd}>
+                  <Plus size={20} color={theme.colors.primaryForeground} />
+                </Pressable>
+              }
+            />
+            <AppText variant="h2" style={{ marginBottom: theme.spacing.sm }}>
+              Periodi odsustva
+            </AppText>
+          </>
         }
         ListEmptyComponent={
           listQuery.isLoading ? (
@@ -194,30 +277,35 @@ export default function OutOfOfficeScreen() {
           )
         }
         renderItem={({ item }) => {
-          const reason = reasons.find((r: any) => r.id === item.reasonId);
+          const reason = reasons.find((r) => r.id === item.reasonId);
           return (
             <AppCard>
-              <AppText variant="body">
-                {new Date(item.start).toLocaleDateString("sr-RS")} —{" "}
-                {new Date(item.end).toLocaleDateString("sr-RS")}
-              </AppText>
-              {reason && (
-                <AppText variant="bodySm" muted>
-                  {reason.emoji} {reason.reason}
-                </AppText>
-              )}
-              {item.notes && (
-                <AppText variant="caption" muted>
-                  {item.notes}
-                </AppText>
-              )}
-              <View style={styles.actions}>
-                <AppButton label="Uredi" onPress={() => handleEdit(item)} variant="outline" />
-                <AppButton
-                  label="Obriši"
-                  onPress={() => setDeleteTarget(item.uuid)}
-                  variant="destructive"
-                />
+              <View style={styles.cardRow}>
+                <View style={styles.cardContent}>
+                  <AppText variant="body">
+                    {new Date(item.start).toLocaleDateString("sr-RS")} —{" "}
+                    {new Date(item.end).toLocaleDateString("sr-RS")}
+                  </AppText>
+                  {reason && (
+                    <AppText variant="bodySm" muted>
+                      {reason.emoji} {reason.reason}
+                    </AppText>
+                  )}
+                  {item.notes && (
+                    <AppText variant="caption" muted>
+                      {item.notes}
+                    </AppText>
+                  )}
+                </View>
+                <Pressable
+                  style={styles.moreButton}
+                  onPress={() => setActiveItem(item)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Više opcija"
+                >
+                  <MoreHorizontal size={20} color={theme.colors.mutedForeground} />
+                </Pressable>
               </View>
             </AppCard>
           );
@@ -239,16 +327,20 @@ export default function OutOfOfficeScreen() {
           <ScrollView contentContainerStyle={styles.formContent}>
             <View style={styles.formGroup}>
               <AppText variant="bodySm">Početak</AppText>
-              <Pressable style={styles.dateButton} onPress={() => setShowStartPicker(true)}>
+              <Pressable style={styles.dateButton} onPress={toggleStartPicker}>
                 <AppText variant="body">{formData.startDate.toLocaleDateString("sr-RS")}</AppText>
               </Pressable>
               {showStartPicker && (
                 <DateTimePicker
                   value={formData.startDate}
                   mode="date"
+                  display="inline"
                   minimumDate={new Date()}
                   onChange={(_, date) => {
-                    setShowStartPicker(Platform.OS === "ios");
+                    if (Platform.OS !== "ios") {
+                      animateLayout();
+                      setShowStartPicker(false);
+                    }
                     if (date) {
                       setFormData((prev) => ({
                         ...prev,
@@ -263,16 +355,20 @@ export default function OutOfOfficeScreen() {
 
             <View style={styles.formGroup}>
               <AppText variant="bodySm">Kraj</AppText>
-              <Pressable style={styles.dateButton} onPress={() => setShowEndPicker(true)}>
+              <Pressable style={styles.dateButton} onPress={toggleEndPicker}>
                 <AppText variant="body">{formData.endDate.toLocaleDateString("sr-RS")}</AppText>
               </Pressable>
               {showEndPicker && (
                 <DateTimePicker
                   value={formData.endDate}
                   mode="date"
+                  display="inline"
                   minimumDate={formData.startDate}
                   onChange={(_, date) => {
-                    setShowEndPicker(Platform.OS === "ios");
+                    if (Platform.OS !== "ios") {
+                      animateLayout();
+                      setShowEndPicker(false);
+                    }
                     if (date) setFormData((prev) => ({ ...prev, endDate: date }));
                   }}
                 />
@@ -289,7 +385,7 @@ export default function OutOfOfficeScreen() {
                       onPress={() => setFormData((p) => ({ ...p, reasonId: undefined }))}
                       variant={!formData.reasonId ? "primary" : "outline"}
                     />
-                    {reasons.map((reason: any) => (
+                    {reasons.map((reason) => (
                       <AppButton
                         key={reason.id}
                         label={`${reason.emoji} ${reason.reason}`}
@@ -322,6 +418,13 @@ export default function OutOfOfficeScreen() {
           </ScrollView>
         </View>
       </Modal>
+
+      <BottomSheet
+        visible={!!activeItem}
+        title="Opcije"
+        actions={sheetActions}
+        onClose={() => setActiveItem(null)}
+      />
 
       <ConfirmDialog
         visible={!!deleteTarget}

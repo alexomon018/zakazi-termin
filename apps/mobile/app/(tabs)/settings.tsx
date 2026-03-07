@@ -1,58 +1,49 @@
 import { AppScreen, AppText } from "@/components/atoms";
+import { API_URL } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import * as Clipboard from "expo-clipboard";
 import { type Href, router } from "expo-router";
-import { Calendar, ChevronRight, LogOut, Palette, Plane, User, Users } from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import {
+  Calendar,
+  ChevronRight,
+  Copy,
+  HelpCircle,
+  LogOut,
+  Palette,
+  Plane,
+  Users,
+} from "lucide-react-native";
 import type { LucideIcon } from "lucide-react-native";
 import { useMemo } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 type MenuItem = {
   id: string;
   href: Href;
   label: string;
   icon: LucideIcon;
-  description: string;
 };
 
-const BASE_MENU_ITEMS: MenuItem[] = [
-  {
-    id: "profile",
-    href: "/setting/profile",
-    label: "Profil",
-    icon: User,
-    description: "Ime, salon, bio",
-  },
-  {
-    id: "appearance",
-    href: "/setting/appearance",
-    label: "Izgled",
-    icon: Palette,
-    description: "Tema i boje",
-  },
-  {
-    id: "calendar",
-    href: "/setting/calendar",
-    label: "Kalendar",
-    icon: Calendar,
-    description: "Povezani kalendari",
-  },
-  {
-    id: "out-of-office",
-    href: "/setting/out-of-office",
-    label: "Odsustvo",
-    icon: Plane,
-    description: "Periodi nedostupnosti",
-  },
+const ACCOUNT_ITEMS: MenuItem[] = [
+  { id: "appearance", href: "/setting/appearance", label: "Izgled", icon: Palette },
 ];
 
-const TEAM_MENU_ITEM: MenuItem = {
+const INTEGRATION_ITEMS: MenuItem[] = [
+  { id: "calendar", href: "/setting/calendar", label: "Kalendar", icon: Calendar },
+];
+
+const MANAGEMENT_ITEMS: MenuItem[] = [
+  { id: "out-of-office", href: "/setting/out-of-office", label: "Odsustvo", icon: Plane },
+];
+
+const TEAM_ITEM: MenuItem = {
   id: "team",
   href: "/setting/team",
   label: "Tim",
   icon: Users,
-  description: "Upravljanje timom",
 };
 
 export default function SettingsScreen() {
@@ -65,10 +56,15 @@ export default function SettingsScreen() {
   const showTeamMenu =
     !meQuery.isLoading && hasMembership && (role === "OWNER" || role === "ADMIN");
 
-  const menuItems = useMemo(
-    () => (showTeamMenu ? [...BASE_MENU_ITEMS, TEAM_MENU_ITEM] : BASE_MENU_ITEMS),
+  const managementItems = useMemo(
+    () => (showTeamMenu ? [...MANAGEMENT_ITEMS, TEAM_ITEM] : MANAGEMENT_ITEMS),
     [showTeamMenu]
   );
+
+  const name = meQuery.data?.name ?? user?.name ?? "Korisnik";
+  const email = meQuery.data?.email ?? user?.email ?? "";
+  const avatarUrl = user?.avatarUrl;
+  const initial = name.charAt(0).toUpperCase();
 
   const styles = useMemo(
     () =>
@@ -78,7 +74,8 @@ export default function SettingsScreen() {
           gap: theme.spacing.lg,
           paddingBottom: 120,
         },
-        profileCard: {
+        title: { marginBottom: theme.spacing.md },
+        profileRow: {
           flexDirection: "row",
           alignItems: "center",
           gap: theme.spacing.md,
@@ -89,12 +86,13 @@ export default function SettingsScreen() {
           padding: theme.spacing.lg,
         },
         avatar: {
-          width: 48,
-          height: 48,
-          borderRadius: theme.radius.full,
-          backgroundColor: theme.colors.primary,
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: theme.colors.surfaceMuted,
           alignItems: "center",
           justifyContent: "center",
+          overflow: "hidden",
         },
         profileInfo: { flex: 1, gap: 2 },
         menuSection: {
@@ -107,84 +105,143 @@ export default function SettingsScreen() {
         menuItem: {
           flexDirection: "row",
           alignItems: "center",
-          padding: theme.spacing.lg,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
           borderBottomWidth: StyleSheet.hairlineWidth,
           borderBottomColor: theme.colors.border,
           gap: theme.spacing.md,
         },
         menuIconContainer: {
-          width: 36,
-          height: 36,
+          width: 32,
+          height: 32,
           borderRadius: theme.radius.sm,
           backgroundColor: theme.colors.surfaceMuted,
           alignItems: "center",
           justifyContent: "center",
         },
-        menuContent: { flex: 1, gap: 2 },
-        logoutButton: {
+        logoutSection: {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.radius.md,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          overflow: "hidden",
+        },
+        logoutItem: {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
+          paddingVertical: 14,
           gap: theme.spacing.sm,
-          paddingVertical: theme.spacing.md,
         },
       }),
     [theme]
   );
 
+  const renderMenuGroup = (items: MenuItem[]) => (
+    <View style={styles.menuSection}>
+      {items.map((item, index) => (
+        <Pressable
+          key={item.id}
+          style={[styles.menuItem, index === items.length - 1 && { borderBottomWidth: 0 }]}
+          onPress={() => router.push(item.href)}
+        >
+          <View style={styles.menuIconContainer}>
+            <item.icon size={18} color={theme.colors.foreground} />
+          </View>
+          <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
+            {item.label}
+          </AppText>
+          <ChevronRight size={16} color={theme.colors.mutedForeground} />
+        </Pressable>
+      ))}
+    </View>
+  );
+
+  const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName ?? "";
+
+  const copyPublicLink = async () => {
+    const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
+    const link = `${API_URL}/${safeSalonSlug}`;
+    await Clipboard.setStringAsync(link);
+    Alert.alert("Kopirano", "Javni link je kopiran.");
+  };
+
   return (
     <AppScreen>
       <ScrollView contentContainerStyle={styles.content}>
-        <AppText variant="title">Više</AppText>
-
-        <View style={styles.profileCard}>
+        <AppText variant="title" style={styles.title}>
+          Podešavanja
+        </AppText>
+        <Pressable style={styles.profileRow} onPress={() => router.push("/setting/profile")}>
           <View style={styles.avatar}>
-            <AppText variant="h2" style={{ color: theme.colors.primaryForeground }}>
-              {(meQuery.data?.name ?? user?.name ?? "K").charAt(0).toUpperCase()}
-            </AppText>
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={{ width: 44, height: 44, borderRadius: 22 }}
+              />
+            ) : (
+              <Text
+                style={{
+                  fontSize: 17,
+                  fontWeight: "700",
+                  color: theme.colors.foreground,
+                }}
+              >
+                {initial}
+              </Text>
+            )}
           </View>
           <View style={styles.profileInfo}>
             <AppText variant="body" style={{ fontWeight: "600" }}>
-              {meQuery.data?.name ?? user?.name ?? "Korisnik"}
+              {name}
             </AppText>
-            <AppText variant="bodySm" muted>
-              {meQuery.data?.email ?? user?.email ?? ""}
+            <AppText variant="caption" muted>
+              {email}
             </AppText>
-            {meQuery.data?.salonName && (
-              <AppText variant="caption" muted>
-                {meQuery.data.salonName}
-              </AppText>
-            )}
           </View>
-        </View>
+          <ChevronRight size={16} color={theme.colors.mutedForeground} />
+        </Pressable>
+
+        {renderMenuGroup(ACCOUNT_ITEMS)}
+        {renderMenuGroup(INTEGRATION_ITEMS)}
+        {renderMenuGroup(managementItems)}
 
         <View style={styles.menuSection}>
-          {menuItems.map((item, index) => (
-            <Pressable
-              key={item.id}
-              style={[styles.menuItem, index === menuItems.length - 1 && { borderBottomWidth: 0 }]}
-              onPress={() => router.push(item.href)}
-            >
-              <View style={styles.menuIconContainer}>
-                <item.icon size={20} color={theme.colors.foreground} />
-              </View>
-              <View style={styles.menuContent}>
-                <AppText variant="body">{item.label}</AppText>
-                <AppText variant="caption" muted>
-                  {item.description}
-                </AppText>
-              </View>
-              <ChevronRight size={18} color={theme.colors.mutedForeground} />
-            </Pressable>
-          ))}
+          <Pressable
+            style={[styles.menuItem, { borderBottomWidth: StyleSheet.hairlineWidth }]}
+            onPress={copyPublicLink}
+          >
+            <View style={styles.menuIconContainer}>
+              <Copy size={18} color={theme.colors.foreground} />
+            </View>
+            <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
+              Kopiraj javni link
+            </AppText>
+            <ChevronRight size={16} color={theme.colors.mutedForeground} />
+          </Pressable>
+          <Pressable
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/help`)}
+          >
+            <View style={styles.menuIconContainer}>
+              <HelpCircle size={18} color={theme.colors.foreground} />
+            </View>
+            <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
+              Pomoć
+            </AppText>
+            <ChevronRight size={16} color={theme.colors.mutedForeground} />
+          </Pressable>
         </View>
 
-        <Pressable style={styles.logoutButton} onPress={logout}>
-          <LogOut size={18} color={theme.colors.destructive} />
-          <AppText variant="body" style={{ color: theme.colors.destructive, fontWeight: "500" }}>
-            Odjavite se
-          </AppText>
-        </Pressable>
+        {/* Logout */}
+        <View style={styles.logoutSection}>
+          <Pressable style={styles.logoutItem} onPress={logout}>
+            <LogOut size={18} color={theme.colors.destructive} />
+            <AppText variant="body" style={{ color: theme.colors.destructive, fontWeight: "500" }}>
+              Odjavite se
+            </AppText>
+          </Pressable>
+        </View>
 
         <AppText variant="caption" muted centered>
           Salonko v1.0.0

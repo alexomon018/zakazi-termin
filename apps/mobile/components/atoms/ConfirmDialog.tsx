@@ -1,5 +1,5 @@
 import { useTheme } from "@/lib/theme-context";
-import { ActivityIndicator, Modal, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 export function ConfirmDialog({
   visible,
@@ -42,45 +42,53 @@ export function ConfirmDialog({
           style={{
             backgroundColor: theme.colors.surface,
             borderRadius: theme.radius.lg,
-            padding: theme.spacing.xl,
             width: "100%",
             maxWidth: 340,
+            overflow: "hidden",
           }}
         >
-          <Text
-            style={{
-              fontSize: theme.typography.h2,
-              fontWeight: "600",
-              color: theme.colors.foreground,
-              marginBottom: theme.spacing.sm,
-            }}
-          >
-            {title}
-          </Text>
-          <Text
-            style={{
-              fontSize: theme.typography.body,
-              color: theme.colors.mutedForeground,
-              marginBottom: theme.spacing.xl,
-              lineHeight: 22,
-            }}
-          >
-            {message}
-          </Text>
+          {/* Header + Content */}
+          <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }}>
+            <Text
+              style={{
+                fontSize: theme.typography.h1,
+                fontWeight: "600",
+                color: theme.colors.foreground,
+                marginBottom: 6,
+              }}
+            >
+              {title}
+            </Text>
+            <Text
+              style={{
+                fontSize: theme.typography.bodySm,
+                color: theme.colors.mutedForeground,
+                lineHeight: 18,
+              }}
+            >
+              {message}
+            </Text>
+          </View>
+
+          {/* Footer */}
           <View
             style={{
               flexDirection: "row",
               gap: theme.spacing.sm,
-              justifyContent: "flex-end",
+              paddingHorizontal: 24,
+              paddingVertical: 14,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              borderTopColor: theme.colors.border,
             }}
           >
             <Pressable
               style={{
-                paddingVertical: theme.spacing.sm,
-                paddingHorizontal: theme.spacing.lg,
+                flex: 1,
+                paddingVertical: 10,
                 borderRadius: theme.radius.sm,
                 borderWidth: 1,
                 borderColor: theme.colors.border,
+                alignItems: "center",
               }}
               onPress={onCancel}
               disabled={loading}
@@ -97,10 +105,11 @@ export function ConfirmDialog({
             </Pressable>
             <Pressable
               style={{
-                paddingVertical: theme.spacing.sm,
-                paddingHorizontal: theme.spacing.lg,
+                flex: 1,
+                paddingVertical: 10,
                 borderRadius: theme.radius.sm,
                 backgroundColor: destructive ? theme.colors.destructive : theme.colors.primary,
+                alignItems: "center",
               }}
               onPress={onConfirm}
               disabled={loading}

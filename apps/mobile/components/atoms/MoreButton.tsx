@@ -12,8 +12,9 @@ export function MoreButton({ onPress }: { onPress: () => void }) {
       style={{
         width: 36,
         height: 36,
-        borderRadius: theme.radius.full,
-        backgroundColor: theme.colors.surfaceMuted,
+        borderRadius: theme.radius.sm,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
         alignItems: "center",
         justifyContent: "center",
       }}

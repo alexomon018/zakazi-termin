@@ -1,4 +1,11 @@
-import { AppButton, AppInput, AppText, ConfirmDialog, SectionHeader } from "@/components/atoms";
+import {
+  AppButton,
+  AppInput,
+  AppText,
+  ConfirmDialog,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
 import { DayAvailabilityRow, type TimeRange } from "@/components/molecules/DayAvailabilityRow";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
@@ -15,6 +22,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Ponedeljak" },
@@ -39,7 +47,19 @@ type DateOverride = {
   isBlocked: boolean;
 };
 
-function initializeEditorState(schedule: any): EditorState {
+type ScheduleAvailabilityEntry = {
+  days: number[] | null;
+  date: string | null;
+  startTime: Date;
+  endTime: Date;
+};
+
+type ScheduleData = {
+  name: string;
+  availability: ScheduleAvailabilityEntry[];
+};
+
+function initializeEditorState(schedule: ScheduleData): EditorState {
   const state: EditorState = {};
   for (const day of DAYS_OF_WEEK) {
     state[day.value] = {
@@ -48,9 +68,7 @@ function initializeEditorState(schedule: any): EditorState {
     };
   }
 
-  const workingHours = schedule.availability.filter(
-    (a: any) => a.days && a.days.length > 0 && !a.date
-  );
+  const workingHours = schedule.availability.filter((a) => a.days && a.days.length > 0 && !a.date);
 
   for (const entry of workingHours) {
     const startTime = formatTimeUTC(entry.startTime);
@@ -67,10 +85,10 @@ function initializeEditorState(schedule: any): EditorState {
   return state;
 }
 
-function extractDateOverrides(schedule: any): DateOverride[] {
+function extractDateOverrides(schedule: ScheduleData): DateOverride[] {
   return schedule.availability
-    .filter((a: any) => a.date !== null)
-    .map((a: any) => ({
+    .filter((a) => a.date !== null)
+    .map((a) => ({
       date: new Date(a.date),
       startTime: formatTimeUTC(a.startTime),
       endTime: formatTimeUTC(a.endTime),
@@ -81,6 +99,7 @@ function extractDateOverrides(schedule: any): DateOverride[] {
 
 export default function ScheduleEditorScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const utils = trpc.useUtils();
 
@@ -225,6 +244,8 @@ export default function ScheduleEditorScreen() {
     removeDateOverrideMutation.mutate({ scheduleId: id!, date });
   };
 
+  const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -233,9 +254,25 @@ export default function ScheduleEditorScreen() {
           backgroundColor: theme.colors.background,
         },
         content: {
-          padding: theme.spacing.lg,
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
           gap: theme.spacing.md,
           paddingBottom: 100,
+        },
+        chip: {
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 16,
+        },
+        saveChip: {
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          opacity: isSaving ? 0.7 : 1,
         },
         card: {
           backgroundColor: theme.colors.surface,
@@ -261,7 +298,7 @@ export default function ScheduleEditorScreen() {
           borderBottomColor: theme.colors.border,
         },
       }),
-    [theme]
+    [theme, insets.top, isSaving]
   );
 
   if (scheduleQuery.isLoading) {
@@ -283,8 +320,6 @@ export default function ScheduleEditorScreen() {
     );
   }
 
-  const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
-
   return (
     <>
       <ScrollView
@@ -292,6 +327,32 @@ export default function ScheduleEditorScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        <ScreenHeader
+          title={scheduleName.trim() || "Uredi raspored"}
+          rightContent={
+            <>
+              <View style={styles.chip}>
+                <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+                  Radno vreme
+                </AppText>
+              </View>
+              <Pressable
+                style={[styles.chip, styles.saveChip]}
+                onPress={handleSave}
+                disabled={isSaving || (!hasChanges && scheduleName === scheduleQuery.data?.name)}
+                accessibilityRole="button"
+                accessibilityLabel="Sačuvaj"
+              >
+                <AppText
+                  variant="bodySm"
+                  style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+                >
+                  {isSaving ? "Čuvanje..." : "Sačuvaj"}
+                </AppText>
+              </Pressable>
+            </>
+          }
+        />
         <SectionHeader title="Naziv rasporeda" />
         <View style={styles.card}>
           <AppInput
@@ -392,13 +453,6 @@ export default function ScheduleEditorScreen() {
             )}
           </>
         )}
-
-        <AppButton
-          label="Sačuvaj raspored"
-          onPress={handleSave}
-          loading={isSaving}
-          disabled={!hasChanges && scheduleName === scheduleQuery.data?.name}
-        />
 
         {!isDefault && (
           <AppButton

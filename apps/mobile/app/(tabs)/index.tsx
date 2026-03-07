@@ -5,23 +5,20 @@ import {
   type BottomSheetAction,
   ConfirmDialog,
   FAB,
-  MoreButton,
-  SearchBar,
-  uiStyles,
 } from "@/components/atoms";
 import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
-import { Copy, Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react-native";
+import { Clock, Copy, Eye, EyeOff, Menu, Pencil, Plus, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
@@ -29,14 +26,16 @@ import {
 export default function EventTypesScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
-  const [search, setSearch] = useState("");
   const [activeItem, setActiveItem] = useState<{
     id: string;
     title: string;
     slug: string;
     hidden: boolean;
   } | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   const eventsQuery = trpc.eventType.list.useQuery(undefined, { retry: false });
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
@@ -57,11 +56,7 @@ export default function EventTypesScreen() {
   const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName ?? "";
 
   const allItems = eventsQuery.data?.items ?? [];
-  const items = useMemo(() => {
-    if (!search.trim()) return allItems;
-    const q = search.toLowerCase();
-    return allItems.filter((item: { title: string }) => item.title.toLowerCase().includes(q));
-  }, [allItems, search]);
+  const items = useMemo(() => allItems, [allItems]);
 
   const handleCopyLink = async (slug: string) => {
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
@@ -90,7 +85,11 @@ export default function EventTypesScreen() {
           ) : (
             <EyeOff size={20} color={theme.colors.foreground} />
           ),
-          onPress: () => toggleMutation.mutate({ id: activeItem.id, hidden: !activeItem.hidden }),
+          onPress: () =>
+            toggleMutation.mutate({
+              id: activeItem.id,
+              hidden: !activeItem.hidden,
+            }),
         },
         {
           label: "Obriši",
@@ -104,42 +103,208 @@ export default function EventTypesScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        header: { gap: theme.spacing.md, marginBottom: theme.spacing.lg },
-        listContent: { padding: theme.spacing.lg, paddingBottom: 140 },
-        listItem: {
-          flexDirection: "row",
-          alignItems: "center",
-          paddingVertical: theme.spacing.md,
+        content: {
+          padding: theme.spacing.lg,
+          paddingBottom: 140,
           gap: theme.spacing.md,
         },
-        listItemContent: { flex: 1, gap: theme.spacing.xs },
-        durationBadge: {
-          paddingHorizontal: theme.spacing.sm,
-          paddingVertical: 2,
+        topBar: {
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          marginBottom: theme.spacing.md,
+        },
+        topControls: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+          borderWidth: 1,
           borderRadius: theme.radius.full,
+          paddingVertical: 6,
+          paddingHorizontal: 10,
+        },
+        menuButton: {
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        title: { marginBottom: theme.spacing.md },
+        cardContainer: {
+          borderRadius: theme.radius.lg,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          overflow: "hidden",
+        },
+        listItem: {
+          flexDirection: "row",
+          alignItems: "flex-start",
+          paddingHorizontal: 18,
+          paddingVertical: 16,
+          gap: theme.spacing.md,
+        },
+        listItemContent: { flex: 1, gap: 5 },
+        badgeRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          marginTop: 4,
+        },
+        badge: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 4,
+          paddingHorizontal: 8,
+          paddingVertical: 3,
+          borderRadius: 6,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
           backgroundColor: theme.colors.surfaceMuted,
         },
-        hiddenBadge: { backgroundColor: `${theme.colors.destructive}10` },
+        hiddenBadge: {
+          borderColor: theme.colors.destructive,
+          backgroundColor: `${theme.colors.destructive}15`,
+        },
         separator: {
           height: StyleSheet.hairlineWidth,
           backgroundColor: theme.colors.border,
+          marginLeft: 18,
+        },
+        rowMoreButton: {
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surfaceMuted,
+          alignItems: "center",
+          justifyContent: "center",
         },
         centered: {
-          flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          paddingVertical: theme.spacing.xxl,
+          paddingVertical: theme.spacing.xxl * 2,
           gap: theme.spacing.sm,
         },
       }),
     [theme]
   );
 
+  const renderContent = () => {
+    if (eventsQuery.isLoading) {
+      return (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      );
+    }
+
+    if (eventsQuery.isError) {
+      return (
+        <View style={styles.centered}>
+          <AppText variant="h2" centered>
+            Greška pri učitavanju
+          </AppText>
+          <AppText variant="bodySm" centered muted>
+            Došlo je do greške prilikom učitavanja usluga.
+          </AppText>
+          <Pressable onPress={() => eventsQuery.refetch()}>
+            <AppText
+              variant="bodySm"
+              centered
+              style={{
+                color: theme.colors.primary,
+                marginTop: theme.spacing.sm,
+              }}
+            >
+              Pokušajte ponovo
+            </AppText>
+          </Pressable>
+        </View>
+      );
+    }
+
+    if (items.length === 0) {
+      return (
+        <View style={styles.centered}>
+          <AppText variant="h2" centered>
+            Nema usluga
+          </AppText>
+          <AppText variant="bodySm" centered muted>
+            Kreirajte prvu uslugu koristeći + dugme.
+          </AppText>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.cardContainer}>
+        {items.map((item, index) => (
+          <View key={item.id}>
+            {index > 0 && <View style={styles.separator} />}
+            <Pressable
+              style={styles.listItem}
+              onPress={() => router.push(`/event-type/${item.id}`)}
+            >
+              <View style={styles.listItemContent}>
+                <AppText variant="body" style={{ fontWeight: "600" }}>
+                  {item.title}
+                </AppText>
+                {salonSlug && (
+                  <AppText variant="bodySm" muted>
+                    {salonSlug}/{item.slug}
+                  </AppText>
+                )}
+                <View style={styles.badgeRow}>
+                  <View style={styles.badge}>
+                    <Clock size={12} color={theme.colors.mutedForeground} />
+                    <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+                      {item.length}m
+                    </AppText>
+                  </View>
+                  {item.hidden && (
+                    <View style={[styles.badge, styles.hiddenBadge]}>
+                      <EyeOff size={12} color={theme.colors.destructive} />
+                      <AppText
+                        variant="bodySm"
+                        style={{
+                          fontWeight: "500",
+                          color: theme.colors.destructive,
+                        }}
+                      >
+                        Skriveno
+                      </AppText>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <Pressable
+                style={styles.rowMoreButton}
+                onPress={() =>
+                  setActiveItem({
+                    id: item.id,
+                    title: item.title,
+                    slug: item.slug,
+                    hidden: item.hidden,
+                  })
+                }
+              >
+                <Menu size={18} color={theme.colors.mutedForeground} />
+              </Pressable>
+            </Pressable>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   return (
     <AppScreen>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
+      <ScrollView
+        contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
             refreshing={eventsQuery.isRefetching}
@@ -147,86 +312,23 @@ export default function EventTypesScreen() {
             tintColor={theme.colors.primary}
           />
         }
-        contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <AppText variant="title">Usluge</AppText>
-            <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži usluge" />
+      >
+        <View style={styles.topBar}>
+          <View style={styles.topControls}>
+            <Pressable style={styles.menuButton} onPress={() => router.push("/(tabs)/settings")}>
+              <Menu size={20} color={theme.colors.foreground} />
+            </Pressable>
           </View>
-        }
-        ListEmptyComponent={
-          eventsQuery.isLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
-          ) : eventsQuery.isError ? (
-            <View style={styles.centered}>
-              <AppText variant="h2" centered>
-                Greška pri učitavanju
-              </AppText>
-              <AppText variant="bodySm" centered muted>
-                Došlo je do greške prilikom učitavanja usluga.
-              </AppText>
-              <Pressable onPress={() => eventsQuery.refetch()}>
-                <AppText
-                  variant="bodySm"
-                  centered
-                  style={{ color: theme.colors.primary, marginTop: theme.spacing.sm }}
-                >
-                  Pokušajte ponovo
-                </AppText>
-              </Pressable>
-            </View>
-          ) : (
-            <View style={styles.centered}>
-              <AppText variant="h2" centered>
-                Nema usluga
-              </AppText>
-              <AppText variant="bodySm" centered muted>
-                Kreirajte prvu uslugu koristeći + dugme.
-              </AppText>
-            </View>
-          )
-        }
-        renderItem={({ item }) => (
-          <Pressable style={styles.listItem} onPress={() => router.push(`/event-type/${item.id}`)}>
-            <View style={styles.listItemContent}>
-              <AppText variant="body" style={{ fontWeight: "500" }}>
-                {item.title}
-              </AppText>
-              <View style={[uiStyles.row, { gap: theme.spacing.sm }]}>
-                <View style={styles.durationBadge}>
-                  <AppText variant="caption" muted>
-                    {item.length} min
-                  </AppText>
-                </View>
-                {item.hidden && (
-                  <View style={[styles.durationBadge, styles.hiddenBadge]}>
-                    <AppText variant="caption" style={{ color: theme.colors.destructive }}>
-                      Skriveno
-                    </AppText>
-                  </View>
-                )}
-              </View>
-            </View>
-            <MoreButton
-              onPress={() =>
-                setActiveItem({
-                  id: item.id,
-                  title: item.title,
-                  slug: item.slug,
-                  hidden: item.hidden,
-                })
-              }
-            />
-          </Pressable>
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+        </View>
+        <AppText variant="title" style={styles.title}>
+          Moje usluge
+        </AppText>
+        {renderContent()}
+      </ScrollView>
 
       <FAB
         onPress={() => router.push("/event-type/new")}
-        icon={<Plus size={20} color={theme.colors.primaryForeground} />}
+        icon={<Plus size={28} color={theme.colors.primaryForeground} />}
         accessibilityLabel="Novi tip termina"
       />
 

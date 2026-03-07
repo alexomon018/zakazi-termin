@@ -72,7 +72,7 @@ export default function NewEventTypeScreen() {
     );
   }
 
-  const schedules = (schedulesQuery.data ?? []).map((s: any) => ({
+  const schedules = (schedulesQuery.data ?? []).map((s) => ({
     id: s.id,
     name: s.name,
   }));
@@ -83,8 +83,10 @@ export default function NewEventTypeScreen() {
       errors={errors}
       schedules={schedules}
       isPending={createMutation.isPending}
-      submitLabel="Kreiraj uslugu"
+      submitLabel="Kreiraj"
       submitError={createMutation.error?.message}
+      headerTitle="Nova usluga"
+      onBackPress={() => router.back()}
       onFormDataChange={setFormData}
       onSubmit={handleSubmit}
     />

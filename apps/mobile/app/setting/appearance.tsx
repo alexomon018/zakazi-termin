@@ -1,9 +1,10 @@
-import { AppCard, AppText, SectionHeader } from "@/components/atoms";
+import { AppCard, AppText, ScreenHeader, SectionHeader } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { Check } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const THEMES = [
   { value: "light", label: "Svetla" },
@@ -24,6 +25,7 @@ const BRAND_COLORS = [
 
 export default function AppearanceSettingsScreen() {
   const { theme, preference, setPreference } = useTheme();
+  const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
   const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
 
@@ -69,7 +71,12 @@ export default function AppearanceSettingsScreen() {
     () =>
       StyleSheet.create({
         scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.md,
+          paddingBottom: 100,
+        },
         themeRow: { gap: theme.spacing.sm },
         themeOption: {
           flexDirection: "row",
@@ -103,7 +110,7 @@ export default function AppearanceSettingsScreen() {
           borderColor: theme.colors.foreground,
         },
       }),
-    [theme]
+    [theme, insets.top]
   );
 
   if (meQuery.isLoading) {
@@ -126,6 +133,7 @@ export default function AppearanceSettingsScreen() {
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScreenHeader title="Izgled" />
       <SectionHeader title="Tema" />
       <AppCard>
         <View style={styles.themeRow}>

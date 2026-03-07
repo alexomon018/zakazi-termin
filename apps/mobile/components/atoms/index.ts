@@ -12,4 +12,5 @@ export { MoreButton } from "./MoreButton";
 export { FAB } from "./FAB";
 export { FilterChip } from "./FilterChip";
 export { InputDialog } from "./InputDialog";
+export { ScreenHeader } from "./ScreenHeader";
 export { uiStyles } from "./uiStyles";

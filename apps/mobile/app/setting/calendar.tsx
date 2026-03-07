@@ -1,13 +1,31 @@
-import { AppButton, AppCard, AppText, ConfirmDialog, SectionHeader } from "@/components/atoms";
+import {
+  AppButton,
+  AppCard,
+  AppText,
+  ConfirmDialog,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
 import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, AppState, ScrollView, StyleSheet, Switch, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+type CalendarConnection = {
+  id: string;
+  type: string;
+  createdAt: Date;
+  calendarsCount: number;
+  email?: string;
+  calendars?: { externalId: string; name: string; selected: boolean }[];
+};
 
 export default function CalendarSettingsScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
 
@@ -49,7 +67,12 @@ export default function CalendarSettingsScreen() {
     () =>
       StyleSheet.create({
         scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.md,
+          paddingBottom: 100,
+        },
         centered: {
           flex: 1,
           justifyContent: "center",
@@ -70,7 +93,7 @@ export default function CalendarSettingsScreen() {
         },
         actions: { marginTop: theme.spacing.md },
       }),
-    [theme]
+    [theme, insets.top]
   );
 
   if (connectionsQuery.isLoading) {
@@ -96,11 +119,12 @@ export default function CalendarSettingsScreen() {
     );
   }
 
-  const connections = connectionsQuery.data ?? [];
+  const connections = (connectionsQuery.data ?? []) as CalendarConnection[];
 
   return (
     <>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        <ScreenHeader title="Kalendar" />
         <SectionHeader title="Povezani kalendari" />
 
         {connections.length === 0 ? (
@@ -114,7 +138,7 @@ export default function CalendarSettingsScreen() {
             </View>
           </AppCard>
         ) : (
-          connections.map((conn: any) => (
+          connections.map((conn) => (
             <AppCard key={conn.id}>
               <View style={styles.connectionHeader}>
                 <View style={{ flex: 1 }}>
@@ -135,7 +159,7 @@ export default function CalendarSettingsScreen() {
                   <AppText variant="caption" muted>
                     Kalendari za proveru dostupnosti:
                   </AppText>
-                  {conn.calendars.map((cal: any) => (
+                  {conn.calendars.map((cal) => (
                     <View key={cal.externalId} style={styles.calendarRow}>
                       <Switch
                         value={cal.selected}

@@ -1,7 +1,7 @@
 const lightColors = {
-  background: "#F9FAFB",
+  background: "#F5F5F0",
   surface: "#ffffff",
-  surfaceMuted: "#F1F5F9",
+  surfaceMuted: "#EEEDE8",
   foreground: "#0f172a",
   mutedForeground: "#64748b",
   primary: "#0f172a",
@@ -32,27 +32,42 @@ const darkColors = {
 
 export const spacing = {
   xs: 4,
-  sm: 8,
+  sm: 6,
   md: 12,
   lg: 16,
-  xl: 24,
+  xl: 20,
   xxl: 32,
 } as const;
 
 export const radius = {
   sm: 8,
-  md: 12,
+  md: 10,
   lg: 16,
+  xl: 20,
   full: 999,
 } as const;
 
+export const fontFamily = {
+  heading: {
+    regular: "Lato_400Regular",
+    bold: "Lato_700Bold",
+    black: "Lato_900Black",
+  },
+  body: {
+    regular: "OpenSans_400Regular",
+    medium: "OpenSans_500Medium",
+    semiBold: "OpenSans_600SemiBold",
+    bold: "OpenSans_700Bold",
+  },
+} as const;
+
 export const typography = {
-  title: 28,
-  h1: 24,
-  h2: 20,
-  body: 16,
-  bodySm: 14,
-  caption: 12,
+  title: 24,
+  h1: 20,
+  h2: 17,
+  body: 15,
+  bodySm: 13,
+  caption: 11,
 } as const;
 
 const lightShadow = {
