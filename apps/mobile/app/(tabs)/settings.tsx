@@ -1,5 +1,5 @@
 import { AppScreen, AppText } from "@/components/atoms";
-import { API_URL } from "@/lib/api-url";
+import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
@@ -28,15 +28,30 @@ type MenuItem = {
 };
 
 const ACCOUNT_ITEMS: MenuItem[] = [
-  { id: "appearance", href: "/setting/appearance", label: "Izgled", icon: Palette },
+  {
+    id: "appearance",
+    href: "/setting/appearance",
+    label: "Izgled",
+    icon: Palette,
+  },
 ];
 
 const INTEGRATION_ITEMS: MenuItem[] = [
-  { id: "calendar", href: "/setting/calendar", label: "Kalendar", icon: Calendar },
+  {
+    id: "calendar",
+    href: "/setting/calendar",
+    label: "Kalendar",
+    icon: Calendar,
+  },
 ];
 
 const MANAGEMENT_ITEMS: MenuItem[] = [
-  { id: "out-of-office", href: "/setting/out-of-office", label: "Odsustvo", icon: Plane },
+  {
+    id: "out-of-office",
+    href: "/setting/out-of-office",
+    label: "Odsustvo",
+    icon: Plane,
+  },
 ];
 
 const TEAM_ITEM: MenuItem = {
@@ -63,7 +78,7 @@ export default function SettingsScreen() {
 
   const name = meQuery.data?.name ?? user?.name ?? "Korisnik";
   const email = meQuery.data?.email ?? user?.email ?? "";
-  const avatarUrl = user?.avatarUrl;
+  const avatarUrl = meQuery.data?.avatarUrl ?? user?.avatarUrl;
   const initial = name.charAt(0).toUpperCase();
 
   const styles = useMemo(
@@ -157,11 +172,11 @@ export default function SettingsScreen() {
     </View>
   );
 
-  const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName ?? "";
+  const salonSlug = meQuery.data?.salonSlug ?? "";
 
   const copyPublicLink = async () => {
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
-    const link = `${API_URL}/${safeSalonSlug}`;
+    const link = `${WEB_ORIGIN}/${safeSalonSlug}`;
     await Clipboard.setStringAsync(link);
     Alert.alert("Kopirano", "Javni link je kopiran.");
   };

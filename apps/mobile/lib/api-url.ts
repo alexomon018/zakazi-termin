@@ -37,3 +37,6 @@ function getApiUrl(): string {
 }
 
 export const API_URL = getApiUrl();
+
+/** The web app's public origin — same as API_URL since Next.js serves both. */
+export const WEB_ORIGIN = API_URL;

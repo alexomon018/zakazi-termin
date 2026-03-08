@@ -114,7 +114,6 @@ export default function ProfileSettingsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <ScreenHeader title="Profil" />
-        <SectionHeader title="Profil" />
         <AppCard>
           <View style={styles.formGroup}>
             <AppText variant="bodySm">Ime</AppText>

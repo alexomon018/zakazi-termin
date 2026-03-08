@@ -99,7 +99,9 @@ export default function OutOfOfficeScreen() {
   };
 
   const listQuery = trpc.outOfOffice.list.useQuery(undefined, { retry: false });
-  const reasonsQuery = trpc.outOfOffice.reasons.useQuery(undefined, { retry: false });
+  const reasonsQuery = trpc.outOfOffice.reasons.useQuery(undefined, {
+    retry: false,
+  });
 
   const createOrUpdateMutation = trpc.outOfOffice.createOrUpdate.useMutation({
     onSuccess: async () => {
@@ -246,7 +248,13 @@ export default function OutOfOfficeScreen() {
             <ScreenHeader
               title="Odsustvo"
               rightContent={
-                <Pressable style={styles.addButton} onPress={handleAdd}>
+                <Pressable
+                  style={styles.addButton}
+                  onPress={handleAdd}
+                  accessibilityRole="button"
+                  accessibilityLabel="Dodaj odsustvo"
+                  hitSlop={8}
+                >
                   <Plus size={20} color={theme.colors.primaryForeground} />
                 </Pressable>
               }
@@ -302,7 +310,7 @@ export default function OutOfOfficeScreen() {
                   onPress={() => setActiveItem(item)}
                   hitSlop={8}
                   accessibilityRole="button"
-                  accessibilityLabel="Više opcija"
+                  accessibilityLabel={`Više opcija za odsustvo od ${new Date(item.start).toLocaleDateString("sr-RS")} do ${new Date(item.end).toLocaleDateString("sr-RS")}`}
                 >
                   <MoreHorizontal size={20} color={theme.colors.mutedForeground} />
                 </Pressable>
@@ -334,7 +342,7 @@ export default function OutOfOfficeScreen() {
                 <DateTimePicker
                   value={formData.startDate}
                   mode="date"
-                  display="inline"
+                  display={Platform.OS === "ios" ? "inline" : "default"}
                   minimumDate={new Date()}
                   onChange={(_, date) => {
                     if (Platform.OS !== "ios") {
@@ -362,7 +370,7 @@ export default function OutOfOfficeScreen() {
                 <DateTimePicker
                   value={formData.endDate}
                   mode="date"
-                  display="inline"
+                  display={Platform.OS === "ios" ? "inline" : "default"}
                   minimumDate={formData.startDate}
                   onChange={(_, date) => {
                     if (Platform.OS !== "ios") {

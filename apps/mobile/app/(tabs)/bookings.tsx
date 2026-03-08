@@ -8,7 +8,7 @@ import {
   SearchBar,
   SectionDateHeader,
 } from "@/components/atoms";
-import { API_URL } from "@/lib/api-url";
+import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
@@ -466,12 +466,12 @@ export default function BookingsScreen() {
 
       <FAB
         onPress={() => {
-          const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName;
+          const salonSlug = meQuery.data?.salonSlug;
           if (!salonSlug) {
             Alert.alert("Informacija", "Za zakazivanje termina koristite stranicu za rezervacije.");
             return;
           }
-          WebBrowser.openBrowserAsync(`${API_URL}/${encodeURIComponent(salonSlug)}`);
+          WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/${encodeURIComponent(salonSlug)}`);
         }}
         icon={<CalendarPlus size={20} color={theme.colors.primaryForeground} />}
         label="Zakaži termin"

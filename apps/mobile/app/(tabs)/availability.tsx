@@ -300,7 +300,13 @@ export default function AvailabilityScreen() {
                     </AppText>
                   </View>
                 </View>
-                <Pressable style={styles.rowMoreButton} onPress={() => setActiveSchedule(item)}>
+                <Pressable
+                  style={styles.rowMoreButton}
+                  onPress={() => setActiveSchedule(item)}
+                  accessibilityLabel="Open schedule actions"
+                  accessibilityHint="Opens a menu with actions for this schedule"
+                  accessibilityRole="button"
+                >
                   <MoreHorizontal size={18} color={theme.colors.mutedForeground} />
                 </Pressable>
               </Pressable>
@@ -325,7 +331,13 @@ export default function AvailabilityScreen() {
       >
         <View style={styles.topBar}>
           <View style={styles.topControls}>
-            <Pressable style={styles.iconButton} onPress={() => setCreateDialogVisible(true)}>
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => setCreateDialogVisible(true)}
+              accessibilityLabel="Create schedule"
+              accessibilityHint="Opens a dialog to create a new schedule"
+              accessibilityRole="button"
+            >
               <Plus size={22} color={theme.colors.foreground} />
             </Pressable>
           </View>

@@ -339,7 +339,9 @@ export default function ScheduleEditorScreen() {
               <Pressable
                 style={[styles.chip, styles.saveChip]}
                 onPress={handleSave}
-                disabled={isSaving || (!hasChanges && scheduleName === scheduleQuery.data?.name)}
+                disabled={
+                  isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name)
+                }
                 accessibilityRole="button"
                 accessibilityLabel="Sačuvaj"
               >

@@ -229,7 +229,13 @@ export function EventTypeForm({
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.topRow}>
-        <Pressable style={styles.backButton} onPress={onBackPress}>
+        <Pressable
+          style={styles.backButton}
+          onPress={onBackPress}
+          accessibilityRole="button"
+          accessibilityLabel="Nazad"
+          hitSlop={8}
+        >
           <ChevronLeft size={20} color={theme.colors.foreground} />
         </Pressable>
         <AppText variant="h2" style={styles.titleText}>
@@ -384,7 +390,10 @@ export function EventTypeForm({
             <Switch
               value={formData.requiresConfirmation}
               onValueChange={(v) => updateField("requiresConfirmation", v)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.accent,
+              }}
             />
           </View>
         </View>
@@ -397,7 +406,10 @@ export function EventTypeForm({
             <Switch
               value={formData.hidden}
               onValueChange={(v) => updateField("hidden", v)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.accent,
+              }}
             />
           </View>
         </View>

@@ -19,7 +19,7 @@ SplashScreen.preventAutoHideAsync();
 function RootLayoutNav() {
   const { isLoading } = useAuth();
   const { theme, colorScheme } = useTheme();
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Lato_400Regular,
     Lato_700Bold,
     Lato_900Black,
@@ -30,12 +30,12 @@ function RootLayoutNav() {
   });
 
   useEffect(() => {
-    if (!isLoading && fontsLoaded) {
-      SplashScreen.hideAsync();
+    if (!isLoading && (fontsLoaded || fontError)) {
+      void SplashScreen.hideAsync();
     }
-  }, [isLoading, fontsLoaded]);
+  }, [isLoading, fontsLoaded, fontError]);
 
-  if (isLoading || !fontsLoaded) {
+  if (isLoading || (!fontsLoaded && !fontError)) {
     return null;
   }
 
