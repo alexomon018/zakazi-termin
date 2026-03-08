@@ -3,26 +3,20 @@ import {
   AppInput,
   AppText,
   ConfirmDialog,
+  QueryStateView,
   ScreenHeader,
   SectionHeader,
 } from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { DayAvailabilityRow, type TimeRange } from "@/components/molecules/DayAvailabilityRow";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Ponedeljak" },
@@ -99,7 +93,6 @@ function extractDateOverrides(schedule: ScheduleData): DateOverride[] {
 
 export default function ScheduleEditorScreen() {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const utils = trpc.useUtils();
 
@@ -107,7 +100,7 @@ export default function ScheduleEditorScreen() {
     { id: id! },
     { retry: false, enabled: !!id }
   );
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const [scheduleName, setScheduleName] = useState("");
   const [days, setDays] = useState<EditorState>({});
@@ -249,16 +242,6 @@ export default function ScheduleEditorScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: {
-          flex: 1,
-          backgroundColor: theme.colors.background,
-        },
-        content: {
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.sm,
-          gap: theme.spacing.md,
-          paddingBottom: 100,
-        },
         chip: {
           height: 40,
           borderRadius: 20,
@@ -282,13 +265,6 @@ export default function ScheduleEditorScreen() {
           padding: theme.spacing.lg,
           gap: theme.spacing.sm,
         },
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-          gap: theme.spacing.md,
-        },
         overrideRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -298,35 +274,26 @@ export default function ScheduleEditorScreen() {
           borderBottomColor: theme.colors.border,
         },
       }),
-    [theme, insets.top, isSaving]
+    [theme, isSaving]
   );
 
   if (scheduleQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (scheduleQuery.error || !scheduleQuery.data) {
     return (
-      <View style={styles.centered}>
-        <AppText variant="bodySm" muted centered>
-          Nije moguće učitati raspored.
-        </AppText>
-        <AppButton label="Nazad" onPress={() => router.back()} variant="outline" />
-      </View>
+      <QueryStateView
+        state="error"
+        message="Nije moguće učitati raspored."
+        onRetry={() => router.back()}
+      />
     );
   }
 
   return (
     <>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <SettingsScrollView keyboardShouldPersistTaps="handled">
         <ScreenHeader
           title={scheduleName.trim() || "Uredi raspored"}
           rightContent={
@@ -471,7 +438,7 @@ export default function ScheduleEditorScreen() {
           variant="destructive"
           disabled={isDefault}
         />
-      </ScrollView>
+      </SettingsScrollView>
 
       <ConfirmDialog
         visible={showDelete}

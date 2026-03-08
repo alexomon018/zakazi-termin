@@ -9,9 +9,11 @@ import { AppText } from "./AppText";
 type ScreenHeaderProps = {
   title: string;
   rightContent?: ReactNode;
+  /** When provided, overrides the default router.back() behavior */
+  onBack?: () => void;
 };
 
-export function ScreenHeader({ title, rightContent }: ScreenHeaderProps) {
+export function ScreenHeader({ title, rightContent, onBack }: ScreenHeaderProps) {
   const { theme } = useTheme();
 
   const styles = useMemo(
@@ -42,7 +44,7 @@ export function ScreenHeader({ title, rightContent }: ScreenHeaderProps) {
     <View style={styles.topRow}>
       <Pressable
         style={styles.backButton}
-        onPress={() => router.back()}
+        onPress={() => (onBack ? onBack() : router.back())}
         accessibilityRole="button"
         accessibilityLabel="Nazad"
         accessibilityHint="Navigira na prethodni ekran"

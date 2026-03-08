@@ -1,7 +1,7 @@
 import { ScreenHeader } from "@/components/atoms";
 import { TeamSettingsClient } from "@/components/organisms/team";
 import { useTheme } from "@/lib/theme-context";
-import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function TeamScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
   const role = meQuery.data?.membership?.role;
   const isAuthorized = role === "OWNER" || role === "ADMIN";
 

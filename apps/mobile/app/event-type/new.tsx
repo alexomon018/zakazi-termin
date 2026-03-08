@@ -1,3 +1,4 @@
+import { QueryStateView } from "@/components/atoms";
 import {
   DEFAULT_FORM_DATA,
   EventTypeForm,
@@ -7,8 +8,7 @@ import {
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router } from "expo-router";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { useState } from "react";
 
 export default function NewEventTypeScreen() {
   const { theme } = useTheme();
@@ -51,25 +51,8 @@ export default function NewEventTypeScreen() {
     });
   };
 
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        },
-      }),
-    [theme]
-  );
-
   if (schedulesQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   const schedules = (schedulesQuery.data ?? []).map((s) => ({

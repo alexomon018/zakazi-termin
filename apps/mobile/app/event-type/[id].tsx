@@ -1,4 +1,4 @@
-import { AppButton, AppText, ConfirmDialog } from "@/components/atoms";
+import { AppButton, ConfirmDialog, QueryStateView } from "@/components/atoms";
 import {
   DEFAULT_FORM_DATA,
   EventTypeForm,
@@ -9,7 +9,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 
 export default function EditEventTypeScreen() {
   const { theme } = useTheme();
@@ -100,13 +100,6 @@ export default function EditEventTypeScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-          gap: theme.spacing.md,
-        },
         deleteContainer: {
           padding: theme.spacing.lg,
           paddingBottom: theme.spacing.xxl,
@@ -117,21 +110,16 @@ export default function EditEventTypeScreen() {
   );
 
   if (eventTypeQuery.isLoading || schedulesQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (eventTypeQuery.error) {
     return (
-      <View style={styles.centered}>
-        <AppText variant="bodySm" muted centered>
-          Nije moguće učitati uslugu.
-        </AppText>
-        <AppButton label="Nazad" onPress={() => router.back()} variant="outline" />
-      </View>
+      <QueryStateView
+        state="error"
+        message="Nije moguće učitati uslugu."
+        onRetry={() => router.back()}
+      />
     );
   }
 

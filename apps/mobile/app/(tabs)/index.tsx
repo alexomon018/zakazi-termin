@@ -5,23 +5,18 @@ import {
   type BottomSheetAction,
   ConfirmDialog,
   FAB,
+  QueryStateView,
 } from "@/components/atoms";
+import { TopBarPill } from "@/components/molecules";
 import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import { Clock, Copy, Eye, EyeOff, Menu, Pencil, Plus, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
 export default function EventTypesScreen() {
   const { theme } = useTheme();
@@ -38,7 +33,7 @@ export default function EventTypesScreen() {
   } | null>(null);
 
   const eventsQuery = trpc.eventType.list.useQuery(undefined, { retry: false });
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const toggleMutation = trpc.eventType.update.useMutation({
     onSuccess: async () => {
@@ -108,29 +103,6 @@ export default function EventTypesScreen() {
           paddingBottom: 140,
           gap: theme.spacing.md,
         },
-        topBar: {
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          marginBottom: theme.spacing.md,
-        },
-        topControls: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          backgroundColor: theme.colors.surface,
-          borderColor: theme.colors.border,
-          borderWidth: 1,
-          borderRadius: theme.radius.full,
-          paddingVertical: 6,
-          paddingHorizontal: 10,
-        },
-        menuButton: {
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          alignItems: "center",
-          justifyContent: "center",
-        },
         title: { marginBottom: theme.spacing.md },
         cardContainer: {
           borderRadius: theme.radius.lg,
@@ -183,60 +155,34 @@ export default function EventTypesScreen() {
           alignItems: "center",
           justifyContent: "center",
         },
-        centered: {
-          justifyContent: "center",
-          alignItems: "center",
-          paddingVertical: theme.spacing.xxl * 2,
-          gap: theme.spacing.sm,
-        },
       }),
     [theme]
   );
 
   const renderContent = () => {
     if (eventsQuery.isLoading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      );
+      return <QueryStateView state="loading" variant="inline" />;
     }
 
     if (eventsQuery.isError) {
       return (
-        <View style={styles.centered}>
-          <AppText variant="h2" centered>
-            Greška pri učitavanju
-          </AppText>
-          <AppText variant="bodySm" centered muted>
-            Došlo je do greške prilikom učitavanja usluga.
-          </AppText>
-          <Pressable onPress={() => eventsQuery.refetch()}>
-            <AppText
-              variant="bodySm"
-              centered
-              style={{
-                color: theme.colors.primary,
-                marginTop: theme.spacing.sm,
-              }}
-            >
-              Pokušajte ponovo
-            </AppText>
-          </Pressable>
-        </View>
+        <QueryStateView
+          state="error"
+          variant="inline"
+          message="Došlo je do greške prilikom učitavanja usluga."
+          onRetry={() => eventsQuery.refetch()}
+        />
       );
     }
 
     if (items.length === 0) {
       return (
-        <View style={styles.centered}>
-          <AppText variant="h2" centered>
-            Nema usluga
-          </AppText>
-          <AppText variant="bodySm" centered muted>
-            Kreirajte prvu uslugu koristeći + dugme.
-          </AppText>
-        </View>
+        <QueryStateView
+          state="empty"
+          variant="inline"
+          title="Nema usluga"
+          message="Kreirajte prvu uslugu koristeći + dugme."
+        />
       );
     }
 
@@ -313,13 +259,11 @@ export default function EventTypesScreen() {
           />
         }
       >
-        <View style={styles.topBar}>
-          <View style={styles.topControls}>
-            <Pressable style={styles.menuButton} onPress={() => router.push("/(tabs)/settings")}>
-              <Menu size={20} color={theme.colors.foreground} />
-            </Pressable>
-          </View>
-        </View>
+        <TopBarPill>
+          <Pressable onPress={() => router.push("/(tabs)/settings")}>
+            <Menu size={20} color={theme.colors.foreground} />
+          </Pressable>
+        </TopBarPill>
         <AppText variant="title" style={styles.title}>
           Moje usluge
         </AppText>

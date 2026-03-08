@@ -1,59 +1,36 @@
 import {
   AppButton,
-  AppCard,
   AppInput,
   AppText,
   BottomSheet,
   type BottomSheetAction,
   ConfirmDialog,
+  FormField,
+  QueryStateView,
   ScreenHeader,
 } from "@/components/atoms";
+import { DatePickerField, ModalPageHeader, OOOListItem } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react-native";
-import { useCallback, useMemo, useState } from "react";
+import { useOOOForm } from "@/lib/use-ooo-form";
+import { Pencil, Plus, Trash2 } from "lucide-react-native";
+import { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
-  LayoutAnimation,
   Modal,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
-  UIManager,
   View,
 } from "react-native";
-
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-type OOOFormData = {
-  uuid?: string;
-  startDate: Date;
-  endDate: Date;
-  reasonId?: string;
-  notes: string;
-};
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-const createInitialForm = (): OOOFormData => ({
-  startDate: new Date(),
-  endDate: new Date(Date.now() + MS_PER_DAY),
-  notes: "",
-});
 
 export default function OutOfOfficeScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<OOOFormData>(createInitialForm);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [activeItem, setActiveItem] = useState<{
     uuid: string;
@@ -62,52 +39,30 @@ export default function OutOfOfficeScreen() {
     reasonId?: string | null;
     notes?: string | null;
   } | null>(null);
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
 
-  const animateLayout = useCallback(() => {
-    LayoutAnimation.configureNext({
-      duration: 300,
-      create: { type: "easeInEaseOut", property: "opacity" },
-      update: { type: "easeInEaseOut" },
-      delete: { type: "easeInEaseOut", property: "opacity" },
-    });
-  }, []);
-
-  const toggleStartPicker = useCallback(() => {
-    animateLayout();
-    setShowStartPicker((v) => !v);
-    if (!showStartPicker) {
-      animateLayout();
-      setShowEndPicker(false);
-    }
-  }, [showStartPicker, animateLayout]);
-
-  const toggleEndPicker = useCallback(() => {
-    animateLayout();
-    setShowEndPicker((v) => !v);
-    if (!showEndPicker) {
-      animateLayout();
-      setShowStartPicker(false);
-    }
-  }, [showEndPicker, animateLayout]);
-
-  const closeForm = () => {
-    setShowForm(false);
-    setShowStartPicker(false);
-    setShowEndPicker(false);
-  };
+  const {
+    formData,
+    setFormData,
+    showStartPicker,
+    showEndPicker,
+    toggleStartPicker,
+    toggleEndPicker,
+    dismissStartPicker,
+    dismissEndPicker,
+    closeForm,
+    resetForm,
+    editForm,
+  } = useOOOForm();
 
   const listQuery = trpc.outOfOffice.list.useQuery(undefined, { retry: false });
-  const reasonsQuery = trpc.outOfOffice.reasons.useQuery(undefined, {
-    retry: false,
-  });
+  const reasonsQuery = trpc.outOfOffice.reasons.useQuery(undefined, { retry: false });
 
   const createOrUpdateMutation = trpc.outOfOffice.createOrUpdate.useMutation({
     onSuccess: async () => {
       await utils.outOfOffice.list.invalidate();
+      setShowForm(false);
       closeForm();
-      setFormData(createInitialForm());
+      resetForm();
     },
   });
 
@@ -135,19 +90,18 @@ export default function OutOfOfficeScreen() {
     reasonId?: string | null;
     notes?: string | null;
   }) => {
-    setFormData({
-      uuid: item.uuid,
-      startDate: new Date(item.start),
-      endDate: new Date(item.end),
-      reasonId: item.reasonId ?? undefined,
-      notes: item.notes ?? "",
-    });
+    editForm(item);
     setShowForm(true);
   };
 
   const handleAdd = () => {
-    setFormData(createInitialForm());
+    resetForm();
     setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    closeForm();
   };
 
   const items = listQuery.data?.entries ?? [];
@@ -179,50 +133,13 @@ export default function OutOfOfficeScreen() {
           gap: theme.spacing.sm,
           paddingBottom: 100,
         },
-        headerRow: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: theme.spacing.sm,
-        },
         addButton: {
           backgroundColor: theme.colors.primary,
           borderRadius: theme.radius.sm,
           padding: theme.spacing.sm,
         },
-        centered: { paddingVertical: theme.spacing.xxl, alignItems: "center" },
-        cardRow: { flexDirection: "row", alignItems: "center" },
-        cardContent: { flex: 1, gap: 2 },
-        moreButton: {
-          width: 36,
-          height: 36,
-          borderRadius: theme.radius.sm,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          alignItems: "center",
-          justifyContent: "center",
-          marginLeft: theme.spacing.sm,
-        },
         modalContainer: { flex: 1, backgroundColor: theme.colors.background },
-        modalHeader: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: theme.spacing.lg,
-          backgroundColor: theme.colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.border,
-        },
         formContent: { padding: theme.spacing.lg, gap: theme.spacing.md },
-        formGroup: { gap: theme.spacing.xs },
-        dateButton: {
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          borderRadius: theme.radius.sm,
-          paddingHorizontal: theme.spacing.md,
-          paddingVertical: theme.spacing.md,
-          backgroundColor: theme.colors.surface,
-        },
         reasonRow: { flexDirection: "row", gap: theme.spacing.sm },
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
       }),
@@ -266,56 +183,27 @@ export default function OutOfOfficeScreen() {
         }
         ListEmptyComponent={
           listQuery.isLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
+            <QueryStateView state="loading" variant="inline" />
           ) : listQuery.isError ? (
-            <View style={styles.centered}>
-              <AppText variant="bodySm" centered muted>
-                Greška pri učitavanju perioda odsustva.
-              </AppText>
-              <AppButton label="Pokušaj ponovo" onPress={() => listQuery.refetch()} />
-            </View>
+            <QueryStateView
+              state="error"
+              variant="inline"
+              message="Greška pri učitavanju perioda odsustva."
+              onRetry={() => listQuery.refetch()}
+            />
           ) : (
-            <View style={styles.centered}>
-              <AppText variant="bodySm" centered muted>
-                Nemate zakazanih perioda odsustva.
-              </AppText>
-            </View>
+            <QueryStateView
+              state="empty"
+              variant="inline"
+              title="Nema odsustva"
+              message="Nemate zakazanih perioda odsustva."
+            />
           )
         }
         renderItem={({ item }) => {
           const reason = reasons.find((r) => r.id === item.reasonId);
           return (
-            <AppCard>
-              <View style={styles.cardRow}>
-                <View style={styles.cardContent}>
-                  <AppText variant="body">
-                    {new Date(item.start).toLocaleDateString("sr-RS")} —{" "}
-                    {new Date(item.end).toLocaleDateString("sr-RS")}
-                  </AppText>
-                  {reason && (
-                    <AppText variant="bodySm" muted>
-                      {reason.emoji} {reason.reason}
-                    </AppText>
-                  )}
-                  {item.notes && (
-                    <AppText variant="caption" muted>
-                      {item.notes}
-                    </AppText>
-                  )}
-                </View>
-                <Pressable
-                  style={styles.moreButton}
-                  onPress={() => setActiveItem(item)}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Više opcija za odsustvo od ${new Date(item.start).toLocaleDateString("sr-RS")} do ${new Date(item.end).toLocaleDateString("sr-RS")}`}
-                >
-                  <MoreHorizontal size={20} color={theme.colors.mutedForeground} />
-                </Pressable>
-              </View>
-            </AppCard>
+            <OOOListItem item={item} reason={reason} onMorePress={() => setActiveItem(item)} />
           );
         }}
       />
@@ -324,68 +212,43 @@ export default function OutOfOfficeScreen() {
         visible={showForm}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={closeForm}
+        onRequestClose={handleCloseForm}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <AppText variant="h2">{formData.uuid ? "Uredi odsustvo" : "Novo odsustvo"}</AppText>
-            <AppButton label="Zatvori" onPress={closeForm} variant="outline" />
-          </View>
+          <ModalPageHeader
+            title={formData.uuid ? "Uredi odsustvo" : "Novo odsustvo"}
+            onClose={handleCloseForm}
+          />
 
           <ScrollView contentContainerStyle={styles.formContent}>
-            <View style={styles.formGroup}>
-              <AppText variant="bodySm">Početak</AppText>
-              <Pressable style={styles.dateButton} onPress={toggleStartPicker}>
-                <AppText variant="body">{formData.startDate.toLocaleDateString("sr-RS")}</AppText>
-              </Pressable>
-              {showStartPicker && (
-                <DateTimePicker
-                  value={formData.startDate}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "inline" : "default"}
-                  minimumDate={new Date()}
-                  onChange={(_, date) => {
-                    if (Platform.OS !== "ios") {
-                      animateLayout();
-                      setShowStartPicker(false);
-                    }
-                    if (date) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        startDate: date,
-                        endDate: date > prev.endDate ? date : prev.endDate,
-                      }));
-                    }
-                  }}
-                />
-              )}
-            </View>
+            <DatePickerField
+              label="Početak"
+              value={formData.startDate}
+              minimumDate={new Date()}
+              showPicker={showStartPicker}
+              onToggle={toggleStartPicker}
+              onPickerDismiss={dismissStartPicker}
+              onChange={(date) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  startDate: date,
+                  endDate: date > prev.endDate ? date : prev.endDate,
+                }))
+              }
+            />
 
-            <View style={styles.formGroup}>
-              <AppText variant="bodySm">Kraj</AppText>
-              <Pressable style={styles.dateButton} onPress={toggleEndPicker}>
-                <AppText variant="body">{formData.endDate.toLocaleDateString("sr-RS")}</AppText>
-              </Pressable>
-              {showEndPicker && (
-                <DateTimePicker
-                  value={formData.endDate}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "inline" : "default"}
-                  minimumDate={formData.startDate}
-                  onChange={(_, date) => {
-                    if (Platform.OS !== "ios") {
-                      animateLayout();
-                      setShowEndPicker(false);
-                    }
-                    if (date) setFormData((prev) => ({ ...prev, endDate: date }));
-                  }}
-                />
-              )}
-            </View>
+            <DatePickerField
+              label="Kraj"
+              value={formData.endDate}
+              minimumDate={formData.startDate}
+              showPicker={showEndPicker}
+              onToggle={toggleEndPicker}
+              onPickerDismiss={dismissEndPicker}
+              onChange={(date) => setFormData((prev) => ({ ...prev, endDate: date }))}
+            />
 
             {reasons.length > 0 && (
-              <View style={styles.formGroup}>
-                <AppText variant="bodySm">Razlog</AppText>
+              <FormField label="Razlog">
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.reasonRow}>
                     <AppButton
@@ -403,11 +266,10 @@ export default function OutOfOfficeScreen() {
                     ))}
                   </View>
                 </ScrollView>
-              </View>
+              </FormField>
             )}
 
-            <View style={styles.formGroup}>
-              <AppText variant="bodySm">Napomena</AppText>
+            <FormField label="Napomena">
               <AppInput
                 value={formData.notes}
                 onChangeText={(notes) => setFormData((p) => ({ ...p, notes }))}
@@ -416,7 +278,7 @@ export default function OutOfOfficeScreen() {
                 numberOfLines={3}
                 style={styles.multilineInput}
               />
-            </View>
+            </FormField>
 
             <AppButton
               label={formData.uuid ? "Sačuvaj" : "Dodaj odsustvo"}

@@ -1,10 +1,11 @@
-import { AppCard, AppText, ScreenHeader, SectionHeader } from "@/components/atoms";
+import { AppCard, AppText, QueryStateView, ScreenHeader, SectionHeader } from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { Check } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 
 const THEMES = [
   { value: "light", label: "Svetla" },
@@ -25,9 +26,8 @@ const BRAND_COLORS = [
 
 export default function AppearanceSettingsScreen() {
   const { theme, preference, setPreference } = useTheme();
-  const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const appearanceMutation = trpc.user.updateAppearance.useMutation({
     onSuccess: async () => {
@@ -70,13 +70,6 @@ export default function AppearanceSettingsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: {
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.sm,
-          gap: theme.spacing.md,
-          paddingBottom: 100,
-        },
         themeRow: { gap: theme.spacing.sm },
         themeOption: {
           flexDirection: "row",
@@ -110,29 +103,18 @@ export default function AppearanceSettingsScreen() {
           borderColor: theme.colors.foreground,
         },
       }),
-    [theme, insets.top]
+    [theme]
   );
 
   if (meQuery.isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   const currentTheme = preference;
   const currentBrandColor = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+    <SettingsScrollView>
       <ScreenHeader title="Izgled" />
       <SectionHeader title="Tema" />
       <AppCard>
@@ -171,6 +153,6 @@ export default function AppearanceSettingsScreen() {
           ))}
         </View>
       </AppCard>
-    </ScrollView>
+    </SettingsScrollView>
   );
 }

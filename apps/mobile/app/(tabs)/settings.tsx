@@ -2,7 +2,7 @@ import { AppScreen, AppText } from "@/components/atoms";
 import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
-import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import * as Clipboard from "expo-clipboard";
 import { type Href, router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -64,7 +64,7 @@ const TEAM_ITEM: MenuItem = {
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const { logout, user } = useAuth();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const role = meQuery.data?.membership?.role;
   const hasMembership = !!meQuery.data?.membership;

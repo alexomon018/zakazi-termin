@@ -1,6 +1,12 @@
-import { AppButton, AppInput, AppText, SectionHeader } from "@/components/atoms";
+import {
+  AppButton,
+  AppInput,
+  AppText,
+  FormField,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
-import { ChevronLeft } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -171,23 +177,6 @@ export function EventTypeForm({
           gap: theme.spacing.md,
           paddingBottom: 100,
         },
-        topRow: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: theme.spacing.sm,
-          marginBottom: theme.spacing.sm,
-        },
-        backButton: {
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        titleText: { flex: 1, fontWeight: "700" },
         chip: {
           height: 40,
           borderRadius: 20,
@@ -211,7 +200,6 @@ export function EventTypeForm({
           padding: theme.spacing.lg,
           gap: theme.spacing.md,
         },
-        formGroup: { gap: theme.spacing.xs },
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
         switchRow: {
           flexDirection: "row",
@@ -228,72 +216,53 @@ export function EventTypeForm({
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.topRow}>
-        <Pressable
-          style={styles.backButton}
-          onPress={onBackPress}
-          accessibilityRole="button"
-          accessibilityLabel="Nazad"
-          hitSlop={8}
-        >
-          <ChevronLeft size={20} color={theme.colors.foreground} />
-        </Pressable>
-        <AppText variant="h2" style={styles.titleText}>
-          {headerTitle}
-        </AppText>
-        <View style={styles.chip}>
-          <AppText variant="bodySm" style={{ fontWeight: "600" }}>
-            Osnovno
-          </AppText>
-        </View>
-        <Pressable
-          style={[styles.chip, styles.saveChip]}
-          onPress={onSubmit}
-          disabled={isPending}
-          accessibilityRole="button"
-          accessibilityLabel={submitLabel}
-        >
-          <AppText
-            variant="bodySm"
-            style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
-          >
-            {isPending ? "Čuvanje..." : submitLabel}
-          </AppText>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title={headerTitle}
+        onBack={onBackPress}
+        rightContent={
+          <>
+            <View style={styles.chip}>
+              <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+                Osnovno
+              </AppText>
+            </View>
+            <Pressable
+              style={[styles.chip, styles.saveChip]}
+              onPress={onSubmit}
+              disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={submitLabel}
+            >
+              <AppText
+                variant="bodySm"
+                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+              >
+                {isPending ? "Čuvanje..." : submitLabel}
+              </AppText>
+            </Pressable>
+          </>
+        }
+      />
       <SectionHeader title="Osnovno" />
       <View style={styles.card}>
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Naziv</AppText>
+        <FormField label="Naziv" error={errors.title}>
           <AppInput
             value={formData.title}
             onChangeText={handleTitleChange}
             placeholder="npr. Šišanje"
           />
-          {errors.title && (
-            <AppText variant="caption" muted>
-              {errors.title}
-            </AppText>
-          )}
-        </View>
+        </FormField>
 
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Slug (URL)</AppText>
+        <FormField label="Slug (URL)" error={errors.slug}>
           <AppInput
             value={formData.slug}
             onChangeText={(v) => updateField("slug", v)}
             placeholder="npr. sisanje"
             autoCapitalize="none"
           />
-          {errors.slug && (
-            <AppText variant="caption" muted>
-              {errors.slug}
-            </AppText>
-          )}
-        </View>
+        </FormField>
 
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Opis</AppText>
+        <FormField label="Opis">
           <AppInput
             value={formData.description}
             onChangeText={(v) => updateField("description", v)}
@@ -302,7 +271,7 @@ export function EventTypeForm({
             numberOfLines={3}
             style={styles.multilineInput}
           />
-        </View>
+        </FormField>
 
         <OptionRow
           label="Trajanje (min)"
@@ -319,19 +288,13 @@ export function EventTypeForm({
 
       <SectionHeader title="Lokacija" />
       <View style={styles.card}>
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Adresa</AppText>
+        <FormField label="Adresa" error={errors.locationAddress}>
           <AppInput
             value={formData.locationAddress}
             onChangeText={(v) => updateField("locationAddress", v)}
             placeholder="Adresa salona"
           />
-          {errors.locationAddress && (
-            <AppText variant="caption" muted>
-              {errors.locationAddress}
-            </AppText>
-          )}
-        </View>
+        </FormField>
       </View>
 
       {schedules.length > 0 && (

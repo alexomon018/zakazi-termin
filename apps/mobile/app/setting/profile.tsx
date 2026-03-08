@@ -4,23 +4,25 @@ import {
   AppInput,
   AppText,
   ConfirmDialog,
+  FormField,
+  QueryStateView,
   ScreenHeader,
   SectionHeader,
 } from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, View } from "react-native";
 
 export default function ProfileSettingsScreen() {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
   const { logout } = useAuth();
   const utils = trpc.useUtils();
 
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
   const [name, setName] = useState("");
   const [salonName, setSalonName] = useState("");
   const [bio, setBio] = useState("");
@@ -50,20 +52,6 @@ export default function ProfileSettingsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: {
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.sm,
-          gap: theme.spacing.md,
-          paddingBottom: 100,
-        },
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        },
-        formGroup: { gap: theme.spacing.xs, marginBottom: theme.spacing.sm },
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
         infoRow: {
           flexDirection: "row",
@@ -73,25 +61,20 @@ export default function ProfileSettingsScreen() {
         },
         actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
       }),
-    [theme, insets.top]
+    [theme]
   );
 
   if (meQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (meQuery.error) {
     return (
-      <View style={styles.centered}>
-        <AppText variant="bodySm" muted centered>
-          Greška pri učitavanju profila.
-        </AppText>
-        <AppButton label="Pokušaj ponovo" onPress={() => meQuery.refetch()} variant="outline" />
-      </View>
+      <QueryStateView
+        state="error"
+        message="Greška pri učitavanju profila."
+        onRetry={() => meQuery.refetch()}
+      />
     );
   }
 
@@ -108,37 +91,32 @@ export default function ProfileSettingsScreen() {
 
   return (
     <>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <SettingsScrollView keyboardShouldPersistTaps="handled">
         <ScreenHeader title="Profil" />
         <AppCard>
-          <View style={styles.formGroup}>
-            <AppText variant="bodySm">Ime</AppText>
+          <FormField label="Ime">
             <AppInput value={name} onChangeText={setName} placeholder="Vaše ime" />
-          </View>
+          </FormField>
 
           {isOwner && (
-            <View style={styles.formGroup}>
-              <AppText variant="bodySm">Naziv salona</AppText>
+            <FormField
+              label="Naziv salona"
+              error={
+                salonName.trim().length > 0 && salonName.trim().length < 3
+                  ? "Naziv mora imati najmanje 3 karaktera"
+                  : undefined
+              }
+            >
               <AppInput
                 value={salonName}
                 onChangeText={setSalonName}
                 placeholder="Naziv salona (min 3 karaktera)"
               />
-              {salonName.trim().length > 0 && salonName.trim().length < 3 && (
-                <AppText variant="caption" muted>
-                  Naziv mora imati najmanje 3 karaktera
-                </AppText>
-              )}
-            </View>
+            </FormField>
           )}
 
           {isOwner && (
-            <View style={styles.formGroup}>
-              <AppText variant="bodySm">Bio</AppText>
+            <FormField label="Bio">
               <AppInput
                 value={bio}
                 onChangeText={setBio}
@@ -147,7 +125,7 @@ export default function ProfileSettingsScreen() {
                 numberOfLines={3}
                 style={styles.multilineInput}
               />
-            </View>
+            </FormField>
           )}
 
           <View style={styles.infoRow}>
@@ -186,7 +164,7 @@ export default function ProfileSettingsScreen() {
             />
           </View>
         </AppCard>
-      </ScrollView>
+      </SettingsScrollView>
 
       <ConfirmDialog
         visible={showDeleteConfirm}

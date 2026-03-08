@@ -1,4 +1,5 @@
-import { AppButton, AppInput, AppText, FilterChip } from "@/components/atoms";
+import { AppButton, AppInput, AppText, FilterChip, FormField } from "@/components/atoms";
+import { ModalPageHeader } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { Mail } from "lucide-react-native";
 import { useMemo } from "react";
@@ -42,15 +43,6 @@ export function TeamInviteMemberModal({
           flex: 1,
           backgroundColor: theme.colors.background,
         },
-        header: {
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: theme.spacing.lg,
-          backgroundColor: theme.colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.border,
-        },
         formContent: {
           padding: theme.spacing.lg,
           gap: theme.spacing.md,
@@ -72,9 +64,6 @@ export function TeamInviteMemberModal({
           justifyContent: "center",
           flexShrink: 0,
         },
-        formGroup: {
-          gap: theme.spacing.xs,
-        },
         roleChips: {
           flexDirection: "row",
           gap: theme.spacing.sm,
@@ -91,10 +80,7 @@ export function TeamInviteMemberModal({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-        <View style={styles.header}>
-          <AppText variant="h2">Pozovi člana</AppText>
-          <AppButton label="Zatvori" onPress={onClose} variant="outline" />
-        </View>
+        <ModalPageHeader title="Pozovi člana" onClose={onClose} />
         <ScrollView contentContainerStyle={styles.formContent} keyboardShouldPersistTaps="handled">
           <View style={styles.iconRow}>
             <View style={styles.iconCircle}>
@@ -105,8 +91,14 @@ export function TeamInviteMemberModal({
             </AppText>
           </View>
 
-          <View style={styles.formGroup}>
-            <AppText variant="bodySm">Email adresa</AppText>
+          <FormField
+            label="Email adresa"
+            error={
+              trimmedEmail !== "" && !isValidEmail(trimmedEmail)
+                ? "Unesite validnu email adresu"
+                : undefined
+            }
+          >
             <AppInput
               value={inviteEmail}
               onChangeText={onEmailChange}
@@ -115,15 +107,9 @@ export function TeamInviteMemberModal({
               autoCapitalize="none"
               autoCorrect={false}
             />
-            {trimmedEmail !== "" && !isValidEmail(trimmedEmail) && (
-              <AppText variant="caption" style={{ color: theme.colors.destructive }}>
-                Unesite validnu email adresu
-              </AppText>
-            )}
-          </View>
+          </FormField>
 
-          <View style={styles.formGroup}>
-            <AppText variant="bodySm">Uloga</AppText>
+          <FormField label="Uloga">
             <View style={styles.roleChips}>
               <FilterChip
                 label="Član"
@@ -143,7 +129,7 @@ export function TeamInviteMemberModal({
                 ? "Član može upravljati svojim uslugama i terminima."
                 : "Administrator može pozivati i uklanjati članove."}
             </AppText>
-          </View>
+          </FormField>
 
           <AppButton
             label="Pošalji pozivnicu"

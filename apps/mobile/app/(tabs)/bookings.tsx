@@ -5,27 +5,21 @@ import {
   type BottomSheetAction,
   FAB,
   MoreButton,
+  QueryStateView,
   SearchBar,
   SectionDateHeader,
 } from "@/components/atoms";
 import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
+import { statusColor, statusLabel } from "@/lib/booking-status";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { CalendarDays, CalendarPlus, CheckCircle, Info, Menu, XCircle } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, FlatList, Modal, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 
 type FilterKey = "upcoming" | "pending" | "history";
 
@@ -70,7 +64,7 @@ export default function BookingsScreen() {
   const { theme } = useTheme();
   useAuth();
   const utils = trpc.useUtils();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
   const [filter, setFilter] = useState<FilterKey>("upcoming");
   const [search, setSearch] = useState("");
   const [activeBooking, setActiveBooking] = useState<BookingItem | null>(null);
@@ -165,7 +159,9 @@ export default function BookingsScreen() {
   const openBookingDetails = (uid: string) => {
     if (!uid) return;
     const url = `${API_URL}/booking/${encodeURIComponent(uid)}`;
-    WebBrowser.openBrowserAsync(url);
+    // Delay browser open so the BottomSheet modal fully dismisses first.
+    // Opening WebBrowser while a Modal is animating out causes a freeze.
+    setTimeout(() => WebBrowser.openBrowserAsync(url), 350);
   };
 
   const handleRefresh = async () => {
@@ -212,35 +208,6 @@ export default function BookingsScreen() {
         },
       ]
     : [];
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case "ACCEPTED":
-        return "Potvrđen";
-      case "PENDING":
-        return "Na čekanju";
-      case "CANCELLED":
-        return "Otkazan";
-      case "REJECTED":
-        return "Odbijen";
-      default:
-        return status;
-    }
-  };
-
-  const statusColor = (status: string) => {
-    switch (status) {
-      case "ACCEPTED":
-        return theme.colors.success;
-      case "PENDING":
-        return theme.colors.accent;
-      case "CANCELLED":
-      case "REJECTED":
-        return theme.colors.destructive;
-      default:
-        return theme.colors.mutedForeground;
-    }
-  };
 
   const styles = useMemo(
     () =>
@@ -415,9 +382,7 @@ export default function BookingsScreen() {
         }
         ListEmptyComponent={
           activeQuery.isLoading ? (
-            <View style={styles.centered}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-            </View>
+            <QueryStateView state="loading" variant="inline" />
           ) : (
             <View style={styles.centered}>
               <View style={styles.emptyIconWrap}>
@@ -442,7 +407,7 @@ export default function BookingsScreen() {
             hour: "2-digit",
             minute: "2-digit",
           });
-          const color = statusColor(booking.status);
+          const color = statusColor(booking.status, theme);
           return (
             <View style={styles.bookingItem}>
               <View style={styles.bookingContent}>

@@ -3,16 +3,17 @@ import {
   AppCard,
   AppText,
   ConfirmDialog,
+  QueryStateView,
   ScreenHeader,
   SectionHeader,
 } from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, AppState, ScrollView, StyleSheet, Switch, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppState, StyleSheet, Switch, View } from "react-native";
 
 type CalendarConnection = {
   id: string;
@@ -25,7 +26,6 @@ type CalendarConnection = {
 
 export default function CalendarSettingsScreen() {
   const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
 
@@ -66,19 +66,6 @@ export default function CalendarSettingsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: {
-          paddingHorizontal: theme.spacing.lg,
-          paddingTop: insets.top + theme.spacing.sm,
-          gap: theme.spacing.md,
-          paddingBottom: 100,
-        },
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        },
         connectionHeader: {
           flexDirection: "row",
           alignItems: "center",
@@ -93,29 +80,20 @@ export default function CalendarSettingsScreen() {
         },
         actions: { marginTop: theme.spacing.md },
       }),
-    [theme, insets.top]
+    [theme]
   );
 
   if (connectionsQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (connectionsQuery.isError) {
     return (
-      <View style={styles.centered}>
-        <AppCard>
-          <AppText variant="bodySm" centered>
-            Neuspešno učitavanje kalendara.
-          </AppText>
-          <View style={styles.actions}>
-            <AppButton label="Pokušaj ponovo" onPress={() => connectionsQuery.refetch()} />
-          </View>
-        </AppCard>
-      </View>
+      <QueryStateView
+        state="error"
+        message="Neuspešno učitavanje kalendara."
+        onRetry={() => connectionsQuery.refetch()}
+      />
     );
   }
 
@@ -123,7 +101,7 @@ export default function CalendarSettingsScreen() {
 
   return (
     <>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <SettingsScrollView>
         <ScreenHeader title="Kalendar" />
         <SectionHeader title="Povezani kalendari" />
 
@@ -184,7 +162,7 @@ export default function CalendarSettingsScreen() {
         {connections.length > 0 && (
           <AppButton label="Poveži novi kalendar" onPress={handleConnect} variant="outline" />
         )}
-      </ScrollView>
+      </SettingsScrollView>
 
       <ConfirmDialog
         visible={!!disconnectTarget}

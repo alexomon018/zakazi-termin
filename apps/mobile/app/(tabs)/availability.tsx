@@ -5,23 +5,18 @@ import {
   type BottomSheetAction,
   ConfirmDialog,
   InputDialog,
+  QueryStateView,
   uiStyles,
 } from "@/components/atoms";
+import { TopBarPill } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router } from "expo-router";
 import { Copy, Globe, MoreHorizontal, Pencil, Plus, Star, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
 const DAY_NAMES_SHORT = ["Ned", "Pon", "Uto", "Sre", "Čet", "Pet", "Sub"];
 
@@ -69,7 +64,7 @@ export default function AvailabilityScreen() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const schedulesQuery = trpc.availability.listSchedules.useQuery(undefined, { retry: false });
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const createMutation = trpc.availability.createSchedule.useMutation({
     onSuccess: async () => {
@@ -154,29 +149,6 @@ export default function AvailabilityScreen() {
     () =>
       StyleSheet.create({
         content: { padding: theme.spacing.lg, paddingBottom: 140, gap: theme.spacing.md },
-        topBar: {
-          flexDirection: "row",
-          justifyContent: "flex-end",
-          marginBottom: theme.spacing.md,
-        },
-        topControls: {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 10,
-          backgroundColor: theme.colors.surface,
-          borderColor: theme.colors.border,
-          borderWidth: 1,
-          borderRadius: theme.radius.full,
-          paddingVertical: 6,
-          paddingHorizontal: 10,
-        },
-        iconButton: {
-          width: 32,
-          height: 32,
-          borderRadius: 16,
-          alignItems: "center",
-          justifyContent: "center",
-        },
         title: { marginBottom: theme.spacing.md },
         cardContainer: {
           borderRadius: theme.radius.lg,
@@ -215,48 +187,33 @@ export default function AvailabilityScreen() {
           alignItems: "center",
           justifyContent: "center",
         },
-        centered: {
-          justifyContent: "center",
-          alignItems: "center",
-          paddingVertical: theme.spacing.xxl * 2,
-          gap: theme.spacing.sm,
-        },
       }),
     [theme]
   );
 
   const renderContent = () => {
     if (schedulesQuery.isLoading) {
-      return (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      );
+      return <QueryStateView state="loading" variant="inline" />;
     }
 
     if (schedulesQuery.isError) {
       return (
-        <View style={styles.centered}>
-          <AppText variant="h2" centered>
-            Greška pri učitavanju
-          </AppText>
-          <AppText variant="bodySm" centered muted>
-            {schedulesQuery.error?.message ?? "Povucite nadole da pokušate ponovo."}
-          </AppText>
-        </View>
+        <QueryStateView
+          state="error"
+          variant="inline"
+          message={schedulesQuery.error?.message ?? "Povucite nadole da pokušate ponovo."}
+        />
       );
     }
 
     if (filtered.length === 0) {
       return (
-        <View style={styles.centered}>
-          <AppText variant="h2" centered>
-            Nema rasporeda
-          </AppText>
-          <AppText variant="bodySm" centered muted>
-            Kreirajte prvi raspored koristeći + dugme.
-          </AppText>
-        </View>
+        <QueryStateView
+          state="empty"
+          variant="inline"
+          title="Nema rasporeda"
+          message="Kreirajte prvi raspored koristeći + dugme."
+        />
       );
     }
 
@@ -329,19 +286,16 @@ export default function AvailabilityScreen() {
           />
         }
       >
-        <View style={styles.topBar}>
-          <View style={styles.topControls}>
-            <Pressable
-              style={styles.iconButton}
-              onPress={() => setCreateDialogVisible(true)}
-              accessibilityLabel="Create schedule"
-              accessibilityHint="Opens a dialog to create a new schedule"
-              accessibilityRole="button"
-            >
-              <Plus size={22} color={theme.colors.foreground} />
-            </Pressable>
-          </View>
-        </View>
+        <TopBarPill>
+          <Pressable
+            onPress={() => setCreateDialogVisible(true)}
+            accessibilityLabel="Create schedule"
+            accessibilityHint="Opens a dialog to create a new schedule"
+            accessibilityRole="button"
+          >
+            <Plus size={22} color={theme.colors.foreground} />
+          </Pressable>
+        </TopBarPill>
         <AppText variant="title" style={styles.title}>
           Dostupnost
         </AppText>
