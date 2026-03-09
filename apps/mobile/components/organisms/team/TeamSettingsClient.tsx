@@ -264,13 +264,19 @@ export function TeamSettingsClient() {
     );
   }
 
-  if (orgQuery.isError) {
+  if (orgQuery.isError || meQuery.isError) {
     return (
       <View style={styles.centered}>
         <AppText variant="bodySm" centered muted>
           Greška pri učitavanju podataka.
         </AppText>
-        <AppButton label="Pokušaj ponovo" onPress={() => orgQuery.refetch()} />
+        <AppButton
+          label="Pokušaj ponovo"
+          onPress={() => {
+            if (orgQuery.isError) orgQuery.refetch();
+            if (meQuery.isError) meQuery.refetch();
+          }}
+        />
       </View>
     );
   }

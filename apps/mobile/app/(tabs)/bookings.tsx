@@ -156,12 +156,14 @@ export default function BookingsScreen() {
     return result;
   }, [grouped]);
 
+  const MODAL_DISMISS_DELAY = 350;
+
   const openBookingDetails = (uid: string) => {
     if (!uid) return;
     const url = `${API_URL}/booking/${encodeURIComponent(uid)}`;
     // Delay browser open so the BottomSheet modal fully dismisses first.
     // Opening WebBrowser while a Modal is animating out causes a freeze.
-    setTimeout(() => WebBrowser.openBrowserAsync(url), 350);
+    setTimeout(() => WebBrowser.openBrowserAsync(url), MODAL_DISMISS_DELAY);
   };
 
   const handleRefresh = async () => {

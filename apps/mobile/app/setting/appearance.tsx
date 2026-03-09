@@ -110,6 +110,10 @@ export default function AppearanceSettingsScreen() {
     return <QueryStateView state="loading" />;
   }
 
+  if (meQuery.isError) {
+    return <QueryStateView state="error" onRetry={() => meQuery.refetch()} />;
+  }
+
   const currentTheme = preference;
   const currentBrandColor = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
 

@@ -223,6 +223,9 @@ export default function SettingsScreen() {
 
         <View style={styles.menuSection}>
           <Pressable
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Kopiraj javni link"
             style={[styles.menuItem, { borderBottomWidth: StyleSheet.hairlineWidth }]}
             onPress={copyPublicLink}
           >
@@ -235,6 +238,9 @@ export default function SettingsScreen() {
             <ChevronRight size={16} color={theme.colors.mutedForeground} />
           </Pressable>
           <Pressable
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Pomoć"
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/help`)}
           >

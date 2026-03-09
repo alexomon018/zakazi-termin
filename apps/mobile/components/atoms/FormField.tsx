@@ -17,7 +17,7 @@ export function FormField({ label, error, children }: FormFieldProps) {
       <AppText variant="bodySm">{label}</AppText>
       {children}
       {error && (
-        <AppText variant="caption" muted>
+        <AppText variant="caption" style={{ color: theme.colors.destructive }}>
           {error}
         </AppText>
       )}

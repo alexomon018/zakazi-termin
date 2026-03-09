@@ -8,7 +8,7 @@ import {
   QueryStateView,
 } from "@/components/atoms";
 import { TopBarPill } from "@/components/molecules";
-import { API_URL } from "@/lib/api-url";
+import { WEB_ORIGIN } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useMe } from "@/lib/use-me";
@@ -48,15 +48,14 @@ export default function EventTypesScreen() {
     },
   });
 
-  const salonSlug = meQuery.data?.salonSlug ?? meQuery.data?.salonName ?? "";
+  const salonSlug = meQuery.data?.salonSlug ?? "";
 
-  const allItems = eventsQuery.data?.items ?? [];
-  const items = useMemo(() => allItems, [allItems]);
+  const items = eventsQuery.data?.items ?? [];
 
   const handleCopyLink = async (slug: string) => {
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
     const safeSlug = encodeURIComponent(slug);
-    const link = `${API_URL}/${safeSalonSlug}/${safeSlug}`;
+    const link = `${WEB_ORIGIN}/${safeSalonSlug}/${safeSlug}`;
     await Clipboard.setStringAsync(link);
     Alert.alert("Kopirano", "Link za rezervaciju je kopiran.");
   };
@@ -229,6 +228,9 @@ export default function EventTypesScreen() {
               </View>
               <Pressable
                 style={styles.rowMoreButton}
+                accessibilityRole="button"
+                accessibilityLabel={`Otvori meni za ${item.title}`}
+                accessibilityHint="Otvara akcije za ovu uslugu"
                 onPress={() =>
                   setActiveItem({
                     id: item.id,
@@ -238,7 +240,7 @@ export default function EventTypesScreen() {
                   })
                 }
               >
-                <Menu size={18} color={theme.colors.mutedForeground} />
+                <Menu size={18} color={theme.colors.mutedForeground} accessible={false} />
               </Pressable>
             </Pressable>
           </View>

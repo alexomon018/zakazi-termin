@@ -1,4 +1,4 @@
-import { ScreenHeader } from "@/components/atoms";
+import { AppButton, AppText, ScreenHeader } from "@/components/atoms";
 import { TeamSettingsClient } from "@/components/organisms/team";
 import { useTheme } from "@/lib/theme-context";
 import { useMe } from "@/lib/use-me";
@@ -15,10 +15,10 @@ export default function TeamScreen() {
   const isAuthorized = role === "OWNER" || role === "ADMIN";
 
   useEffect(() => {
-    if (!meQuery.isLoading && !isAuthorized) {
+    if (meQuery.isSuccess && !isAuthorized) {
       router.replace("/(tabs)/settings");
     }
-  }, [meQuery.isLoading, isAuthorized]);
+  }, [meQuery.isSuccess, isAuthorized]);
 
   if (meQuery.isLoading) {
     return (
@@ -31,6 +31,25 @@ export default function TeamScreen() {
         }}
       >
         <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (meQuery.isError) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          backgroundColor: theme.colors.background,
+        }}
+      >
+        <AppText variant="bodySm" centered muted>
+          Greška pri učitavanju korisničkih podataka.
+        </AppText>
+        <AppButton label="Pokušaj ponovo" onPress={() => meQuery.refetch()} />
       </View>
     );
   }

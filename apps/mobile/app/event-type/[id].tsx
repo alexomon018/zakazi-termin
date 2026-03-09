@@ -118,7 +118,7 @@ export default function EditEventTypeScreen() {
       <QueryStateView
         state="error"
         message="Nije moguće učitati uslugu."
-        onRetry={() => router.back()}
+        onRetry={() => eventTypeQuery.refetch()}
       />
     );
   }

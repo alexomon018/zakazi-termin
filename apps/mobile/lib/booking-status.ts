@@ -1,6 +1,8 @@
 import type { Theme } from "@/lib/theme";
 
-export function statusLabel(status: string): string {
+export type BookingStatus = "ACCEPTED" | "PENDING" | "CANCELLED" | "REJECTED";
+
+export function statusLabel(status: BookingStatus | string): string {
   switch (status) {
     case "ACCEPTED":
       return "Potvrđen";
@@ -15,7 +17,7 @@ export function statusLabel(status: string): string {
   }
 }
 
-export function statusColor(status: string, theme: Theme): string {
+export function statusColor(status: BookingStatus | string, theme: Theme): string {
   switch (status) {
     case "ACCEPTED":
       return theme.colors.success;

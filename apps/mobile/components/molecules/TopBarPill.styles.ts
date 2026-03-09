@@ -14,13 +14,13 @@ export function useTopBarPillStyles(theme: Theme) {
         pill: {
           flexDirection: "row",
           alignItems: "center",
-          gap: 10,
+          gap: theme.spacing.md,
           backgroundColor: theme.colors.surface,
           borderColor: theme.colors.border,
           borderWidth: 1,
           borderRadius: theme.radius.full,
-          paddingVertical: 6,
-          paddingHorizontal: 10,
+          paddingVertical: theme.spacing.sm,
+          paddingHorizontal: theme.spacing.md,
         },
       }),
     [theme]
