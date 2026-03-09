@@ -385,6 +385,13 @@ export default function BookingsScreen() {
         ListEmptyComponent={
           activeQuery.isLoading ? (
             <QueryStateView state="loading" variant="inline" />
+          ) : activeQuery.isError && !activeQuery.data ? (
+            <QueryStateView
+              state="error"
+              variant="inline"
+              message="Došlo je do greške prilikom učitavanja zakazivanja."
+              onRetry={() => activeQuery.refetch()}
+            />
           ) : (
             <View style={styles.centered}>
               <View style={styles.emptyIconWrap}>

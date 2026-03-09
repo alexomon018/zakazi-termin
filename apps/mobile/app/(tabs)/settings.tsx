@@ -1,4 +1,4 @@
-import { AppScreen, AppText } from "@/components/atoms";
+import { AppScreen, AppText, InfoDialog } from "@/components/atoms";
 import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -17,8 +17,8 @@ import {
   Users,
 } from "lucide-react-native";
 import type { LucideIcon } from "lucide-react-native";
-import { useMemo } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 type MenuItem = {
   id: string;
@@ -159,6 +159,9 @@ export default function SettingsScreen() {
           key={item.id}
           style={[styles.menuItem, index === items.length - 1 && { borderBottomWidth: 0 }]}
           onPress={() => router.push(item.href)}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
+          accessibilityHint={`Otvara ${item.label}`}
         >
           <View style={styles.menuIconContainer}>
             <item.icon size={18} color={theme.colors.foreground} />
@@ -174,20 +177,38 @@ export default function SettingsScreen() {
 
   const salonSlug = meQuery.data?.salonSlug ?? "";
 
+  const [infoDialog, setInfoDialog] = useState<{ title: string; message: string } | null>(null);
+
   const copyPublicLink = async () => {
+    if (!salonSlug) {
+      setInfoDialog({ title: "Informacija", message: "Javni link još nije dostupan." });
+      return;
+    }
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
     const link = `${WEB_ORIGIN}/${safeSalonSlug}`;
     await Clipboard.setStringAsync(link);
-    Alert.alert("Kopirano", "Javni link je kopiran.");
+    setInfoDialog({ title: "Kopirano", message: "Javni link je kopiran." });
   };
 
   return (
     <AppScreen>
+      <InfoDialog
+        visible={!!infoDialog}
+        title={infoDialog?.title ?? ""}
+        message={infoDialog?.message ?? ""}
+        onClose={() => setInfoDialog(null)}
+      />
       <ScrollView contentContainerStyle={styles.content}>
         <AppText variant="title" style={styles.title}>
           Podešavanja
         </AppText>
-        <Pressable style={styles.profileRow} onPress={() => router.push("/setting/profile")}>
+        <Pressable
+          style={styles.profileRow}
+          onPress={() => router.push("/setting/profile")}
+          accessibilityRole="button"
+          accessibilityLabel={`${name}, ${email}`}
+          accessibilityHint="Pregledaj ili uredi profil"
+        >
           <View style={styles.avatar}>
             {avatarUrl ? (
               <Image
@@ -256,7 +277,13 @@ export default function SettingsScreen() {
 
         {/* Logout */}
         <View style={styles.logoutSection}>
-          <Pressable style={styles.logoutItem} onPress={logout}>
+          <Pressable
+            style={styles.logoutItem}
+            onPress={logout}
+            accessibilityRole="button"
+            accessibilityLabel="Odjavite se"
+            accessibilityHint="Odjavite se sa svog naloga"
+          >
             <LogOut size={18} color={theme.colors.destructive} />
             <AppText variant="body" style={{ color: theme.colors.destructive, fontWeight: "500" }}>
               Odjavite se

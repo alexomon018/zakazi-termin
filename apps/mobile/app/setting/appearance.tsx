@@ -128,9 +128,14 @@ export default function AppearanceSettingsScreen() {
               key={t.value}
               style={[styles.themeOption, currentTheme === t.value && styles.themeOptionActive]}
               onPress={() => handleThemeSelect(t.value)}
+              accessibilityRole="button"
+              accessibilityLabel={`${t.label} tema`}
+              accessibilityState={{ selected: currentTheme === t.value }}
             >
               <AppText variant="bodySm">{t.label}</AppText>
-              {currentTheme === t.value && <Check size={16} color={theme.colors.primary} />}
+              {currentTheme === t.value && (
+                <Check size={16} color={theme.colors.primary} accessible={false} />
+              )}
             </Pressable>
           ))}
         </View>
@@ -151,8 +156,13 @@ export default function AppearanceSettingsScreen() {
                 currentBrandColor === color && styles.colorSwatchActive,
               ]}
               onPress={() => handleBrandColorSelect(color)}
+              accessibilityRole="button"
+              accessibilityLabel={`Boja brenda ${color}`}
+              accessibilityState={{ selected: currentBrandColor === color }}
             >
-              {currentBrandColor === color && <Check size={18} color={"#ffffff"} />}
+              {currentBrandColor === color && (
+                <Check size={18} color={"#ffffff"} accessible={false} />
+              )}
             </Pressable>
           ))}
         </View>

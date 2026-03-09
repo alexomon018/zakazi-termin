@@ -1,10 +1,10 @@
-import { AppButton, AppText, ScreenHeader } from "@/components/atoms";
+import { QueryStateView, ScreenHeader } from "@/components/atoms";
 import { TeamSettingsClient } from "@/components/organisms/team";
 import { useTheme } from "@/lib/theme-context";
 import { useMe } from "@/lib/use-me";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TeamScreen() {
@@ -21,37 +21,11 @@ export default function TeamScreen() {
   }, [meQuery.isSuccess, isAuthorized]);
 
   if (meQuery.isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (meQuery.isError) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          gap: theme.spacing.md,
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <AppText variant="bodySm" centered muted>
-          Greška pri učitavanju korisničkih podataka.
-        </AppText>
-        <AppButton label="Pokušaj ponovo" onPress={() => meQuery.refetch()} />
-      </View>
-    );
+    return <QueryStateView state="error" onRetry={() => meQuery.refetch()} />;
   }
 
   if (!isAuthorized) {

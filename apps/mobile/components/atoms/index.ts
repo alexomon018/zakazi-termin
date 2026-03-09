@@ -6,6 +6,7 @@ export { AppButton } from "./AppButton";
 export { SectionHeader } from "./SectionHeader";
 export { SectionDateHeader } from "./SectionDateHeader";
 export { ConfirmDialog } from "./ConfirmDialog";
+export { InfoDialog } from "./InfoDialog";
 export { SearchBar } from "./SearchBar";
 export { BottomSheet, type BottomSheetAction } from "./BottomSheet";
 export { MoreButton } from "./MoreButton";

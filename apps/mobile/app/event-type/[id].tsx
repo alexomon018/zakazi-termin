@@ -113,12 +113,17 @@ export default function EditEventTypeScreen() {
     return <QueryStateView state="loading" />;
   }
 
-  if (eventTypeQuery.error) {
+  if (eventTypeQuery.error || schedulesQuery.error) {
     return (
       <QueryStateView
         state="error"
-        message="Nije moguće učitati uslugu."
-        onRetry={() => eventTypeQuery.refetch()}
+        message={
+          schedulesQuery.error ? "Nije moguće učitati rasporede." : "Nije moguće učitati uslugu."
+        }
+        onRetry={() => {
+          if (schedulesQuery.error) schedulesQuery.refetch();
+          if (eventTypeQuery.error) eventTypeQuery.refetch();
+        }}
       />
     );
   }

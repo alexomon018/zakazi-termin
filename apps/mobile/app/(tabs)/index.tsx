@@ -5,6 +5,7 @@ import {
   type BottomSheetAction,
   ConfirmDialog,
   FAB,
+  InfoDialog,
   QueryStateView,
 } from "@/components/atoms";
 import { TopBarPill } from "@/components/molecules";
@@ -16,7 +17,7 @@ import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import { Clock, Copy, Eye, EyeOff, Menu, Pencil, Plus, Trash2 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
 export default function EventTypesScreen() {
   const { theme } = useTheme();
@@ -50,14 +51,20 @@ export default function EventTypesScreen() {
 
   const salonSlug = meQuery.data?.salonSlug ?? "";
 
+  const [infoDialog, setInfoDialog] = useState<{ title: string; message: string } | null>(null);
+
   const items = eventsQuery.data?.items ?? [];
 
   const handleCopyLink = async (slug: string) => {
+    if (!salonSlug) {
+      setInfoDialog({ title: "Informacija", message: "Javni link još nije dostupan." });
+      return;
+    }
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
     const safeSlug = encodeURIComponent(slug);
     const link = `${WEB_ORIGIN}/${safeSalonSlug}/${safeSlug}`;
     await Clipboard.setStringAsync(link);
-    Alert.alert("Kopirano", "Link za rezervaciju je kopiran.");
+    setInfoDialog({ title: "Kopirano", message: "Link za rezervaciju je kopiran." });
   };
 
   const sheetActions: BottomSheetAction[] = activeItem
@@ -251,6 +258,12 @@ export default function EventTypesScreen() {
 
   return (
     <AppScreen>
+      <InfoDialog
+        visible={!!infoDialog}
+        title={infoDialog?.title ?? ""}
+        message={infoDialog?.message ?? ""}
+        onClose={() => setInfoDialog(null)}
+      />
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -262,7 +275,12 @@ export default function EventTypesScreen() {
         }
       >
         <TopBarPill>
-          <Pressable onPress={() => router.push("/(tabs)/settings")}>
+          <Pressable
+            onPress={() => router.push("/(tabs)/settings")}
+            accessibilityRole="button"
+            accessibilityLabel="Podešavanja"
+            accessibilityHint="Otvara podešavanja"
+          >
             <Menu size={20} color={theme.colors.foreground} />
           </Pressable>
         </TopBarPill>
