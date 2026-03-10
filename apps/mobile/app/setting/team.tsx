@@ -25,7 +25,13 @@ export default function TeamScreen() {
   }
 
   if (meQuery.isError) {
-    return <QueryStateView state="error" onRetry={() => meQuery.refetch()} />;
+    return (
+      <QueryStateView
+        state="error"
+        message="Failed to load team information"
+        onRetry={() => meQuery.refetch()}
+      />
+    );
   }
 
   if (!isAuthorized) {

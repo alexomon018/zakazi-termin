@@ -51,20 +51,29 @@ export default function EventTypesScreen() {
 
   const salonSlug = meQuery.data?.salonSlug ?? "";
 
-  const [infoDialog, setInfoDialog] = useState<{ title: string; message: string } | null>(null);
+  const [infoDialog, setInfoDialog] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   const items = eventsQuery.data?.items ?? [];
 
   const handleCopyLink = async (slug: string) => {
     if (!salonSlug) {
-      setInfoDialog({ title: "Informacija", message: "Javni link još nije dostupan." });
+      setInfoDialog({
+        title: "Informacija",
+        message: "Javni link još nije dostupan.",
+      });
       return;
     }
     const safeSalonSlug = encodeURIComponent(salonSlug.replace(/\/+$/, ""));
     const safeSlug = encodeURIComponent(slug);
     const link = `${WEB_ORIGIN}/${safeSalonSlug}/${safeSlug}`;
     await Clipboard.setStringAsync(link);
-    setInfoDialog({ title: "Kopirano", message: "Link za rezervaciju je kopiran." });
+    setInfoDialog({
+      title: "Kopirano",
+      message: "Link za rezervaciju je kopiran.",
+    });
   };
 
   const sheetActions: BottomSheetAction[] = activeItem
@@ -170,7 +179,7 @@ export default function EventTypesScreen() {
       return <QueryStateView state="loading" variant="inline" />;
     }
 
-    if (eventsQuery.isError) {
+    if (eventsQuery.isError && items.length === 0) {
       return (
         <QueryStateView
           state="error"
@@ -197,11 +206,11 @@ export default function EventTypesScreen() {
         {items.map((item, index) => (
           <View key={item.id}>
             {index > 0 && <View style={styles.separator} />}
-            <Pressable
-              style={styles.listItem}
-              onPress={() => router.push(`/event-type/${item.id}`)}
-            >
-              <View style={styles.listItemContent}>
+            <View style={styles.listItem}>
+              <Pressable
+                style={styles.listItemContent}
+                onPress={() => router.push(`/event-type/${item.id}`)}
+              >
                 <AppText variant="body" style={{ fontWeight: "600" }}>
                   {item.title}
                 </AppText>
@@ -232,7 +241,7 @@ export default function EventTypesScreen() {
                     </View>
                   )}
                 </View>
-              </View>
+              </Pressable>
               <Pressable
                 style={styles.rowMoreButton}
                 accessibilityRole="button"
@@ -249,7 +258,7 @@ export default function EventTypesScreen() {
               >
                 <Menu size={18} color={theme.colors.mutedForeground} accessible={false} />
               </Pressable>
-            </Pressable>
+            </View>
           </View>
         ))}
       </View>

@@ -24,6 +24,19 @@ const BRAND_COLORS = [
   "#4f46e5",
 ];
 
+const BRAND_COLOR_NAMES: Record<string, string> = {
+  "#2563eb": "plava",
+  "#7c3aed": "ljubičasta",
+  "#db2777": "roze",
+  "#ea580c": "narandžasta",
+  "#16a34a": "zelena",
+  "#0d9488": "tirkizna",
+  "#0284c7": "svetloplava",
+  "#4f46e5": "indigo",
+};
+
+const getColorName = (hex: string) => BRAND_COLOR_NAMES[hex] ?? hex;
+
 export default function AppearanceSettingsScreen() {
   const { theme, preference, setPreference } = useTheme();
   const utils = trpc.useUtils();
@@ -157,7 +170,7 @@ export default function AppearanceSettingsScreen() {
               ]}
               onPress={() => handleBrandColorSelect(color)}
               accessibilityRole="button"
-              accessibilityLabel={`Boja brenda ${color}`}
+              accessibilityLabel={`Boja brenda ${getColorName(color)}`}
               accessibilityState={{ selected: currentBrandColor === color }}
             >
               {currentBrandColor === color && (
