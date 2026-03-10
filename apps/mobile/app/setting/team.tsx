@@ -1,34 +1,36 @@
+import { QueryStateView, ScreenHeader } from "@/components/atoms";
 import { TeamSettingsClient } from "@/components/organisms/team";
 import { useTheme } from "@/lib/theme-context";
-import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TeamScreen() {
   const { theme } = useTheme();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const insets = useSafeAreaInsets();
+  const meQuery = useMe();
   const role = meQuery.data?.membership?.role;
   const isAuthorized = role === "OWNER" || role === "ADMIN";
 
   useEffect(() => {
-    if (!meQuery.isLoading && !isAuthorized) {
+    if (meQuery.isSuccess && !isAuthorized) {
       router.replace("/(tabs)/settings");
     }
-  }, [meQuery.isLoading, isAuthorized]);
+  }, [meQuery.isSuccess, isAuthorized]);
 
   if (meQuery.isLoading) {
+    return <QueryStateView state="loading" />;
+  }
+
+  if (meQuery.isError) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <QueryStateView
+        state="error"
+        message="Failed to load team information"
+        onRetry={() => meQuery.refetch()}
+      />
     );
   }
 
@@ -36,5 +38,18 @@ export default function TeamScreen() {
     return null;
   }
 
-  return <TeamSettingsClient />;
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: theme.colors.background,
+        paddingTop: insets.top + theme.spacing.sm,
+      }}
+    >
+      <View style={{ paddingHorizontal: theme.spacing.lg }}>
+        <ScreenHeader title="Tim" />
+      </View>
+      <TeamSettingsClient />
+    </View>
+  );
 }

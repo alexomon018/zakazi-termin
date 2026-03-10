@@ -1,6 +1,14 @@
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
 import { TRPCProvider } from "@/lib/trpc";
+import { Lato_400Regular, Lato_700Bold, Lato_900Black } from "@expo-google-fonts/lato";
+import {
+  OpenSans_400Regular,
+  OpenSans_500Medium,
+  OpenSans_600SemiBold,
+  OpenSans_700Bold,
+} from "@expo-google-fonts/open-sans";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -11,14 +19,23 @@ SplashScreen.preventAutoHideAsync();
 function RootLayoutNav() {
   const { isLoading } = useAuth();
   const { theme, colorScheme } = useTheme();
+  const [fontsLoaded, fontError] = useFonts({
+    Lato_400Regular,
+    Lato_700Bold,
+    Lato_900Black,
+    OpenSans_400Regular,
+    OpenSans_500Medium,
+    OpenSans_600SemiBold,
+    OpenSans_700Bold,
+  });
 
   useEffect(() => {
-    if (!isLoading) {
-      SplashScreen.hideAsync();
+    if (!isLoading && (fontsLoaded || fontError)) {
+      void SplashScreen.hideAsync();
     }
-  }, [isLoading]);
+  }, [isLoading, fontsLoaded, fontError]);
 
-  if (isLoading) {
+  if (isLoading || (!fontsLoaded && !fontError)) {
     return null;
   }
 
@@ -34,38 +51,14 @@ function RootLayoutNav() {
       >
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="event-type/new"
-          options={{ headerShown: true, title: "Nova usluga", headerBackTitle: "Usluge" }}
-        />
-        <Stack.Screen
-          name="event-type/[id]"
-          options={{ headerShown: true, title: "Uredi uslugu", headerBackTitle: "Usluge" }}
-        />
-        <Stack.Screen
-          name="schedule/[id]"
-          options={{ headerShown: true, title: "Uredi raspored", headerBackTitle: "Dostupnost" }}
-        />
-        <Stack.Screen
-          name="setting/profile"
-          options={{ headerShown: true, title: "Profil", headerBackTitle: "Više" }}
-        />
-        <Stack.Screen
-          name="setting/appearance"
-          options={{ headerShown: true, title: "Izgled", headerBackTitle: "Više" }}
-        />
-        <Stack.Screen
-          name="setting/out-of-office"
-          options={{ headerShown: true, title: "Odsustvo", headerBackTitle: "Više" }}
-        />
-        <Stack.Screen
-          name="setting/calendar"
-          options={{ headerShown: true, title: "Kalendar", headerBackTitle: "Više" }}
-        />
-        <Stack.Screen
-          name="setting/team"
-          options={{ headerShown: true, title: "Tim", headerBackTitle: "Više" }}
-        />
+        <Stack.Screen name="event-type/new" options={{ headerShown: false }} />
+        <Stack.Screen name="event-type/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="schedule/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="setting/profile" options={{ headerShown: false }} />
+        <Stack.Screen name="setting/appearance" options={{ headerShown: false }} />
+        <Stack.Screen name="setting/out-of-office" options={{ headerShown: false }} />
+        <Stack.Screen name="setting/calendar" options={{ headerShown: false }} />
+        <Stack.Screen name="setting/team" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
     </>

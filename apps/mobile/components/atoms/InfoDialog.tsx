@@ -1,34 +1,23 @@
 import { useTheme } from "@/lib/theme-context";
-import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
-export function ConfirmDialog({
+export function InfoDialog({
   visible,
   title,
   message,
-  confirmLabel = "Potvrdi",
-  cancelLabel = "Otkaži",
-  destructive = false,
-  loading = false,
-  onConfirm,
-  onCancel,
+  okLabel = "U redu",
+  onClose,
 }: {
   visible: boolean;
   title: string;
   message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  destructive?: boolean;
-  loading?: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
+  okLabel?: string;
+  onClose: () => void;
 }) {
   const { theme } = useTheme();
-  const confirmForeground = destructive
-    ? theme.colors.destructiveForeground
-    : theme.colors.primaryForeground;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
         style={{
           flex: 1,
@@ -47,7 +36,6 @@ export function ConfirmDialog({
             overflow: "hidden",
           }}
         >
-          {/* Header + Content */}
           <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }}>
             <Text
               style={{
@@ -70,11 +58,8 @@ export function ConfirmDialog({
             </Text>
           </View>
 
-          {/* Footer */}
           <View
             style={{
-              flexDirection: "row",
-              gap: theme.spacing.sm,
               paddingHorizontal: 24,
               paddingVertical: 14,
               borderTopWidth: StyleSheet.hairlineWidth,
@@ -83,50 +68,22 @@ export function ConfirmDialog({
           >
             <Pressable
               style={{
-                flex: 1,
                 paddingVertical: 10,
                 borderRadius: theme.radius.sm,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
+                backgroundColor: theme.colors.primary,
                 alignItems: "center",
               }}
-              onPress={onCancel}
-              disabled={loading}
+              onPress={onClose}
             >
               <Text
                 style={{
                   fontSize: theme.typography.body,
-                  color: theme.colors.foreground,
-                  fontWeight: "500",
+                  color: theme.colors.primaryForeground,
+                  fontWeight: "600",
                 }}
               >
-                {cancelLabel}
+                {okLabel}
               </Text>
-            </Pressable>
-            <Pressable
-              style={{
-                flex: 1,
-                paddingVertical: 10,
-                borderRadius: theme.radius.sm,
-                backgroundColor: destructive ? theme.colors.destructive : theme.colors.primary,
-                alignItems: "center",
-              }}
-              onPress={onConfirm}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color={confirmForeground} size="small" />
-              ) : (
-                <Text
-                  style={{
-                    fontSize: theme.typography.body,
-                    color: confirmForeground,
-                    fontWeight: "600",
-                  }}
-                >
-                  {confirmLabel}
-                </Text>
-              )}
             </Pressable>
           </View>
         </View>

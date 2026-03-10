@@ -1,9 +1,11 @@
-import { AppCard, AppText, SectionHeader } from "@/components/atoms";
+import { AppCard, AppText, QueryStateView, ScreenHeader, SectionHeader } from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import { Check } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
 
 const THEMES = [
   { value: "light", label: "Svetla" },
@@ -22,10 +24,23 @@ const BRAND_COLORS = [
   "#4f46e5",
 ];
 
+const BRAND_COLOR_NAMES: Record<string, string> = {
+  "#2563eb": "plava",
+  "#7c3aed": "ljubičasta",
+  "#db2777": "roze",
+  "#ea580c": "narandžasta",
+  "#16a34a": "zelena",
+  "#0d9488": "tirkizna",
+  "#0284c7": "svetloplava",
+  "#4f46e5": "indigo",
+};
+
+const getColorName = (hex: string) => BRAND_COLOR_NAMES[hex] ?? hex;
+
 export default function AppearanceSettingsScreen() {
   const { theme, preference, setPreference } = useTheme();
   const utils = trpc.useUtils();
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const appearanceMutation = trpc.user.updateAppearance.useMutation({
     onSuccess: async () => {
@@ -68,8 +83,6 @@ export default function AppearanceSettingsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
         themeRow: { gap: theme.spacing.sm },
         themeOption: {
           flexDirection: "row",
@@ -107,25 +120,19 @@ export default function AppearanceSettingsScreen() {
   );
 
   if (meQuery.isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
+  }
+
+  if (meQuery.isError) {
+    return <QueryStateView state="error" onRetry={() => meQuery.refetch()} />;
   }
 
   const currentTheme = preference;
   const currentBrandColor = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+    <SettingsScrollView>
+      <ScreenHeader title="Izgled" />
       <SectionHeader title="Tema" />
       <AppCard>
         <View style={styles.themeRow}>
@@ -134,9 +141,14 @@ export default function AppearanceSettingsScreen() {
               key={t.value}
               style={[styles.themeOption, currentTheme === t.value && styles.themeOptionActive]}
               onPress={() => handleThemeSelect(t.value)}
+              accessibilityRole="button"
+              accessibilityLabel={`${t.label} tema`}
+              accessibilityState={{ selected: currentTheme === t.value }}
             >
               <AppText variant="bodySm">{t.label}</AppText>
-              {currentTheme === t.value && <Check size={16} color={theme.colors.primary} />}
+              {currentTheme === t.value && (
+                <Check size={16} color={theme.colors.primary} accessible={false} />
+              )}
             </Pressable>
           ))}
         </View>
@@ -157,12 +169,17 @@ export default function AppearanceSettingsScreen() {
                 currentBrandColor === color && styles.colorSwatchActive,
               ]}
               onPress={() => handleBrandColorSelect(color)}
+              accessibilityRole="button"
+              accessibilityLabel={`Boja brenda ${getColorName(color)}`}
+              accessibilityState={{ selected: currentBrandColor === color }}
             >
-              {currentBrandColor === color && <Check size={18} color={"#ffffff"} />}
+              {currentBrandColor === color && (
+                <Check size={18} color={"#ffffff"} accessible={false} />
+              )}
             </Pressable>
           ))}
         </View>
       </AppCard>
-    </ScrollView>
+    </SettingsScrollView>
   );
 }

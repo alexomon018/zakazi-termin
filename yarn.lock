@@ -2631,6 +2631,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@expo-google-fonts/lato@npm:^0.4.1":
+  version: 0.4.1
+  resolution: "@expo-google-fonts/lato@npm:0.4.1"
+  checksum: 10c0/d158c211b67322dbe7647984ca120318f0e4090422873d4a0f009a7350fe43888df25a0b777e61130c4dd6d06754d3e4679a3615f44b0aed3af1582c282109a7
+  languageName: node
+  linkType: hard
+
+"@expo-google-fonts/open-sans@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "@expo-google-fonts/open-sans@npm:0.4.2"
+  checksum: 10c0/e7694b6825d94c1f75f3377e55019611bc547088e5c7c89d08dccd461342ef0a5ae988fa27a16b36bec42d6ee31f01f60c0f4c0ab117fa1819383b8237a61d89
+  languageName: node
+  linkType: hard
+
 "@expo/cli@npm:54.0.23":
   version: 54.0.23
   resolution: "@expo/cli@npm:54.0.23"
@@ -6227,6 +6241,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@salonko/mobile@workspace:apps/mobile"
   dependencies:
+    "@expo-google-fonts/lato": "npm:^0.4.1"
+    "@expo-google-fonts/open-sans": "npm:^0.4.2"
     "@react-native-community/datetimepicker": "npm:8.4.4"
     "@react-navigation/native": "npm:^7.0.14"
     "@salonko/trpc": "workspace:*"
@@ -6237,9 +6253,11 @@ __metadata:
     "@types/react": "npm:~19.1.10"
     "@types/react-dom": "npm:~19.1.7"
     expo: "npm:^54.0.0"
+    expo-blur: "npm:~14.1.0"
     expo-clipboard: "npm:~8.0.8"
     expo-constants: "npm:~18.0.13"
     expo-crypto: "npm:~15.0.6"
+    expo-font: "npm:~14.0.9"
     expo-linking: "npm:~8.0.11"
     expo-router: "npm:~6.0.23"
     expo-secure-store: "npm:~15.0.8"
@@ -10251,6 +10269,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~14.1.0":
+  version: 14.1.5
+  resolution: "expo-blur@npm:14.1.5"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/4ffe9014219f23d53f66bc61ea5d00b74a012d120f94a810c71cbdd34901900282a40f7d0636877cd261bc7ff8a3db20da2e0be9393b1a950b8fc677e285bf65
+  languageName: node
+  linkType: hard
+
 "expo-clipboard@npm:~8.0.8":
   version: 8.0.8
   resolution: "expo-clipboard@npm:8.0.8"
@@ -10296,7 +10325,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-font@npm:~14.0.11":
+"expo-font@npm:~14.0.11, expo-font@npm:~14.0.9":
   version: 14.0.11
   resolution: "expo-font@npm:14.0.11"
   dependencies:

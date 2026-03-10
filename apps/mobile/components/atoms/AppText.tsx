@@ -1,4 +1,4 @@
-import { typography } from "@/lib/theme";
+import { fontFamily, typography } from "@/lib/theme";
 import { useTheme } from "@/lib/theme-context";
 import type { ReactNode } from "react";
 import { type StyleProp, Text, type TextStyle } from "react-native";
@@ -6,12 +6,12 @@ import { type StyleProp, Text, type TextStyle } from "react-native";
 type TextVariant = "title" | "h1" | "h2" | "body" | "bodySm" | "caption";
 
 const textVariantStyles: Record<TextVariant, TextStyle> = {
-  title: { fontSize: typography.title, fontWeight: "800", letterSpacing: -0.5 },
-  h1: { fontSize: typography.h1, fontWeight: "700", letterSpacing: -0.3 },
-  h2: { fontSize: typography.h2, fontWeight: "600" },
-  body: { fontSize: typography.body, fontWeight: "400" },
-  bodySm: { fontSize: typography.bodySm, fontWeight: "400" },
-  caption: { fontSize: typography.caption, fontWeight: "400" },
+  title: { fontSize: typography.title, fontFamily: fontFamily.heading.black, letterSpacing: -0.5 },
+  h1: { fontSize: typography.h1, fontFamily: fontFamily.heading.bold, letterSpacing: -0.3 },
+  h2: { fontSize: typography.h2, fontFamily: fontFamily.body.semiBold },
+  body: { fontSize: typography.body },
+  bodySm: { fontSize: typography.bodySm },
+  caption: { fontSize: typography.caption },
 };
 
 export function AppText({

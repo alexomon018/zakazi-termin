@@ -9,6 +9,7 @@ import {
 } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
 import { Copy, LogOut, RefreshCw, Shield, Trash2, UserMinus, Users } from "lucide-react-native";
@@ -28,7 +29,7 @@ export function TeamSettingsClient() {
   const utils = trpc.useUtils();
 
   // --- Queries ---
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
   const orgQuery = trpc.organization.get.useQuery(undefined, { retry: false });
 
   const organizationId = orgQuery.data?.id ?? "";
@@ -263,13 +264,19 @@ export function TeamSettingsClient() {
     );
   }
 
-  if (orgQuery.isError) {
+  if (orgQuery.isError || meQuery.isError) {
     return (
       <View style={styles.centered}>
         <AppText variant="bodySm" centered muted>
           Greška pri učitavanju podataka.
         </AppText>
-        <AppButton label="Pokušaj ponovo" onPress={() => orgQuery.refetch()} />
+        <AppButton
+          label="Pokušaj ponovo"
+          onPress={() => {
+            if (orgQuery.isError) orgQuery.refetch();
+            if (meQuery.isError) meQuery.refetch();
+          }}
+        />
       </View>
     );
   }

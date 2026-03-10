@@ -1,20 +1,22 @@
-import { AppButton, AppInput, AppText, ConfirmDialog, SectionHeader } from "@/components/atoms";
+import {
+  AppButton,
+  AppInput,
+  AppText,
+  ConfirmDialog,
+  QueryStateView,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
 import { DayAvailabilityRow, type TimeRange } from "@/components/molecules/DayAvailabilityRow";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import { useMe } from "@/lib/use-me";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { formatTimeUTC } from "@salonko/config/date-formatters";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Alert, Platform, Pressable, StyleSheet, View } from "react-native";
 
 const DAYS_OF_WEEK = [
   { value: 1, label: "Ponedeljak" },
@@ -39,7 +41,19 @@ type DateOverride = {
   isBlocked: boolean;
 };
 
-function initializeEditorState(schedule: any): EditorState {
+type ScheduleAvailabilityEntry = {
+  days: number[];
+  date: Date | null;
+  startTime: Date;
+  endTime: Date;
+};
+
+type ScheduleData = {
+  name: string;
+  availability: ScheduleAvailabilityEntry[];
+};
+
+function initializeEditorState(schedule: ScheduleData): EditorState {
   const state: EditorState = {};
   for (const day of DAYS_OF_WEEK) {
     state[day.value] = {
@@ -48,9 +62,7 @@ function initializeEditorState(schedule: any): EditorState {
     };
   }
 
-  const workingHours = schedule.availability.filter(
-    (a: any) => a.days && a.days.length > 0 && !a.date
-  );
+  const workingHours = schedule.availability.filter((a) => a.days && a.days.length > 0 && !a.date);
 
   for (const entry of workingHours) {
     const startTime = formatTimeUTC(entry.startTime);
@@ -67,10 +79,10 @@ function initializeEditorState(schedule: any): EditorState {
   return state;
 }
 
-function extractDateOverrides(schedule: any): DateOverride[] {
+function extractDateOverrides(schedule: ScheduleData): DateOverride[] {
   return schedule.availability
-    .filter((a: any) => a.date !== null)
-    .map((a: any) => ({
+    .filter((a): a is ScheduleAvailabilityEntry & { date: Date } => a.date !== null)
+    .map((a) => ({
       date: new Date(a.date),
       startTime: formatTimeUTC(a.startTime),
       endTime: formatTimeUTC(a.endTime),
@@ -88,7 +100,7 @@ export default function ScheduleEditorScreen() {
     { id: id! },
     { retry: false, enabled: !!id }
   );
-  const meQuery = trpc.user.me.useQuery(undefined, { retry: false });
+  const meQuery = useMe();
 
   const [scheduleName, setScheduleName] = useState("");
   const [days, setDays] = useState<EditorState>({});
@@ -225,17 +237,25 @@ export default function ScheduleEditorScreen() {
     removeDateOverrideMutation.mutate({ scheduleId: id!, date });
   };
 
+  const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        scrollView: {
-          flex: 1,
-          backgroundColor: theme.colors.background,
+        chip: {
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 16,
         },
-        content: {
-          padding: theme.spacing.lg,
-          gap: theme.spacing.md,
-          paddingBottom: 100,
+        saveChip: {
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          opacity: isSaving ? 0.7 : 1,
         },
         card: {
           backgroundColor: theme.colors.surface,
@@ -244,13 +264,6 @@ export default function ScheduleEditorScreen() {
           borderColor: theme.colors.border,
           padding: theme.spacing.lg,
           gap: theme.spacing.sm,
-        },
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-          gap: theme.spacing.md,
         },
         overrideRow: {
           flexDirection: "row",
@@ -261,37 +274,54 @@ export default function ScheduleEditorScreen() {
           borderBottomColor: theme.colors.border,
         },
       }),
-    [theme]
+    [theme, isSaving]
   );
 
   if (scheduleQuery.isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
-    );
+    return <QueryStateView state="loading" />;
   }
 
   if (scheduleQuery.error || !scheduleQuery.data) {
     return (
-      <View style={styles.centered}>
-        <AppText variant="bodySm" muted centered>
-          Nije moguće učitati raspored.
-        </AppText>
-        <AppButton label="Nazad" onPress={() => router.back()} variant="outline" />
-      </View>
+      <QueryStateView
+        state="error"
+        message="Nije moguće učitati raspored."
+        onRetry={() => router.back()}
+      />
     );
   }
 
-  const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
-
   return (
     <>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-      >
+      <SettingsScrollView keyboardShouldPersistTaps="handled">
+        <ScreenHeader
+          title={scheduleName.trim() || "Uredi raspored"}
+          rightContent={
+            <>
+              <View style={styles.chip}>
+                <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+                  Radno vreme
+                </AppText>
+              </View>
+              <Pressable
+                style={[styles.chip, styles.saveChip]}
+                onPress={handleSave}
+                disabled={
+                  isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name)
+                }
+                accessibilityRole="button"
+                accessibilityLabel="Sačuvaj"
+              >
+                <AppText
+                  variant="bodySm"
+                  style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+                >
+                  {isSaving ? "Čuvanje..." : "Sačuvaj"}
+                </AppText>
+              </Pressable>
+            </>
+          }
+        />
         <SectionHeader title="Naziv rasporeda" />
         <View style={styles.card}>
           <AppInput
@@ -393,13 +423,6 @@ export default function ScheduleEditorScreen() {
           </>
         )}
 
-        <AppButton
-          label="Sačuvaj raspored"
-          onPress={handleSave}
-          loading={isSaving}
-          disabled={!hasChanges && scheduleName === scheduleQuery.data?.name}
-        />
-
         {!isDefault && (
           <AppButton
             label="Postavi kao podrazumevani"
@@ -415,7 +438,7 @@ export default function ScheduleEditorScreen() {
           variant="destructive"
           disabled={isDefault}
         />
-      </ScrollView>
+      </SettingsScrollView>
 
       <ConfirmDialog
         visible={showDelete}

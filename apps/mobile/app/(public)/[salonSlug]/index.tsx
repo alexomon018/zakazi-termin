@@ -79,7 +79,7 @@ export default function PublicSalonScreen() {
             </AppText>
           </AppCard>
 
-          {profileQuery.data.eventTypes.map((eventType: any) => (
+          {profileQuery.data.eventTypes.map((eventType) => (
             <AppCard key={eventType.id}>
               <AppText variant="body">{eventType.title}</AppText>
               {eventType.description && (

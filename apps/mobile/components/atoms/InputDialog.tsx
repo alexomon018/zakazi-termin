@@ -5,6 +5,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -14,6 +15,7 @@ import { AppInput } from "./AppInput";
 export function InputDialog({
   visible,
   title,
+  description,
   placeholder = "",
   value,
   onChangeText,
@@ -25,6 +27,7 @@ export function InputDialog({
 }: {
   visible: boolean;
   title: string;
+  description?: string;
   placeholder?: string;
   value: string;
   onChangeText: (text: string) => void;
@@ -63,42 +66,62 @@ export function InputDialog({
             style={{
               backgroundColor: theme.colors.surface,
               borderRadius: theme.radius.lg,
-              padding: theme.spacing.xl,
               width: "100%",
               maxWidth: 340,
+              overflow: "hidden",
             }}
           >
-            <Text
-              style={{
-                fontSize: theme.typography.h2,
-                fontWeight: "600",
-                color: theme.colors.foreground,
-                marginBottom: theme.spacing.sm,
-              }}
-            >
-              {title}
-            </Text>
-            <AppInput
-              value={value}
-              onChangeText={onChangeText}
-              placeholder={placeholder}
-              autoFocus
-            />
+            {/* Header + Content */}
+            <View style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }}>
+              <Text
+                style={{
+                  fontSize: theme.typography.h1,
+                  fontWeight: "600",
+                  color: theme.colors.foreground,
+                  marginBottom: description ? 6 : 12,
+                }}
+              >
+                {title}
+              </Text>
+              {description && (
+                <Text
+                  style={{
+                    fontSize: theme.typography.bodySm,
+                    color: theme.colors.mutedForeground,
+                    marginBottom: 12,
+                    lineHeight: 18,
+                  }}
+                >
+                  {description}
+                </Text>
+              )}
+              <AppInput
+                value={value}
+                onChangeText={onChangeText}
+                placeholder={placeholder}
+                autoFocus
+              />
+            </View>
+
+            {/* Footer */}
             <View
               style={{
                 flexDirection: "row",
                 gap: theme.spacing.sm,
-                justifyContent: "flex-end",
-                marginTop: theme.spacing.lg,
+                paddingHorizontal: 24,
+                paddingVertical: 14,
+                borderTopWidth: StyleSheet.hairlineWidth,
+                borderTopColor: theme.colors.border,
               }}
             >
               <Pressable
                 style={{
-                  paddingVertical: theme.spacing.sm,
-                  paddingHorizontal: theme.spacing.lg,
+                  flex: 1,
+                  paddingVertical: 10,
                   borderRadius: theme.radius.sm,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
+                  alignItems: "center",
                   opacity: loading ? 0.6 : 1,
                 }}
                 onPress={onCancel}
@@ -117,10 +140,11 @@ export function InputDialog({
               </Pressable>
               <Pressable
                 style={{
-                  paddingVertical: theme.spacing.sm,
-                  paddingHorizontal: theme.spacing.lg,
+                  flex: 1,
+                  paddingVertical: 10,
                   borderRadius: theme.radius.sm,
                   backgroundColor: theme.colors.primary,
+                  alignItems: "center",
                   opacity: confirmDisabled ? 0.6 : 1,
                 }}
                 onPress={onConfirm}

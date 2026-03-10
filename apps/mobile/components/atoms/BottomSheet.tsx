@@ -170,8 +170,10 @@ export function BottomSheet({
                 opacity: action.disabled ? 0.5 : 1,
               }}
               onPress={() => {
-                action.onPress();
-                handleClose();
+                runExitAnimation(() => {
+                  onClose();
+                  action.onPress();
+                });
               }}
             >
               {action.icon && (

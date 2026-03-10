@@ -1,7 +1,15 @@
-import { AppButton, AppInput, AppText, SectionHeader } from "@/components/atoms";
+import {
+  AppButton,
+  AppInput,
+  AppText,
+  FormField,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Switch, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type EventTypeFormData = {
   title: string;
@@ -122,7 +130,9 @@ export function EventTypeForm({
   isPending,
   submitLabel,
   submitError,
+  headerTitle,
   showVisibilityToggle = false,
+  onBackPress,
   onFormDataChange,
   onSubmit,
 }: {
@@ -132,11 +142,14 @@ export function EventTypeForm({
   isPending: boolean;
   submitLabel: string;
   submitError?: string | null;
+  headerTitle: string;
   showVisibilityToggle?: boolean;
+  onBackPress: () => void;
   onFormDataChange: (updater: (prev: EventTypeFormData) => EventTypeFormData) => void;
   onSubmit: () => void;
 }) {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const updateField = <K extends keyof EventTypeFormData>(key: K, value: EventTypeFormData[K]) => {
@@ -158,7 +171,27 @@ export function EventTypeForm({
     () =>
       StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
-        content: { padding: theme.spacing.lg, gap: theme.spacing.md, paddingBottom: 100 },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: insets.top + theme.spacing.sm,
+          gap: theme.spacing.md,
+          paddingBottom: 100,
+        },
+        chip: {
+          height: 40,
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 16,
+        },
+        saveChip: {
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          opacity: isPending ? 0.7 : 1,
+        },
         card: {
           backgroundColor: theme.colors.surface,
           borderRadius: theme.radius.md,
@@ -167,7 +200,6 @@ export function EventTypeForm({
           padding: theme.spacing.lg,
           gap: theme.spacing.md,
         },
-        formGroup: { gap: theme.spacing.xs },
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
         switchRow: {
           flexDirection: "row",
@@ -175,7 +207,7 @@ export function EventTypeForm({
           alignItems: "center",
         },
       }),
-    [theme]
+    [theme, insets.top, isPending]
   );
 
   return (
@@ -184,39 +216,53 @@ export function EventTypeForm({
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      <ScreenHeader
+        title={headerTitle}
+        onBack={onBackPress}
+        rightContent={
+          <>
+            <View style={styles.chip}>
+              <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+                Osnovno
+              </AppText>
+            </View>
+            <Pressable
+              style={[styles.chip, styles.saveChip]}
+              onPress={onSubmit}
+              disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={submitLabel}
+            >
+              <AppText
+                variant="bodySm"
+                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+              >
+                {isPending ? "Čuvanje..." : submitLabel}
+              </AppText>
+            </Pressable>
+          </>
+        }
+      />
       <SectionHeader title="Osnovno" />
       <View style={styles.card}>
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Naziv</AppText>
+        <FormField label="Naziv" error={errors.title}>
           <AppInput
             value={formData.title}
             onChangeText={handleTitleChange}
             placeholder="npr. Šišanje"
           />
-          {errors.title && (
-            <AppText variant="caption" muted>
-              {errors.title}
-            </AppText>
-          )}
-        </View>
+        </FormField>
 
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Slug (URL)</AppText>
+        <FormField label="Slug (URL)" error={errors.slug}>
           <AppInput
             value={formData.slug}
             onChangeText={(v) => updateField("slug", v)}
             placeholder="npr. sisanje"
             autoCapitalize="none"
           />
-          {errors.slug && (
-            <AppText variant="caption" muted>
-              {errors.slug}
-            </AppText>
-          )}
-        </View>
+        </FormField>
 
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Opis</AppText>
+        <FormField label="Opis">
           <AppInput
             value={formData.description}
             onChangeText={(v) => updateField("description", v)}
@@ -225,7 +271,7 @@ export function EventTypeForm({
             numberOfLines={3}
             style={styles.multilineInput}
           />
-        </View>
+        </FormField>
 
         <OptionRow
           label="Trajanje (min)"
@@ -242,19 +288,13 @@ export function EventTypeForm({
 
       <SectionHeader title="Lokacija" />
       <View style={styles.card}>
-        <View style={styles.formGroup}>
-          <AppText variant="bodySm">Adresa</AppText>
+        <FormField label="Adresa" error={errors.locationAddress}>
           <AppInput
             value={formData.locationAddress}
             onChangeText={(v) => updateField("locationAddress", v)}
             placeholder="Adresa salona"
           />
-          {errors.locationAddress && (
-            <AppText variant="caption" muted>
-              {errors.locationAddress}
-            </AppText>
-          )}
-        </View>
+        </FormField>
       </View>
 
       {schedules.length > 0 && (
@@ -313,7 +353,10 @@ export function EventTypeForm({
             <Switch
               value={formData.requiresConfirmation}
               onValueChange={(v) => updateField("requiresConfirmation", v)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.accent,
+              }}
             />
           </View>
         </View>
@@ -326,13 +369,15 @@ export function EventTypeForm({
             <Switch
               value={formData.hidden}
               onValueChange={(v) => updateField("hidden", v)}
-              trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+              trackColor={{
+                false: theme.colors.border,
+                true: theme.colors.accent,
+              }}
             />
           </View>
         </View>
       )}
 
-      <AppButton label={submitLabel} onPress={onSubmit} loading={isPending} />
       {submitError && (
         <AppText variant="bodySm" centered muted>
           {submitError}

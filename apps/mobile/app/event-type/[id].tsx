@@ -1,4 +1,4 @@
-import { AppButton, AppText, ConfirmDialog } from "@/components/atoms";
+import { AppButton, ConfirmDialog, QueryStateView } from "@/components/atoms";
 import {
   DEFAULT_FORM_DATA,
   EventTypeForm,
@@ -9,7 +9,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 
 export default function EditEventTypeScreen() {
   const { theme } = useTheme();
@@ -49,8 +49,8 @@ export default function EditEventTypeScreen() {
   useEffect(() => {
     if (eventTypeQuery.data) {
       const et = eventTypeQuery.data;
-      const locations = (et.locations as any[] | null) ?? [];
-      const inPersonLocation = locations.find((l: any) => l.type === "inPerson");
+      const locations = (et.locations as { type: string; address?: string }[] | null) ?? [];
+      const inPersonLocation = locations.find((l) => l.type === "inPerson");
       const firstLocation = locations[0] as { type?: string } | undefined;
       setFormData({
         title: et.title,
@@ -100,13 +100,6 @@ export default function EditEventTypeScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        centered: {
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-          gap: theme.spacing.md,
-        },
         deleteContainer: {
           padding: theme.spacing.lg,
           paddingBottom: theme.spacing.xxl,
@@ -117,25 +110,25 @@ export default function EditEventTypeScreen() {
   );
 
   if (eventTypeQuery.isLoading || schedulesQuery.isLoading) {
+    return <QueryStateView state="loading" />;
+  }
+
+  if (eventTypeQuery.error || schedulesQuery.error) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <QueryStateView
+        state="error"
+        message={
+          schedulesQuery.error ? "Nije moguće učitati rasporede." : "Nije moguće učitati uslugu."
+        }
+        onRetry={() => {
+          if (schedulesQuery.error) schedulesQuery.refetch();
+          if (eventTypeQuery.error) eventTypeQuery.refetch();
+        }}
+      />
     );
   }
 
-  if (eventTypeQuery.error) {
-    return (
-      <View style={styles.centered}>
-        <AppText variant="bodySm" muted centered>
-          Nije moguće učitati uslugu.
-        </AppText>
-        <AppButton label="Nazad" onPress={() => router.back()} variant="outline" />
-      </View>
-    );
-  }
-
-  const schedules = (schedulesQuery.data ?? []).map((s: any) => ({
+  const schedules = (schedulesQuery.data ?? []).map((s) => ({
     id: s.id,
     name: s.name,
   }));
@@ -147,9 +140,11 @@ export default function EditEventTypeScreen() {
         errors={errors}
         schedules={schedules}
         isPending={updateMutation.isPending}
-        submitLabel="Sačuvaj izmene"
+        submitLabel="Sačuvaj"
         submitError={updateMutation.error?.message}
+        headerTitle={formData.title.trim() || "Uredi uslugu"}
         showVisibilityToggle
+        onBackPress={() => router.back()}
         onFormDataChange={setFormData}
         onSubmit={handleSubmit}
       />
