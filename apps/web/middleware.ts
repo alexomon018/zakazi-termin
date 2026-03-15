@@ -18,7 +18,9 @@ const ALWAYS_ACCESSIBLE_ROUTES = [
 ];
 
 export async function middleware(req: NextRequest, _event: NextFetchEvent) {
-  const token = await getToken({ req });
+  const token = await getToken({
+    req: req as unknown as Parameters<typeof getToken>[0]["req"],
+  });
   const { pathname } = req.nextUrl;
 
   const isAuthPage =
