@@ -45,7 +45,7 @@ export function TeamMembersList({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-border">
           {members?.map((member) => {
             const RoleIcon = roleIcons[member.role] || Users;
             const isCurrentUser = member.userId === currentUser?.id;
@@ -62,7 +62,7 @@ export function TeamMembersList({
                 className="flex flex-col gap-3 justify-between p-4 sm:flex-row sm:items-center"
               >
                 <div className="flex gap-3 items-center">
-                  <div className="flex justify-center items-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-800">
+                  <div className="flex justify-center items-center w-10 h-10 bg-muted rounded-full">
                     {member.avatarUrl ? (
                       <img
                         src={member.avatarUrl}
@@ -70,21 +70,19 @@ export function TeamMembersList({
                         className="object-cover w-10 h-10 rounded-full"
                       />
                     ) : (
-                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      <span className="text-sm font-medium text-muted-foreground">
                         {(member.name || member.email)[0]?.toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium text-gray-900 truncate dark:text-white">
+                    <p className="font-medium text-foreground truncate">
                       {member.name || "Bez imena"}
                       {isCurrentUser && (
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">(Vi)</span>
+                        <span className="ml-2 text-xs text-muted-foreground">(Vi)</span>
                       )}
                     </p>
-                    <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                      {member.email}
-                    </p>
+                    <p className="text-sm text-muted-foreground truncate">{member.email}</p>
                   </div>
                 </div>
 
@@ -105,7 +103,7 @@ export function TeamMembersList({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-sm">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-sm">
                       <RoleIcon className="w-4 h-4" />
                       <span>{roleLabels[member.role]}</span>
                     </div>

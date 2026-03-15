@@ -8,11 +8,26 @@ import Link from "next/link";
 interface HeroSectionProps {
   imageSrc: string;
   imageAlt: string;
+  headline?: string;
+  highlightText?: string;
+  subheading?: string;
+  badgeText?: string;
+  socialProofText?: string;
   onStartClick?: () => void;
   onDemoClick?: () => void;
 }
 
-export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: HeroSectionProps) {
+export function HeroSection({
+  imageSrc,
+  imageAlt,
+  headline = "Vaše mušterije zakazuju same,",
+  highlightText = "vi radite nokte",
+  subheading = "Bez odgovaranja na poruke u 23h, bez duplo zakazanih termina. Pustite klijente da zakazuju online — vi se posvetite noktima.",
+  badgeText = "30 dana besplatno, bez kartice",
+  socialProofText = "100+ salona u Srbiji",
+  onStartClick,
+  onDemoClick,
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden bg-white dark:bg-background">
       {/* Subtle background pattern */}
@@ -25,16 +40,15 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
             {/* Trust indicator - subtle badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 text-sm font-medium rounded-full bg-primary/5 text-primary dark:bg-primary/10">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              30 dana besplatno, bez kartice
+              {badgeText}
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Zakazivanje termina, <span className="text-primary">jednostavno</span>
+              {headline} <span className="text-primary">{highlightText}</span>
             </h1>
 
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              Omogućite klijentima da sami zakazuju termine online — 24/7. Manje poziva, manje
-              propuštenih termina, više vremena za ono što je važno.
+              {subheading}
             </p>
 
             {/* CTA Buttons */}
@@ -74,7 +88,7 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
                   className="h-12 px-6 text-base font-medium"
                   asChild
                 >
-                  <Link href="#demo">
+                  <Link href="#kako-radi">
                     <Play className="w-4 h-4 mr-2" />
                     Pogledajte kako radi
                   </Link>
@@ -97,10 +111,23 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
                 Otkažite bilo kada
               </span>
             </div>
+
+            {/* Mobile social proof (hidden on desktop) */}
+            <div className="flex items-center gap-3 mt-6 lg:hidden">
+              <div className="flex -space-x-2">
+                <div className="w-7 h-7 rounded-full bg-primary/20 ring-2 ring-white dark:ring-background" />
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 ring-2 ring-white dark:ring-background" />
+                <div className="w-7 h-7 rounded-full bg-amber-500/20 ring-2 ring-white dark:ring-background" />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Aktivno koristi</span>{" "}
+                {socialProofText}
+              </p>
+            </div>
           </div>
 
-          {/* Right: Product Screenshot */}
-          <div className="relative">
+          {/* Right: Product Screenshot (hidden on small mobile, visible from sm up) */}
+          <div className="relative hidden sm:block">
             {/* Browser frame for screenshot */}
             <div className="overflow-hidden bg-white rounded-xl shadow-2xl ring-1 ring-gray-900/5 dark:bg-card dark:ring-white/10">
               {/* Browser bar */}
@@ -128,7 +155,7 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
               />
             </div>
 
-            {/* Floating card - subtle social proof */}
+            {/* Floating card - subtle social proof (desktop only, inline on mobile) */}
             <div className="absolute -left-4 bottom-12 hidden lg:block">
               <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-lg shadow-lg ring-1 ring-gray-900/5 dark:bg-card dark:ring-white/10">
                 <div className="flex -space-x-2">
@@ -138,7 +165,7 @@ export function HeroSection({ imageSrc, imageAlt, onStartClick, onDemoClick }: H
                 </div>
                 <div className="text-sm">
                   <p className="font-medium text-foreground">Aktivno koristi</p>
-                  <p className="text-muted-foreground">100+ salona u Srbiji</p>
+                  <p className="text-muted-foreground">{socialProofText}</p>
                 </div>
               </div>
             </div>

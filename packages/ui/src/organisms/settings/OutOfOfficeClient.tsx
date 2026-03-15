@@ -105,8 +105,8 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Van kancelarije</h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl font-bold text-foreground">Van kancelarije</h1>
+          <p className="mt-1 text-muted-foreground">
             Upravljajte periodima kada niste dostupni za zakazivanje
           </p>
         </div>
@@ -152,9 +152,9 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
             </div>
           ) : (
             <div className="py-12 text-center">
-              <CalendarDays className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
-              <p className="mb-2 text-gray-500 dark:text-gray-400">Nemate zakazanih odsustva</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
+              <CalendarDays className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30" />
+              <p className="mb-2 text-muted-foreground">Nemate zakazanih odsustva</p>
+              <p className="text-sm text-muted-foreground">
                 Dodajte period kada necete biti dostupni za zakazivanje termina.
               </p>
             </div>

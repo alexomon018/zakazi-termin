@@ -40,7 +40,7 @@ export const DashboardShell = memo(function DashboardShell({
   hideMobileNav = false,
 }: DashboardShellProps) {
   return (
-    <div className="min-h-dvh bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-dvh bg-muted/30 dark:bg-background">
       {/* Desktop/Tablet Sidebar - use custom if provided */}
       {customSidebar ?? (
         <DashboardSidebar

@@ -43,7 +43,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             <p className="text-base font-semibold text-green-600 dark:text-green-400">
               Probni period aktivan
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Imate još{" "}
               <strong>
                 {formatTrialTimeRemaining(status.trialDaysRemaining, status.trialEndsAt)}
@@ -56,12 +56,12 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             <p className="text-base font-semibold text-green-600 dark:text-green-400">
               Aktivna pretplata
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {planName}
               {status.cancelAtPeriodEnd && " (otkazana, aktivna do kraja perioda)"}
             </p>
             {status.currentPeriodEnd && (
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Sledeća naplata: {formatDate(status.currentPeriodEnd, "dateOnly")}
               </p>
             )}
@@ -71,7 +71,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             <p className="text-base font-semibold text-blue-600 dark:text-blue-400">
               Nemate pretplatu
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Pretplatite se da biste koristili sve funkcije aplikacije.
             </p>
           </div>
@@ -80,7 +80,7 @@ export function CurrentStatusCard({ status }: CurrentStatusCardProps) {
             <p className="text-base font-semibold text-red-600 dark:text-red-400">
               {status.status === "PAST_DUE" ? "Plaćanje neuspešno" : "Pretplata istekla"}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               {status.status === "PAST_DUE"
                 ? "Ažurirajte način plaćanja da biste nastavili da koristite Zakazi Termin."
                 : "Pretplatite se da biste nastavili da koristite Zakazi Termin."}

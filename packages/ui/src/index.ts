@@ -258,7 +258,10 @@ export { FeaturesSection } from "./organisms/landing/FeaturesSection";
 export { ProcessSection } from "./organisms/landing/ProcessSection";
 export { PricingSection } from "./organisms/landing/PricingSection";
 export { CtaBanner } from "./organisms/landing/CtaBanner";
+export { TestimonialsSection } from "./organisms/landing/TestimonialsSection";
 export { LandingFooter } from "./organisms/landing/LandingFooter";
+export { VERTICALS, VERTICAL_SLUGS } from "./organisms/landing/vertical-data";
+export type { VerticalLandingData, VerticalFeature } from "./organisms/landing/vertical-data";
 
 // Organisms - Cookie Consent
 export { CookieBanner } from "./organisms/cookie-consent/CookieBanner";

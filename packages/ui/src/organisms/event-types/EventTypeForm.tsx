@@ -173,13 +173,13 @@ export function EventTypeForm({
             <div className="flex justify-between items-center">
               <div className="flex gap-3 items-center">
                 {formData.hidden ? (
-                  <EyeOff className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                  <EyeOff className="w-5 h-5 text-muted-foreground" />
                 ) : (
                   <Eye className="w-5 h-5 text-green-500" />
                 )}
                 <div>
-                  <Label className="text-base text-gray-900 dark:text-white">Vidljivost</Label>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <Label className="text-base text-foreground">Vidljivost</Label>
+                  <p className="text-sm text-muted-foreground">
                     {formData.hidden
                       ? "Ovaj tip termina je skriven i klijenti ga ne mogu videti"
                       : "Ovaj tip termina je aktivan i vidljiv klijentima"}
@@ -202,7 +202,7 @@ export function EventTypeForm({
       <FormSection icon={Clock} title="Osnovne informacije">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-gray-900 dark:text-white">
+            <Label htmlFor="title" className="text-foreground">
               Naziv
             </Label>
             <Input
@@ -216,11 +216,11 @@ export function EventTypeForm({
             {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="slug" className="text-gray-900 dark:text-white">
+            <Label htmlFor="slug" className="text-foreground">
               URL slug
             </Label>
             <div className="flex items-center">
-              <span className="mr-1 text-sm text-gray-500 dark:text-gray-400">/</span>
+              <span className="mr-1 text-sm text-muted-foreground">/</span>
               <Input
                 id="slug"
                 data-testid={`${testIdPrefix}-slug-input`}
@@ -239,7 +239,7 @@ export function EventTypeForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description" className="text-gray-900 dark:text-white">
+          <Label htmlFor="description" className="text-foreground">
             Opis (opciono)
           </Label>
           <textarea
@@ -254,7 +254,7 @@ export function EventTypeForm({
                 description: e.target.value,
               }))
             }
-            className="px-3 py-2 w-full text-gray-900 bg-white rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full text-foreground bg-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
@@ -269,7 +269,7 @@ export function EventTypeForm({
       {/* Location */}
       <FormSection icon={MapPin} title="Lokacija">
         <div className="space-y-2">
-          <Label htmlFor="locationAddress" className="text-gray-900 dark:text-white">
+          <Label htmlFor="locationAddress" className="text-foreground">
             Adresa
           </Label>
           <Input
@@ -288,7 +288,7 @@ export function EventTypeForm({
           {errors.locationAddress && (
             <p className="text-sm text-red-500">{errors.locationAddress}</p>
           )}
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground">
             Ova adresa će biti prikazana klijentima prilikom zakazivanja
           </p>
         </div>
@@ -353,8 +353,8 @@ export function EventTypeForm({
 
         <div className="flex justify-between items-center">
           <div>
-            <Label className="text-gray-900 dark:text-white">Zahtevaj ručnu potvrdu</Label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <Label className="text-foreground">Zahtevaj ručnu potvrdu</Label>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Termini neće biti automatski potvrđeni dok ih ne odobrite
             </p>
           </div>

@@ -51,6 +51,7 @@ export async function authorize(): Promise<{
     code_challenge_method: "S256",
     state,
     scope: "openid profile",
+    prompt: "login",
   });
 
   const authUrl = `${API_URL}/api/auth/oauth/authorize?${params.toString()}`;

@@ -32,7 +32,8 @@
     "prepare": "husky"
   },
   "resolutions": {
-    "react-hook-form": "^7.68.0"
+    "react-hook-form": "^7.68.0",
+    "next-auth": "^4.24.10"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

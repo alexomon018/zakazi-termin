@@ -175,15 +175,10 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1
-          data-testid="profile-settings-title"
-          className="text-2xl font-bold text-gray-900 dark:text-white"
-        >
+        <h1 data-testid="profile-settings-title" className="text-2xl font-bold text-foreground">
           Moj profil
         </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          Upravljajte informacijama vašeg profila
-        </p>
+        <p className="mt-1 text-muted-foreground">Upravljajte informacijama vašeg profila</p>
       </div>
 
       {saved && (

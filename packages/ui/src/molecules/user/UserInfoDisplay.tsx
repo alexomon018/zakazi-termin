@@ -7,10 +7,8 @@ interface UserInfoDisplayProps {
 export function UserInfoDisplay({ name, email, subtitle }: UserInfoDisplayProps) {
   return (
     <div>
-      <p className="text-sm font-medium text-gray-900 dark:text-white">{name}</p>
-      {(email || subtitle) && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">{email || subtitle}</p>
-      )}
+      <p className="text-sm font-medium text-foreground">{name}</p>
+      {(email || subtitle) && <p className="text-xs text-muted-foreground">{email || subtitle}</p>}
     </div>
   );
 }

@@ -5,20 +5,23 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 interface CtaBannerProps {
+  headline?: string;
+  subheading?: string;
   onStartClick?: () => void;
   onDemoClick?: () => void;
 }
 
-export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
+export function CtaBanner({
+  headline = "Spremni da unapredite zakazivanje?",
+  subheading = "Pridružite se vlasnicima salona koji su automatizovali termine i vratili sebi vreme.",
+  onStartClick,
+  onDemoClick,
+}: CtaBannerProps) {
   return (
     <section className="py-16 bg-primary dark:bg-primary lg:py-24">
       <div className="px-4 mx-auto max-w-4xl sm:px-6 lg:px-8 text-center">
-        <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-          Spremni da unapredite zakazivanje?
-        </h2>
-        <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">
-          Pridružite se vlasnicima salona koji su automatizovali termine i vratili sebi vreme.
-        </p>
+        <h2 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl">{headline}</h2>
+        <p className="mt-4 text-lg text-white/80 max-w-2xl mx-auto">{subheading}</p>
 
         <div className="flex flex-col items-center justify-center gap-4 mt-8 sm:flex-row">
           {onStartClick ? (
@@ -61,7 +64,7 @@ export function CtaBanner({ onStartClick, onDemoClick }: CtaBannerProps) {
               className="h-12 px-6 text-base font-medium text-white border-white/30 bg-white/10 hover:bg-white/20"
               asChild
             >
-              <Link href="#demo">Pogledajte demo</Link>
+              <Link href="#kako-radi">Pogledajte demo</Link>
             </Button>
           )}
         </div>

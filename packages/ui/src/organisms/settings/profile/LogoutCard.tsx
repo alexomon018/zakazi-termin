@@ -19,15 +19,10 @@ export function LogoutCard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Odjavite se sa vašeg naloga na ovom uređaju.
         </p>
-        <Button
-          type="button"
-          variant="outline"
-          className="border-gray-300 dark:border-gray-600"
-          onClick={handleSignOut}
-        >
+        <Button type="button" variant="outline" className="border-border" onClick={handleSignOut}>
           Odjavi se
         </Button>
       </CardContent>

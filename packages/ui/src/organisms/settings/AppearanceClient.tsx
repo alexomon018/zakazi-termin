@@ -81,8 +81,8 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
   return (
     <div className="space-y-6 md:px-0">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Izgled</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-foreground">Izgled</h1>
+        <p className="mt-1 text-muted-foreground">
           Prilagodite izgled vaše stranice za zakazivanje
         </p>
       </div>

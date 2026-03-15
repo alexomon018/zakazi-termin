@@ -228,6 +228,53 @@ export function HelpArticleSchema({
   );
 }
 
+type VerticalLandingSchemaProps = {
+  title: string;
+  serviceType: string;
+  serviceDescription: string;
+  slug: string;
+};
+
+export function VerticalLandingSchema({
+  title,
+  serviceType,
+  serviceDescription,
+  slug,
+}: VerticalLandingSchemaProps) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: `Salonko - ${title}`,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description: serviceDescription,
+    url: `${baseUrl}/za-salone/${slug}`,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "RSD",
+      description: "Besplatno za pocetnike",
+    },
+    provider: {
+      "@type": "Organization",
+      name: "Salonko",
+      url: baseUrl,
+    },
+    audience: {
+      "@type": "Audience",
+      audienceType: serviceType,
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: Safe for JSON-LD structured data
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 type FAQSchemaProps = {
   items: Array<{
     question: string;

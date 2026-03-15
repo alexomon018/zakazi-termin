@@ -30,17 +30,17 @@ export function TeamPendingInvites({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="divide-y divide-border">
           {invites.map((invite) => (
             <div
               key={invite.inviteUrl}
               className="flex flex-col gap-3 justify-between p-4 sm:flex-row sm:items-center"
             >
               <div className="min-w-0">
-                <p className="font-medium text-gray-900 truncate dark:text-white">
+                <p className="font-medium text-foreground truncate">
                   {invite.email || "Link za pozivnicu"}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {roleLabels[invite.role ?? "MEMBER"] ?? "Član"} · Ističe{" "}
                   {new Date(invite.expiresAt).toLocaleDateString("sr-Latn")}
                 </p>

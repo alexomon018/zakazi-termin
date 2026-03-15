@@ -1,5 +1,5 @@
 import { getAppUrl } from "@/lib/utils";
-import { helpCategories } from "@salonko/ui";
+import { VERTICAL_SLUGS, helpCategories } from "@salonko/ui";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -13,6 +13,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }))
   );
+
+  const verticalEntries: MetadataRoute.Sitemap = VERTICAL_SLUGS.map((slug) => ({
+    url: `${baseUrl}/za-salone/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
 
   return [
     {
@@ -69,6 +76,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
+    ...verticalEntries,
     ...helpArticleEntries,
   ];
 }

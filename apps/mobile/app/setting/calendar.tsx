@@ -9,11 +9,13 @@ import {
 } from "@/components/atoms";
 import { SettingsScrollView } from "@/components/molecules";
 import { API_URL } from "@/lib/api-url";
+import { tokenStorage } from "@/lib/secure-store";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AppState, StyleSheet, Switch, View } from "react-native";
+import { useMemo, useState } from "react";
+import { StyleSheet, Switch, View } from "react-native";
 
 type CalendarConnection = {
   id: string;
@@ -28,6 +30,7 @@ export default function CalendarSettingsScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
   const connectionsQuery = trpc.calendar.listConnections.useQuery(undefined, {
     retry: false,
@@ -46,21 +49,20 @@ export default function CalendarSettingsScreen() {
     },
   });
 
-  const pendingRefetch = useRef(false);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "active" && pendingRefetch.current) {
-        pendingRefetch.current = false;
-        connectionsQuery.refetch();
-      }
-    });
-    return () => subscription.remove();
-  }, [connectionsQuery]);
-
   const handleConnect = async () => {
-    pendingRefetch.current = true;
-    await WebBrowser.openBrowserAsync(`${API_URL}/api/calendar/google/connect`);
+    const token = await tokenStorage.getToken();
+    const redirectUrl = Linking.createURL("setting/calendar");
+    const mobileRedirect = encodeURIComponent(redirectUrl);
+    const response = await fetch(
+      `${API_URL}/api/integrations/google-calendar/add?mobileRedirect=${mobileRedirect}`,
+      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+    );
+    if (!response.ok) return;
+    const { url } = await response.json();
+    setConnecting(true);
+    await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+    setConnecting(false);
+    await utils.calendar.listConnections.invalidate();
   };
 
   const styles = useMemo(
@@ -78,7 +80,7 @@ export default function CalendarSettingsScreen() {
           gap: theme.spacing.md,
           paddingVertical: theme.spacing.xs,
         },
-        actions: { marginTop: theme.spacing.md },
+        actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
       }),
     [theme]
   );

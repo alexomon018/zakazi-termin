@@ -27,7 +27,7 @@ export function FAB({
       accessibilityLabel={label ?? accessibilityLabel}
       style={{
         position: "absolute",
-        bottom: insets.bottom + 64,
+        bottom: insets.bottom + 16,
         right: theme.spacing.xl,
         flexDirection: "row",
         alignItems: "center",

@@ -28,7 +28,7 @@ const iconSizeClasses = {
 export function UserAvatar({ name, image, size = "md" }: UserAvatarProps) {
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden relative`}
+      className={`${sizeClasses[size]} rounded-full bg-muted flex items-center justify-center overflow-hidden relative`}
     >
       {image ? (
         <Image
@@ -39,7 +39,7 @@ export function UserAvatar({ name, image, size = "md" }: UserAvatarProps) {
           className="w-full h-full rounded-full object-cover"
         />
       ) : (
-        <User className={`${iconSizeClasses[size]} text-gray-500 dark:text-gray-400`} />
+        <User className={`${iconSizeClasses[size]} text-muted-foreground`} />
       )}
     </div>
   );

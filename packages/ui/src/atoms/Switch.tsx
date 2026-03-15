@@ -22,7 +22,7 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         onClick={() => onCheckedChange(!checked)}
         className={cn(
           "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-          checked ? colorClass : "bg-gray-200 dark:bg-gray-700",
+          checked ? colorClass : "bg-muted",
           className
         )}
         {...props}

@@ -29,7 +29,7 @@ export function DurationSelector({
 }: DurationSelectorProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label className="text-gray-900 dark:text-white">{label}</Label>
+      <Label className="text-foreground">{label}</Label>
       <div className="flex flex-wrap gap-2">
         {DURATION_OPTIONS.map((duration) => (
           <button
@@ -41,7 +41,7 @@ export function DurationSelector({
               "px-4 py-2 rounded-md text-sm font-medium transition-colors",
               value === duration
                 ? "bg-blue-500 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-muted text-foreground hover:bg-muted/80"
             )}
           >
             {duration < 60 ? `${duration} min` : `${duration / 60}h`}
@@ -60,7 +60,7 @@ export function DurationSelector({
             }}
             className="w-20"
           />
-          <span className="text-sm text-gray-500 dark:text-gray-400">min</span>
+          <span className="text-sm text-muted-foreground">min</span>
         </div>
       </div>
       {error && <p className="text-sm text-red-500">{error}</p>}

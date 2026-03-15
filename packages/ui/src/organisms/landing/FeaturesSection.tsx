@@ -1,53 +1,69 @@
+import type { LucideIcon } from "lucide-react";
 import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
 
-const features = [
+interface FeatureItem {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const defaultFeatures: FeatureItem[] = [
   {
     icon: Calendar,
-    title: "Online zakazivanje",
+    title: "Klijenti zakazuju non-stop",
     description:
       "Klijenti vide slobodne termine u realnom vremenu i zakazuju kada im odgovara — bez čekanja.",
   },
   {
     icon: Clock,
-    title: "Automatizacija",
+    title: "Manje posla za vas",
     description:
       "Klijenti biraju uslugu, termin i zaposlenog samostalno. Vi samo primate obaveštenja.",
   },
   {
     icon: Bell,
-    title: "Podsetnici",
+    title: "Manje propuštenih termina",
     description: "Automatski email i SMS podsetnici značajno smanjuju broj propuštenih termina.",
   },
   {
     icon: Users,
-    title: "Tim",
+    title: "Upravljajte celim timom",
     description:
       "Dodajte zaposlene, podesite im radno vreme i pratite zauzetost svakog člana tima.",
   },
   {
     icon: Smartphone,
-    title: "Mobilni pristup",
+    title: "Salon u džepu",
     description: "Upravljajte terminima sa telefona, bilo gde i bilo kada — sve na jednom mestu.",
   },
   {
     icon: TrendingUp,
-    title: "Izveštaji",
+    title: "Znajte koliko zarađujete",
     description: "Pregledni izveštaji o prihodima, najpopularnijim uslugama i zauzetosti salona.",
   },
 ];
 
-export function FeaturesSection() {
+interface FeaturesSectionProps {
+  title?: string;
+  subtitle?: string;
+  features?: FeatureItem[];
+}
+
+export function FeaturesSection({
+  title = "Sve što vam treba na jednom mestu",
+  subtitle = "Jednostavan sistem koji štedi vreme i poboljšava iskustvo klijenata.",
+  features = defaultFeatures,
+}: FeaturesSectionProps = {}) {
   return (
     <section id="funkcije" className="py-20 bg-white dark:bg-background lg:py-28">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Sve što vam treba na jednom mestu
+          <p className="text-xs font-semibold tracking-widest uppercase text-primary">Funkcije</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            {title}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Jednostavan sistem koji štedi vreme i poboljšava iskustvo klijenata.
-          </p>
+          <p className="mt-4 text-lg text-muted-foreground">{subtitle}</p>
         </div>
 
         {/* Features Grid */}

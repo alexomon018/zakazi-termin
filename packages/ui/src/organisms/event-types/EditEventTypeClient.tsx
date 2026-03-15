@@ -137,10 +137,8 @@ export function EditEventTypeClient({ eventType, schedules }: EditEventTypeClien
             </Button>
           </Link>
           <div className="min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
-              Izmeni tip termina
-            </h1>
-            <p className="mt-1 text-sm text-gray-600 truncate sm:text-base dark:text-gray-400">
+            <h1 className="text-xl font-bold text-foreground sm:text-2xl">Izmeni tip termina</h1>
+            <p className="mt-1 text-sm text-muted-foreground truncate sm:text-base">
               Ažurirajte podešavanja za "{eventType.title}"
             </p>
           </div>

@@ -114,8 +114,9 @@ export default function EventTypesScreen() {
     () =>
       StyleSheet.create({
         content: {
-          padding: theme.spacing.lg,
-          paddingBottom: 140,
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: theme.spacing.sm,
+          paddingBottom: 100,
           gap: theme.spacing.md,
         },
         title: { marginBottom: theme.spacing.md },
@@ -283,16 +284,6 @@ export default function EventTypesScreen() {
           />
         }
       >
-        <TopBarPill>
-          <Pressable
-            onPress={() => router.push("/(tabs)/settings")}
-            accessibilityRole="button"
-            accessibilityLabel="Podešavanja"
-            accessibilityHint="Otvara podešavanja"
-          >
-            <Menu size={20} color={theme.colors.foreground} />
-          </Pressable>
-        </TopBarPill>
         <AppText variant="title" style={styles.title}>
           Moje usluge
         </AppText>

@@ -29,7 +29,7 @@ export function TimeZoneCard({ control }: TimeZoneCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="timeZone" className="text-gray-900 dark:text-white">
+          <Label htmlFor="timeZone" className="text-foreground">
             Vremenska zona
           </Label>
           <Controller
@@ -50,7 +50,7 @@ export function TimeZoneCard({ control }: TimeZoneCardProps) {
               </Select>
             )}
           />
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs text-muted-foreground">
             Sva vremena u aplikaciji biće prikazana u ovoj vremenskoj zoni.
           </p>
         </div>

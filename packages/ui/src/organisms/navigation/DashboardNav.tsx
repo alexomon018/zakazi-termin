@@ -123,7 +123,7 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
   }, []);
 
   return (
-    <header className="bg-white border-b border-gray-200 dark:bg-card dark:border-border">
+    <header className="bg-background border-b border-border dark:bg-card">
       <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
         <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
@@ -194,13 +194,13 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
         </div>
       </div>
 
-      <nav className="relative py-2 border-t border-gray-200 md:hidden dark:border-border">
+      <nav className="relative py-2 border-t border-border md:hidden">
         {/* Left arrow */}
         <button
           type="button"
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-card border-r border-gray-200 dark:border-border transition-opacity ${
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-background dark:bg-card border-r border-border transition-opacity ${
             canScrollPrev ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll left"
@@ -231,7 +231,7 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
           type="button"
           onClick={scrollNext}
           disabled={!canScrollNext}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-card border-l border-gray-200 dark:border-border transition-opacity ${
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-background dark:bg-card border-l border-border transition-opacity ${
             canScrollNext ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll right"

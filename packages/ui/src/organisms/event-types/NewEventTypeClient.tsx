@@ -88,7 +88,7 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
       <div className="space-y-4">
         <Link
           href="/dashboard/event-types"
-          className="inline-flex gap-2 items-center text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          className="inline-flex gap-2 items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
           data-testid="event-type-back-button"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -97,11 +97,11 @@ export function NewEventTypeClient({ schedules }: NewEventTypeClientProps) {
         <div>
           <h1
             data-testid="create-event-type-title"
-            className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white"
+            className="text-xl font-bold text-foreground sm:text-2xl"
           >
             Novi tip termina
           </h1>
-          <p className="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-400">
+          <p className="mt-1 text-sm text-muted-foreground sm:text-base">
             Kreirajte novu vrstu termina za vaše klijente
           </p>
         </div>

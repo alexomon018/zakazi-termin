@@ -16,7 +16,7 @@ export function ThemeSelector({ selectedTheme, onThemeChange }: ThemeSelectorPro
         <CardTitle className="text-lg">Tema</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mb-4 text-sm text-muted-foreground">
           Izaberite temu za vašu stranicu za zakazivanje.
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">

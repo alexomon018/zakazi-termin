@@ -16,7 +16,7 @@ export function TabFilter({ label, isActive, onClick, "data-testid": testId }: T
       className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
         isActive
           ? "bg-primary/10 text-primary dark:bg-primary/20"
-          : "text-muted-foreground hover:bg-gray-100 dark:hover:bg-muted"
+          : "text-muted-foreground hover:bg-muted"
       }`}
     >
       {label}

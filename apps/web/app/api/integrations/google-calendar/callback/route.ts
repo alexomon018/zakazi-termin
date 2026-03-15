@@ -1,41 +1,53 @@
 import { getSession } from "@/lib/auth";
-import {
-  GoogleCalendarService,
-  type GoogleCredential,
-  exchangeCodeForTokens,
-} from "@salonko/calendar";
+import { GoogleCalendarService, exchangeCodeForTokens } from "@salonko/calendar";
 import { getAppUrl, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
+function mobileRedirectResponse(redirectUrl: string) {
+  return new NextResponse(
+    `<html><body><script>window.location.href=${JSON.stringify(redirectUrl)};</script></body></html>`,
+    { headers: { "Content-Type": "text/html" } }
+  );
+}
+
 export async function GET(request: Request) {
-  const session = await getSession();
-
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const stateParam = searchParams.get("state");
   const error = searchParams.get("error");
 
-  // Parse state to get returnTo URL
+  // Parse state to get returnTo URL and optional userId (mobile flow)
   let returnTo = "/dashboard/settings";
+  let stateUserId: string | undefined;
+  let mobileRedirect: string | undefined;
   if (stateParam) {
     try {
       const state = JSON.parse(Buffer.from(stateParam, "base64").toString());
       returnTo = state.returnTo || returnTo;
+      stateUserId = state.userId;
+      mobileRedirect = state.mobileRedirect;
     } catch {
       // Ignore parse errors
     }
   }
 
+  // Support both cookie-based (web) and userId-in-state (mobile) auth
+  const session = await getSession();
+  const userId = session?.user?.id ?? stateUserId;
+
+  if (!userId) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   if (error) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_denied`, request.url));
   }
 
   if (!code) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
     return NextResponse.redirect(new URL(`${returnTo}?error=missing_code`, request.url));
   }
 
@@ -57,7 +69,7 @@ export async function GET(request: Request) {
     // Check if user already has a Google Calendar credential
     const existingCredential = await prisma.credential.findFirst({
       where: {
-        userId: session.user.id,
+        userId,
         type: "google_calendar",
       },
     });
@@ -81,7 +93,7 @@ export async function GET(request: Request) {
         data: {
           type: "google_calendar",
           key: tokens as unknown as object,
-          userId: session.user.id,
+          userId,
           appId: "google-calendar",
         },
       });
@@ -92,7 +104,7 @@ export async function GET(request: Request) {
     const service = new GoogleCalendarService(
       {
         id: credentialId,
-        userId: session.user.id,
+        userId,
         key: tokens,
       },
       clientId,
@@ -106,7 +118,7 @@ export async function GET(request: Request) {
       await prisma.selectedCalendar.upsert({
         where: {
           userId_integration_externalId: {
-            userId: session.user.id,
+            userId,
             integration: "google_calendar",
             externalId: primaryCalendar.id,
           },
@@ -115,7 +127,7 @@ export async function GET(request: Request) {
           credentialId,
         },
         create: {
-          userId: session.user.id,
+          userId,
           integration: "google_calendar",
           externalId: primaryCalendar.id,
           credentialId,
@@ -123,14 +135,16 @@ export async function GET(request: Request) {
       });
     }
 
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
     return NextResponse.redirect(
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
   } catch (err) {
     logger.error("Google Calendar OAuth error", {
       error: err,
-      userId: session.user.id,
+      userId,
     });
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
   }
 }

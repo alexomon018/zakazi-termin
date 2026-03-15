@@ -45,23 +45,21 @@ export function OutOfOfficeEntryItem({
     <div
       className={cn(
         "flex justify-between items-center p-4 rounded-lg border",
-        isActive
-          ? "bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700"
-          : "bg-gray-50 border-gray-100 opacity-60 dark:bg-gray-800/50 dark:border-gray-700"
+        isActive ? "bg-card border-border" : "bg-muted/50 border-border opacity-60"
       )}
     >
       <div className="flex gap-4 items-center">
         <div
           className={cn(
             "flex justify-center items-center w-10 h-10 text-xl rounded-lg",
-            isActive ? "bg-orange-100 dark:bg-orange-900/30" : "bg-gray-100 dark:bg-gray-700"
+            isActive ? "bg-orange-100 dark:bg-orange-900/30" : "bg-muted"
           )}
         >
           {reason?.emoji || "\uD83D\uDCC5"}
         </div>
         <div>
           <div className="flex gap-2 items-center">
-            <p className="font-medium text-gray-900 dark:text-white">
+            <p className="font-medium text-foreground">
               {formatDate(start, "dateOnly")} - {formatDate(end, "dateOnly")}
             </p>
             {isCurrent && (
@@ -70,8 +68,8 @@ export function OutOfOfficeEntryItem({
               </span>
             )}
           </div>
-          {reason && <p className="text-sm text-gray-500 dark:text-gray-400">{reason.reason}</p>}
-          {notes && <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">{notes}</p>}
+          {reason && <p className="text-sm text-muted-foreground">{reason.reason}</p>}
+          {notes && <p className="mt-1 text-sm text-muted-foreground">{notes}</p>}
         </div>
       </div>
       <div className="flex gap-2 items-center">

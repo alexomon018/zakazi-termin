@@ -45,7 +45,11 @@ export default function BookingsScreen() {
       StyleSheet.create({
         header: { gap: theme.spacing.md, marginBottom: theme.spacing.sm },
         topRow: { flexDirection: "row", justifyContent: "flex-end" },
-        topControls: { flexDirection: "row", alignItems: "center", gap: theme.spacing.sm },
+        topControls: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.sm,
+        },
         menuButton: {
           width: 44,
           height: 44,
@@ -107,12 +111,6 @@ export default function BookingsScreen() {
           <View style={styles.header}>
             <View style={styles.topRow}>
               <View style={styles.topControls}>
-                <Pressable
-                  style={styles.menuButton}
-                  onPress={() => router.push("/(tabs)/settings")}
-                >
-                  <Menu size={20} color={theme.colors.foreground} />
-                </Pressable>
                 <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
                   <AppText variant="h2" style={{ fontWeight: "700" }}>
                     {filterLabel(filter)}

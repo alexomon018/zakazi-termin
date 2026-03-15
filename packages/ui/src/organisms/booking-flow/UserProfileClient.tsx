@@ -43,8 +43,8 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
   const visibleEventTypes = user.eventTypes?.filter((et) => !et.hidden) || [];
   const brandColor = user.brandColor || "#292929";
   const darkBrandColor = user.darkBrandColor || "#fafafa";
-  // Prioritize salonIconUrl (S3) over avatarUrl (Google OAuth)
-  const effectiveAvatarUrl = user.salonIconUrl || user.avatarUrl;
+  // Only use the dedicated salon icon on booking pages - never the user's Google avatar
+  const effectiveAvatarUrl = user.salonIconUrl;
 
   return (
     <div
