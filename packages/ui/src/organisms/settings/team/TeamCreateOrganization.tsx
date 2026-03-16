@@ -47,7 +47,11 @@ export function TeamCreateOrganization({
       </div>
 
       {error && (
-        <div className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
+        >
           <AlertCircle className="w-5 h-5 text-destructive" />
           <span className="text-destructive">{error}</span>
         </div>

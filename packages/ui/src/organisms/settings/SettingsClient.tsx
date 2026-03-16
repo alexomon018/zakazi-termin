@@ -151,11 +151,12 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="group"
                       aria-label="Prekini vezu sa kalendarom"
                       onClick={() => handleDisconnect(connection.id)}
                       disabled={disconnectCalendar.isPending}
                     >
-                      <Trash2 className="w-4 h-4 text-muted-foreground hover:text-red-500 dark:hover:text-red-400" />
+                      <Trash2 className="w-4 h-4 text-muted-foreground group-hover:text-red-500 dark:group-hover:text-red-400" />
                     </Button>
                   </div>
                 </div>

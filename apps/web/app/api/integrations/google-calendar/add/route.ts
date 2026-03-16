@@ -55,11 +55,16 @@ export async function GET(request: Request) {
   const baseUrl = getAppUrl().replace(/\/+$/, "");
   const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
 
+  const stateSecret = process.env.STATE_SECRET;
+  if (!stateSecret) {
+    return NextResponse.json({ error: "OAuth state secret not configured" }, { status: 500 });
+  }
+
   // Encode state with returnTo URL, userId (for mobile Bearer-token flow), and mobile redirect
   // Sign with HMAC-SHA256 to prevent state tampering in the callback
   const statePayload = { returnTo, userId, ...(mobileRedirect && { mobileRedirect }) };
   const stateString = JSON.stringify(statePayload);
-  const sig = createHmac("sha256", process.env.STATE_SECRET!).update(stateString).digest("hex");
+  const sig = createHmac("sha256", stateSecret).update(stateString).digest("hex");
   const state = Buffer.from(JSON.stringify({ ...statePayload, sig })).toString("base64");
 
   const authUrl = getGoogleAuthUrl(clientId, clientSecret, redirectUri, state);

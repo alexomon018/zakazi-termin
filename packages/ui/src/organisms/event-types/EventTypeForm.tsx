@@ -134,6 +134,9 @@ export function EventTypeForm({
   onSlugChange,
   testIdPrefix = "event-type",
 }: EventTypeFormProps) {
+  const visibilitySwitchId = `${testIdPrefix}-visibility-switch`;
+  const confirmationSwitchId = `${testIdPrefix}-confirmation-switch`;
+
   const handleTitleChange = (title: string) => {
     if (onTitleChange) {
       onTitleChange(title);
@@ -178,7 +181,7 @@ export function EventTypeForm({
                   <Eye className="w-5 h-5 text-green-500" />
                 )}
                 <div>
-                  <Label htmlFor="visibility-switch" className="text-base text-foreground">
+                  <Label htmlFor={visibilitySwitchId} className="text-base text-foreground">
                     Vidljivost
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -189,7 +192,7 @@ export function EventTypeForm({
                 </div>
               </div>
               <Switch
-                id="visibility-switch"
+                id={visibilitySwitchId}
                 checked={!formData.hidden}
                 onCheckedChange={(checked) =>
                   onFormDataChange((prev) => ({ ...prev, hidden: !checked }))
@@ -257,7 +260,7 @@ export function EventTypeForm({
                 description: e.target.value,
               }))
             }
-            className="px-3 py-2 w-full text-foreground bg-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 w-full text-foreground bg-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
           />
         </div>
 
@@ -356,7 +359,7 @@ export function EventTypeForm({
 
         <div className="flex justify-between items-center">
           <div>
-            <Label htmlFor="confirmation-switch" className="text-foreground">
+            <Label htmlFor={confirmationSwitchId} className="text-foreground">
               Zahtevaj ručnu potvrdu
             </Label>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -364,7 +367,7 @@ export function EventTypeForm({
             </p>
           </div>
           <Switch
-            id="confirmation-switch"
+            id={confirmationSwitchId}
             checked={formData.requiresConfirmation}
             onCheckedChange={(checked) =>
               onFormDataChange((prev) => ({

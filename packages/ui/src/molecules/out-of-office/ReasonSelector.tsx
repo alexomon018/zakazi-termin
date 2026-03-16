@@ -27,7 +27,7 @@ export function ReasonSelector({ reasons, selectedReasonId, onSelect }: ReasonSe
           className={cn(
             "flex items-center gap-2 p-3 rounded-lg border text-left transition-colors",
             selectedReasonId === reason.id
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+              ? "border-primary bg-primary/10 dark:bg-primary/30"
               : "border-border"
           )}
         >

@@ -66,8 +66,19 @@ export default function CalendarSettingsScreen() {
         return;
       }
       const { url } = await response.json();
-      await WebBrowser.openAuthSessionAsync(url, redirectUrl);
-      await utils.calendar.listConnections.invalidate();
+      const authResult = await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+      if (authResult.type === "success") {
+        const resultUrl = new URL(authResult.url);
+        const result = resultUrl.searchParams.get("result");
+        if (result === "success") {
+          await utils.calendar.listConnections.invalidate();
+        } else {
+          setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        }
+      }
+    } catch (error) {
+      console.error("Calendar connect error:", error);
+      setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
     } finally {
       setConnecting(false);
     }

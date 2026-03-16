@@ -42,7 +42,12 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
     initialData: initialUser ?? undefined,
   });
 
+  const appearanceErrorMessage = "Došlo je do greške pri čuvanju izgleda. Pokušajte ponovo.";
+
   const updateAppearance = trpc.user.updateAppearance.useMutation({
+    onError: (error) => {
+      console.error("updateAppearance failed:", error);
+    },
     onSuccess: async () => {
       // Update theme immediately
       setTheme(selectedTheme === null ? "system" : selectedTheme);
@@ -95,9 +100,13 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
       )}
 
       {updateAppearance.error && (
-        <div className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
+        >
           <AlertCircle className="w-5 h-5 text-destructive" />
-          <span className="text-destructive">{updateAppearance.error.message}</span>
+          <span className="text-destructive">{appearanceErrorMessage}</span>
         </div>
       )}
 

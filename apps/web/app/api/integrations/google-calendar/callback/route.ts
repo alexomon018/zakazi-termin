@@ -7,20 +7,22 @@ import { NextResponse } from "next/server";
 
 const ALLOWED_REDIRECT_SCHEMES = ["exp:", "salonko:", "myapp:"];
 
-function mobileRedirectResponse(redirectUrl: string) {
+function mobileRedirectResponse(redirectUrl: string, result: string) {
   try {
     const url = new URL(redirectUrl);
     if (!ALLOWED_REDIRECT_SCHEMES.some((scheme) => url.protocol === scheme)) {
       return new NextResponse("Invalid redirect scheme", { status: 400 });
     }
+
+    url.searchParams.set("result", result);
+    const safeRedirectUrl = url.toString();
+    return new NextResponse(
+      `<html><body><script>window.location.href=${JSON.stringify(safeRedirectUrl)};</script></body></html>`,
+      { headers: { "Content-Type": "text/html" } }
+    );
   } catch {
     return new NextResponse("Invalid redirect URL", { status: 400 });
   }
-
-  return new NextResponse(
-    `<html><body><script>window.location.href=${JSON.stringify(redirectUrl)};</script></body></html>`,
-    { headers: { "Content-Type": "text/html" } }
-  );
 }
 
 export async function GET(request: Request) {
@@ -38,7 +40,13 @@ export async function GET(request: Request) {
       const decoded = JSON.parse(Buffer.from(stateParam, "base64").toString());
       const { sig, ...payload } = decoded;
 
-      const expectedSig = createHmac("sha256", process.env.STATE_SECRET!)
+      const stateSecret = process.env.STATE_SECRET;
+      if (!stateSecret) {
+        logger.error("STATE_SECRET environment variable is not configured");
+        return NextResponse.redirect(new URL("/login?error=server_config", request.url));
+      }
+
+      const expectedSig = createHmac("sha256", stateSecret)
         .update(JSON.stringify(payload))
         .digest("hex");
 
@@ -61,21 +69,32 @@ export async function GET(request: Request) {
   }
 
   // Support both cookie-based (web) and userId-in-state (mobile) auth
+  // When stateUserId is present (HMAC-signed), it is the authoritative identity
   const session = await getSession();
-  const userId = session?.user?.id ?? stateUserId;
+  const sessionUserId = session?.user?.id;
+
+  if (stateUserId && sessionUserId && sessionUserId !== stateUserId) {
+    logger.error("Google Calendar OAuth state/session user mismatch", {
+      sessionUserId,
+      stateUserId,
+    });
+    return new NextResponse("User mismatch", { status: 403 });
+  }
+
+  const userId = stateUserId ?? sessionUserId;
 
   if (!userId) {
-    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "no_session");
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (error) {
-    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "denied");
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_denied`, request.url));
   }
 
   if (!code) {
-    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "missing_code");
     return NextResponse.redirect(new URL(`${returnTo}?error=missing_code`, request.url));
   }
 
@@ -163,7 +182,7 @@ export async function GET(request: Request) {
       });
     }
 
-    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "success");
     return NextResponse.redirect(
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
@@ -172,7 +191,7 @@ export async function GET(request: Request) {
       error: err,
       userId,
     });
-    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect);
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "auth_failed");
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
   }
 }

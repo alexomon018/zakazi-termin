@@ -44,6 +44,7 @@ export const MobileNavItem = memo(function MobileNavItem({
   return (
     <Link
       href={href}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors",
         isActive
