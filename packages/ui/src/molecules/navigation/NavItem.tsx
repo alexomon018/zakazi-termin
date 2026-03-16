@@ -29,7 +29,7 @@ export function NavItem({
         tabIndex={-1}
         className={cn(
           "flex items-center px-2 py-2 text-xs font-medium whitespace-nowrap rounded-md md:px-2 lg:px-3 md:text-xs lg:text-sm",
-          "text-muted-foreground pointer-events-none select-none blur-[1px]"
+          "text-muted-foreground pointer-events-none select-none blur-[1px] opacity-50"
         )}
       >
         <Icon className="flex-shrink-0 mr-1 w-4 h-4 lg:mr-2" />

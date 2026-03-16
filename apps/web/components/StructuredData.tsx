@@ -262,7 +262,7 @@ export function VerticalLandingSchema({
     },
     audience: {
       "@type": "Audience",
-      audienceType: serviceType,
+      name: serviceType,
     },
   };
 

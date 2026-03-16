@@ -13,7 +13,7 @@ export function SocialProofBar() {
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-6 md:flex-row md:gap-12">
           <p className="text-sm font-medium text-muted-foreground">
-            Povezano sa alatima koje već koristite
+            Sve što vam treba za poslovanje
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8">
             {integrations.map((integration) => (

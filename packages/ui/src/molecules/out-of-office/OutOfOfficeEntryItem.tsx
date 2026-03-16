@@ -45,21 +45,23 @@ export function OutOfOfficeEntryItem({
     <div
       className={cn(
         "flex justify-between items-center p-4 rounded-lg border",
-        isActive ? "bg-card border-border" : "bg-muted/50 border-border opacity-60"
+        isActive ? "bg-card border-border" : "bg-muted/50 border-border"
       )}
     >
       <div className="flex gap-4 items-center">
         <div
           className={cn(
             "flex justify-center items-center w-10 h-10 text-xl rounded-lg",
-            isActive ? "bg-orange-100 dark:bg-orange-900/30" : "bg-muted"
+            isActive ? "bg-orange-100 dark:bg-orange-900/30" : "bg-muted text-muted-foreground"
           )}
         >
           {reason?.emoji || "\uD83D\uDCC5"}
         </div>
         <div>
           <div className="flex gap-2 items-center">
-            <p className="font-medium text-foreground">
+            <p
+              className={cn("font-medium", isActive ? "text-foreground" : "text-muted-foreground")}
+            >
               {formatDate(start, "dateOnly")} - {formatDate(end, "dateOnly")}
             </p>
             {isCurrent && (

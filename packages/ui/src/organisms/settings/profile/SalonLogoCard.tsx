@@ -30,7 +30,7 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Only show the dedicated salon icon - never fall back to the user's Google avatar
-  const effectiveAvatarUrl = user?.salonIconUrl;
+  const effectiveSalonLogoUrl = user?.salonIconUrl;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,9 +134,9 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
           <div className="flex overflow-hidden flex-shrink-0 justify-center items-center w-20 h-20 bg-muted rounded-full">
             {isUploading ? (
               <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
-            ) : effectiveAvatarUrl ? (
+            ) : effectiveSalonLogoUrl ? (
               <Image
-                src={effectiveAvatarUrl}
+                src={effectiveSalonLogoUrl}
                 alt={user?.salonName || user?.name || "Logo"}
                 width={80}
                 height={80}

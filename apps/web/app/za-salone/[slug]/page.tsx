@@ -22,13 +22,17 @@ type Props = {
 
 const baseUrl = getAppUrl();
 
+function resolveVertical(slug: string) {
+  return VERTICALS[slug];
+}
+
 export function generateStaticParams() {
   return VERTICAL_SLUGS.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const vertical = VERTICALS[slug];
+  const vertical = resolveVertical(slug);
   if (!vertical) return {};
 
   return {
@@ -65,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function VerticalLandingPage({ params }: Props) {
   const { slug } = await params;
-  const vertical = VERTICALS[slug];
+  const vertical = resolveVertical(slug);
   if (!vertical) notFound();
 
   return (

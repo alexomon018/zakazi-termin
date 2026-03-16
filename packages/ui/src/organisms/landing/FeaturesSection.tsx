@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { Bell, Calendar, Clock, Smartphone, TrendingUp, Users } from "lucide-react";
 
 interface FeatureItem {
+  id?: string;
   icon: LucideIcon;
   title: string;
   description: string;
@@ -9,34 +10,40 @@ interface FeatureItem {
 
 const defaultFeatures: FeatureItem[] = [
   {
+    id: "online-booking",
     icon: Calendar,
     title: "Klijenti zakazuju non-stop",
     description:
       "Klijenti vide slobodne termine u realnom vremenu i zakazuju kada im odgovara — bez čekanja.",
   },
   {
+    id: "less-work",
     icon: Clock,
     title: "Manje posla za vas",
     description:
       "Klijenti biraju uslugu, termin i zaposlenog samostalno. Vi samo primate obaveštenja.",
   },
   {
+    id: "reminders",
     icon: Bell,
     title: "Manje propuštenih termina",
     description: "Automatski email i SMS podsetnici značajno smanjuju broj propuštenih termina.",
   },
   {
+    id: "team-management",
     icon: Users,
     title: "Upravljajte celim timom",
     description:
       "Dodajte zaposlene, podesite im radno vreme i pratite zauzetost svakog člana tima.",
   },
   {
+    id: "mobile-access",
     icon: Smartphone,
     title: "Salon u džepu",
     description: "Upravljajte terminima sa telefona, bilo gde i bilo kada — sve na jednom mestu.",
   },
   {
+    id: "analytics",
     icon: TrendingUp,
     title: "Znajte koliko zarađujete",
     description: "Pregledni izveštaji o prihodima, najpopularnijim uslugama i zauzetosti salona.",
@@ -70,7 +77,7 @@ export function FeaturesSection({
         <div className="grid gap-8 mt-16 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
             <div
-              key={feature.title}
+              key={feature.id ?? feature.title}
               className="relative p-6 transition-colors rounded-xl hover:bg-gray-50 dark:hover:bg-muted/50"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 dark:bg-primary/20">

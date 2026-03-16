@@ -136,7 +136,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                   className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border border-border"
                 >
                   <div className="flex gap-3 items-center">
-                    <div className="flex justify-center items-center w-10 h-10 bg-white rounded-lg border border-border dark:bg-muted">
+                    <div className="flex justify-center items-center w-10 h-10 bg-background rounded-lg border border-border dark:bg-muted">
                       <GoogleIcon className="w-6 h-6 text-blue-500" />
                     </div>
                     <div>
@@ -151,6 +151,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                     <Button
                       variant="ghost"
                       size="sm"
+                      aria-label="Prekini vezu sa kalendarom"
                       onClick={() => handleDisconnect(connection.id)}
                       disabled={disconnectCalendar.isPending}
                     >

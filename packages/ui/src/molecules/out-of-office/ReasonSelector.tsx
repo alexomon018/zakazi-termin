@@ -28,7 +28,7 @@ export function ReasonSelector({ reasons, selectedReasonId, onSelect }: ReasonSe
             "flex items-center gap-2 p-3 rounded-lg border text-left transition-colors",
             selectedReasonId === reason.id
               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30"
-              : "border-border hover:border-border"
+              : "border-border"
           )}
         >
           <span className="text-xl">{reason.emoji}</span>

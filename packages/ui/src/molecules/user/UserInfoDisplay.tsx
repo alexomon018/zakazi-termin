@@ -8,7 +8,7 @@ export function UserInfoDisplay({ name, email, subtitle }: UserInfoDisplayProps)
   return (
     <div>
       <p className="text-sm font-medium text-foreground">{name}</p>
-      {(email || subtitle) && <p className="text-xs text-muted-foreground">{email || subtitle}</p>}
+      {(subtitle || email) && <p className="text-xs text-muted-foreground">{subtitle || email}</p>}
     </div>
   );
 }

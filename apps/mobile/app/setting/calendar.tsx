@@ -31,6 +31,7 @@ export default function CalendarSettingsScreen() {
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   const connectionsQuery = trpc.calendar.listConnections.useQuery(undefined, {
     retry: false,
@@ -50,19 +51,26 @@ export default function CalendarSettingsScreen() {
   });
 
   const handleConnect = async () => {
-    const token = await tokenStorage.getToken();
-    const redirectUrl = Linking.createURL("setting/calendar");
-    const mobileRedirect = encodeURIComponent(redirectUrl);
-    const response = await fetch(
-      `${API_URL}/api/integrations/google-calendar/add?mobileRedirect=${mobileRedirect}`,
-      { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-    );
-    if (!response.ok) return;
-    const { url } = await response.json();
+    setConnectError(null);
     setConnecting(true);
-    await WebBrowser.openAuthSessionAsync(url, redirectUrl);
-    setConnecting(false);
-    await utils.calendar.listConnections.invalidate();
+    try {
+      const token = await tokenStorage.getToken();
+      const redirectUrl = Linking.createURL("setting/calendar");
+      const mobileRedirect = encodeURIComponent(redirectUrl);
+      const response = await fetch(
+        `${API_URL}/api/integrations/google-calendar/add?mobileRedirect=${mobileRedirect}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (!response.ok) {
+        setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        return;
+      }
+      const { url } = await response.json();
+      await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+      await utils.calendar.listConnections.invalidate();
+    } finally {
+      setConnecting(false);
+    }
   };
 
   const styles = useMemo(
@@ -113,8 +121,18 @@ export default function CalendarSettingsScreen() {
               Nemate povezanih kalendara. Povežite Google Calendar da automatski sinhronizujete
               termine.
             </AppText>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
             <View style={styles.actions}>
-              <AppButton label="Poveži Google Calendar" onPress={handleConnect} />
+              <AppButton
+                label="Poveži Google Calendar"
+                onPress={handleConnect}
+                loading={connecting}
+                disabled={connecting}
+              />
             </View>
           </AppCard>
         ) : (
@@ -162,7 +180,20 @@ export default function CalendarSettingsScreen() {
         )}
 
         {connections.length > 0 && (
-          <AppButton label="Poveži novi kalendar" onPress={handleConnect} variant="outline" />
+          <>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
+            <AppButton
+              label="Poveži novi kalendar"
+              onPress={handleConnect}
+              variant="outline"
+              loading={connecting}
+              disabled={connecting}
+            />
+          </>
         )}
       </SettingsScrollView>
 

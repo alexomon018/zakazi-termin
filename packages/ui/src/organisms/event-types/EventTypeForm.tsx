@@ -178,7 +178,9 @@ export function EventTypeForm({
                   <Eye className="w-5 h-5 text-green-500" />
                 )}
                 <div>
-                  <Label className="text-base text-foreground">Vidljivost</Label>
+                  <Label htmlFor="visibility-switch" className="text-base text-foreground">
+                    Vidljivost
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     {formData.hidden
                       ? "Ovaj tip termina je skriven i klijenti ga ne mogu videti"
@@ -187,6 +189,7 @@ export function EventTypeForm({
                 </div>
               </div>
               <Switch
+                id="visibility-switch"
                 checked={!formData.hidden}
                 onCheckedChange={(checked) =>
                   onFormDataChange((prev) => ({ ...prev, hidden: !checked }))
@@ -353,12 +356,15 @@ export function EventTypeForm({
 
         <div className="flex justify-between items-center">
           <div>
-            <Label className="text-foreground">Zahtevaj ručnu potvrdu</Label>
+            <Label htmlFor="confirmation-switch" className="text-foreground">
+              Zahtevaj ručnu potvrdu
+            </Label>
             <p className="text-xs text-muted-foreground mt-0.5">
               Termini neće biti automatski potvrđeni dok ih ne odobrite
             </p>
           </div>
           <Switch
+            id="confirmation-switch"
             checked={formData.requiresConfirmation}
             onCheckedChange={(checked) =>
               onFormDataChange((prev) => ({

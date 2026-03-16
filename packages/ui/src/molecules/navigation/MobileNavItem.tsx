@@ -32,7 +32,7 @@ export const MobileNavItem = memo(function MobileNavItem({
         tabIndex={-1}
         className={cn(
           "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md",
-          "text-muted-foreground pointer-events-none select-none blur-[1px]"
+          "text-muted-foreground pointer-events-none select-none blur-[1px] opacity-50"
         )}
       >
         <Icon className="mr-1 w-4 h-4" />

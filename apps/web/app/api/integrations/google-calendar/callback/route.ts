@@ -1,10 +1,22 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { getSession } from "@/lib/auth";
 import { GoogleCalendarService, exchangeCodeForTokens } from "@salonko/calendar";
 import { getAppUrl, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
+const ALLOWED_REDIRECT_SCHEMES = ["exp:", "salonko:", "myapp:"];
+
 function mobileRedirectResponse(redirectUrl: string) {
+  try {
+    const url = new URL(redirectUrl);
+    if (!ALLOWED_REDIRECT_SCHEMES.some((scheme) => url.protocol === scheme)) {
+      return new NextResponse("Invalid redirect scheme", { status: 400 });
+    }
+  } catch {
+    return new NextResponse("Invalid redirect URL", { status: 400 });
+  }
+
   return new NextResponse(
     `<html><body><script>window.location.href=${JSON.stringify(redirectUrl)};</script></body></html>`,
     { headers: { "Content-Type": "text/html" } }
@@ -17,18 +29,34 @@ export async function GET(request: Request) {
   const stateParam = searchParams.get("state");
   const error = searchParams.get("error");
 
-  // Parse state to get returnTo URL and optional userId (mobile flow)
+  // Parse state and verify HMAC signature to prevent tampering
   let returnTo = "/dashboard/settings";
   let stateUserId: string | undefined;
   let mobileRedirect: string | undefined;
   if (stateParam) {
     try {
-      const state = JSON.parse(Buffer.from(stateParam, "base64").toString());
-      returnTo = state.returnTo || returnTo;
-      stateUserId = state.userId;
-      mobileRedirect = state.mobileRedirect;
+      const decoded = JSON.parse(Buffer.from(stateParam, "base64").toString());
+      const { sig, ...payload } = decoded;
+
+      const expectedSig = createHmac("sha256", process.env.STATE_SECRET!)
+        .update(JSON.stringify(payload))
+        .digest("hex");
+
+      if (!sig || !timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expectedSig, "hex"))) {
+        logger.error("Google Calendar OAuth state signature mismatch");
+        return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
+      }
+
+      // Validate returnTo is a relative path and mobileRedirect uses an allowed scheme
+      if (payload.returnTo && /^\/(?!\/)/.test(payload.returnTo)) {
+        returnTo = payload.returnTo;
+      }
+      stateUserId = payload.userId;
+      if (payload.mobileRedirect && /^(salonko|exp):\/\//.test(payload.mobileRedirect)) {
+        mobileRedirect = payload.mobileRedirect;
+      }
     } catch {
-      // Ignore parse errors
+      return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
     }
   }
 

@@ -10,6 +10,14 @@ type PricingCardProps = {
   isHighlighted?: boolean;
 };
 
+function computeYearlySavings(): string {
+  const monthlyPrice = Number(PRICING_CONFIG.growth.price.replace(/\./g, ""));
+  const yearlyPrice = Number(PRICING_CONFIG.growth_yearly.price.replace(/\./g, ""));
+  return (monthlyPrice * 12 - yearlyPrice).toLocaleString("sr-RS");
+}
+
+const YEARLY_SAVINGS = computeYearlySavings();
+
 function PricingCard({ plan, isHighlighted }: PricingCardProps) {
   const config = PRICING_CONFIG[plan];
 
@@ -48,7 +56,7 @@ function PricingCard({ plan, isHighlighted }: PricingCardProps) {
       {/* Savings callout for yearly plans */}
       {plan === "growth_yearly" && (
         <p className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400 font-medium">
-          Uštedite 5.989 RSD godišnje
+          Uštedite {YEARLY_SAVINGS} RSD godišnje
         </p>
       )}
 
@@ -105,11 +113,11 @@ export function PricingSection() {
 
         {/* Pricing Cards Grid — only show available plans on landing page */}
         <div className="grid gap-6 mt-12 sm:grid-cols-2 lg:grid-cols-3">
-          {(["starter", "growth", "growth_yearly"] as const satisfies readonly PlanTier[]).map(
-            (tier) => (
+          {(["starter", "growth", "growth_yearly"] as const satisfies readonly PlanTier[])
+            .filter((tier) => PRICING_CONFIG[tier].isAvailable)
+            .map((tier) => (
               <PricingCard key={tier} plan={tier} isHighlighted={tier === "growth"} />
-            )
-          )}
+            ))}
         </div>
 
         {/* Trust indicators */}

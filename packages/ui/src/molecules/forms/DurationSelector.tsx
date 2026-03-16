@@ -40,7 +40,7 @@ export function DurationSelector({
             className={cn(
               "px-4 py-2 rounded-md text-sm font-medium transition-colors",
               value === duration
-                ? "bg-blue-500 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "bg-muted text-foreground hover:bg-muted/80"
             )}
           >
@@ -63,7 +63,7 @@ export function DurationSelector({
           <span className="text-sm text-muted-foreground">min</span>
         </div>
       </div>
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }

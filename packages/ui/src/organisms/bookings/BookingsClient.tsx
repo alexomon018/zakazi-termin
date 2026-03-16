@@ -238,6 +238,22 @@ export function BookingsClient({
 
   const isLoading = isLoadingFilter && currentBookings.length === 0;
 
+  const renderFilters = () => (
+    <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 pb-4 min-w-max border-b border-border sm:min-w-0">
+        {filters.map((f) => (
+          <TabFilter
+            key={f.key}
+            label={f.label}
+            isActive={filter === f.key}
+            onClick={() => handleFilterChange(f.key)}
+            data-testid={`bookings-tab-${f.key}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -248,20 +264,7 @@ export function BookingsClient({
           <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
         </div>
 
-        {/* Filters */}
-        <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 pb-4 min-w-max border-b border-border sm:min-w-0">
-            {filters.map((f) => (
-              <TabFilter
-                key={f.key}
-                label={f.label}
-                isActive={filter === f.key}
-                onClick={() => handleFilterChange(f.key)}
-                data-testid={`bookings-tab-${f.key}`}
-              />
-            ))}
-          </div>
-        </div>
+        {renderFilters()}
 
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-muted-foreground">Učitavanje...</div>
@@ -277,19 +280,7 @@ export function BookingsClient({
         <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
       </div>
 
-      {/* Filters */}
-      <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 pb-4 min-w-max border-b border-border sm:min-w-0">
-          {filters.map((f) => (
-            <TabFilter
-              key={f.key}
-              label={f.label}
-              isActive={filter === f.key}
-              onClick={() => handleFilterChange(f.key)}
-            />
-          ))}
-        </div>
-      </div>
+      {renderFilters()}
 
       {/* Bookings list */}
       {currentBookings.length === 0 ? (

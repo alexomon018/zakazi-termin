@@ -1,6 +1,7 @@
 import { Quote } from "lucide-react";
 
 interface Testimonial {
+  id: string;
   quote: string;
   name: string;
   salon: string;
@@ -9,6 +10,7 @@ interface Testimonial {
 
 const defaultTestimonials: Testimonial[] = [
   {
+    id: "testimonial-1",
     quote:
       "Od kad koristim Salonko, imam 30% više termina mesečno. Klijentkinje same zakazuju i ja ne propuštam nijedan termin.",
     name: "Jelena M.",
@@ -16,6 +18,7 @@ const defaultTestimonials: Testimonial[] = [
     city: "Beograd",
   },
   {
+    id: "testimonial-2",
     quote:
       "Ranije sam gubila po sat vremena dnevno na odgovaranje na poruke. Sada klijenti zakazuju sami, a ja se fokusiram na rad.",
     name: "Milica S.",
@@ -23,6 +26,7 @@ const defaultTestimonials: Testimonial[] = [
     city: "Novi Sad",
   },
   {
+    id: "testimonial-3",
     quote:
       "Podešavanje je trajalo bukvalno 5 minuta. Podelila sam link na Instagram i termini su počeli da se pune istog dana.",
     name: "Ana T.",
@@ -58,7 +62,7 @@ export function TestimonialsSection({
         <div className="grid gap-8 mt-16 md:grid-cols-3">
           {testimonials.map((testimonial) => (
             <div
-              key={testimonial.name}
+              key={testimonial.id}
               className="relative p-6 rounded-2xl bg-gray-50 dark:bg-muted/30"
             >
               <Quote className="w-8 h-8 mb-4 text-primary/30" aria-hidden="true" />

@@ -20,7 +20,6 @@ export interface VerticalFeature {
 }
 
 export interface VerticalLandingData {
-  slug: string;
   // Metadata
   title: string;
   description: string;
@@ -50,7 +49,6 @@ export interface VerticalLandingData {
 
 export const VERTICALS: Record<string, VerticalLandingData> = {
   "frizerski-saloni": {
-    slug: "frizerski-saloni",
     // Metadata
     title: "Online zakazivanje za frizerske salone",
     description:
@@ -164,7 +162,6 @@ export const VERTICALS: Record<string, VerticalLandingData> = {
       "Online platforma za zakazivanje termina za frizerske salone i berbernice u Srbiji. Automatsko zakazivanje, podsetnici i upravljanje timom.",
   },
   "saloni-za-nokte": {
-    slug: "saloni-za-nokte",
     // Metadata
     title: "Online zakazivanje za salone za nokte",
     description:

@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       eventType.description ||
       `Zakazite ${eventType.title} (${eventType.length} min) kod ${eventType.user.salonName || salonName}. Online zakazivanje termina putem Salonko platforme.`;
     // Only use the dedicated salon icon for public booking pages - never the user's Google avatar
-    const imageUrl = eventType.user.salonIconUrl;
+    const imageUrl = eventType.user.salonIconUrl ?? "/og-image.png";
 
     return {
       title,

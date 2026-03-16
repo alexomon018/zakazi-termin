@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { getSession } from "@/lib/auth";
 import { verifyOAuthAccessToken } from "@/lib/oauth/tokens";
 import { getGoogleAuthUrl } from "@salonko/calendar";
@@ -39,15 +40,27 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const returnTo = searchParams.get("returnTo") || "/dashboard/settings";
-  const mobileRedirect = searchParams.get("mobileRedirect");
+  const rawReturnTo = searchParams.get("returnTo") || "/dashboard/settings";
+  const rawMobileRedirect = searchParams.get("mobileRedirect");
+
+  // Validate returnTo is a relative path (starts with /, no protocol/double-slash)
+  const returnTo = /^\/(?!\/)/.test(rawReturnTo) ? rawReturnTo : "/dashboard/settings";
+
+  // Validate mobileRedirect uses an allowed scheme (salonko:// or exp://)
+  const mobileRedirect =
+    rawMobileRedirect && /^(salonko|exp):\/\//.test(rawMobileRedirect)
+      ? rawMobileRedirect
+      : undefined;
 
   const baseUrl = getAppUrl().replace(/\/+$/, "");
   const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
 
   // Encode state with returnTo URL, userId (for mobile Bearer-token flow), and mobile redirect
+  // Sign with HMAC-SHA256 to prevent state tampering in the callback
   const statePayload = { returnTo, userId, ...(mobileRedirect && { mobileRedirect }) };
-  const state = Buffer.from(JSON.stringify(statePayload)).toString("base64");
+  const stateString = JSON.stringify(statePayload);
+  const sig = createHmac("sha256", process.env.STATE_SECRET!).update(stateString).digest("hex");
+  const state = Buffer.from(JSON.stringify({ ...statePayload, sig })).toString("base64");
 
   const authUrl = getGoogleAuthUrl(clientId, clientSecret, redirectUri, state);
 
