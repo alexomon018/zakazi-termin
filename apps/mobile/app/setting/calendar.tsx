@@ -14,7 +14,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { StyleSheet, Switch, View } from "react-native";
 
 type CalendarConnection = {
@@ -31,6 +31,7 @@ export default function CalendarSettingsScreen() {
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const connectingRef = useRef(false);
   const [connectError, setConnectError] = useState<string | null>(null);
 
   const connectionsQuery = trpc.calendar.listConnections.useQuery(undefined, {
@@ -51,6 +52,8 @@ export default function CalendarSettingsScreen() {
   });
 
   const handleConnect = async () => {
+    if (connectingRef.current) return;
+    connectingRef.current = true;
     setConnectError(null);
     setConnecting(true);
     try {
@@ -80,6 +83,7 @@ export default function CalendarSettingsScreen() {
       console.error("Calendar connect error:", error);
       setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
     } finally {
+      connectingRef.current = false;
       setConnecting(false);
     }
   };

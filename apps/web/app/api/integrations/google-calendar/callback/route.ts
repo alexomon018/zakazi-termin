@@ -50,7 +50,13 @@ export async function GET(request: Request) {
         .update(JSON.stringify(payload))
         .digest("hex");
 
-      if (!sig || !timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expectedSig, "hex"))) {
+      const sigBuffer = Buffer.from(sig || "", "hex");
+      const expectedBuffer = Buffer.from(expectedSig, "hex");
+
+      if (
+        sigBuffer.length !== expectedBuffer.length ||
+        !timingSafeEqual(sigBuffer, expectedBuffer)
+      ) {
         logger.error("Google Calendar OAuth state signature mismatch");
         return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
       }
@@ -60,7 +66,12 @@ export async function GET(request: Request) {
         returnTo = payload.returnTo;
       }
       stateUserId = payload.userId;
-      if (payload.mobileRedirect && /^(salonko|exp):\/\//.test(payload.mobileRedirect)) {
+      if (
+        payload.mobileRedirect &&
+        ALLOWED_REDIRECT_SCHEMES.some((scheme) =>
+          payload.mobileRedirect.startsWith(scheme.replace(":", "://"))
+        )
+      ) {
         mobileRedirect = payload.mobileRedirect;
       }
     } catch {
