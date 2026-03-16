@@ -72,7 +72,7 @@ export function TeamInviteMemberDialog({
                 )}
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-muted-foreground">
               {inviteRole === "ADMIN"
                 ? "Administratori mogu pozivati i uklanjati članove."
                 : "Članovi mogu upravljati svojim rasporedom i terminima."}

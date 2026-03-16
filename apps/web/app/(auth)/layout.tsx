@@ -4,7 +4,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950/30">
+    <div className="min-h-dvh relative overflow-hidden bg-gradient-to-br from-rose-50/50 via-white to-pink-50/30 dark:from-neutral-950 dark:via-neutral-900 dark:to-rose-950/20">
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Primary orb - top right */}
@@ -12,7 +12,7 @@ export default function AuthLayout({
           className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full opacity-30 dark:opacity-20"
           style={{
             background:
-              "radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.4) 0%, hsl(221.2 83.2% 53.3% / 0.1) 50%, transparent 70%)",
+              "radial-gradient(circle, hsl(330 55% 55% / 0.4) 0%, hsl(330 55% 55% / 0.1) 50%, transparent 70%)",
           }}
         />
 
@@ -21,7 +21,7 @@ export default function AuthLayout({
           className="absolute -bottom-48 -left-48 w-[600px] h-[600px] rounded-full opacity-25 dark:opacity-15"
           style={{
             background:
-              "radial-gradient(circle, hsl(221.2 83.2% 53.3% / 0.3) 0%, hsl(217 91% 60% / 0.1) 50%, transparent 70%)",
+              "radial-gradient(circle, hsl(330 55% 55% / 0.3) 0%, hsl(330 60% 65% / 0.1) 50%, transparent 70%)",
           }}
         />
 
@@ -29,7 +29,7 @@ export default function AuthLayout({
         <div
           className="hidden sm:block absolute top-1/2 -right-24 w-[300px] h-[300px] rounded-full opacity-20 dark:opacity-10 -translate-y-1/2"
           style={{
-            background: "radial-gradient(circle, hsl(217 91% 60% / 0.4) 0%, transparent 60%)",
+            background: "radial-gradient(circle, hsl(330 60% 65% / 0.4) 0%, transparent 60%)",
           }}
         />
 

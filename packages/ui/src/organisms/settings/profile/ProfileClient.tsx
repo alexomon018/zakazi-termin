@@ -62,7 +62,8 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   // Users without membership or with OWNER role can edit salon fields
   const isSalonOwner = !user?.membership || user.membership.role === "OWNER";
 
-  // Use the appropriate schema based on role - cast through unknown to satisfy TypeScript
+  // zodResolver cannot infer the union of ownerProfileSchema | memberProfileSchema,
+  // so we cast through unknown → Resolver<ProfileFormValues> to satisfy TypeScript.
   const resolver = zodResolver(
     isSalonOwner ? ownerProfileSchema : memberProfileSchema
   ) as unknown as Resolver<ProfileFormValues>;
@@ -175,28 +176,23 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1
-          data-testid="profile-settings-title"
-          className="text-2xl font-bold text-gray-900 dark:text-white"
-        >
+        <h1 data-testid="profile-settings-title" className="text-2xl font-bold text-foreground">
           Moj profil
         </h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          Upravljajte informacijama vašeg profila
-        </p>
+        <p className="mt-1 text-muted-foreground">Upravljajte informacijama vašeg profila</p>
       </div>
 
       {saved && (
-        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
+        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-950/20 dark:border-green-900">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
           <span className="text-green-800 dark:text-green-300">Profil je uspešno sačuvan!</span>
         </div>
       )}
 
       {updateProfile.error && (
-        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">{updateProfile.error.message}</span>
+        <div className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20">
+          <AlertCircle className="w-5 h-5 text-destructive" />
+          <span className="text-destructive">{updateProfile.error.message}</span>
         </div>
       )}
 

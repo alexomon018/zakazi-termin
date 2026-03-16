@@ -1,4 +1,4 @@
-import { PLAN_TIERS, PRICING_CONFIG } from "@salonko/config";
+import { PRICING_CONFIG } from "@salonko/config";
 import type { PlanTier } from "@salonko/config";
 import { Button } from "@salonko/ui/atoms/Button";
 import { cn } from "@salonko/ui/utils";
@@ -9,6 +9,14 @@ type PricingCardProps = {
   plan: PlanTier;
   isHighlighted?: boolean;
 };
+
+function computeYearlySavings(): string {
+  const monthlyPrice = Number(PRICING_CONFIG.growth.price.replace(/\./g, ""));
+  const yearlyPrice = Number(PRICING_CONFIG.growth_yearly.price.replace(/\./g, ""));
+  return (monthlyPrice * 12 - yearlyPrice).toLocaleString("sr-RS");
+}
+
+const YEARLY_SAVINGS = computeYearlySavings();
 
 function PricingCard({ plan, isHighlighted }: PricingCardProps) {
   const config = PRICING_CONFIG[plan];
@@ -44,6 +52,13 @@ function PricingCard({ plan, isHighlighted }: PricingCardProps) {
           </span>
         </div>
       </div>
+
+      {/* Savings callout for yearly plans */}
+      {plan === "growth_yearly" && (
+        <p className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400 font-medium">
+          Uštedite {YEARLY_SAVINGS} RSD godišnje
+        </p>
+      )}
 
       {/* CTA */}
       {config.isAvailable ? (
@@ -87,7 +102,8 @@ export function PricingSection() {
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <p className="text-xs font-semibold tracking-widest uppercase text-primary">Cene</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Izaberite plan koji vam odgovara
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
@@ -95,11 +111,13 @@ export function PricingSection() {
           </p>
         </div>
 
-        {/* Pricing Cards Grid */}
-        <div className="grid gap-6 mt-12 sm:grid-cols-2 lg:grid-cols-4">
-          {PLAN_TIERS.map((tier) => (
-            <PricingCard key={tier} plan={tier} isHighlighted={tier === "growth"} />
-          ))}
+        {/* Pricing Cards Grid — only show available plans on landing page */}
+        <div className="grid gap-6 mt-12 sm:grid-cols-2 lg:grid-cols-3">
+          {(["starter", "growth", "growth_yearly"] as const satisfies readonly PlanTier[])
+            .filter((tier) => PRICING_CONFIG[tier].isAvailable)
+            .map((tier) => (
+              <PricingCard key={tier} plan={tier} isHighlighted={tier === "growth"} />
+            ))}
         </div>
 
         {/* Trust indicators */}

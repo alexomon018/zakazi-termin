@@ -32,7 +32,7 @@ export const MobileNavItem = memo(function MobileNavItem({
         tabIndex={-1}
         className={cn(
           "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md",
-          "text-gray-400 pointer-events-none select-none dark:text-gray-500 blur-[1px]"
+          "text-muted-foreground pointer-events-none select-none blur-[1px] opacity-50"
         )}
       >
         <Icon className="mr-1 w-4 h-4" />
@@ -44,11 +44,12 @@ export const MobileNavItem = memo(function MobileNavItem({
   return (
     <Link
       href={href}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors",
         isActive
-          ? "text-gray-900 bg-gray-100 dark:bg-gray-700 dark:text-white"
-          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+          ? "text-foreground bg-muted"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
       )}
     >
       <Icon className="mr-1 w-4 h-4" />

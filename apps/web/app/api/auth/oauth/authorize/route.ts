@@ -1,4 +1,5 @@
 import { getSession } from "@/lib/auth";
+import { authOptions } from "@/lib/auth-options";
 import { getAppUrl } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
@@ -76,13 +77,30 @@ export async function GET(request: Request) {
   }
 
   // Check if user is logged in
+  const prompt = url.searchParams.get("prompt");
   const session = await getSession();
-  if (!session?.user?.id) {
-    // Redirect to login with callback back to this authorize endpoint
-    const callbackUrl = new URL(`${url.pathname}${url.search}`, origin).toString();
+
+  if (!session?.user?.id || prompt === "login") {
+    // Strip `prompt` so we don't loop after the user logs in fresh
+    const callbackParams = new URLSearchParams(url.search);
+    callbackParams.delete("prompt");
+    const callbackUrl = new URL(`${url.pathname}?${callbackParams.toString()}`, origin).toString();
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set("callbackUrl", callbackUrl);
-    return NextResponse.redirect(loginUrl.toString());
+
+    const response = NextResponse.redirect(loginUrl.toString());
+
+    // When prompt=login, clear the existing session cookie so the middleware
+    // won't auto-redirect the user back here, forcing a fresh login.
+    if (prompt === "login" && session?.user?.id) {
+      const isSecure = origin.startsWith("https");
+      const cookieName =
+        authOptions.cookies?.sessionToken?.name ??
+        (isSecure ? "__Secure-next-auth.session-token" : "next-auth.session-token");
+      response.cookies.set(cookieName, "", { maxAge: 0, path: "/" });
+    }
+
+    return response;
   }
 
   // For first-party clients, auto-approve (no consent screen)

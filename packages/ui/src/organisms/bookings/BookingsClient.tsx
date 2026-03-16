@@ -238,6 +238,22 @@ export function BookingsClient({
 
   const isLoading = isLoadingFilter && currentBookings.length === 0;
 
+  const renderFilters = () => (
+    <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 pb-4 min-w-max border-b border-border sm:min-w-0">
+        {filters.map((f) => (
+          <TabFilter
+            key={f.key}
+            label={f.label}
+            isActive={filter === f.key}
+            onClick={() => handleFilterChange(f.key)}
+            data-testid={`bookings-tab-${f.key}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -248,20 +264,7 @@ export function BookingsClient({
           <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
         </div>
 
-        {/* Filters */}
-        <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 pb-4 min-w-max border-b border-gray-200 dark:border-border sm:min-w-0">
-            {filters.map((f) => (
-              <TabFilter
-                key={f.key}
-                label={f.label}
-                isActive={filter === f.key}
-                onClick={() => handleFilterChange(f.key)}
-                data-testid={`bookings-tab-${f.key}`}
-              />
-            ))}
-          </div>
-        </div>
+        {renderFilters()}
 
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-muted-foreground">Učitavanje...</div>
@@ -277,26 +280,14 @@ export function BookingsClient({
         <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
       </div>
 
-      {/* Filters */}
-      <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 pb-4 min-w-max border-b border-gray-200 dark:border-border sm:min-w-0">
-          {filters.map((f) => (
-            <TabFilter
-              key={f.key}
-              label={f.label}
-              isActive={filter === f.key}
-              onClick={() => handleFilterChange(f.key)}
-            />
-          ))}
-        </div>
-      </div>
+      {renderFilters()}
 
       {/* Bookings list */}
       {currentBookings.length === 0 ? (
         <Card data-testid="bookings-empty-state">
           <CardContent className="py-12 text-center">
             <Calendar
-              className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
+              className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30 dark:text-muted-foreground/40"
               aria-hidden="true"
             />
             <p className="text-muted-foreground">{getEmptyMessage()}</p>
@@ -343,7 +334,7 @@ export function BookingsClient({
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-border">
+                        <div className="pt-4 mt-4 border-t border-border">
                           <p className="mb-2 text-xs font-medium text-muted-foreground">GOST</p>
                           {booking.attendees.map((attendee) => (
                             <div key={attendee.id} className="flex gap-2 items-center">
@@ -356,7 +347,7 @@ export function BookingsClient({
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="pt-4 mt-4 border-t border-gray-100 dark:border-border">
+                        <div className="pt-4 mt-4 border-t border-border">
                           <p className="mb-1 text-xs font-medium text-muted-foreground">NAPOMENA</p>
                           <p className="text-sm text-muted-foreground">{booking.description}</p>
                         </div>
@@ -404,7 +395,7 @@ export function BookingsClient({
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="px-4 py-2 text-xs bg-gray-50 rounded-b-lg dark:bg-muted/50 text-muted-foreground">
+                <div className="px-4 py-2 text-xs bg-muted/50 rounded-b-lg text-muted-foreground">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>

@@ -9,11 +9,13 @@ import {
 } from "@/components/atoms";
 import { SettingsScrollView } from "@/components/molecules";
 import { API_URL } from "@/lib/api-url";
+import { tokenStorage } from "@/lib/secure-store";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AppState, StyleSheet, Switch, View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { StyleSheet, Switch, View } from "react-native";
 
 type CalendarConnection = {
   id: string;
@@ -28,6 +30,9 @@ export default function CalendarSettingsScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
   const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const connectingRef = useRef(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
 
   const connectionsQuery = trpc.calendar.listConnections.useQuery(undefined, {
     retry: false,
@@ -46,21 +51,41 @@ export default function CalendarSettingsScreen() {
     },
   });
 
-  const pendingRefetch = useRef(false);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextState) => {
-      if (nextState === "active" && pendingRefetch.current) {
-        pendingRefetch.current = false;
-        connectionsQuery.refetch();
-      }
-    });
-    return () => subscription.remove();
-  }, [connectionsQuery]);
-
   const handleConnect = async () => {
-    pendingRefetch.current = true;
-    await WebBrowser.openBrowserAsync(`${API_URL}/api/calendar/google/connect`);
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+    setConnectError(null);
+    setConnecting(true);
+    try {
+      const token = await tokenStorage.getToken();
+      const redirectUrl = Linking.createURL("setting/calendar");
+      const mobileRedirect = encodeURIComponent(redirectUrl);
+      const response = await fetch(
+        `${API_URL}/api/integrations/google-calendar/add?mobileRedirect=${mobileRedirect}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (!response.ok) {
+        setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        return;
+      }
+      const { url } = await response.json();
+      const authResult = await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+      if (authResult.type === "success") {
+        const resultUrl = new URL(authResult.url);
+        const result = resultUrl.searchParams.get("result");
+        if (result === "success") {
+          await utils.calendar.listConnections.invalidate();
+        } else {
+          setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        }
+      }
+    } catch (error) {
+      console.error("Calendar connect error:", error);
+      setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+    } finally {
+      connectingRef.current = false;
+      setConnecting(false);
+    }
   };
 
   const styles = useMemo(
@@ -78,7 +103,7 @@ export default function CalendarSettingsScreen() {
           gap: theme.spacing.md,
           paddingVertical: theme.spacing.xs,
         },
-        actions: { marginTop: theme.spacing.md },
+        actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
       }),
     [theme]
   );
@@ -111,8 +136,18 @@ export default function CalendarSettingsScreen() {
               Nemate povezanih kalendara. Povežite Google Calendar da automatski sinhronizujete
               termine.
             </AppText>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
             <View style={styles.actions}>
-              <AppButton label="Poveži Google Calendar" onPress={handleConnect} />
+              <AppButton
+                label="Poveži Google Calendar"
+                onPress={handleConnect}
+                loading={connecting}
+                disabled={connecting}
+              />
             </View>
           </AppCard>
         ) : (
@@ -160,7 +195,20 @@ export default function CalendarSettingsScreen() {
         )}
 
         {connections.length > 0 && (
-          <AppButton label="Poveži novi kalendar" onPress={handleConnect} variant="outline" />
+          <>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
+            <AppButton
+              label="Poveži novi kalendar"
+              onPress={handleConnect}
+              variant="outline"
+              loading={connecting}
+              disabled={connecting}
+            />
+          </>
         )}
       </SettingsScrollView>
 

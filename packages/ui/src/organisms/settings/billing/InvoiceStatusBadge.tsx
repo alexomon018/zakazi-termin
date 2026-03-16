@@ -21,7 +21,7 @@ export function InvoiceStatusBadge({ status }: InvoiceStatusBadgeProps) {
       );
     case "draft":
       return (
-        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
           Nacrt
         </span>
       );
@@ -34,7 +34,7 @@ export function InvoiceStatusBadge({ status }: InvoiceStatusBadgeProps) {
       );
     default:
       return (
-        <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
           {status || "-"}
         </span>
       );

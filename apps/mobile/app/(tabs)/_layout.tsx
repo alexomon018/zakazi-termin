@@ -1,15 +1,15 @@
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useEnsureTrial } from "@/lib/use-ensure-trial";
-import { BlurView } from "expo-blur";
+
 import { Redirect, Tabs } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
-import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const { isLoading: isTrialLoading } = useEnsureTrial();
-  const { theme, colorScheme } = useTheme();
+  const { theme } = useTheme();
 
   if (isLoading || isTrialLoading) {
     return (
@@ -40,31 +40,12 @@ export default function TabsLayout() {
         headerTitleStyle: { fontWeight: "600", fontSize: 17 },
         tabBarActiveTintColor: theme.colors.foreground,
         tabBarInactiveTintColor: theme.colors.mutedForeground,
-        tabBarBackground: () =>
-          Platform.OS === "ios" ? (
-            <BlurView
-              intensity={80}
-              tint={colorScheme === "dark" ? "dark" : "light"}
-              style={StyleSheet.absoluteFill}
-            />
-          ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.surface }]} />
-          ),
         tabBarStyle: {
-          backgroundColor: Platform.OS === "ios" ? "transparent" : theme.colors.surface,
-          borderTopWidth: 0,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          borderRadius: 999,
-          marginHorizontal: 18,
-          marginBottom: Platform.OS === "ios" ? 6 : 10,
-          paddingTop: 8,
-          height: Platform.OS === "ios" ? 74 : 64,
-          position: "absolute",
-          left: 18,
-          right: 18,
+          backgroundColor: theme.colors.surface,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.border,
+          paddingTop: 4,
           elevation: 0,
-          overflow: "hidden",
         },
         tabBarLabelStyle: {
           fontSize: 10,

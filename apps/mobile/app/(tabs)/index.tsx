@@ -110,12 +110,15 @@ export default function EventTypesScreen() {
       ]
     : [];
 
+  const TAB_BAR_BOTTOM_PADDING = 100;
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
         content: {
-          padding: theme.spacing.lg,
-          paddingBottom: 140,
+          paddingHorizontal: theme.spacing.lg,
+          paddingTop: theme.spacing.sm,
+          paddingBottom: TAB_BAR_BOTTOM_PADDING,
           gap: theme.spacing.md,
         },
         title: { marginBottom: theme.spacing.md },
@@ -283,16 +286,6 @@ export default function EventTypesScreen() {
           />
         }
       >
-        <TopBarPill>
-          <Pressable
-            onPress={() => router.push("/(tabs)/settings")}
-            accessibilityRole="button"
-            accessibilityLabel="Podešavanja"
-            accessibilityHint="Otvara podešavanja"
-          >
-            <Menu size={20} color={theme.colors.foreground} />
-          </Pressable>
-        </TopBarPill>
         <AppText variant="title" style={styles.title}>
           Moje usluge
         </AppText>

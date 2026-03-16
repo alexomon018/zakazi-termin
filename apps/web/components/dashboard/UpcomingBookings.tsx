@@ -91,7 +91,7 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
           <p className="py-8 text-center text-muted-foreground">Nemate zakazanih termina.</p>
         ) : (
           <>
-            <div className="divide-y divide-gray-100 dark:divide-border">
+            <div className="divide-y divide-border">
               {displayedBookings.map((booking) => {
                 // Get staff name (assigned host or event owner)
                 const staffName = booking.assignedHost?.name || booking.user?.name;

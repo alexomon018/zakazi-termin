@@ -207,7 +207,7 @@ export function AvailabilityClient({
                   className={`w-full flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedScheduleId === schedule.id
                       ? "border-primary bg-primary/5 dark:bg-primary/10"
-                      : "border-gray-200 dark:border-border hover:border-gray-300 dark:hover:border-muted-foreground/30"
+                      : "border-border hover:border-border"
                   }`}
                 >
                   <button
@@ -261,7 +261,7 @@ export function AvailabilityClient({
                   {availability.map((entry, entryIndex) => (
                     <div
                       key={`${entry.days.join("-")}-${entry.startTime}-${entryIndex}`}
-                      className="p-4 space-y-4 rounded-lg border border-gray-200 dark:border-border"
+                      className="p-4 space-y-4 rounded-lg border border-border"
                     >
                       {/* Days selector */}
                       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
@@ -273,7 +273,7 @@ export function AvailabilityClient({
                             className={`px-1 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors text-center ${
                               entry.days.includes(day.value)
                                 ? "bg-primary text-white"
-                                : "bg-gray-100 dark:bg-muted text-muted-foreground hover:bg-gray-200 dark:hover:bg-muted/80"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
                             }`}
                           >
                             {day.short}
@@ -326,7 +326,7 @@ export function AvailabilityClient({
                 </Button>
 
                 {/* Actions */}
-                <div className="flex flex-col-reverse gap-3 pt-4 border-t border-gray-200 dark:border-border sm:flex-row sm:justify-between sm:items-center">
+                <div className="flex flex-col-reverse gap-3 pt-4 border-t border-border sm:flex-row sm:justify-between sm:items-center">
                   <Button
                     variant="outline"
                     onClick={() =>
@@ -355,7 +355,7 @@ export function AvailabilityClient({
             ) : (
               <div className="py-12 text-center text-muted-foreground">
                 <Clock
-                  className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
+                  className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30"
                   aria-hidden="true"
                 />
                 <p className="lg:hidden">Izaberite raspored odozgo ili kreirajte novi</p>

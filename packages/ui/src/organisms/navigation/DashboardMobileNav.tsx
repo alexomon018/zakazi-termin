@@ -2,7 +2,7 @@
 
 import { MobileBottomNav } from "@salonko/ui/molecules/navigation/MobileBottomNav";
 import { MobileTopBar } from "@salonko/ui/molecules/navigation/MobileTopBar";
-import { Calendar, Clock, LayoutDashboard, Settings } from "lucide-react";
+import { Calendar, CalendarClock, Clock, LayoutDashboard, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { memo } from "react";
 
@@ -28,7 +28,7 @@ const navItems = [
   {
     href: "/dashboard/availability",
     label: "Dostupnost",
-    icon: Clock,
+    icon: CalendarClock,
     requiresSubscription: true,
   },
 ];

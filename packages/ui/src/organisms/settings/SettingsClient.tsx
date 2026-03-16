@@ -87,10 +87,8 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Podešavanja</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
-          Upravljajte svojim nalogom i integracijama
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">Podešavanja</h1>
+        <p className="mt-1 text-muted-foreground">Upravljajte svojim nalogom i integracijama</p>
       </div>
 
       {/* Success/Error Messages */}
@@ -124,7 +122,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Povežite svoje kalendare kako bismo automatski proveravali vašu zauzetost i izbegavali
             duple rezervacije.
           </p>
@@ -135,15 +133,15 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
               connections.map((connection: Connection) => (
                 <div
                   key={connection.id}
-                  className="flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800/50"
+                  className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border border-border"
                 >
                   <div className="flex gap-3 items-center">
-                    <div className="flex justify-center items-center w-10 h-10 bg-white rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    <div className="flex justify-center items-center w-10 h-10 bg-background rounded-lg border border-border dark:bg-muted">
                       <GoogleIcon className="w-6 h-6 text-blue-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Google Calendar</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="font-medium text-foreground">Google Calendar</p>
+                      <p className="text-sm text-muted-foreground">
                         {connection.calendarsCount} kalendar(a) odabrano
                       </p>
                     </div>
@@ -153,20 +151,20 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="group"
+                      aria-label="Prekini vezu sa kalendarom"
                       onClick={() => handleDisconnect(connection.id)}
                       disabled={disconnectCalendar.isPending}
                     >
-                      <Trash2 className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
+                      <Trash2 className="w-4 h-4 text-muted-foreground group-hover:text-red-500 dark:group-hover:text-red-400" />
                     </Button>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="flex flex-col gap-3 p-4 text-sm text-gray-500 rounded-lg border border-gray-200 border-dashed dark:border-gray-700 dark:text-gray-400">
+              <div className="flex flex-col gap-3 p-4 text-sm text-muted-foreground rounded-lg border border-border border-dashed">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    Nema povezanih kalendara
-                  </p>
+                  <p className="font-medium text-foreground">Nema povezanih kalendara</p>
                   <p>Povežite Google Calendar da bismo automatski blokirali zauzete termine.</p>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -179,7 +177,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
                     <GoogleIcon className="mr-2 w-4 h-4" />
                     {connectingCalendar ? "Povezivanje..." : "Poveži Google Calendar"}
                   </Button>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     Možete odabrati kalendare nakon povezivanja.
                   </span>
                 </div>
@@ -235,7 +233,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
         </DialogHeader>
         <div className="overflow-y-auto max-h-80">
           {isLoading ? (
-            <div className="py-4 text-center text-gray-500 dark:text-gray-400">Učitavanje...</div>
+            <div className="py-4 text-center text-muted-foreground">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
               {calendars?.map(
@@ -247,7 +245,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
                 }) => (
                   <label
                     key={cal.externalId}
-                    className="flex gap-3 items-center p-2 rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                    className="flex gap-3 items-center p-2 rounded cursor-pointer hover:bg-muted/50 dark:hover:bg-muted"
                   >
                     <input
                       type="checkbox"
@@ -259,10 +257,10 @@ function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
                           selected: !cal.selected,
                         })
                       }
-                      className="rounded border-gray-300 dark:border-gray-600"
+                      className="rounded border-border"
                     />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
+                      <p className="font-medium text-foreground">{cal.name}</p>
                       {cal.primary && (
                         <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
                       )}

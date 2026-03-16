@@ -6422,7 +6422,6 @@ __metadata:
     i18next: "npm:^24.0.5"
     lucide-react: "npm:^0.562.0"
     next: "npm:15.1.11"
-    next-auth: "npm:^4.24.10"
     next-i18next: "npm:^15.3.1"
     next-themes: "npm:^0.4.6"
     postcss: "npm:^8.4.49"

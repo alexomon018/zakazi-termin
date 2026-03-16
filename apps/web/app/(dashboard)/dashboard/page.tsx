@@ -51,39 +51,39 @@ export default async function DashboardPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Danas</CardTitle>
-            <Calendar className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Calendar className="w-4 h-4 text-primary/60" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{todayBookings}</div>
+            <div className="text-3xl font-bold text-foreground">{todayBookings}</div>
             <p className="text-xs text-muted-foreground">zakazanih termina</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Predstojeći termini
             </CardTitle>
-            <Users className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Users className="w-4 h-4 text-primary/60" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{upcomingBookings}</div>
+            <div className="text-3xl font-bold text-foreground">{upcomingBookings}</div>
             <p className="text-xs text-muted-foreground">ukupno zakazano</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader className="flex flex-row justify-between items-center pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tipovi termina
             </CardTitle>
-            <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+            <Clock className="w-4 h-4 text-primary/60" aria-hidden="true" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{eventTypes}</div>
+            <div className="text-3xl font-bold text-foreground">{eventTypes}</div>
             <p className="text-xs text-muted-foreground">aktivnih tipova</p>
           </CardContent>
         </Card>

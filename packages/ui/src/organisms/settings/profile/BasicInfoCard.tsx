@@ -59,7 +59,7 @@ export function BasicInfoCard({
       <CardContent className="space-y-4">
         <div className={cn("grid gap-4", showSalonName && "sm:grid-cols-2")}>
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-gray-900 dark:text-white">
+            <Label htmlFor="name" className="text-foreground">
               Ime i prezime
             </Label>
             <Input
@@ -73,7 +73,7 @@ export function BasicInfoCard({
 
           {showSalonName && (
             <div className="space-y-2">
-              <Label htmlFor="salonName" className="text-gray-900 dark:text-white">
+              <Label htmlFor="salonName" className="text-foreground">
                 Naziv salona
               </Label>
               <div className="relative">
@@ -117,7 +117,7 @@ export function BasicInfoCard({
               {salonNameAvailable === false && (
                 <p className="text-sm text-red-600">Naziv salona je već zauzet</p>
               )}
-              <p className="flex gap-1 items-center text-xs text-gray-500 dark:text-gray-400">
+              <p className="flex gap-1 items-center text-xs text-muted-foreground">
                 Vaš link: {(() => {
                   const safeSlug = getSafeSlug(salonNameSlug);
                   return safeSlug ? (
@@ -142,7 +142,7 @@ export function BasicInfoCard({
         {/* Bio is about the salon, so only show for salon owners */}
         {showSalonName && (
           <div className="space-y-2">
-            <Label htmlFor="bio" className="text-gray-900 dark:text-white">
+            <Label htmlFor="bio" className="text-foreground">
               O salonu
             </Label>
             <Textarea
@@ -150,7 +150,7 @@ export function BasicInfoCard({
               data-testid="profile-bio-input"
               {...register("bio")}
               rows={3}
-              className="text-gray-900 bg-white resize-none dark:bg-gray-800 dark:text-white"
+              className="text-foreground bg-background resize-none"
               placeholder="Kratak opis o salonu koji će se prikazati na stranici za zakazivanje..."
             />
             {errors.bio && <p className="text-sm text-red-600">{errors.bio.message}</p>}

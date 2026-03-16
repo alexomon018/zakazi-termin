@@ -23,7 +23,7 @@ export function DangerZoneCard({ onDeleteAccount, isDeleting, deleteError }: Dan
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Jednom kada obrišete nalog, nema povratka. Molimo budite sigurni.
           </p>
           <Button

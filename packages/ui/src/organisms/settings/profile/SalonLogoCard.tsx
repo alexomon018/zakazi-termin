@@ -29,7 +29,8 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const effectiveAvatarUrl = user?.salonIconUrl || user?.avatarUrl;
+  // Only show the dedicated salon icon - never fall back to the user's Google avatar
+  const effectiveSalonLogoUrl = user?.salonIconUrl;
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -130,26 +131,26 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="flex overflow-hidden flex-shrink-0 justify-center items-center w-20 h-20 bg-gray-200 rounded-full dark:bg-gray-700">
+          <div className="flex overflow-hidden flex-shrink-0 justify-center items-center w-20 h-20 bg-muted rounded-full">
             {isUploading ? (
-              <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-            ) : effectiveAvatarUrl ? (
+              <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+            ) : effectiveSalonLogoUrl ? (
               <Image
-                src={effectiveAvatarUrl}
+                src={effectiveSalonLogoUrl}
                 alt={user?.salonName || user?.name || "Logo"}
                 width={80}
                 height={80}
                 className="object-cover w-full h-full"
               />
             ) : (
-              <UserIcon className="w-10 h-10 text-gray-400 dark:text-gray-500" />
+              <UserIcon className="w-10 h-10 text-muted-foreground" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Logo vašeg salona će se prikazivati na stranici za zakazivanje.
             </p>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               Preporučena veličina: 256x256 piksela. Max: 5MB. Formati: JPEG, PNG, WebP
             </p>
             {uploadError && (

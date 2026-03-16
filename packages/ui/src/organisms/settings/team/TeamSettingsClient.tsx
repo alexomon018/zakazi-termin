@@ -225,8 +225,8 @@ export function TeamSettingsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tim</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-foreground">Tim</h1>
+        <p className="mt-1 text-muted-foreground">
           Upravljajte članovima tima za {organization.name}
         </p>
       </div>

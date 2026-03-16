@@ -11,7 +11,7 @@ import { SidebarFooter } from "@salonko/ui/molecules/navigation/SidebarFooter";
 import { SidebarNavItem } from "@salonko/ui/molecules/navigation/SidebarNavItem";
 import { SidebarUserDropdown } from "@salonko/ui/molecules/navigation/SidebarUserDropdown";
 import { cn } from "@salonko/ui/utils";
-import { Calendar, Clock, LayoutDashboard, Settings } from "lucide-react";
+import { Calendar, CalendarClock, Clock, LayoutDashboard, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { memo, useCallback, useMemo } from "react";
 
@@ -37,7 +37,7 @@ const navItems = [
   {
     href: "/dashboard/availability",
     label: "Dostupnost",
-    icon: Clock,
+    icon: CalendarClock,
     requiresSubscription: true,
   },
 ];

@@ -40,16 +40,20 @@ export function TeamCreateOrganization({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tim</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-foreground">Tim</h1>
+        <p className="mt-1 text-muted-foreground">
           Kreirajte organizaciju da biste dodali članove tima
         </p>
       </div>
 
       {error && (
-        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">{error}</span>
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
+        >
+          <AlertCircle className="w-5 h-5 text-destructive" />
+          <span className="text-destructive">{error}</span>
         </div>
       )}
 

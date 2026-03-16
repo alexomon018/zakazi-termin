@@ -36,10 +36,10 @@ export function BillingAlerts({ isLocked, success, canceled }: BillingAlertsProp
       {canceled && (
         <div
           role="alert"
-          className="flex gap-3 items-center p-4 bg-gray-50 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+          className="flex gap-3 items-center p-4 bg-muted/50 rounded-lg border border-border"
         >
-          <AlertCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <span className="text-gray-800 dark:text-gray-300">Plaćanje je otkazano.</span>
+          <AlertCircle className="w-5 h-5 text-muted-foreground" />
+          <span className="text-foreground">Plaćanje je otkazano.</span>
         </div>
       )}
     </>

@@ -27,7 +27,8 @@ export function ProcessSection() {
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <p className="text-xs font-semibold tracking-widest uppercase text-primary">Kako radi</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Kako funkcioniše
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">

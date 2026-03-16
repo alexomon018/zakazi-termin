@@ -25,7 +25,7 @@ const MobileBottomNavItem = memo(function MobileBottomNavItem({
   const isLocked = requiresSubscription && !isSubscribed;
 
   const baseClasses = cn(
-    "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors",
+    "flex flex-1 flex-col items-center justify-center gap-1 py-3 text-xs font-medium transition-colors",
     isActive ? "text-primary" : "text-muted-foreground",
     isLocked && "opacity-50 pointer-events-none blur-[1px]"
   );

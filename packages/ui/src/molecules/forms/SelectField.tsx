@@ -30,7 +30,7 @@ export function SelectField({
 }: SelectFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label className="text-gray-900 dark:text-white">{label}</Label>
+      <Label className="text-foreground">{label}</Label>
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder={placeholder} />
@@ -43,7 +43,7 @@ export function SelectField({
           ))}
         </SelectContent>
       </Select>
-      {helperText && <p className="text-xs text-gray-500 dark:text-gray-400">{helperText}</p>}
+      {helperText && <p className="text-xs text-muted-foreground">{helperText}</p>}
     </div>
   );
 }

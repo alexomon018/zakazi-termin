@@ -134,7 +134,7 @@ export function EventTypesClient({
           <CardContent className="py-12">
             <div className="text-center">
               <Clock
-                className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-muted-foreground/40"
+                className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30 dark:text-muted-foreground/40"
                 aria-hidden="true"
               />
               <h3 className="mb-2 text-lg font-medium text-foreground">Nemate tipove termina</h3>
@@ -166,7 +166,7 @@ export function EventTypesClient({
                       <div
                         className={cn(
                           "w-1 h-12 rounded-full flex-shrink-0",
-                          eventType.hidden ? "bg-gray-400 dark:bg-gray-600" : "bg-primary"
+                          eventType.hidden ? "bg-muted-foreground" : "bg-primary"
                         )}
                       />
                       <div className="min-w-0">
@@ -175,7 +175,7 @@ export function EventTypesClient({
                             {eventType.title}
                           </h3>
                           {eventType.hidden && (
-                            <span className="text-xs bg-gray-100 dark:bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
+                            <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
                               Skriveno
                             </span>
                           )}
@@ -240,7 +240,7 @@ export function EventTypesClient({
                         }}
                         target="_blank"
                         className={cn(
-                          "p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-gray-100 dark:hover:bg-muted",
+                          "p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-muted",
                           !canShare && "pointer-events-none opacity-50"
                         )}
                       >
@@ -287,7 +287,7 @@ export function EventTypesClient({
                 </div>
 
                 {/* Public URL bar */}
-                <div className="overflow-hidden px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-border dark:bg-muted/50">
+                <div className="overflow-hidden px-4 py-2 bg-muted/50 rounded-b-lg border-t border-border">
                   <code className="block text-xs truncate text-muted-foreground">
                     {canShare ? `${baseUrl}/${bookingSlug}/${eventType.slug}` : "—"}
                   </code>
@@ -300,7 +300,7 @@ export function EventTypesClient({
 
       {/* Help section */}
       {eventTypes.length > 0 && (
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 dark:bg-muted/30 dark:border-border">
+        <div className="p-4 bg-muted/50 rounded-lg border border-border dark:bg-muted/30">
           <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
           <p className="text-sm text-muted-foreground">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše
