@@ -15,7 +15,7 @@ import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useMe } from "@/lib/use-me";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 export default function ProfileSettingsScreen() {
   const { theme } = useTheme();
@@ -53,6 +53,17 @@ export default function ProfileSettingsScreen() {
     () =>
       StyleSheet.create({
         multilineInput: { minHeight: 80, textAlignVertical: "top" },
+        saveChip: {
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: theme.colors.primary,
+          borderColor: theme.colors.primary,
+          borderWidth: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: 20,
+          opacity: updateMutation.isPending ? 0.7 : 1,
+        },
         infoRow: {
           flexDirection: "row",
           justifyContent: "space-between",
@@ -61,7 +72,7 @@ export default function ProfileSettingsScreen() {
         },
         actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
       }),
-    [theme]
+    [theme, updateMutation.isPending]
   );
 
   if (meQuery.isLoading) {
@@ -80,6 +91,7 @@ export default function ProfileSettingsScreen() {
 
   const role = meQuery.data?.membership?.role ?? "OWNER";
   const isOwner = role === "OWNER";
+  const roleLabel = role === "OWNER" ? "Vlasnik" : role === "ADMIN" ? "Admin" : "Član";
 
   const handleSave = () => {
     const payload: { name?: string; salonName?: string; bio?: string } = {};
@@ -92,7 +104,25 @@ export default function ProfileSettingsScreen() {
   return (
     <>
       <SettingsScrollView keyboardShouldPersistTaps="handled">
-        <ScreenHeader title="Profil" />
+        <ScreenHeader
+          title="Profil"
+          rightContent={
+            <Pressable
+              style={styles.saveChip}
+              onPress={handleSave}
+              disabled={updateMutation.isPending}
+              accessibilityRole="button"
+              accessibilityLabel="Sačuvaj profil"
+            >
+              <AppText
+                variant="bodySm"
+                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+              >
+                {updateMutation.isPending ? "Čuvanje..." : "Sačuvaj"}
+              </AppText>
+            </Pressable>
+          }
+        />
         <AppCard>
           <FormField label="Ime">
             <AppInput value={name} onChangeText={setName} placeholder="Vaše ime" />
@@ -139,15 +169,7 @@ export default function ProfileSettingsScreen() {
             <AppText variant="bodySm" muted>
               Uloga
             </AppText>
-            <AppText variant="bodySm">{role}</AppText>
-          </View>
-
-          <View style={styles.actions}>
-            <AppButton
-              label="Sačuvaj profil"
-              onPress={handleSave}
-              loading={updateMutation.isPending}
-            />
+            <AppText variant="bodySm">{roleLabel}</AppText>
           </View>
         </AppCard>
 
@@ -160,7 +182,8 @@ export default function ProfileSettingsScreen() {
             <AppButton
               label="Obriši nalog"
               onPress={() => setShowDeleteConfirm(true)}
-              variant="destructive"
+              variant="outline"
+              textColorOverride={theme.colors.destructive}
             />
           </View>
         </AppCard>

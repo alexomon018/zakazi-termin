@@ -11,6 +11,7 @@ export function SectionHeader({ title }: { title: string }) {
         letterSpacing: 0.5,
         color: theme.colors.mutedForeground,
         fontWeight: "600",
+        marginTop: theme.spacing.md,
         marginBottom: theme.spacing.xs,
       }}
     >

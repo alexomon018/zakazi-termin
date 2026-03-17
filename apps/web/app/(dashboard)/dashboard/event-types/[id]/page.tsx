@@ -28,10 +28,8 @@ export default async function EditEventTypePage({ params }: Props) {
   if (!eventType) {
     return (
       <div className="py-12 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Tip termina nije pronađen
-        </h2>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
+        <h2 className="text-xl font-semibold text-foreground">Tip termina nije pronađen</h2>
+        <p className="mt-2 text-muted-foreground">
           Ovaj tip termina ne postoji ili nemate pristup.
         </p>
         <Link href="/dashboard/event-types">

@@ -57,10 +57,10 @@ export function TeamCreateOrganization({
         </div>
       )}
 
-      <Card>
+      <Card className="border-dashed border-primary/20 bg-primary/[0.02]">
         <CardHeader>
           <CardTitle className="flex gap-2 items-center">
-            <Users className="w-5 h-5" />
+            <Users className="w-5 h-5 text-primary/60" />
             Kreirajte svoju organizaciju
           </CardTitle>
           <CardDescription>

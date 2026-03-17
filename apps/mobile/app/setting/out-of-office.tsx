@@ -161,25 +161,20 @@ export default function OutOfOfficeScreen() {
         }
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
-          <>
-            <ScreenHeader
-              title="Odsustvo"
-              rightContent={
-                <Pressable
-                  style={styles.addButton}
-                  onPress={handleAdd}
-                  accessibilityRole="button"
-                  accessibilityLabel="Dodaj odsustvo"
-                  hitSlop={8}
-                >
-                  <Plus size={20} color={theme.colors.primaryForeground} />
-                </Pressable>
-              }
-            />
-            <AppText variant="h2" style={{ marginBottom: theme.spacing.sm }}>
-              Periodi odsustva
-            </AppText>
-          </>
+          <ScreenHeader
+            title="Odsustvo"
+            rightContent={
+              <Pressable
+                style={styles.addButton}
+                onPress={handleAdd}
+                accessibilityRole="button"
+                accessibilityLabel="Dodaj odsustvo"
+                hitSlop={8}
+              >
+                <Plus size={20} color={theme.colors.primaryForeground} />
+              </Pressable>
+            }
+          />
         }
         ListEmptyComponent={
           listQuery.isLoading ? (

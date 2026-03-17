@@ -7,9 +7,16 @@ import {
   SectionHeader,
 } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
+import { ChevronDown, ChevronUp } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const LOCATION_TYPES = [
+  { value: "inPerson" as const, label: "U salonu" },
+  { value: "phone" as const, label: "Telefonom" },
+  { value: "link" as const, label: "Online link" },
+];
 
 export type EventTypeFormData = {
   title: string;
@@ -62,8 +69,23 @@ export function validateEventTypeForm(formData: EventTypeFormData): Record<strin
     errors.slug = "Slug može sadržati samo mala slova, brojeve i crtice";
   }
   if (formData.length < 5) errors.length = "Trajanje mora biti najmanje 5 minuta";
-  if (formData.locationType === "inPerson" && !formData.locationAddress.trim()) {
-    errors.locationAddress = "Adresa je obavezna za termine uživo";
+  if (!formData.locationAddress.trim()) {
+    errors.locationAddress =
+      formData.locationType === "inPerson"
+        ? "Adresa je obavezna za termine uživo"
+        : formData.locationType === "phone"
+          ? "Telefon je obavezan za telefonske termine"
+          : "Link je obavezan za online termine";
+  } else if (
+    formData.locationType === "link" &&
+    !/^https?:\/\/.+/.test(formData.locationAddress.trim())
+  ) {
+    errors.locationAddress = "Unesite ispravan URL (https://...)";
+  } else if (formData.locationType === "phone") {
+    const digitsOnly = formData.locationAddress.replace(/\D/g, "");
+    if (digitsOnly.length < 6) {
+      errors.locationAddress = "Unesite ispravan broj telefona";
+    }
   }
   return errors;
 }
@@ -92,6 +114,45 @@ const BUFFER_OPTIONS = [
 
 const DURATION_OPTIONS = [15, 20, 30, 45, 60, 90, 120];
 
+function OptionChip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={{
+        height: 34,
+        borderRadius: theme.radius.full,
+        borderWidth: 1,
+        borderColor: active ? theme.colors.primary : theme.colors.border,
+        backgroundColor: active ? theme.colors.primaryTint : theme.colors.surface,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 14,
+      }}
+    >
+      <AppText
+        variant="bodySm"
+        style={{
+          fontWeight: "600",
+          color: active ? theme.colors.primary : theme.colors.foreground,
+        }}
+      >
+        {label}
+      </AppText>
+    </Pressable>
+  );
+}
+
 function OptionRow({
   label,
   options,
@@ -110,11 +171,11 @@ function OptionRow({
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
           {options.map((opt) => (
-            <AppButton
+            <OptionChip
               key={opt.value}
               label={opt.label}
+              active={value === opt.value}
               onPress={() => onChange(opt.value)}
-              variant={value === opt.value ? "primary" : "outline"}
             />
           ))}
         </View>
@@ -191,6 +252,8 @@ export function EventTypeForm({
           backgroundColor: theme.colors.primary,
           borderColor: theme.colors.primary,
           opacity: isPending ? 0.7 : 1,
+          minWidth: 90,
+          paddingHorizontal: 20,
         },
         card: {
           backgroundColor: theme.colors.surface,
@@ -220,27 +283,24 @@ export function EventTypeForm({
         title={headerTitle}
         onBack={onBackPress}
         rightContent={
-          <>
-            <View style={styles.chip}>
-              <AppText variant="bodySm" style={{ fontWeight: "600" }}>
-                Osnovno
-              </AppText>
-            </View>
-            <Pressable
-              style={[styles.chip, styles.saveChip]}
-              onPress={onSubmit}
-              disabled={isPending}
-              accessibilityRole="button"
-              accessibilityLabel={submitLabel}
+          <Pressable
+            style={[styles.chip, styles.saveChip]}
+            onPress={onSubmit}
+            disabled={isPending}
+            accessibilityRole="button"
+            accessibilityLabel={isPending ? "Čuvanje..." : submitLabel}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
+          >
+            <AppText
+              variant="bodySm"
+              style={{
+                fontWeight: "700",
+                color: theme.colors.primaryForeground,
+              }}
             >
-              <AppText
-                variant="bodySm"
-                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
-              >
-                {isPending ? "Čuvanje..." : submitLabel}
-              </AppText>
-            </Pressable>
-          </>
+              {isPending ? "Čuvanje..." : submitLabel}
+            </AppText>
+          </Pressable>
         }
       />
       <SectionHeader title="Osnovno" />
@@ -253,13 +313,18 @@ export function EventTypeForm({
           />
         </FormField>
 
-        <FormField label="Slug (URL)" error={errors.slug}>
+        <FormField label="Link za zakazivanje" error={errors.slug}>
           <AppInput
             value={formData.slug}
             onChangeText={(v) => updateField("slug", v)}
-            placeholder="npr. sisanje"
+            placeholder="automatski se generiše"
             autoCapitalize="none"
           />
+          {formData.slug.trim() !== "" && (
+            <AppText variant="caption" muted>
+              vaslon.zakazi.rs/{formData.slug}
+            </AppText>
+          )}
         </FormField>
 
         <FormField label="Opis">
@@ -275,7 +340,10 @@ export function EventTypeForm({
 
         <OptionRow
           label="Trajanje (min)"
-          options={DURATION_OPTIONS.map((d) => ({ value: d, label: `${d}` }))}
+          options={DURATION_OPTIONS.map((d) => ({
+            value: d,
+            label: `${d} min`,
+          }))}
           value={formData.length}
           onChange={(v) => updateField("length", v)}
         />
@@ -288,13 +356,46 @@ export function EventTypeForm({
 
       <SectionHeader title="Lokacija" />
       <View style={styles.card}>
-        <FormField label="Adresa" error={errors.locationAddress}>
-          <AppInput
-            value={formData.locationAddress}
-            onChangeText={(v) => updateField("locationAddress", v)}
-            placeholder="Adresa salona"
-          />
-        </FormField>
+        <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
+          {LOCATION_TYPES.map((loc) => (
+            <OptionChip
+              key={loc.value}
+              label={loc.label}
+              active={formData.locationType === loc.value}
+              onPress={() => updateField("locationType", loc.value)}
+            />
+          ))}
+        </View>
+        {formData.locationType === "inPerson" && (
+          <FormField label="Adresa" error={errors.locationAddress}>
+            <AppInput
+              value={formData.locationAddress}
+              onChangeText={(v) => updateField("locationAddress", v)}
+              placeholder="Adresa salona"
+            />
+          </FormField>
+        )}
+        {formData.locationType === "phone" && (
+          <FormField label="Telefon" error={errors.locationAddress}>
+            <AppInput
+              value={formData.locationAddress}
+              onChangeText={(v) => updateField("locationAddress", v)}
+              placeholder="Broj telefona"
+              keyboardType="phone-pad"
+            />
+          </FormField>
+        )}
+        {formData.locationType === "link" && (
+          <FormField label="Link" error={errors.locationAddress}>
+            <AppInput
+              value={formData.locationAddress}
+              onChangeText={(v) => updateField("locationAddress", v)}
+              placeholder="https://"
+              autoCapitalize="none"
+              keyboardType="url"
+            />
+          </FormField>
+        )}
       </View>
 
       {schedules.length > 0 && (
@@ -322,11 +423,33 @@ export function EventTypeForm({
         </>
       )}
 
-      <AppButton
-        label={showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
+      <Pressable
+        style={{
+          height: 38,
+          borderRadius: theme.radius.sm,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: theme.spacing.xs,
+          paddingHorizontal: theme.spacing.lg,
+        }}
         onPress={() => setShowAdvanced((prev) => !prev)}
-        variant="outline"
-      />
+        accessibilityState={{ expanded: showAdvanced }}
+        accessibilityRole="button"
+        accessibilityLabel={showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
+      >
+        <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+          {showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
+        </AppText>
+        {showAdvanced ? (
+          <ChevronUp size={16} color={theme.colors.foreground} />
+        ) : (
+          <ChevronDown size={16} color={theme.colors.foreground} />
+        )}
+      </Pressable>
 
       {showAdvanced && (
         <View style={styles.card}>
@@ -355,7 +478,7 @@ export function EventTypeForm({
               onValueChange={(v) => updateField("requiresConfirmation", v)}
               trackColor={{
                 false: theme.colors.border,
-                true: theme.colors.accent,
+                true: theme.colors.primary,
               }}
             />
           </View>
@@ -371,7 +494,7 @@ export function EventTypeForm({
               onValueChange={(v) => updateField("hidden", v)}
               trackColor={{
                 false: theme.colors.border,
-                true: theme.colors.accent,
+                true: theme.colors.primary,
               }}
             />
           </View>

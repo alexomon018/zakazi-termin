@@ -210,6 +210,8 @@ export function ProfileClient({ initialUser }: ProfileClientProps) {
 
         <AccountInfoCard user={user} />
 
+        <div className="pt-4 mt-2 border-t border-border" />
+
         <LogoutCard />
 
         <DangerZoneCard

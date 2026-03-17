@@ -13,7 +13,7 @@ type FormFieldProps = {
 export function FormField({ label, error, children }: FormFieldProps) {
   const { theme } = useTheme();
   return (
-    <View style={{ gap: theme.spacing.xs }}>
+    <View style={{ gap: theme.spacing.sm }}>
       <AppText variant="bodySm">{label}</AppText>
       {children}
       {error && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, Input, Label } from "@salonko/ui";
+import { Shield } from "lucide-react";
 import type { User } from "./types";
 
 type AccountInfoCardProps = {
@@ -11,7 +12,10 @@ export function AccountInfoCard({ user }: AccountInfoCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Podaci naloga</CardTitle>
+        <CardTitle className="flex gap-2 items-center text-lg">
+          <Shield className="w-5 h-5 text-muted-foreground" />
+          Podaci naloga
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">

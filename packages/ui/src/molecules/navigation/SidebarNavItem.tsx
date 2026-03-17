@@ -29,7 +29,7 @@ export function SidebarNavItem({
   );
 
   const stateClasses = isActive
-    ? "text-foreground bg-muted font-semibold"
+    ? "text-primary bg-primary/10 font-semibold"
     : "text-muted-foreground hover:bg-muted/50 hover:text-foreground";
 
   const lockedClasses = "opacity-50 pointer-events-none blur-[1px]";

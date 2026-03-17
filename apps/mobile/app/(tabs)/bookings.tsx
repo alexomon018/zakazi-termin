@@ -77,7 +77,7 @@ export default function BookingsScreen() {
           borderRadius: 42,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surfaceMuted,
+          backgroundColor: theme.colors.primaryTint,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: theme.spacing.md,
@@ -88,7 +88,7 @@ export default function BookingsScreen() {
 
   const emptyIcon = (
     <View style={styles.emptyIconWrap}>
-      <CalendarDays size={34} color={theme.colors.mutedForeground} />
+      <CalendarDays size={34} color={theme.colors.primary} />
     </View>
   );
 

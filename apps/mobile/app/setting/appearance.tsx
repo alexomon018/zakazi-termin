@@ -105,9 +105,9 @@ export default function AppearanceSettingsScreen() {
           marginTop: theme.spacing.sm,
         },
         colorSwatch: {
-          width: 44,
-          height: 44,
-          borderRadius: 22,
+          width: 48,
+          height: 48,
+          borderRadius: 24,
           alignItems: "center",
           justifyContent: "center",
         },
@@ -179,6 +179,9 @@ export default function AppearanceSettingsScreen() {
             </Pressable>
           ))}
         </View>
+        <AppText variant="caption" muted>
+          Izabrano: {getColorName(currentBrandColor)}
+        </AppText>
       </AppCard>
     </SettingsScrollView>
   );

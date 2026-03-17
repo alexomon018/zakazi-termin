@@ -170,7 +170,7 @@ export default function AvailabilityScreen() {
           paddingVertical: 2,
           borderRadius: theme.radius.full,
           borderWidth: 1,
-          borderColor: theme.colors.accent,
+          borderColor: theme.colors.primary,
         },
         separator: {
           height: StyleSheet.hairlineWidth,
@@ -240,7 +240,7 @@ export default function AvailabilityScreen() {
                       <View style={styles.defaultBadge}>
                         <AppText
                           variant="caption"
-                          style={{ color: theme.colors.accent, fontWeight: "600" }}
+                          style={{ color: theme.colors.primary, fontWeight: "600" }}
                         >
                           Podrazumevani
                         </AppText>

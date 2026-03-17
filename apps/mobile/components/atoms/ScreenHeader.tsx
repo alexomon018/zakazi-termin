@@ -22,7 +22,7 @@ export function ScreenHeader({ title, rightContent, onBack }: ScreenHeaderProps)
         topRow: {
           flexDirection: "row",
           alignItems: "center",
-          gap: theme.spacing.sm,
+          gap: theme.spacing.md,
           marginBottom: theme.spacing.sm,
         },
         backButton: {

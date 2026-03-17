@@ -20,11 +20,7 @@ function ProgressStep({ number, label, isActive, isCompleted }: ProgressStepProp
           ${!isActive && !isCompleted ? "bg-gray-100 dark:bg-gray-800 text-gray-400" : ""}
         `}
       >
-        {isCompleted ? (
-          <CheckCircle className="w-4 h-4 text-green-500" aria-hidden="true" />
-        ) : (
-          number
-        )}
+        {isCompleted ? <CheckCircle className="w-4 h-4 text-white" aria-hidden="true" /> : number}
       </div>
       <span
         className={`text-xs transition-colors ${

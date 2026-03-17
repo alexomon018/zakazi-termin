@@ -130,7 +130,7 @@ export default function SettingsScreen() {
           width: 32,
           height: 32,
           borderRadius: theme.radius.sm,
-          backgroundColor: theme.colors.surfaceMuted,
+          backgroundColor: theme.colors.primaryTint,
           alignItems: "center",
           justifyContent: "center",
         },
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
           accessibilityHint={`Otvara ${item.label}`}
         >
           <View style={styles.menuIconContainer}>
-            <item.icon size={18} color={theme.colors.foreground} />
+            <item.icon size={18} color={theme.colors.primary} />
           </View>
           <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
             {item.label}
@@ -251,7 +251,7 @@ export default function SettingsScreen() {
             onPress={copyPublicLink}
           >
             <View style={styles.menuIconContainer}>
-              <Copy size={18} color={theme.colors.foreground} />
+              <Copy size={18} color={theme.colors.primary} />
             </View>
             <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
               Kopiraj javni link
@@ -266,7 +266,7 @@ export default function SettingsScreen() {
             onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/help`)}
           >
             <View style={styles.menuIconContainer}>
-              <HelpCircle size={18} color={theme.colors.foreground} />
+              <HelpCircle size={18} color={theme.colors.primary} />
             </View>
             <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
               Pomoć

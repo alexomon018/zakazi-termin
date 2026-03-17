@@ -287,7 +287,7 @@ export function BookingsClient({
         <Card data-testid="bookings-empty-state">
           <CardContent className="py-12 text-center">
             <Calendar
-              className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30 dark:text-muted-foreground/40"
+              className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
               aria-hidden="true"
             />
             <p className="text-muted-foreground">{getEmptyMessage()}</p>

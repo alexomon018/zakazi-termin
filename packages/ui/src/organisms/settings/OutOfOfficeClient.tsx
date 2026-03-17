@@ -152,8 +152,8 @@ export function OutOfOfficeClient({ initialEntries, initialReasons }: OutOfOffic
             </div>
           ) : (
             <div className="py-12 text-center">
-              <CalendarDays className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30" />
-              <p className="mb-2 text-muted-foreground">Nemate zakazanih odsustva</p>
+              <CalendarDays className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40" />
+              <p className="mb-2 font-medium text-muted-foreground">Nemate zakazanih odsustva</p>
               <p className="text-sm text-muted-foreground">
                 Dodajte period kada necete biti dostupni za zakazivanje termina.
               </p>

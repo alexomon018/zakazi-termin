@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@salonko/ui";
-import { Loader2, Trash2, Upload, User as UserIcon } from "lucide-react";
+import { ImageIcon, Loader2, Trash2, Upload, User as UserIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import type { User } from "./types";
@@ -127,7 +127,10 @@ export function SalonLogoCard({ user, onUploadSuccess }: SalonLogoCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Logo salona</CardTitle>
+        <CardTitle className="flex gap-2 items-center text-lg">
+          <ImageIcon className="w-5 h-5 text-muted-foreground" />
+          Logo salona
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
