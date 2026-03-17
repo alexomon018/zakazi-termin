@@ -51,12 +51,7 @@ export function PlanPickerCard({
                 )}
               >
                 {config.badge && (
-                  <span
-                    className={cn(
-                      "absolute -top-2 right-2 rounded-full px-2 py-0.5 text-xs font-medium text-white",
-                      tier === "growth" ? "bg-primary" : "bg-primary/80"
-                    )}
-                  >
+                  <span className="absolute -top-2 right-2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
                     {config.badge}
                   </span>
                 )}

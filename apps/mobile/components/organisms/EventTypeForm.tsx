@@ -69,8 +69,23 @@ export function validateEventTypeForm(formData: EventTypeFormData): Record<strin
     errors.slug = "Slug može sadržati samo mala slova, brojeve i crtice";
   }
   if (formData.length < 5) errors.length = "Trajanje mora biti najmanje 5 minuta";
-  if (formData.locationType === "inPerson" && !formData.locationAddress.trim()) {
-    errors.locationAddress = "Adresa je obavezna za termine uživo";
+  if (!formData.locationAddress.trim()) {
+    errors.locationAddress =
+      formData.locationType === "inPerson"
+        ? "Adresa je obavezna za termine uživo"
+        : formData.locationType === "phone"
+          ? "Telefon je obavezan za telefonske termine"
+          : "Link je obavezan za online termine";
+  } else if (
+    formData.locationType === "link" &&
+    !/^https?:\/\/.+/.test(formData.locationAddress.trim())
+  ) {
+    errors.locationAddress = "Unesite ispravan URL (https://...)";
+  } else if (
+    formData.locationType === "phone" &&
+    !/^\+?[0-9\s\-()]{6,}$/.test(formData.locationAddress.trim())
+  ) {
+    errors.locationAddress = "Unesite ispravan broj telefona";
   }
   return errors;
 }
@@ -277,7 +292,10 @@ export function EventTypeForm({
           >
             <AppText
               variant="bodySm"
-              style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+              style={{
+                fontWeight: "700",
+                color: theme.colors.primaryForeground,
+              }}
             >
               {isPending ? "Čuvanje..." : submitLabel}
             </AppText>
@@ -321,7 +339,10 @@ export function EventTypeForm({
 
         <OptionRow
           label="Trajanje (min)"
-          options={DURATION_OPTIONS.map((d) => ({ value: d, label: `${d} min` }))}
+          options={DURATION_OPTIONS.map((d) => ({
+            value: d,
+            label: `${d} min`,
+          }))}
           value={formData.length}
           onChange={(v) => updateField("length", v)}
         />
@@ -354,7 +375,7 @@ export function EventTypeForm({
           </FormField>
         )}
         {formData.locationType === "phone" && (
-          <FormField label="Telefon">
+          <FormField label="Telefon" error={errors.locationAddress}>
             <AppInput
               value={formData.locationAddress}
               onChangeText={(v) => updateField("locationAddress", v)}
@@ -364,7 +385,7 @@ export function EventTypeForm({
           </FormField>
         )}
         {formData.locationType === "link" && (
-          <FormField label="Link">
+          <FormField label="Link" error={errors.locationAddress}>
             <AppInput
               value={formData.locationAddress}
               onChangeText={(v) => updateField("locationAddress", v)}
@@ -415,6 +436,7 @@ export function EventTypeForm({
           paddingHorizontal: theme.spacing.lg,
         }}
         onPress={() => setShowAdvanced((prev) => !prev)}
+        accessibilityState={{ expanded: showAdvanced }}
         accessibilityRole="button"
         accessibilityLabel={showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
       >

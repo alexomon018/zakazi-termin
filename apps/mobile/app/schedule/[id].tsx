@@ -238,6 +238,8 @@ export default function ScheduleEditorScreen() {
   };
 
   const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
+  const isSaveDisabled =
+    isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name);
 
   const styles = useMemo(
     () =>
@@ -255,7 +257,9 @@ export default function ScheduleEditorScreen() {
         saveChip: {
           backgroundColor: theme.colors.primary,
           borderColor: theme.colors.primary,
-          opacity: isSaving ? 0.7 : 1,
+        },
+        saveChipDisabled: {
+          opacity: 0.5,
         },
         card: {
           backgroundColor: theme.colors.surface,
@@ -274,7 +278,7 @@ export default function ScheduleEditorScreen() {
           borderBottomColor: theme.colors.border,
         },
       }),
-    [theme, isSaving]
+    [theme]
   );
 
   if (scheduleQuery.isLoading) {
@@ -298,17 +302,21 @@ export default function ScheduleEditorScreen() {
           title={scheduleName.trim() || "Uredi raspored"}
           rightContent={
             <Pressable
-              style={[styles.chip, styles.saveChip]}
+              style={[styles.chip, styles.saveChip, isSaveDisabled && styles.saveChipDisabled]}
               onPress={handleSave}
-              disabled={
-                isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name)
-              }
+              disabled={isSaveDisabled}
               accessibilityRole="button"
               accessibilityLabel="Sačuvaj"
+              accessibilityState={{ disabled: isSaveDisabled }}
             >
               <AppText
                 variant="bodySm"
-                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+                style={{
+                  fontWeight: "700",
+                  color: isSaveDisabled
+                    ? theme.colors.mutedForeground
+                    : theme.colors.primaryForeground,
+                }}
               >
                 {isSaving ? "Čuvanje..." : "Sačuvaj"}
               </AppText>

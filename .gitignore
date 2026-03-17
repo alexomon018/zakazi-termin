@@ -51,6 +51,9 @@ packages/prisma/generated
 # Claude worktrees
 .claude/worktrees
 
+# MCP
+.mcp.json
+
 # IDE
 .idea
 .vscode

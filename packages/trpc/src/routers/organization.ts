@@ -99,10 +99,18 @@ export const organizationRouter = router({
         } catch (error) {
           if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
             const target = error.meta?.target as string[] | string | undefined;
-            const targetStr = Array.isArray(target) ? target.join(",") : target;
+            const targets = Array.isArray(target) ? target : target ? [target] : [];
 
-            // User already owns an organization — no retry will help
-            if (targetStr?.includes("userId_owner_unique") || targetStr?.includes("userId")) {
+            // Membership duplicate (userId + organizationId) — user is already a member
+            if (targets.includes("userId") && targets.includes("organizationId")) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "Već ste član ove organizacije.",
+              });
+            }
+
+            // Owner duplicate (ownerId field) — user already owns an organization
+            if (targets.some((t) => t.includes("owner") || t.includes("ownerId"))) {
               throw new TRPCError({
                 code: "CONFLICT",
                 message: "Već imate organizaciju.",
@@ -110,12 +118,17 @@ export const organizationRouter = router({
             }
 
             // Slug collision from race condition — retry
-            if (attempt < MAX_RETRIES - 1) continue;
+            if (targets.some((t) => t.includes("slug"))) {
+              if (attempt < MAX_RETRIES - 1) continue;
 
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "Nije moguće kreirati organizaciju. Pokušajte ponovo.",
-            });
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "Nije moguće kreirati organizaciju. Pokušajte ponovo.",
+              });
+            }
+
+            // Unknown P2002 — do not retry
+            throw error;
           }
 
           throw error;
@@ -206,14 +219,20 @@ export const organizationRouter = router({
    * Check if a slug is available
    */
   checkSlug: protectedProcedure
-    .input(z.object({ slug: z.string().min(3) }))
+    .input(z.object({ slug: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
+      const normalizedSlug = normalizeToSlug(input.slug);
+
+      if (!normalizedSlug || normalizedSlug.length < 3) {
+        return { available: false, normalizedSlug: null };
+      }
+
       const existing = await ctx.prisma.organization.findUnique({
-        where: { slug: input.slug },
+        where: { slug: normalizedSlug },
         select: { id: true },
       });
 
-      return { available: !existing };
+      return { available: !existing, normalizedSlug };
     }),
 
   /**
