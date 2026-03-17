@@ -297,42 +297,33 @@ export default function ScheduleEditorScreen() {
         <ScreenHeader
           title={scheduleName.trim() || "Uredi raspored"}
           rightContent={
-            <>
-              <View style={styles.chip}>
-                <AppText variant="bodySm" style={{ fontWeight: "600" }}>
-                  Radno vreme
-                </AppText>
-              </View>
-              <Pressable
-                style={[styles.chip, styles.saveChip]}
-                onPress={handleSave}
-                disabled={
-                  isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name)
-                }
-                accessibilityRole="button"
-                accessibilityLabel="Sačuvaj"
+            <Pressable
+              style={[styles.chip, styles.saveChip]}
+              onPress={handleSave}
+              disabled={
+                isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name)
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Sačuvaj"
+            >
+              <AppText
+                variant="bodySm"
+                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
               >
-                <AppText
-                  variant="bodySm"
-                  style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
-                >
-                  {isSaving ? "Čuvanje..." : "Sačuvaj"}
-                </AppText>
-              </Pressable>
-            </>
+                {isSaving ? "Čuvanje..." : "Sačuvaj"}
+              </AppText>
+            </Pressable>
           }
         />
         <SectionHeader title="Naziv rasporeda" />
-        <View style={styles.card}>
-          <AppInput
-            value={scheduleName}
-            onChangeText={(v) => {
-              setScheduleName(v);
-              setHasChanges(true);
-            }}
-            placeholder="Naziv rasporeda"
-          />
-        </View>
+        <AppInput
+          value={scheduleName}
+          onChangeText={(v) => {
+            setScheduleName(v);
+            setHasChanges(true);
+          }}
+          placeholder="Naziv rasporeda"
+        />
 
         <SectionHeader title="Radno vreme" />
         <View style={styles.card}>
@@ -349,9 +340,9 @@ export default function ScheduleEditorScreen() {
         </View>
 
         <SectionHeader title="Izuzeci datuma" />
-        <View style={styles.card}>
-          {dateOverrides.length > 0 ? (
-            dateOverrides.map((override) => (
+        {dateOverrides.length > 0 && (
+          <View style={styles.card}>
+            {dateOverrides.map((override) => (
               <View key={override.date.toISOString()} style={styles.overrideRow}>
                 <View style={{ flex: 1 }}>
                   <AppText variant="bodySm">{override.date.toLocaleDateString("sr-RS")}</AppText>
@@ -367,18 +358,14 @@ export default function ScheduleEditorScreen() {
                   variant="outline"
                 />
               </View>
-            ))
-          ) : (
-            <AppText variant="bodySm" muted>
-              Nema izuzetaka.
-            </AppText>
-          )}
-          <AppButton
-            label="Blokiraj datum"
-            onPress={() => setShowDatePicker(true)}
-            variant="outline"
-          />
-        </View>
+            ))}
+          </View>
+        )}
+        <AppButton
+          label="Blokiraj datum"
+          onPress={() => setShowDatePicker(true)}
+          variant="outline"
+        />
 
         {showDatePicker && (
           <>
@@ -435,8 +422,9 @@ export default function ScheduleEditorScreen() {
         <AppButton
           label="Obriši raspored"
           onPress={() => setShowDelete(true)}
-          variant="destructive"
+          variant="outline"
           disabled={isDefault}
+          textColorOverride={theme.colors.destructive}
         />
       </SettingsScrollView>
 

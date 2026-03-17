@@ -134,7 +134,7 @@ export function EventTypesClient({
           <CardContent className="py-12">
             <div className="text-center">
               <Clock
-                className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30 dark:text-muted-foreground/40"
+                className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
                 aria-hidden="true"
               />
               <h3 className="mb-2 text-lg font-medium text-foreground">Nemate tipove termina</h3>

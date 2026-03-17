@@ -82,14 +82,15 @@ function TimeButton({
   return (
     <>
       <Pressable
-        style={{
+        style={({ pressed }) => ({
           borderWidth: 1,
           borderColor: theme.colors.border,
           borderRadius: theme.radius.sm,
           paddingHorizontal: theme.spacing.md,
           paddingVertical: theme.spacing.sm,
           backgroundColor: theme.colors.surface,
-        }}
+          opacity: pressed ? 0.7 : 1,
+        })}
         onPress={() => setShowPicker(true)}
       >
         <AppText variant="bodySm">{time}</AppText>
@@ -184,9 +185,11 @@ export function DayAvailabilityRow({
         <Switch
           value={enabled}
           onValueChange={onToggle}
-          trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
         />
-        <AppText variant="body">{label}</AppText>
+        <AppText variant="body" style={{ opacity: enabled ? 1 : 0.5 }}>
+          {label}
+        </AppText>
       </View>
       {enabled && (
         <View style={styles.rangesContainer}>
@@ -214,8 +217,8 @@ export function DayAvailabilityRow({
             </View>
           ))}
           <Pressable style={styles.addRangeButton} onPress={addRange}>
-            <Plus size={14} color={theme.colors.accent} />
-            <AppText variant="caption" muted>
+            <Plus size={14} color={theme.colors.primary} />
+            <AppText variant="caption" style={{ color: theme.colors.primary }}>
               Dodaj period
             </AppText>
           </Pressable>

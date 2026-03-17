@@ -49,7 +49,7 @@ export function TeamEmptyState({
           width: 80,
           height: 80,
           borderRadius: theme.radius.full,
-          backgroundColor: theme.colors.surfaceMuted,
+          backgroundColor: theme.colors.primaryTint,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: theme.spacing.sm,

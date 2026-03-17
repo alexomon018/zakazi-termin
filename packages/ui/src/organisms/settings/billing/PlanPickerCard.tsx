@@ -54,7 +54,7 @@ export function PlanPickerCard({
                   <span
                     className={cn(
                       "absolute -top-2 right-2 rounded-full px-2 py-0.5 text-xs font-medium text-white",
-                      tier === "growth" ? "bg-primary" : "bg-emerald-500"
+                      tier === "growth" ? "bg-primary" : "bg-primary/80"
                     )}
                   >
                     {config.badge}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, Input, Label, Textarea, cn } from "@salonko/ui";
-import { AlertCircle, Check, ExternalLink } from "lucide-react";
+import { AlertCircle, Check, ExternalLink, UserCircle } from "lucide-react";
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import type { ProfileFormValues } from "./ProfileClient";
 
@@ -54,7 +54,10 @@ export function BasicInfoCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Osnovne informacije</CardTitle>
+        <CardTitle className="flex gap-2 items-center text-lg">
+          <UserCircle className="w-5 h-5 text-muted-foreground" />
+          Osnovne informacije
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className={cn("grid gap-4", showSalonName && "sm:grid-cols-2")}>

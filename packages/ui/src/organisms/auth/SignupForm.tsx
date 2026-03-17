@@ -90,11 +90,39 @@ export function SignupForm({
     signIn("google", { callbackUrl: "/dashboard" });
   };
 
+  const SALON_FIELDS = [
+    "salonName",
+    "salonTypes",
+    "salonPhone",
+    "salonEmail",
+    "salonCity",
+    "salonAddress",
+  ] as const;
+  const OWNER_FIELDS = [
+    "ownerFirstName",
+    "ownerLastName",
+    "email",
+    "ownerPhone",
+    "password",
+    "confirmPassword",
+  ] as const;
+
+  const onValidationError = (fieldErrors: FieldErrors<SignupFormData>) => {
+    const errorKeys = Object.keys(fieldErrors);
+    if (errorKeys.some((key) => SALON_FIELDS.includes(key as (typeof SALON_FIELDS)[number]))) {
+      setActiveSection("salon");
+    } else if (
+      errorKeys.some((key) => OWNER_FIELDS.includes(key as (typeof OWNER_FIELDS)[number]))
+    ) {
+      setActiveSection("owner");
+    }
+  };
+
   return (
     <div className="mx-auto w-full max-w-lg">
       <SignupProgressSteps activeSection={activeSection} />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit, onValidationError)} className="space-y-5">
         {serverError && (
           <div
             data-testid="signup-error-message"

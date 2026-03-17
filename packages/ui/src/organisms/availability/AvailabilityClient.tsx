@@ -355,7 +355,7 @@ export function AvailabilityClient({
             ) : (
               <div className="py-12 text-center text-muted-foreground">
                 <Clock
-                  className="mx-auto mb-4 w-12 h-12 text-muted-foreground/30"
+                  className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
                   aria-hidden="true"
                 />
                 <p className="lg:hidden">Izaberite raspored odozgo ili kreirajte novi</p>

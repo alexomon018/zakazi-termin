@@ -8,12 +8,14 @@ export function AppButton({
   disabled = false,
   loading = false,
   variant = "primary",
+  textColorOverride,
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   loading?: boolean;
   variant?: "primary" | "outline" | "destructive";
+  textColorOverride?: string;
 }) {
   const { theme } = useTheme();
   const isDisabled = disabled || loading;
@@ -39,11 +41,12 @@ export function AppButton({
   );
 
   const textColor =
-    variant === "outline"
+    textColorOverride ??
+    (variant === "outline"
       ? theme.colors.foreground
       : variant === "destructive"
         ? theme.colors.destructiveForeground
-        : theme.colors.primaryForeground;
+        : theme.colors.primaryForeground);
 
   return (
     <Pressable

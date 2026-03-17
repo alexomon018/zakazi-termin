@@ -185,8 +185,8 @@ export const SettingsSidebar = memo(function SettingsSidebar({
                       className={cn(
                         "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
                         item.isActive
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                       )}
                     >
                       <item.icon className="w-5 h-5 shrink-0" aria-hidden="true" />

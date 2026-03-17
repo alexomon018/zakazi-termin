@@ -6,6 +6,39 @@ import { z } from "zod";
 
 import { requireOrganizationAdmin, requireOrganizationMember } from "../lib/permissions";
 
+type SlugLookup = {
+  organization: {
+    findUnique: (args: { where: { slug: string }; select: { id: boolean } }) => Promise<{
+      id: string;
+    } | null>;
+  };
+};
+
+async function findUniqueSlug(
+  prisma: SlugLookup,
+  baseSlug: string,
+  maxAttempts = 10
+): Promise<string> {
+  const existing = await prisma.organization.findUnique({
+    where: { slug: baseSlug },
+    select: { id: true },
+  });
+
+  if (!existing) return baseSlug;
+
+  for (let i = 2; i <= maxAttempts + 1; i++) {
+    const candidate = `${baseSlug}-${i}`;
+    const found = await prisma.organization.findUnique({
+      where: { slug: candidate },
+      select: { id: true },
+    });
+    if (!found) return candidate;
+  }
+
+  // Fallback: append timestamp fragment
+  return `${baseSlug}-${Date.now().toString(36).slice(-6)}`;
+}
+
 export const organizationRouter = router({
   /**
    * Create a new organization (user becomes OWNER)
@@ -24,11 +57,9 @@ export const organizationRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      // Generate slug if not provided
-      const slug = input.slug || normalizeToSlug(input.name);
+      const baseSlug = input.slug || normalizeToSlug(input.name);
 
-      // Handle empty slug (e.g., name contains only punctuation/special characters)
-      if (!slug || slug.length < 3) {
+      if (!baseSlug || baseSlug.length < 3) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -36,54 +67,63 @@ export const organizationRouter = router({
         });
       }
 
-      try {
-        // Create organization and membership in a transaction
-        // The DB-level partial unique index on Membership(userId) WHERE role = 'OWNER'
-        // enforces that a user can only have one OWNER membership, handling race conditions
-        const organization = await ctx.prisma.$transaction(async (tx) => {
-          const org = await tx.organization.create({
-            data: {
-              name: input.name,
-              slug,
-            },
+      // Retry loop handles race conditions: slug check + insert run inside the
+      // same transaction, and if a concurrent request grabs the slug between
+      // findUniqueSlug and create, we retry with fresh lookup.
+      const MAX_RETRIES = 3;
+      for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+          const organization = await ctx.prisma.$transaction(async (tx) => {
+            const slug = await findUniqueSlug(tx, baseSlug);
+
+            const org = await tx.organization.create({
+              data: {
+                name: input.name,
+                slug,
+              },
+            });
+
+            await tx.membership.create({
+              data: {
+                userId,
+                organizationId: org.id,
+                role: MembershipRole.OWNER,
+                accepted: true,
+              },
+            });
+
+            return org;
           });
 
-          await tx.membership.create({
-            data: {
-              userId,
-              organizationId: org.id,
-              role: MembershipRole.OWNER,
-              accepted: true,
-            },
-          });
+          return organization;
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            const target = error.meta?.target as string[] | string | undefined;
+            const targetStr = Array.isArray(target) ? target.join(",") : target;
 
-          return org;
-        });
+            // User already owns an organization — no retry will help
+            if (targetStr?.includes("userId_owner_unique") || targetStr?.includes("userId")) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "Već imate organizaciju.",
+              });
+            }
 
-        return organization;
-      } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-          // Check which unique constraint was violated
-          const target = error.meta?.target as string[] | string | undefined;
-          const targetStr = Array.isArray(target) ? target.join(",") : target;
+            // Slug collision from race condition — retry
+            if (attempt < MAX_RETRIES - 1) continue;
 
-          // Partial unique index on userId for OWNER role
-          if (targetStr?.includes("userId_owner_unique") || targetStr?.includes("userId")) {
             throw new TRPCError({
               code: "CONFLICT",
-              message: "Već imate organizaciju.",
+              message: "Nije moguće kreirati organizaciju. Pokušajte ponovo.",
             });
           }
 
-          // Organization slug unique constraint
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Ovaj slug je već zauzet. Izaberite drugi.",
-          });
+          throw error;
         }
-
-        throw error;
       }
+
+      // Unreachable, but satisfies TypeScript
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Neočekivana greška." });
     }),
 
   /**

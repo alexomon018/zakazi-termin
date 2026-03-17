@@ -22,7 +22,7 @@ export function statusColor(status: BookingStatus | string, theme: Theme): strin
     case "ACCEPTED":
       return theme.colors.success;
     case "PENDING":
-      return theme.colors.accent;
+      return theme.colors.warning;
     case "CANCELLED":
     case "REJECTED":
       return theme.colors.destructive;

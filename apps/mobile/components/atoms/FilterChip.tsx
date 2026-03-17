@@ -22,7 +22,7 @@ export function FilterChip({
         borderRadius: theme.radius.full,
         borderWidth: 1,
         borderColor: active ? theme.colors.primary : theme.colors.border,
-        backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+        backgroundColor: active ? theme.colors.primaryTint : theme.colors.surface,
       }}
       onPress={onPress}
     >
@@ -30,7 +30,7 @@ export function FilterChip({
         style={{
           fontSize: theme.typography.bodySm,
           fontWeight: "500",
-          color: active ? theme.colors.primaryForeground : theme.colors.foreground,
+          color: active ? theme.colors.primary : theme.colors.foreground,
         }}
       >
         {label}

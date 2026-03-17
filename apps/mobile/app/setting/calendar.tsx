@@ -183,7 +183,7 @@ export default function CalendarSettingsScreen() {
                             selected,
                           })
                         }
-                        trackColor={{ false: theme.colors.border, true: theme.colors.accent }}
+                        trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
                       />
                       <AppText variant="bodySm">{cal.name}</AppText>
                     </View>

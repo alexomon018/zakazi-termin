@@ -117,7 +117,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex gap-2 items-center text-lg">
-            <Calendar className="w-5 h-5" />
+            <Calendar className="w-5 h-5 text-muted-foreground" />
             Kalendar integracije
           </CardTitle>
         </CardHeader>

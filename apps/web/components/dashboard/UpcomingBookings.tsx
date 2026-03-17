@@ -2,6 +2,7 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
+import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -75,7 +76,7 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
   };
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Predstojeći termini</CardTitle>
         {totalBookings > 0 && (
@@ -88,7 +89,18 @@ export function UpcomingBookings({ initialBookings, totalBookings }: UpcomingBoo
       </CardHeader>
       <CardContent>
         {displayedBookings.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">Nemate zakazanih termina.</p>
+          <div className="py-8 text-center">
+            <Calendar
+              className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
+              aria-hidden="true"
+            />
+            <p className="text-muted-foreground">Nemate zakazanih termina.</p>
+            <Link href="/dashboard/event-types">
+              <Button variant="outline" size="sm" className="mt-4">
+                Kreiraj tip termina
+              </Button>
+            </Link>
+          </div>
         ) : (
           <>
             <div className="divide-y divide-border">
