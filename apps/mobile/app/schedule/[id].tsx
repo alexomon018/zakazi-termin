@@ -105,7 +105,7 @@ export default function ScheduleEditorScreen() {
   const [scheduleName, setScheduleName] = useState("");
   const [days, setDays] = useState<EditorState>({});
   const [dateOverrides, setDateOverrides] = useState<DateOverride[]>([]);
-  const [hasChanges, setHasChanges] = useState(false);
+  const [hasDayChanges, setHasDayChanges] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pendingBlockDate, setPendingBlockDate] = useState<Date>(new Date());
@@ -120,12 +120,12 @@ export default function ScheduleEditorScreen() {
   });
   const setAvailabilityMutation = trpc.availability.setAvailability.useMutation({
     onSuccess: () => {
-      setHasChanges(false);
+      setHasDayChanges(false);
       utils.availability.getSchedule.invalidate({ id: id! });
       utils.availability.listSchedules.invalidate();
     },
     onError: (error) => {
-      setHasChanges(true);
+      setHasDayChanges(true);
       Alert.alert("Greška", error.message ?? "Čuvanje rasporeda nije uspelo.");
     },
   });
@@ -206,7 +206,7 @@ export default function ScheduleEditorScreen() {
   };
 
   const handleDayToggle = (dayValue: number, enabled: boolean) => {
-    setHasChanges(true);
+    setHasDayChanges(true);
     setDays((prev) => ({
       ...prev,
       [dayValue]: {
@@ -222,7 +222,7 @@ export default function ScheduleEditorScreen() {
   };
 
   const handleTimeRangesChange = (dayValue: number, ranges: TimeRange[]) => {
-    setHasChanges(true);
+    setHasDayChanges(true);
     setDays((prev) => ({
       ...prev,
       [dayValue]: { ...prev[dayValue], timeRanges: ranges },
@@ -238,8 +238,8 @@ export default function ScheduleEditorScreen() {
   };
 
   const isSaving = setAvailabilityMutation.isPending || updateScheduleMutation.isPending;
-  const isSaveDisabled =
-    isSaving || (!hasChanges && scheduleName.trim() === scheduleQuery.data?.name);
+  const hasNameChanged = scheduleName.trim() !== (scheduleQuery.data?.name ?? "");
+  const isSaveDisabled = isSaving || (!hasDayChanges && !hasNameChanged);
 
   const styles = useMemo(
     () =>
@@ -326,10 +326,7 @@ export default function ScheduleEditorScreen() {
         <SectionHeader title="Naziv rasporeda" />
         <AppInput
           value={scheduleName}
-          onChangeText={(v) => {
-            setScheduleName(v);
-            setHasChanges(true);
-          }}
+          onChangeText={setScheduleName}
           placeholder="Naziv rasporeda"
         />
 

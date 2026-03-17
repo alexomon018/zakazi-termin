@@ -81,11 +81,11 @@ export function validateEventTypeForm(formData: EventTypeFormData): Record<strin
     !/^https?:\/\/.+/.test(formData.locationAddress.trim())
   ) {
     errors.locationAddress = "Unesite ispravan URL (https://...)";
-  } else if (
-    formData.locationType === "phone" &&
-    !/^\+?[0-9\s\-()]{6,}$/.test(formData.locationAddress.trim())
-  ) {
-    errors.locationAddress = "Unesite ispravan broj telefona";
+  } else if (formData.locationType === "phone") {
+    const digitsOnly = formData.locationAddress.replace(/\D/g, "");
+    if (digitsOnly.length < 6) {
+      errors.locationAddress = "Unesite ispravan broj telefona";
+    }
   }
   return errors;
 }
@@ -288,7 +288,8 @@ export function EventTypeForm({
             onPress={onSubmit}
             disabled={isPending}
             accessibilityRole="button"
-            accessibilityLabel={submitLabel}
+            accessibilityLabel={isPending ? "Čuvanje..." : submitLabel}
+            accessibilityState={{ disabled: isPending, busy: isPending }}
           >
             <AppText
               variant="bodySm"
