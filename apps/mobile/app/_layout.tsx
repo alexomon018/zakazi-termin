@@ -37,10 +37,6 @@ function RootLayoutNav() {
 
   const isReady = !isLoading && (fontsLoaded || !!fontError);
 
-  useEffect(() => {
-    void SplashScreen.hideAsync();
-  }, []);
-
   const handleSplashFinish = useCallback(() => {
     setShowSplash(false);
   }, []);
@@ -81,15 +77,19 @@ const rootStyles = StyleSheet.create({
 });
 
 export default function RootLayout() {
+  useEffect(() => {
+    void SplashScreen.hideAsync();
+  }, []);
+
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <TRPCProvider>
-          <ThemeProvider>
+    <AuthProvider>
+      <TRPCProvider>
+        <ThemeProvider>
+          <ErrorBoundary>
             <RootLayoutNav />
-          </ThemeProvider>
-        </TRPCProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </TRPCProvider>
+    </AuthProvider>
   );
 }
