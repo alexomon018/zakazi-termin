@@ -243,7 +243,7 @@ export function EventTypeForm({
         content: {
           paddingHorizontal: theme.spacing.lg,
           gap: theme.spacing.md,
-          paddingBottom: 100,
+          paddingBottom: insets.bottom + theme.spacing.lg,
         },
         chip: {
           height: 40,
@@ -277,7 +277,7 @@ export function EventTypeForm({
           alignItems: "center",
         },
       }),
-    [theme, insets.top, isPending]
+    [theme, insets.top, insets.bottom, isPending]
   );
 
   return (

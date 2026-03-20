@@ -82,7 +82,8 @@ const BARBER_ACCOUNT: AccountDef = {
   darkBrandColor: "#fafafa",
   stripeIdSuffix: "001",
   schedules: [
-    { name: "Radno vreme", days: [1, 2, 3, 4, 5, 6], startHour: 9, endHour: 20, isDefault: true },
+    // Weekdays only; Saturday/Sunday use "Vikend raspored" (no overlapping day 6).
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 20, isDefault: true },
     { name: "Vikend raspored", days: [0, 6], startHour: 10, endHour: 16, isDefault: false },
   ],
   eventTypes: [

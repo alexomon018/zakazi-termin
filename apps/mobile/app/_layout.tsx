@@ -1,5 +1,6 @@
 import { AnimatedSplash, ErrorBoundary } from "@/components/atoms";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { initErrorReporting } from "@/lib/error-reporting";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
 import { TRPCProvider } from "@/lib/trpc";
 import { Lato_400Regular, Lato_700Bold, Lato_900Black } from "@expo-google-fonts/lato";
@@ -17,6 +18,8 @@ import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
+
+initErrorReporting();
 
 function RootLayoutNav() {
   const { isLoading } = useAuth();

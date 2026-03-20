@@ -17,6 +17,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+/** Fallback height before onLayout measures the sheet (slide-up animation). */
+const DEFAULT_SHEET_HEIGHT = 800;
+
 type RescheduleSheetProps = {
   visible: boolean;
   bookingTitle: string;
@@ -93,20 +96,6 @@ export function RescheduleSheet({
           toValue: 1,
           damping: 20,
           stiffness: 200,
-          useNativeDriver: true,
-        }),
-      ]);
-      animation.start();
-    } else {
-      animation = Animated.parallel([
-        Animated.timing(backdropAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 150,
           useNativeDriver: true,
         }),
       ]);
@@ -209,7 +198,7 @@ export function RescheduleSheet({
               {
                 translateY: slideAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [sheetHeight ?? 800, 0],
+                  outputRange: [sheetHeight ?? DEFAULT_SHEET_HEIGHT, 0],
                 }),
               },
             ],

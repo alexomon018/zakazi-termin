@@ -136,6 +136,7 @@ export default function BookingsScreen() {
         <AppText variant="title">Zakazivanja</AppText>
         <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
       </View>
+      {/* FlashList v2 measures items automatically; getItemType improves recycling for header vs row cells. */}
       <FlashList
         data={flatData}
         keyExtractor={(item) =>

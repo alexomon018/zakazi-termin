@@ -5,7 +5,7 @@ import { useEnsureTrial } from "@/lib/use-ensure-trial";
 import { Redirect, Tabs } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
 import { useMemo } from "react";
-import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -13,13 +13,12 @@ export default function TabsLayout() {
   const { theme } = useTheme();
 
   const loadingStyle = useMemo(
-    () =>
-      StyleSheet.flatten({
-        flex: 1,
-        justifyContent: "center" as const,
-        alignItems: "center" as const,
-        backgroundColor: theme.colors.background,
-      }),
+    () => ({
+      flex: 1,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      backgroundColor: theme.colors.background,
+    }),
     [theme.colors.background]
   );
 

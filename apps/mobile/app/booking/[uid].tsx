@@ -12,7 +12,7 @@ import { statusColor, statusLabel } from "@/lib/booking-status";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import * as Clipboard from "expo-clipboard";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { Calendar, Clock, Mail, Phone, Store, User } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
@@ -55,9 +55,12 @@ export default function BookingDetailScreen() {
     ]);
   }
 
-  function mutationCallbacks(errorMessage: string) {
+  function mutationCallbacks(errorMessage: string, onSuccessCleanup?: () => void) {
     return {
-      onSuccess: () => invalidateAll(),
+      onSuccess: () => {
+        void invalidateAll();
+        onSuccessCleanup?.();
+      },
       onError: (error: { message?: string }) => {
         Alert.alert("Greška", error.message || errorMessage);
       },
@@ -68,10 +71,10 @@ export default function BookingDetailScreen() {
     mutationCallbacks("Nije moguće potvrditi termin.")
   );
   const rejectMutation = trpc.booking.reject.useMutation(
-    mutationCallbacks("Nije moguće odbiti termin.")
+    mutationCallbacks("Nije moguće odbiti termin.", () => setShowReject(false))
   );
   const cancelMutation = trpc.booking.cancel.useMutation(
-    mutationCallbacks("Nije moguće otkazati termin.")
+    mutationCallbacks("Nije moguće otkazati termin.", () => setShowCancel(false))
   );
 
   const isMutating =
@@ -122,7 +125,7 @@ export default function BookingDetailScreen() {
       <QueryStateView
         state="error"
         message="Nije moguće učitati detalje termina."
-        onRetry={() => router.back()}
+        onRetry={() => void bookingQuery.refetch()}
       />
     );
   }
@@ -306,7 +309,6 @@ export default function BookingDetailScreen() {
         loading={cancelMutation.isPending}
         onConfirm={() => {
           cancelMutation.mutate({ uid: uid! });
-          setShowCancel(false);
         }}
         onCancel={() => setShowCancel(false)}
       />
@@ -320,7 +322,6 @@ export default function BookingDetailScreen() {
         loading={rejectMutation.isPending}
         onConfirm={() => {
           rejectMutation.mutate({ uid: uid! });
-          setShowReject(false);
         }}
         onCancel={() => setShowReject(false)}
       />
