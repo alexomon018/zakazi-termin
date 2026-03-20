@@ -18,4 +18,11 @@ config.resolver.nodeModulesPaths = [
 // Allow resolving modern ESM packages that only expose "exports" (e.g. copy-anything v4).
 config.resolver.unstable_enablePackageExports = true;
 
+// Enable tree shaking to mitigate barrel-export overhead
+config.transformer.getTransformOptions = async () => ({
+  transform: {
+    experimentalImportSupport: true,
+  },
+});
+
 module.exports = config;

@@ -148,6 +148,7 @@ export default function AvailabilityScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
+        header: { paddingHorizontal: theme.spacing.lg },
         content: { padding: theme.spacing.lg, paddingBottom: 140, gap: theme.spacing.md },
         title: { marginBottom: theme.spacing.md },
         cardContainer: {
@@ -276,16 +277,7 @@ export default function AvailabilityScreen() {
 
   return (
     <AppScreen>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl
-            refreshing={schedulesQuery.isRefetching}
-            onRefresh={() => schedulesQuery.refetch()}
-            tintColor={theme.colors.primary}
-          />
-        }
-      >
+      <View style={styles.header}>
         <TopBarPill>
           <Pressable
             onPress={() => setCreateDialogVisible(true)}
@@ -299,6 +291,17 @@ export default function AvailabilityScreen() {
         <AppText variant="title" style={styles.title}>
           Dostupnost
         </AppText>
+      </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={schedulesQuery.isRefetching}
+            onRefresh={() => schedulesQuery.refetch()}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
         {renderContent()}
       </ScrollView>
 

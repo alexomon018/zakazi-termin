@@ -126,8 +126,7 @@ export default function CalendarSettingsScreen() {
 
   return (
     <>
-      <SettingsScrollView>
-        <ScreenHeader title="Kalendar" />
+      <SettingsScrollView stickyHeader={<ScreenHeader title="Kalendar" />}>
         <SectionHeader title="Povezani kalendari" />
 
         {connections.length === 0 ? (

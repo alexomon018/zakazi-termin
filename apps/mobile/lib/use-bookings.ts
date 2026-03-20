@@ -1,10 +1,9 @@
 import type { BottomSheetAction } from "@/components/atoms";
 import type { FilterKey } from "@/components/molecules/BookingsFilterDropdown";
-import { API_URL } from "@/lib/api-url";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
-import * as WebBrowser from "expo-web-browser";
-import { CheckCircle, Info, XCircle } from "lucide-react-native";
+import { router } from "expo-router";
+import { CheckCircle, Info, RefreshCw, XCircle } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Alert } from "react-native";
 
@@ -137,8 +136,7 @@ export function useBookings() {
 
   const openBookingDetails = (uid: string) => {
     if (!uid) return;
-    const url = `${API_URL}/booking/${encodeURIComponent(uid)}`;
-    setTimeout(() => WebBrowser.openBrowserAsync(url), MODAL_DISMISS_DELAY);
+    setTimeout(() => router.push(`/booking/${uid}`), MODAL_DISMISS_DELAY);
   };
 
   const handleRefresh = async () => {
@@ -183,6 +181,19 @@ export function useBookings() {
                 }),
                 onPress: () => cancelMutation.mutate({ uid: activeBooking.uid }),
                 destructive: true,
+                disabled: isMutating,
+              },
+            ]
+          : []),
+        ...(activeBooking.status !== "CANCELLED" && activeBooking.status !== "REJECTED"
+          ? [
+              {
+                label: "Promeni termin",
+                icon: React.createElement(RefreshCw, {
+                  size: 20,
+                  color: theme.colors.foreground,
+                }),
+                onPress: () => openBookingDetails(activeBooking.uid),
                 disabled: isMutating,
               },
             ]

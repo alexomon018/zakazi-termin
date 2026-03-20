@@ -6246,12 +6246,14 @@ __metadata:
     "@react-native-community/datetimepicker": "npm:8.4.4"
     "@react-navigation/native": "npm:^7.0.14"
     "@salonko/trpc": "workspace:*"
+    "@shopify/flash-list": "npm:^2.3.0"
     "@tanstack/react-query": "npm:^5.62.16"
     "@trpc/client": "npm:^11.0.0-rc.660"
     "@trpc/react-query": "npm:^11.0.0-rc.660"
     "@trpc/server": "npm:^11.0.0-rc.660"
     "@types/react": "npm:~19.1.10"
     "@types/react-dom": "npm:~19.1.7"
+    babel-plugin-react-compiler: "npm:^1.0.0"
     expo: "npm:^54.0.0"
     expo-blur: "npm:~14.1.0"
     expo-clipboard: "npm:~8.0.8"
@@ -6282,6 +6284,8 @@ __metadata:
   resolution: "@salonko/prisma@workspace:packages/prisma"
   dependencies:
     "@prisma/client": "npm:^5.22.0"
+    "@salonko/config": "workspace:*"
+    bcryptjs: "npm:^2.4.3"
     prisma: "npm:^5.22.0"
     tsx: "npm:^4.19.0"
   languageName: unknown
@@ -6764,6 +6768,17 @@ __metadata:
   peerDependencies:
     webpack: ">=4.40.0"
   checksum: 10c0/950f173a93a2250a6e2f5f85c988cb8ba6608208ff0900d1dae8002233d5bb6b487e8a88b366a66c6f761bc2983266d1fc2f9e2c60773f421bafa262b0d8ecdf
+  languageName: node
+  linkType: hard
+
+"@shopify/flash-list@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "@shopify/flash-list@npm:2.3.0"
+  peerDependencies:
+    "@babel/runtime": "*"
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/549fbecd447f3b34a07e37387891105a6b087b673d008c04611b91693d8e37db802a40a1cf7029a8b28d9cf97cefd3676901deab90c38cbf3efa8debc2422cd6
   languageName: node
   linkType: hard
 

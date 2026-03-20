@@ -13,17 +13,10 @@ import { DatePickerField, ModalPageHeader, OOOListItem } from "@/components/mole
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useOOOForm } from "@/lib/use-ooo-form";
+import { FlashList } from "@shopify/flash-list";
 import { Pencil, Plus, Trash2 } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Modal, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function OutOfOfficeScreen() {
@@ -126,10 +119,13 @@ export default function OutOfOfficeScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        list: { flex: 1, backgroundColor: theme.colors.background },
-        listContent: {
+        stickyHeader: {
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.sm,
+          paddingBottom: theme.spacing.sm,
+        },
+        listContent: {
+          paddingHorizontal: theme.spacing.lg,
           gap: theme.spacing.sm,
           paddingBottom: 100,
         },
@@ -146,12 +142,35 @@ export default function OutOfOfficeScreen() {
     [theme, insets.top]
   );
 
+  const renderItem = useCallback(
+    ({ item }: { item: (typeof items)[number] }) => {
+      const reason = reasons.find((r) => r.id === item.reasonId);
+      return <OOOListItem item={item} reason={reason} onMorePress={() => setActiveItem(item)} />;
+    },
+    [reasons]
+  );
+
   return (
     <>
-      <FlatList
+      <View style={styles.stickyHeader}>
+        <ScreenHeader
+          title="Odsustvo"
+          rightContent={
+            <Pressable
+              style={styles.addButton}
+              onPress={handleAdd}
+              accessibilityRole="button"
+              accessibilityLabel="Dodaj odsustvo"
+              hitSlop={8}
+            >
+              <Plus size={20} color={theme.colors.primaryForeground} />
+            </Pressable>
+          }
+        />
+      </View>
+      <FlashList
         data={items}
         keyExtractor={(item) => item.uuid}
-        style={styles.list}
         refreshControl={
           <RefreshControl
             refreshing={listQuery.isRefetching}
@@ -160,22 +179,6 @@ export default function OutOfOfficeScreen() {
           />
         }
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <ScreenHeader
-            title="Odsustvo"
-            rightContent={
-              <Pressable
-                style={styles.addButton}
-                onPress={handleAdd}
-                accessibilityRole="button"
-                accessibilityLabel="Dodaj odsustvo"
-                hitSlop={8}
-              >
-                <Plus size={20} color={theme.colors.primaryForeground} />
-              </Pressable>
-            }
-          />
-        }
         ListEmptyComponent={
           listQuery.isLoading ? (
             <QueryStateView state="loading" variant="inline" />
@@ -195,12 +198,7 @@ export default function OutOfOfficeScreen() {
             />
           )
         }
-        renderItem={({ item }) => {
-          const reason = reasons.find((r) => r.id === item.reasonId);
-          return (
-            <OOOListItem item={item} reason={reason} onMorePress={() => setActiveItem(item)} />
-          );
-        }}
+        renderItem={renderItem}
       />
 
       <Modal
