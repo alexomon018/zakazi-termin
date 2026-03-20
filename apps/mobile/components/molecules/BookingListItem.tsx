@@ -2,13 +2,14 @@ import { AppText, MoreButton } from "@/components/atoms";
 import { statusColor, statusLabel } from "@/lib/booking-status";
 import { useTheme } from "@/lib/theme-context";
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 type BookingListItemProps = {
   title: string;
   attendeeName: string;
   time: string;
   status: string;
+  onPress?: () => void;
   onMorePress: () => void;
 };
 
@@ -17,6 +18,7 @@ export function BookingListItem({
   attendeeName,
   time,
   status,
+  onPress,
   onMorePress,
 }: BookingListItemProps) {
   const { theme } = useTheme();
@@ -46,7 +48,7 @@ export function BookingListItem({
   );
 
   return (
-    <View style={styles.row}>
+    <Pressable style={styles.row} onPress={onPress} accessibilityRole="button">
       <View style={styles.content}>
         <AppText variant="body" style={{ fontWeight: "600" }}>
           {title}
@@ -61,6 +63,6 @@ export function BookingListItem({
         </View>
       </View>
       <MoreButton onPress={onMorePress} />
-    </View>
+    </Pressable>
   );
 }

@@ -131,8 +131,7 @@ export default function AppearanceSettingsScreen() {
   const currentBrandColor = optimisticBrandColor ?? meQuery.data?.brandColor ?? "#2563eb";
 
   return (
-    <SettingsScrollView>
-      <ScreenHeader title="Izgled" />
+    <SettingsScrollView stickyHeader={<ScreenHeader title="Izgled" />}>
       <SectionHeader title="Tema" />
       <AppCard>
         <View style={styles.themeRow}>

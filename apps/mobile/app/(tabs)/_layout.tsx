@@ -4,6 +4,7 @@ import { useEnsureTrial } from "@/lib/use-ensure-trial";
 
 import { Redirect, Tabs } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
+import { useMemo } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 
 export default function TabsLayout() {
@@ -11,16 +12,19 @@ export default function TabsLayout() {
   const { isLoading: isTrialLoading } = useEnsureTrial();
   const { theme } = useTheme();
 
+  const loadingStyle = useMemo(
+    () => ({
+      flex: 1,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      backgroundColor: theme.colors.background,
+    }),
+    [theme.colors.background]
+  );
+
   if (isLoading || isTrialLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: theme.colors.background,
-        }}
-      >
+      <View style={loadingStyle}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );

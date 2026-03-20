@@ -121,7 +121,7 @@ export default function EventTypesScreen() {
           paddingBottom: TAB_BAR_BOTTOM_PADDING,
           gap: theme.spacing.md,
         },
-        title: { marginBottom: theme.spacing.md },
+        title: { marginBottom: theme.spacing.md, paddingHorizontal: theme.spacing.lg },
         cardContainer: {
           borderRadius: theme.radius.lg,
           borderWidth: 1,
@@ -276,6 +276,9 @@ export default function EventTypesScreen() {
         message={infoDialog?.message ?? ""}
         onClose={() => setInfoDialog(null)}
       />
+      <AppText variant="title" style={styles.title}>
+        Moje usluge
+      </AppText>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -286,9 +289,6 @@ export default function EventTypesScreen() {
           />
         }
       >
-        <AppText variant="title" style={styles.title}>
-          Moje usluge
-        </AppText>
         {renderContent()}
       </ScrollView>
 

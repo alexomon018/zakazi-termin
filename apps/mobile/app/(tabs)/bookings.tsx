@@ -13,11 +13,12 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useBookings } from "@/lib/use-bookings";
 import { useMe } from "@/lib/use-me";
+import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { CalendarDays, CalendarPlus, Menu } from "lucide-react-native";
-import { useMemo } from "react";
-import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, View } from "react-native";
+import { useCallback, useMemo } from "react";
+import { Alert, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function BookingsScreen() {
   const { theme } = useTheme();
@@ -43,7 +44,11 @@ export default function BookingsScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        header: { gap: theme.spacing.md, marginBottom: theme.spacing.sm },
+        header: {
+          gap: theme.spacing.md,
+          marginBottom: theme.spacing.sm,
+          paddingHorizontal: theme.spacing.lg,
+        },
         topRow: { flexDirection: "row", justifyContent: "flex-end" },
         topControls: {
           flexDirection: "row",
@@ -92,9 +97,47 @@ export default function BookingsScreen() {
     </View>
   );
 
+  const renderItem = useCallback(
+    ({ item }: { item: NonNullable<typeof flatData>[number] }) => {
+      if (item.type === "header") {
+        return <SectionDateHeader title={item.title} />;
+      }
+      const booking = item.booking;
+      const time = new Date(booking.startTime).toLocaleTimeString("sr-RS", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return (
+        <BookingListItem
+          title={booking.eventType?.title ?? booking.title ?? "Rezervacija"}
+          attendeeName={booking.attendees[0]?.name ?? "Klijent"}
+          time={time}
+          status={booking.status}
+          onPress={() => router.push(`/booking/${booking.uid}`)}
+          onMorePress={() => setActiveBooking(booking)}
+        />
+      );
+    },
+    [setActiveBooking]
+  );
+
   return (
     <AppScreen>
-      <FlatList
+      <View style={styles.header}>
+        <View style={styles.topRow}>
+          <View style={styles.topControls}>
+            <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
+              <AppText variant="h2" style={{ fontWeight: "700" }}>
+                {filterLabel(filter)}
+              </AppText>
+            </Pressable>
+          </View>
+        </View>
+        <AppText variant="title">Zakazivanja</AppText>
+        <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
+      </View>
+      {/* FlashList v2 measures items automatically; getItemType improves recycling for header vs row cells. */}
+      <FlashList
         data={flatData}
         keyExtractor={(item) =>
           item.type === "header" ? `h-${item.title}` : `b-${item.booking.id}`
@@ -107,21 +150,7 @@ export default function BookingsScreen() {
           />
         }
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            <View style={styles.topRow}>
-              <View style={styles.topControls}>
-                <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
-                  <AppText variant="h2" style={{ fontWeight: "700" }}>
-                    {filterLabel(filter)}
-                  </AppText>
-                </Pressable>
-              </View>
-            </View>
-            <AppText variant="title">Zakazivanja</AppText>
-            <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
-          </View>
-        }
+        getItemType={(item) => item.type}
         ListEmptyComponent={
           activeQuery.isLoading ? (
             <QueryStateView state="loading" variant="inline" />
@@ -150,25 +179,7 @@ export default function BookingsScreen() {
             />
           )
         }
-        renderItem={({ item }) => {
-          if (item.type === "header") {
-            return <SectionDateHeader title={item.title} />;
-          }
-          const booking = item.booking;
-          const time = new Date(booking.startTime).toLocaleTimeString("sr-RS", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          return (
-            <BookingListItem
-              title={booking.eventType?.title ?? booking.title ?? "Rezervacija"}
-              attendeeName={booking.attendees[0]?.name ?? "Klijent"}
-              time={time}
-              status={booking.status}
-              onMorePress={() => setActiveBooking(booking)}
-            />
-          );
-        }}
+        renderItem={renderItem}
       />
 
       <FAB

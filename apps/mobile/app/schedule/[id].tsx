@@ -297,32 +297,36 @@ export default function ScheduleEditorScreen() {
 
   return (
     <>
-      <SettingsScrollView keyboardShouldPersistTaps="handled">
-        <ScreenHeader
-          title={scheduleName.trim() || "Uredi raspored"}
-          rightContent={
-            <Pressable
-              style={[styles.chip, styles.saveChip, isSaveDisabled && styles.saveChipDisabled]}
-              onPress={handleSave}
-              disabled={isSaveDisabled}
-              accessibilityRole="button"
-              accessibilityLabel="Sačuvaj"
-              accessibilityState={{ disabled: isSaveDisabled }}
-            >
-              <AppText
-                variant="bodySm"
-                style={{
-                  fontWeight: "700",
-                  color: isSaveDisabled
-                    ? theme.colors.mutedForeground
-                    : theme.colors.primaryForeground,
-                }}
+      <SettingsScrollView
+        keyboardShouldPersistTaps="handled"
+        stickyHeader={
+          <ScreenHeader
+            title={scheduleName.trim() || "Uredi raspored"}
+            rightContent={
+              <Pressable
+                style={[styles.chip, styles.saveChip, isSaveDisabled && styles.saveChipDisabled]}
+                onPress={handleSave}
+                disabled={isSaveDisabled}
+                accessibilityRole="button"
+                accessibilityLabel="Sačuvaj"
+                accessibilityState={{ disabled: isSaveDisabled }}
               >
-                {isSaving ? "Čuvanje..." : "Sačuvaj"}
-              </AppText>
-            </Pressable>
-          }
-        />
+                <AppText
+                  variant="bodySm"
+                  style={{
+                    fontWeight: "700",
+                    color: isSaveDisabled
+                      ? theme.colors.mutedForeground
+                      : theme.colors.primaryForeground,
+                  }}
+                >
+                  {isSaving ? "Čuvanje..." : "Sačuvaj"}
+                </AppText>
+              </Pressable>
+            }
+          />
+        }
+      >
         <SectionHeader title="Naziv rasporeda" />
         <AppInput
           value={scheduleName}

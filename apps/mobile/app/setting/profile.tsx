@@ -103,26 +103,30 @@ export default function ProfileSettingsScreen() {
 
   return (
     <>
-      <SettingsScrollView keyboardShouldPersistTaps="handled">
-        <ScreenHeader
-          title="Profil"
-          rightContent={
-            <Pressable
-              style={styles.saveChip}
-              onPress={handleSave}
-              disabled={updateMutation.isPending}
-              accessibilityRole="button"
-              accessibilityLabel="Sačuvaj profil"
-            >
-              <AppText
-                variant="bodySm"
-                style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+      <SettingsScrollView
+        keyboardShouldPersistTaps="handled"
+        stickyHeader={
+          <ScreenHeader
+            title="Profil"
+            rightContent={
+              <Pressable
+                style={styles.saveChip}
+                onPress={handleSave}
+                disabled={updateMutation.isPending}
+                accessibilityRole="button"
+                accessibilityLabel="Sačuvaj profil"
               >
-                {updateMutation.isPending ? "Čuvanje..." : "Sačuvaj"}
-              </AppText>
-            </Pressable>
-          }
-        />
+                <AppText
+                  variant="bodySm"
+                  style={{ fontWeight: "700", color: theme.colors.primaryForeground }}
+                >
+                  {updateMutation.isPending ? "Čuvanje..." : "Sačuvaj"}
+                </AppText>
+              </Pressable>
+            }
+          />
+        }
+      >
         <AppCard>
           <FormField label="Ime">
             <AppInput value={name} onChangeText={setName} placeholder="Vaše ime" />

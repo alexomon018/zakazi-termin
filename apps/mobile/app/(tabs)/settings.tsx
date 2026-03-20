@@ -89,7 +89,7 @@ export default function SettingsScreen() {
           gap: theme.spacing.lg,
           paddingBottom: 120,
         },
-        title: { marginBottom: theme.spacing.md },
+        title: { marginBottom: theme.spacing.md, paddingHorizontal: theme.spacing.lg },
         profileRow: {
           flexDirection: "row",
           alignItems: "center",
@@ -198,10 +198,10 @@ export default function SettingsScreen() {
         message={infoDialog?.message ?? ""}
         onClose={() => setInfoDialog(null)}
       />
+      <AppText variant="title" style={styles.title}>
+        Podešavanja
+      </AppText>
       <ScrollView contentContainerStyle={styles.content}>
-        <AppText variant="title" style={styles.title}>
-          Podešavanja
-        </AppText>
         <Pressable
           style={styles.profileRow}
           onPress={() => router.push("/setting/profile")}

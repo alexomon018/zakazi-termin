@@ -15,10 +15,13 @@
     "db:migrate:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "db:seed": "tsx src/seed.ts",
-    "db:seed:oauth": "tsx src/seed-oauth-client.ts"
+    "db:seed:oauth": "tsx src/seed-oauth-client.ts",
+    "db:seed:demo": "tsx src/seed-demo.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^5.22.0",
+    "@salonko/config": "workspace:*",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "prisma": "^5.22.0",

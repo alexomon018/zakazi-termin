@@ -8,7 +8,7 @@ import {
 } from "@/components/atoms";
 import { useTheme } from "@/lib/theme-context";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Switch, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -196,6 +196,7 @@ export function EventTypeForm({
   onBackPress,
   onFormDataChange,
   onSubmit,
+  footer,
 }: {
   formData: EventTypeFormData;
   errors: Record<string, string>;
@@ -208,6 +209,7 @@ export function EventTypeForm({
   onBackPress: () => void;
   onFormDataChange: (updater: (prev: EventTypeFormData) => EventTypeFormData) => void;
   onSubmit: () => void;
+  footer?: ReactNode;
 }) {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -232,11 +234,16 @@ export function EventTypeForm({
     () =>
       StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
-        content: {
+        headerContainer: {
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.sm,
+          paddingBottom: theme.spacing.sm,
+          backgroundColor: theme.colors.background,
+        },
+        content: {
+          paddingHorizontal: theme.spacing.lg,
           gap: theme.spacing.md,
-          paddingBottom: 100,
+          paddingBottom: insets.bottom + theme.spacing.lg,
         },
         chip: {
           height: 40,
@@ -270,242 +277,244 @@ export function EventTypeForm({
           alignItems: "center",
         },
       }),
-    [theme, insets.top, isPending]
+    [theme, insets.top, insets.bottom, isPending]
   );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
-    >
-      <ScreenHeader
-        title={headerTitle}
-        onBack={onBackPress}
-        rightContent={
-          <Pressable
-            style={[styles.chip, styles.saveChip]}
-            onPress={onSubmit}
-            disabled={isPending}
-            accessibilityRole="button"
-            accessibilityLabel={isPending ? "Čuvanje..." : submitLabel}
-            accessibilityState={{ disabled: isPending, busy: isPending }}
-          >
-            <AppText
-              variant="bodySm"
-              style={{
-                fontWeight: "700",
-                color: theme.colors.primaryForeground,
-              }}
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <ScreenHeader
+          title={headerTitle}
+          onBack={onBackPress}
+          rightContent={
+            <Pressable
+              style={[styles.chip, styles.saveChip]}
+              onPress={onSubmit}
+              disabled={isPending}
+              accessibilityRole="button"
+              accessibilityLabel={isPending ? "Čuvanje..." : submitLabel}
+              accessibilityState={{ disabled: isPending, busy: isPending }}
             >
-              {isPending ? "Čuvanje..." : submitLabel}
-            </AppText>
-          </Pressable>
-        }
-      />
-      <SectionHeader title="Osnovno" />
-      <View style={styles.card}>
-        <FormField label="Naziv" error={errors.title}>
-          <AppInput
-            value={formData.title}
-            onChangeText={handleTitleChange}
-            placeholder="npr. Šišanje"
-          />
-        </FormField>
+              <AppText
+                variant="bodySm"
+                style={{
+                  fontWeight: "700",
+                  color: theme.colors.primaryForeground,
+                }}
+              >
+                {isPending ? "Čuvanje..." : submitLabel}
+              </AppText>
+            </Pressable>
+          }
+        />
+      </View>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <SectionHeader title="Osnovno" />
+        <View style={styles.card}>
+          <FormField label="Naziv" error={errors.title}>
+            <AppInput
+              value={formData.title}
+              onChangeText={handleTitleChange}
+              placeholder="npr. Šišanje"
+            />
+          </FormField>
 
-        <FormField label="Link za zakazivanje" error={errors.slug}>
-          <AppInput
-            value={formData.slug}
-            onChangeText={(v) => updateField("slug", v)}
-            placeholder="automatski se generiše"
-            autoCapitalize="none"
+          <FormField label="Link za zakazivanje" error={errors.slug}>
+            <AppInput
+              value={formData.slug}
+              onChangeText={(v) => updateField("slug", v)}
+              placeholder="automatski se generiše"
+              autoCapitalize="none"
+            />
+            {formData.slug.trim() !== "" && (
+              <AppText variant="caption" muted>
+                vaslon.zakazi.rs/{formData.slug}
+              </AppText>
+            )}
+          </FormField>
+
+          <FormField label="Opis">
+            <AppInput
+              value={formData.description}
+              onChangeText={(v) => updateField("description", v)}
+              placeholder="Opis usluge (opcionalno)"
+              multiline
+              numberOfLines={3}
+              style={styles.multilineInput}
+            />
+          </FormField>
+
+          <OptionRow
+            label="Trajanje (min)"
+            options={DURATION_OPTIONS.map((d) => ({
+              value: d,
+              label: `${d} min`,
+            }))}
+            value={formData.length}
+            onChange={(v) => updateField("length", v)}
           />
-          {formData.slug.trim() !== "" && (
+          {errors.length && (
             <AppText variant="caption" muted>
-              vaslon.zakazi.rs/{formData.slug}
+              {errors.length}
             </AppText>
           )}
-        </FormField>
+        </View>
 
-        <FormField label="Opis">
-          <AppInput
-            value={formData.description}
-            onChangeText={(v) => updateField("description", v)}
-            placeholder="Opis usluge (opcionalno)"
-            multiline
-            numberOfLines={3}
-            style={styles.multilineInput}
-          />
-        </FormField>
+        <SectionHeader title="Lokacija" />
+        <View style={styles.card}>
+          <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
+            {LOCATION_TYPES.map((loc) => (
+              <OptionChip
+                key={loc.value}
+                label={loc.label}
+                active={formData.locationType === loc.value}
+                onPress={() => updateField("locationType", loc.value)}
+              />
+            ))}
+          </View>
+          {formData.locationType === "inPerson" && (
+            <FormField label="Adresa" error={errors.locationAddress}>
+              <AppInput
+                value={formData.locationAddress}
+                onChangeText={(v) => updateField("locationAddress", v)}
+                placeholder="Adresa salona"
+              />
+            </FormField>
+          )}
+          {formData.locationType === "phone" && (
+            <FormField label="Telefon" error={errors.locationAddress}>
+              <AppInput
+                value={formData.locationAddress}
+                onChangeText={(v) => updateField("locationAddress", v)}
+                placeholder="Broj telefona"
+                keyboardType="phone-pad"
+              />
+            </FormField>
+          )}
+          {formData.locationType === "link" && (
+            <FormField label="Link" error={errors.locationAddress}>
+              <AppInput
+                value={formData.locationAddress}
+                onChangeText={(v) => updateField("locationAddress", v)}
+                placeholder="https://"
+                autoCapitalize="none"
+                keyboardType="url"
+              />
+            </FormField>
+          )}
+        </View>
 
-        <OptionRow
-          label="Trajanje (min)"
-          options={DURATION_OPTIONS.map((d) => ({
-            value: d,
-            label: `${d} min`,
-          }))}
-          value={formData.length}
-          onChange={(v) => updateField("length", v)}
-        />
-        {errors.length && (
-          <AppText variant="caption" muted>
-            {errors.length}
+        {schedules.length > 0 && (
+          <>
+            <SectionHeader title="Raspored" />
+            <View style={styles.card}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
+                  <AppButton
+                    label="Podrazumevani"
+                    onPress={() => updateField("scheduleId", null)}
+                    variant={formData.scheduleId === null ? "primary" : "outline"}
+                  />
+                  {schedules.map((s) => (
+                    <AppButton
+                      key={s.id}
+                      label={s.name}
+                      onPress={() => updateField("scheduleId", s.id)}
+                      variant={formData.scheduleId === s.id ? "primary" : "outline"}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </>
+        )}
+
+        <Pressable
+          style={{
+            height: 38,
+            borderRadius: theme.radius.sm,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            backgroundColor: theme.colors.surface,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: theme.spacing.xs,
+            paddingHorizontal: theme.spacing.lg,
+          }}
+          onPress={() => setShowAdvanced((prev) => !prev)}
+          accessibilityState={{ expanded: showAdvanced }}
+          accessibilityRole="button"
+          accessibilityLabel={showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
+        >
+          <AppText variant="bodySm" style={{ fontWeight: "600" }}>
+            {showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
+          </AppText>
+          {showAdvanced ? (
+            <ChevronUp size={16} color={theme.colors.foreground} />
+          ) : (
+            <ChevronDown size={16} color={theme.colors.foreground} />
+          )}
+        </Pressable>
+
+        {showAdvanced && (
+          <View style={styles.card}>
+            <OptionRow
+              label="Minimalna najava"
+              options={NOTICE_OPTIONS}
+              value={formData.minimumBookingNotice}
+              onChange={(v) => updateField("minimumBookingNotice", v)}
+            />
+            <OptionRow
+              label="Pauza pre"
+              options={BUFFER_OPTIONS}
+              value={formData.beforeEventBuffer}
+              onChange={(v) => updateField("beforeEventBuffer", v)}
+            />
+            <OptionRow
+              label="Pauza posle"
+              options={BUFFER_OPTIONS}
+              value={formData.afterEventBuffer}
+              onChange={(v) => updateField("afterEventBuffer", v)}
+            />
+            <View style={styles.switchRow}>
+              <AppText variant="bodySm">Zahteva potvrdu</AppText>
+              <Switch
+                value={formData.requiresConfirmation}
+                onValueChange={(v) => updateField("requiresConfirmation", v)}
+                trackColor={{
+                  false: theme.colors.border,
+                  true: theme.colors.primary,
+                }}
+              />
+            </View>
+          </View>
+        )}
+
+        {showVisibilityToggle && (
+          <View style={styles.card}>
+            <View style={styles.switchRow}>
+              <AppText variant="bodySm">Sakriveno</AppText>
+              <Switch
+                value={formData.hidden}
+                onValueChange={(v) => updateField("hidden", v)}
+                trackColor={{
+                  false: theme.colors.border,
+                  true: theme.colors.primary,
+                }}
+              />
+            </View>
+          </View>
+        )}
+
+        {submitError && (
+          <AppText variant="bodySm" centered muted>
+            {submitError}
           </AppText>
         )}
-      </View>
 
-      <SectionHeader title="Lokacija" />
-      <View style={styles.card}>
-        <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
-          {LOCATION_TYPES.map((loc) => (
-            <OptionChip
-              key={loc.value}
-              label={loc.label}
-              active={formData.locationType === loc.value}
-              onPress={() => updateField("locationType", loc.value)}
-            />
-          ))}
-        </View>
-        {formData.locationType === "inPerson" && (
-          <FormField label="Adresa" error={errors.locationAddress}>
-            <AppInput
-              value={formData.locationAddress}
-              onChangeText={(v) => updateField("locationAddress", v)}
-              placeholder="Adresa salona"
-            />
-          </FormField>
-        )}
-        {formData.locationType === "phone" && (
-          <FormField label="Telefon" error={errors.locationAddress}>
-            <AppInput
-              value={formData.locationAddress}
-              onChangeText={(v) => updateField("locationAddress", v)}
-              placeholder="Broj telefona"
-              keyboardType="phone-pad"
-            />
-          </FormField>
-        )}
-        {formData.locationType === "link" && (
-          <FormField label="Link" error={errors.locationAddress}>
-            <AppInput
-              value={formData.locationAddress}
-              onChangeText={(v) => updateField("locationAddress", v)}
-              placeholder="https://"
-              autoCapitalize="none"
-              keyboardType="url"
-            />
-          </FormField>
-        )}
-      </View>
-
-      {schedules.length > 0 && (
-        <>
-          <SectionHeader title="Raspored" />
-          <View style={styles.card}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: "row", gap: theme.spacing.sm }}>
-                <AppButton
-                  label="Podrazumevani"
-                  onPress={() => updateField("scheduleId", null)}
-                  variant={formData.scheduleId === null ? "primary" : "outline"}
-                />
-                {schedules.map((s) => (
-                  <AppButton
-                    key={s.id}
-                    label={s.name}
-                    onPress={() => updateField("scheduleId", s.id)}
-                    variant={formData.scheduleId === s.id ? "primary" : "outline"}
-                  />
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        </>
-      )}
-
-      <Pressable
-        style={{
-          height: 38,
-          borderRadius: theme.radius.sm,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: theme.spacing.xs,
-          paddingHorizontal: theme.spacing.lg,
-        }}
-        onPress={() => setShowAdvanced((prev) => !prev)}
-        accessibilityState={{ expanded: showAdvanced }}
-        accessibilityRole="button"
-        accessibilityLabel={showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
-      >
-        <AppText variant="bodySm" style={{ fontWeight: "600" }}>
-          {showAdvanced ? "Sakrij napredne opcije" : "Napredne opcije"}
-        </AppText>
-        {showAdvanced ? (
-          <ChevronUp size={16} color={theme.colors.foreground} />
-        ) : (
-          <ChevronDown size={16} color={theme.colors.foreground} />
-        )}
-      </Pressable>
-
-      {showAdvanced && (
-        <View style={styles.card}>
-          <OptionRow
-            label="Minimalna najava"
-            options={NOTICE_OPTIONS}
-            value={formData.minimumBookingNotice}
-            onChange={(v) => updateField("minimumBookingNotice", v)}
-          />
-          <OptionRow
-            label="Pauza pre"
-            options={BUFFER_OPTIONS}
-            value={formData.beforeEventBuffer}
-            onChange={(v) => updateField("beforeEventBuffer", v)}
-          />
-          <OptionRow
-            label="Pauza posle"
-            options={BUFFER_OPTIONS}
-            value={formData.afterEventBuffer}
-            onChange={(v) => updateField("afterEventBuffer", v)}
-          />
-          <View style={styles.switchRow}>
-            <AppText variant="bodySm">Zahteva potvrdu</AppText>
-            <Switch
-              value={formData.requiresConfirmation}
-              onValueChange={(v) => updateField("requiresConfirmation", v)}
-              trackColor={{
-                false: theme.colors.border,
-                true: theme.colors.primary,
-              }}
-            />
-          </View>
-        </View>
-      )}
-
-      {showVisibilityToggle && (
-        <View style={styles.card}>
-          <View style={styles.switchRow}>
-            <AppText variant="bodySm">Sakriveno</AppText>
-            <Switch
-              value={formData.hidden}
-              onValueChange={(v) => updateField("hidden", v)}
-              trackColor={{
-                false: theme.colors.border,
-                true: theme.colors.primary,
-              }}
-            />
-          </View>
-        </View>
-      )}
-
-      {submitError && (
-        <AppText variant="bodySm" centered muted>
-          {submitError}
-        </AppText>
-      )}
-    </ScrollView>
+        {footer}
+      </ScrollView>
+    </View>
   );
 }

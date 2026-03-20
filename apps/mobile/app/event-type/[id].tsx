@@ -147,14 +147,16 @@ export default function EditEventTypeScreen() {
         onBackPress={() => router.back()}
         onFormDataChange={setFormData}
         onSubmit={handleSubmit}
+        footer={
+          <View style={styles.deleteContainer}>
+            <AppButton
+              label="Obriši uslugu"
+              onPress={() => setShowDelete(true)}
+              variant="destructive"
+            />
+          </View>
+        }
       />
-      <View style={styles.deleteContainer}>
-        <AppButton
-          label="Obriši uslugu"
-          onPress={() => setShowDelete(true)}
-          variant="destructive"
-        />
-      </View>
       <ConfirmDialog
         visible={showDelete}
         title="Obriši uslugu"

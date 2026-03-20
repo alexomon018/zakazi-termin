@@ -8,3 +8,4 @@ export { TopBarPill } from "./TopBarPill";
 export { ModalPageHeader } from "./ModalPageHeader";
 export { BookingListItem } from "./BookingListItem";
 export { BookingsFilterDropdown, filterLabel, type FilterKey } from "./BookingsFilterDropdown";
+export { RescheduleSheet } from "./RescheduleSheet";
