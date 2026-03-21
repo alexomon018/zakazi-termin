@@ -658,6 +658,17 @@ async function seedTeamAccount(team: TeamAccountDef) {
   }
   const existingOrg = await prisma.organization.findUnique({ where: { slug: salonSlug } });
   if (existingOrg) {
+    // Delete any remaining users linked to this org (orphans from prior seeds)
+    const previousMembers = await prisma.membership.findMany({
+      where: { organizationId: existingOrg.id },
+      select: { userId: true },
+    });
+    if (previousMembers.length > 0) {
+      await prisma.user.deleteMany({
+        where: { id: { in: previousMembers.map(({ userId }) => userId) } },
+      });
+      console.log(`  Deleted ${previousMembers.length} orphaned user(s) from previous seed`);
+    }
     await prisma.organization.delete({ where: { id: existingOrg.id } });
     console.log("  Deleted existing organization");
   }

@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { generateSalonSlug, logger } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
@@ -651,12 +651,13 @@ export const userRouter = router({
   // Generate a one-time auto-login token for cross-app navigation (mobile → web)
   generateAutoLoginToken: protectedProcedure.mutation(async ({ ctx }) => {
     const token = randomBytes(32).toString("hex");
+    const tokenHash = createHash("sha256").update(token).digest("hex");
     const expires = new Date(Date.now() + AUTO_LOGIN_TOKEN_EXPIRY_MINUTES * 60 * 1000);
 
     await ctx.prisma.user.update({
       where: { id: ctx.session.user.id },
       data: {
-        autoLoginToken: token,
+        autoLoginToken: tokenHash,
         autoLoginTokenExpires: expires,
       },
     });

@@ -17,12 +17,13 @@ export function SubscriptionGate({ children }: { children: ReactNode }) {
   const handleOpenBilling = useCallback(async () => {
     try {
       const { token, email } = await generateToken.mutateAsync();
-      const params = new URLSearchParams({
-        token,
-        email,
+      const query = new URLSearchParams({
         callbackUrl: "/dashboard/settings/billing",
       });
-      await WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/auto-login?${params.toString()}`);
+      const fragment = new URLSearchParams({ token, email });
+      await WebBrowser.openBrowserAsync(
+        `${WEB_ORIGIN}/auto-login?${query.toString()}#${fragment.toString()}`
+      );
     } catch {
       // Fallback: open billing page directly (user will need to log in manually)
       await WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/dashboard/settings/billing`);

@@ -22,6 +22,15 @@ function AutoLoginLoading() {
   );
 }
 
+/** Parse token and email from the URL fragment to keep them out of server logs. */
+function parseFragment(): { token: string | null; email: string | null } {
+  if (typeof window === "undefined") return { token: null, email: null };
+  const hash = window.location.hash.slice(1); // remove leading '#'
+  if (!hash) return { token: null, email: null };
+  const params = new URLSearchParams(hash);
+  return { token: params.get("token"), email: params.get("email") };
+}
+
 function AutoLoginHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,31 +40,37 @@ function AutoLoginHandler() {
     if (attempted.current) return;
     attempted.current = true;
 
-    const token = searchParams.get("token");
-    const email = searchParams.get("email");
+    // Credentials live in the fragment (never sent to the server).
+    // callbackUrl stays in the query string (safe, non-sensitive).
+    const { token, email } = parseFragment();
     const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard/settings/billing";
-    // Only allow internal dashboard paths to prevent open redirect
     const callbackUrl = rawCallbackUrl.startsWith("/dashboard")
       ? rawCallbackUrl
       : "/dashboard/settings/billing";
+
+    // Clear the fragment immediately so the token doesn't linger in the address bar
+    if (window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
 
     if (!token || !email) {
       router.replace("/login");
       return;
     }
 
-    signIn("credentials", {
-      email,
-      autoLoginToken: token,
-      redirect: false,
-      callbackUrl,
-    }).then((result) => {
-      if (result?.ok) {
-        router.replace(callbackUrl);
-      } else {
+    void (async () => {
+      try {
+        const result = await signIn("credentials", {
+          email,
+          autoLoginToken: token,
+          redirect: false,
+          callbackUrl,
+        });
+        router.replace(result?.ok ? callbackUrl : "/login");
+      } catch {
         router.replace("/login");
       }
-    });
+    })();
   }, [router, searchParams]);
 
   return <AutoLoginLoading />;
