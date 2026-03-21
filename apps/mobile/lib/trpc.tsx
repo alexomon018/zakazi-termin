@@ -1,5 +1,5 @@
 import type { AppRouter } from "@salonko/trpc";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TRPCClientError, createTRPCReact, httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -37,7 +37,7 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
         defaultOptions: {
           queries: {
             retry: (failureCount, error) => {
-              // Don't retry FORBIDDEN errors — subscription is inactive
+              // Don't retry FORBIDDEN errors — subscription inactive or membership revoked
               if (error instanceof TRPCClientError && error.data?.code === "FORBIDDEN") {
                 return false;
               }
@@ -46,6 +46,25 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
             staleTime: 30 * 1000, // 30 seconds
           },
         },
+        queryCache: new QueryCache({
+          onError: (error, query) => {
+            // Skip user.me itself to avoid infinite invalidation loops
+            const key = query.queryKey as unknown[];
+            const isUserMe = Array.isArray(key[0]) && key[0][0] === "user" && key[0][1] === "me";
+            if (!isUserMe && error instanceof TRPCClientError && error.data?.code === "FORBIDDEN") {
+              queryClient.invalidateQueries({ queryKey: [["user", "me"]] });
+            }
+          },
+        }),
+        mutationCache: new MutationCache({
+          onError: (error) => {
+            // On FORBIDDEN errors, re-fetch user profile to detect membership revocation.
+            // This triggers role-aware UI (team menu, settings) to update automatically.
+            if (error instanceof TRPCClientError && error.data?.code === "FORBIDDEN") {
+              queryClient.invalidateQueries({ queryKey: [["user", "me"]] });
+            }
+          },
+        }),
       })
   );
 

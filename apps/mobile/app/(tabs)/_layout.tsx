@@ -1,14 +1,32 @@
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { useMe } from "@/lib/use-me";
 
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, router } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const { theme } = useTheme();
+  const meQuery = useMe();
+  const redirectedToProfile = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated || meQuery.isLoading || redirectedToProfile.current) return;
+    const data = meQuery.data;
+    if (!data) return;
+
+    const isOwner = data.membership?.role === "OWNER";
+    const missingName = !data.name?.trim();
+    const missingSalonName = isOwner && !data.salonName?.trim();
+
+    if (missingName || missingSalonName) {
+      redirectedToProfile.current = true;
+      router.replace("/setting/profile");
+    }
+  }, [isAuthenticated, meQuery.isLoading, meQuery.data]);
 
   const loadingStyle = useMemo(
     () => ({
