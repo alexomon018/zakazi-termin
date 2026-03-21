@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { type Href, router } from "expo-router";
 import { useEffect } from "react";
 import { useMe } from "./use-me";
 
@@ -22,9 +22,16 @@ export function useRoleGuard({
 
   useEffect(() => {
     if (meQuery.isSuccess && !isAuthorized) {
-      router.replace(redirectTo as never);
+      router.replace(redirectTo as Href);
     }
   }, [meQuery.isSuccess, isAuthorized, redirectTo]);
 
-  return { isAuthorized, isLoading, role };
+  return {
+    isAuthorized,
+    isLoading,
+    isError: meQuery.isError,
+    error: meQuery.error,
+    refetch: meQuery.refetch,
+    role,
+  };
 }

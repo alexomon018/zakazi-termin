@@ -8,12 +8,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function TeamScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const { isAuthorized, isLoading } = useRoleGuard({
+  const { isAuthorized, isLoading, isError, refetch } = useRoleGuard({
     allowedRoles: ["OWNER", "ADMIN"],
   });
 
   if (isLoading) {
     return <QueryStateView state="loading" />;
+  }
+
+  if (isError) {
+    return <QueryStateView state="error" onRetry={refetch} />;
   }
 
   if (!isAuthorized) {

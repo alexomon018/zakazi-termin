@@ -103,11 +103,13 @@ export default function EventTypesScreen() {
                 ) : (
                   <EyeOff size={20} color={theme.colors.foreground} />
                 ),
-                onPress: () =>
+                onPress: () => {
+                  if (toggleMutation.isPending) return;
                   toggleMutation.mutate({
                     id: activeItem.id,
                     hidden: !activeItem.hidden,
-                  }),
+                  });
+                },
               },
               {
                 label: "Obriši",
