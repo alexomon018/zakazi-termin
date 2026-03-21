@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { generateSalonSlug, logger } from "@salonko/config";
 import { generatePresignedUrl } from "@salonko/s3";
 import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
@@ -5,6 +6,8 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { getStripe, isTestStripeId } from "../lib/stripe";
+
+const AUTO_LOGIN_TOKEN_EXPIRY_MINUTES = 5;
 
 /**
  * Helper to generate a salon icon URL from S3 key
@@ -643,5 +646,21 @@ export const userRouter = router({
     });
 
     return schedule;
+  }),
+
+  // Generate a one-time auto-login token for cross-app navigation (mobile → web)
+  generateAutoLoginToken: protectedProcedure.mutation(async ({ ctx }) => {
+    const token = randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + AUTO_LOGIN_TOKEN_EXPIRY_MINUTES * 60 * 1000);
+
+    await ctx.prisma.user.update({
+      where: { id: ctx.session.user.id },
+      data: {
+        autoLoginToken: token,
+        autoLoginTokenExpires: expires,
+      },
+    });
+
+    return { token, email: ctx.session.user.email };
   }),
 });

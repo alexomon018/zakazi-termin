@@ -224,22 +224,24 @@ export const authOptions: NextAuthOptions = {
             return updatedUser;
           });
 
-          // Send welcome email AFTER successful OTP verification + successful sign-in.
-          // This guarantees the welcome email doesn't go out just because OTP was issued,
-          // and also avoids sending it if auto-login fails.
-          try {
-            await emailService.sendWelcomeEmail({
-              userName: user.name || "Korisnik",
-              userEmail: user.email,
-              salonName: user.salonName || "",
-            });
-          } catch (error) {
-            logger.error("Failed to send welcome email after auto-login", {
-              error,
-              email,
-              userId: user.id,
-            });
-            // Don't block sign-in if email fails
+          // Send welcome email only for newly verified users (first-time signup).
+          // Existing users (emailVerified already set) skip this — they're using
+          // auto-login for cross-app navigation (e.g. mobile → web billing).
+          if (!user.emailVerified) {
+            try {
+              await emailService.sendWelcomeEmail({
+                userName: user.name || "Korisnik",
+                userEmail: user.email,
+                salonName: user.salonName || "",
+              });
+            } catch (error) {
+              logger.error("Failed to send welcome email after auto-login", {
+                error,
+                email,
+                userId: user.id,
+              });
+              // Don't block sign-in if email fails
+            }
           }
 
           return {
