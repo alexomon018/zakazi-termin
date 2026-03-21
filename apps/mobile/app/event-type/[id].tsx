@@ -5,6 +5,7 @@ import {
   type EventTypeFormData,
   validateEventTypeForm,
 } from "@/components/organisms/EventTypeForm";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router, useLocalSearchParams } from "expo-router";
@@ -134,7 +135,7 @@ export default function EditEventTypeScreen() {
   }));
 
   return (
-    <>
+    <SubscriptionGate>
       <EventTypeForm
         formData={formData}
         errors={errors}
@@ -167,6 +168,6 @@ export default function EditEventTypeScreen() {
         onConfirm={() => deleteMutation.mutate({ id: id! })}
         onCancel={() => setShowDelete(false)}
       />
-    </>
+    </SubscriptionGate>
   );
 }

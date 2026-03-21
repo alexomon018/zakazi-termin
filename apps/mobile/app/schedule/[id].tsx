@@ -9,6 +9,7 @@ import {
 } from "@/components/atoms";
 import { SettingsScrollView } from "@/components/molecules";
 import { DayAvailabilityRow, type TimeRange } from "@/components/molecules/DayAvailabilityRow";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useMe } from "@/lib/use-me";
@@ -296,7 +297,7 @@ export default function ScheduleEditorScreen() {
   }
 
   return (
-    <>
+    <SubscriptionGate>
       <SettingsScrollView
         keyboardShouldPersistTaps="handled"
         stickyHeader={
@@ -447,6 +448,6 @@ export default function ScheduleEditorScreen() {
         onConfirm={() => deleteScheduleMutation.mutate({ id: id! })}
         onCancel={() => setShowDelete(false)}
       />
-    </>
+    </SubscriptionGate>
   );
 }

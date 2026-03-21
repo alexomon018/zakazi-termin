@@ -37,6 +37,17 @@ interface BookingDef {
   attendeeIndex: number;
 }
 
+interface SubscriptionDef {
+  status: "ACTIVE" | "TRIALING" | "EXPIRED";
+  /** Only needed for ACTIVE */
+  stripeSubscriptionId?: string;
+  stripePriceId?: string;
+  billingInterval?: "MONTH" | "YEAR";
+  /** Only needed for TRIALING */
+  trialStartedAt?: Date;
+  trialEndsAt?: Date;
+}
+
 interface AccountDef {
   email: string;
   name: string;
@@ -53,6 +64,7 @@ interface AccountDef {
   brandColor: string;
   darkBrandColor: string;
   stripeIdSuffix: string;
+  subscription?: SubscriptionDef;
   eventTypes: EventTypeDef[];
   schedules: {
     name: string;
@@ -211,6 +223,46 @@ const NAILS_ACCOUNT: AccountDef = {
   outOfOffice: { dayOffsetStart: 20, dayOffsetEnd: 25, notes: "Obuka - nail art tehnika, Milano" },
 };
 
+const EXPIRED_ACCOUNT: AccountDef = {
+  email: "demo-expired@salonko.app",
+  name: "Petar Petrović",
+  salonName: "Salon Petar",
+  salonTypes: ["frizerski_salon"],
+  salonPhone: "0113456789",
+  salonEmail: "info@salonpetar.rs",
+  salonCity: "Niš",
+  salonAddress: "Obrenovićeva 15",
+  ownerFirstName: "Petar",
+  ownerLastName: "Petrović",
+  ownerPhone: "0641239876",
+  bio: "Frizerski salon sa dugom tradicijom u centru Niša.",
+  brandColor: "#6b7280",
+  darkBrandColor: "#9ca3af",
+  stripeIdSuffix: "003",
+  subscription: { status: "EXPIRED" },
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 18, isDefault: true },
+  ],
+  eventTypes: [
+    {
+      title: "Šišanje",
+      slug: "sisanje",
+      description: "Klasično šišanje",
+      length: 30,
+    },
+    {
+      title: "Farbanje",
+      slug: "farbanje",
+      description: "Farbanje kose",
+      length: 60,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: -10, hour: 10, status: "ACCEPTED", attendeeIndex: 0 },
+    { etIndex: 1, dayOffset: -15, hour: 14, status: "ACCEPTED", attendeeIndex: 1 },
+  ],
+};
+
 // ── Helpers ──
 
 function bookingTime(dayOffset: number, hour: number, durationMinutes: number) {
@@ -270,21 +322,38 @@ async function seedAccount(account: AccountDef) {
   });
   console.log("  ✅ User created");
 
-  // 2. Subscription (ACTIVE monthly)
+  // 2. Subscription
   const now = new Date();
+  const sub = account.subscription ?? {
+    status: "ACTIVE" as const,
+    stripeSubscriptionId: `sub_demo_salonko_${account.stripeIdSuffix}`,
+    stripePriceId: "price_demo_monthly",
+    billingInterval: "MONTH" as const,
+  };
+
   await prisma.subscription.create({
     data: {
       userId: user.id,
       stripeCustomerId: `cus_demo_salonko_${account.stripeIdSuffix}`,
-      stripeSubscriptionId: `sub_demo_salonko_${account.stripeIdSuffix}`,
-      stripePriceId: "price_demo_monthly",
-      status: "ACTIVE",
-      billingInterval: "MONTH",
-      currentPeriodStart: now,
-      currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      status: sub.status,
+      ...(sub.status === "ACTIVE" && {
+        stripeSubscriptionId: sub.stripeSubscriptionId,
+        stripePriceId: sub.stripePriceId,
+        billingInterval: sub.billingInterval,
+        currentPeriodStart: now,
+        currentPeriodEnd: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+      }),
+      ...(sub.status === "TRIALING" && {
+        trialStartedAt: sub.trialStartedAt,
+        trialEndsAt: sub.trialEndsAt,
+      }),
+      ...(sub.status === "EXPIRED" && {
+        currentPeriodStart: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000),
+        currentPeriodEnd: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000),
+      }),
     },
   });
-  console.log("  ✅ Subscription created (ACTIVE)");
+  console.log(`  ✅ Subscription created (${sub.status})`);
 
   // 3. Schedules
   let defaultScheduleId: string | undefined;
@@ -419,7 +488,7 @@ async function main() {
   console.log("🌱 Seeding demo accounts...");
 
   const results = [];
-  for (const account of [BARBER_ACCOUNT, NAILS_ACCOUNT]) {
+  for (const account of [BARBER_ACCOUNT, NAILS_ACCOUNT, EXPIRED_ACCOUNT]) {
     results.push(await seedAccount(account));
   }
 

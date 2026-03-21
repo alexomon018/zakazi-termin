@@ -19,3 +19,4 @@ export { QueryStateView } from "./QueryStateView";
 export { FormField } from "./FormField";
 export { AnimatedSplash } from "./AnimatedSplash";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { PaywallScreen } from "./PaywallScreen";

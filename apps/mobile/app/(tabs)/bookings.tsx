@@ -8,6 +8,7 @@ import {
   SectionDateHeader,
 } from "@/components/atoms";
 import { BookingListItem, BookingsFilterDropdown, filterLabel } from "@/components/molecules";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -21,8 +22,17 @@ import { useCallback, useMemo } from "react";
 import { Alert, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function BookingsScreen() {
-  const { theme } = useTheme();
   useAuth();
+
+  return (
+    <SubscriptionGate>
+      <InnerBookingsScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerBookingsScreen() {
+  const { theme } = useTheme();
   const meQuery = useMe();
 
   const {

@@ -8,6 +8,7 @@ import {
 } from "@/components/atoms";
 import { SettingsScrollView } from "@/components/molecules";
 import { RescheduleSheet } from "@/components/molecules/RescheduleSheet";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { statusColor, statusLabel } from "@/lib/booking-status";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
@@ -38,6 +39,14 @@ function computeDurationMinutes(start: Date, end: Date): number {
 }
 
 export default function BookingDetailScreen() {
+  return (
+    <SubscriptionGate>
+      <InnerBookingDetailScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerBookingDetailScreen() {
   const { theme } = useTheme();
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const utils = trpc.useUtils();

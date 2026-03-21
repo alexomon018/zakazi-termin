@@ -5,6 +5,7 @@ import {
   type EventTypeFormData,
   validateEventTypeForm,
 } from "@/components/organisms/EventTypeForm";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { router } from "expo-router";
@@ -61,17 +62,19 @@ export default function NewEventTypeScreen() {
   }));
 
   return (
-    <EventTypeForm
-      formData={formData}
-      errors={errors}
-      schedules={schedules}
-      isPending={createMutation.isPending}
-      submitLabel="Kreiraj"
-      submitError={createMutation.error?.message}
-      headerTitle="Nova usluga"
-      onBackPress={() => router.back()}
-      onFormDataChange={setFormData}
-      onSubmit={handleSubmit}
-    />
+    <SubscriptionGate>
+      <EventTypeForm
+        formData={formData}
+        errors={errors}
+        schedules={schedules}
+        isPending={createMutation.isPending}
+        submitLabel="Kreiraj"
+        submitError={createMutation.error?.message}
+        headerTitle="Nova usluga"
+        onBackPress={() => router.back()}
+        onFormDataChange={setFormData}
+        onSubmit={handleSubmit}
+      />
+    </SubscriptionGate>
   );
 }

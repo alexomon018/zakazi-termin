@@ -9,6 +9,7 @@ import {
   uiStyles,
 } from "@/components/atoms";
 import { TopBarPill } from "@/components/molecules";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
 import { useMe } from "@/lib/use-me";
@@ -56,6 +57,14 @@ function getScheduleSummary(schedule: ScheduleItem) {
 }
 
 export default function AvailabilityScreen() {
+  return (
+    <SubscriptionGate>
+      <InnerAvailabilityScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerAvailabilityScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
   const [createDialogVisible, setCreateDialogVisible] = useState(false);
