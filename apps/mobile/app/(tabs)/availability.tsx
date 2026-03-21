@@ -57,6 +57,14 @@ function getScheduleSummary(schedule: ScheduleItem) {
 }
 
 export default function AvailabilityScreen() {
+  return (
+    <SubscriptionGate>
+      <InnerAvailabilityScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerAvailabilityScreen() {
   const { theme } = useTheme();
   const utils = trpc.useUtils();
   const [createDialogVisible, setCreateDialogVisible] = useState(false);
@@ -277,76 +285,74 @@ export default function AvailabilityScreen() {
   };
 
   return (
-    <SubscriptionGate>
-      <AppScreen>
-        <View style={styles.header}>
-          <TopBarPill>
-            <Pressable
-              onPress={() => setCreateDialogVisible(true)}
-              accessibilityLabel="Create schedule"
-              accessibilityHint="Opens a dialog to create a new schedule"
-              accessibilityRole="button"
-            >
-              <Plus size={22} color={theme.colors.foreground} />
-            </Pressable>
-          </TopBarPill>
-          <AppText variant="title" style={styles.title}>
-            Dostupnost
-          </AppText>
-        </View>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          refreshControl={
-            <RefreshControl
-              refreshing={schedulesQuery.isRefetching}
-              onRefresh={() => schedulesQuery.refetch()}
-              tintColor={theme.colors.primary}
-            />
+    <AppScreen>
+      <View style={styles.header}>
+        <TopBarPill>
+          <Pressable
+            onPress={() => setCreateDialogVisible(true)}
+            accessibilityLabel="Create schedule"
+            accessibilityHint="Opens a dialog to create a new schedule"
+            accessibilityRole="button"
+          >
+            <Plus size={22} color={theme.colors.foreground} />
+          </Pressable>
+        </TopBarPill>
+        <AppText variant="title" style={styles.title}>
+          Dostupnost
+        </AppText>
+      </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={schedulesQuery.isRefetching}
+            onRefresh={() => schedulesQuery.refetch()}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        {renderContent()}
+      </ScrollView>
+
+      <BottomSheet
+        visible={!!activeSchedule}
+        title={activeSchedule?.name}
+        actions={sheetActions}
+        onClose={() => setActiveSchedule(null)}
+      />
+
+      <InputDialog
+        visible={createDialogVisible}
+        title="Novi raspored"
+        description="Kreirajte raspored za vaše radno vreme."
+        placeholder="Naziv rasporeda"
+        value={createName}
+        onChangeText={setCreateName}
+        confirmLabel="Kreiraj"
+        loading={createMutation.isPending}
+        onConfirm={() => {
+          if (createName.trim()) {
+            createMutation.mutate({ name: createName.trim() });
           }
-        >
-          {renderContent()}
-        </ScrollView>
+        }}
+        onCancel={() => {
+          setCreateDialogVisible(false);
+          setCreateName("");
+        }}
+      />
 
-        <BottomSheet
-          visible={!!activeSchedule}
-          title={activeSchedule?.name}
-          actions={sheetActions}
-          onClose={() => setActiveSchedule(null)}
-        />
-
-        <InputDialog
-          visible={createDialogVisible}
-          title="Novi raspored"
-          description="Kreirajte raspored za vaše radno vreme."
-          placeholder="Naziv rasporeda"
-          value={createName}
-          onChangeText={setCreateName}
-          confirmLabel="Kreiraj"
-          loading={createMutation.isPending}
-          onConfirm={() => {
-            if (createName.trim()) {
-              createMutation.mutate({ name: createName.trim() });
-            }
-          }}
-          onCancel={() => {
-            setCreateDialogVisible(false);
-            setCreateName("");
-          }}
-        />
-
-        <ConfirmDialog
-          visible={!!deleteTarget}
-          title="Obriši raspored"
-          message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.name ?? ""}"?`}
-          confirmLabel="Obriši"
-          destructive
-          loading={deleteMutation.isPending}
-          onConfirm={() => {
-            if (deleteTarget) deleteMutation.mutate({ id: deleteTarget.id });
-          }}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      </AppScreen>
-    </SubscriptionGate>
+      <ConfirmDialog
+        visible={!!deleteTarget}
+        title="Obriši raspored"
+        message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.name ?? ""}"?`}
+        confirmLabel="Obriši"
+        destructive
+        loading={deleteMutation.isPending}
+        onConfirm={() => {
+          if (deleteTarget) deleteMutation.mutate({ id: deleteTarget.id });
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </AppScreen>
   );
 }

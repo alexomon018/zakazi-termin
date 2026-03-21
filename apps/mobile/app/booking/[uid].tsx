@@ -37,6 +37,14 @@ function computeDurationMinutes(start: Date, end: Date): number {
 }
 
 export default function BookingDetailScreen() {
+  return (
+    <SubscriptionGate>
+      <InnerBookingDetailScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerBookingDetailScreen() {
   const { theme } = useTheme();
   const { uid } = useLocalSearchParams<{ uid: string }>();
   const utils = trpc.useUtils();
@@ -141,7 +149,7 @@ export default function BookingDetailScreen() {
   const refId = booking.uid.slice(0, 8).toUpperCase();
 
   return (
-    <SubscriptionGate>
+    <>
       <SettingsScrollView
         stickyHeader={
           <ScreenHeader title={booking.eventType?.title ?? booking.title ?? "Termin"} />
@@ -340,6 +348,6 @@ export default function BookingDetailScreen() {
           invalidateAll();
         }}
       />
-    </SubscriptionGate>
+    </>
   );
 }

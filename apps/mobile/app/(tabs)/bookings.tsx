@@ -22,8 +22,17 @@ import { useCallback, useMemo } from "react";
 import { Alert, Pressable, RefreshControl, StyleSheet, View } from "react-native";
 
 export default function BookingsScreen() {
-  const { theme } = useTheme();
   useAuth();
+
+  return (
+    <SubscriptionGate>
+      <InnerBookingsScreen />
+    </SubscriptionGate>
+  );
+}
+
+function InnerBookingsScreen() {
+  const { theme } = useTheme();
   const meQuery = useMe();
 
   const {
@@ -123,100 +132,95 @@ export default function BookingsScreen() {
   );
 
   return (
-    <SubscriptionGate>
-      <AppScreen>
-        <View style={styles.header}>
-          <View style={styles.topRow}>
-            <View style={styles.topControls}>
-              <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
-                <AppText variant="h2" style={{ fontWeight: "700" }}>
-                  {filterLabel(filter)}
-                </AppText>
-              </Pressable>
-            </View>
+    <AppScreen>
+      <View style={styles.header}>
+        <View style={styles.topRow}>
+          <View style={styles.topControls}>
+            <Pressable style={styles.filterPill} onPress={() => setFilterPanelVisible(true)}>
+              <AppText variant="h2" style={{ fontWeight: "700" }}>
+                {filterLabel(filter)}
+              </AppText>
+            </Pressable>
           </View>
-          <AppText variant="title">Zakazivanja</AppText>
-          <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
         </View>
-        {/* FlashList v2 measures items automatically; getItemType improves recycling for header vs row cells. */}
-        <FlashList
-          data={flatData}
-          keyExtractor={(item) =>
-            item.type === "header" ? `h-${item.title}` : `b-${item.booking.id}`
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={statsQuery.isRefetching || activeQuery.isRefetching}
-              onRefresh={handleRefresh}
-              tintColor={theme.colors.primary}
+        <AppText variant="title">Zakazivanja</AppText>
+        <SearchBar value={search} onChangeText={setSearch} placeholder="Pretraži zakazivanja" />
+      </View>
+      {/* FlashList v2 measures items automatically; getItemType improves recycling for header vs row cells. */}
+      <FlashList
+        data={flatData}
+        keyExtractor={(item) =>
+          item.type === "header" ? `h-${item.title}` : `b-${item.booking.id}`
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={statsQuery.isRefetching || activeQuery.isRefetching}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+        contentContainerStyle={styles.listContent}
+        getItemType={(item) => item.type}
+        ListEmptyComponent={
+          activeQuery.isLoading ? (
+            <QueryStateView state="loading" variant="inline" />
+          ) : activeQuery.isError && !activeQuery.data ? (
+            <QueryStateView
+              state="error"
+              variant="inline"
+              message="Došlo je do greške prilikom učitavanja zakazivanja."
+              onRetry={() => activeQuery.refetch()}
             />
+          ) : search.trim() ? (
+            <QueryStateView
+              state="empty"
+              variant="inline"
+              icon={emptyIcon}
+              title="Nema rezultata"
+              message="Nema zakazivanja koja odgovaraju vašoj pretrazi."
+            />
+          ) : (
+            <QueryStateView
+              state="empty"
+              variant="inline"
+              icon={emptyIcon}
+              title="Nema zakazivanja"
+              message="Čim neko zakaže termin kod vas, pojaviće se ovde."
+            />
+          )
+        }
+        renderItem={renderItem}
+      />
+
+      <FAB
+        onPress={() => {
+          const salonSlug = meQuery.data?.salonSlug;
+          if (!salonSlug) {
+            Alert.alert("Informacija", "Za zakazivanje termina koristite stranicu za rezervacije.");
+            return;
           }
-          contentContainerStyle={styles.listContent}
-          getItemType={(item) => item.type}
-          ListEmptyComponent={
-            activeQuery.isLoading ? (
-              <QueryStateView state="loading" variant="inline" />
-            ) : activeQuery.isError && !activeQuery.data ? (
-              <QueryStateView
-                state="error"
-                variant="inline"
-                message="Došlo je do greške prilikom učitavanja zakazivanja."
-                onRetry={() => activeQuery.refetch()}
-              />
-            ) : search.trim() ? (
-              <QueryStateView
-                state="empty"
-                variant="inline"
-                icon={emptyIcon}
-                title="Nema rezultata"
-                message="Nema zakazivanja koja odgovaraju vašoj pretrazi."
-              />
-            ) : (
-              <QueryStateView
-                state="empty"
-                variant="inline"
-                icon={emptyIcon}
-                title="Nema zakazivanja"
-                message="Čim neko zakaže termin kod vas, pojaviće se ovde."
-              />
-            )
-          }
-          renderItem={renderItem}
-        />
+          WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/${encodeURIComponent(salonSlug)}`);
+        }}
+        icon={<CalendarPlus size={20} color={theme.colors.primaryForeground} />}
+        label="Zakaži termin"
+      />
 
-        <FAB
-          onPress={() => {
-            const salonSlug = meQuery.data?.salonSlug;
-            if (!salonSlug) {
-              Alert.alert(
-                "Informacija",
-                "Za zakazivanje termina koristite stranicu za rezervacije."
-              );
-              return;
-            }
-            WebBrowser.openBrowserAsync(`${WEB_ORIGIN}/${encodeURIComponent(salonSlug)}`);
-          }}
-          icon={<CalendarPlus size={20} color={theme.colors.primaryForeground} />}
-          label="Zakaži termin"
-        />
+      <BottomSheet
+        visible={!!activeBooking}
+        title={activeBooking?.eventType?.title ?? activeBooking?.title ?? "Rezervacija"}
+        actions={sheetActions}
+        onClose={() => setActiveBooking(null)}
+      />
 
-        <BottomSheet
-          visible={!!activeBooking}
-          title={activeBooking?.eventType?.title ?? activeBooking?.title ?? "Rezervacija"}
-          actions={sheetActions}
-          onClose={() => setActiveBooking(null)}
-        />
-
-        <BookingsFilterDropdown
-          visible={filterPanelVisible}
-          selected={filter}
-          onSelect={(key) => {
-            setFilter(key);
-            setFilterPanelVisible(false);
-          }}
-          onClose={() => setFilterPanelVisible(false)}
-        />
-      </AppScreen>
-    </SubscriptionGate>
+      <BookingsFilterDropdown
+        visible={filterPanelVisible}
+        selected={filter}
+        onSelect={(key) => {
+          setFilter(key);
+          setFilterPanelVisible(false);
+        }}
+        onClose={() => setFilterPanelVisible(false)}
+      />
+    </AppScreen>
   );
 }

@@ -22,6 +22,9 @@ export function useSubscription() {
     onSuccess: () => {
       utils.subscription.getStatus.invalidate();
     },
+    onError: () => {
+      attempted.current = false;
+    },
   });
   const attempted = useRef(false);
 
