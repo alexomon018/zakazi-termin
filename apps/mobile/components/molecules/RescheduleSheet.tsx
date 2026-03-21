@@ -27,6 +27,7 @@ type RescheduleSheetProps = {
   currentStart: Date;
   durationMinutes: number;
   bookingUid: string;
+  timeZone?: string;
   onClose: () => void;
   onSuccess: () => void;
 };
@@ -38,6 +39,7 @@ export function RescheduleSheet({
   currentStart,
   durationMinutes,
   bookingUid,
+  timeZone,
   onClose,
   onSuccess,
 }: RescheduleSheetProps) {
@@ -108,6 +110,8 @@ export function RescheduleSheet({
   }, [visible, slideAnim, backdropAnim]);
 
   const handleClose = () => {
+    if (rescheduleMutation.isPending) return;
+    rescheduleMutation.reset();
     runExitAnimation(() => onClose());
   };
 
@@ -123,6 +127,12 @@ export function RescheduleSheet({
   const handleConfirm = () => {
     const newStart = new Date(selectedDate);
     newStart.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+    if (newStart <= new Date()) {
+      Alert.alert("Greška", "Novi termin mora biti u budućnosti.");
+      return;
+    }
+
     const newEnd = new Date(newStart.getTime() + durationMinutes * 60_000);
 
     rescheduleMutation.mutate({
@@ -184,7 +194,11 @@ export function RescheduleSheet({
             opacity: backdropAnim,
           }}
         >
-          <Pressable style={{ flex: 1 }} onPress={handleClose} />
+          <Pressable
+            style={{ flex: 1 }}
+            onPress={handleClose}
+            disabled={rescheduleMutation.isPending}
+          />
         </Animated.View>
         <Animated.View
           onLayout={onSheetLayout}
@@ -219,8 +233,9 @@ export function RescheduleSheet({
           {/* Header with close / title / confirm */}
           <View style={styles.headerRow}>
             <Pressable
-              style={styles.headerButton}
+              style={[styles.headerButton, rescheduleMutation.isPending && { opacity: 0.4 }]}
               onPress={handleClose}
+              disabled={rescheduleMutation.isPending}
               accessibilityRole="button"
               accessibilityLabel="Zatvori"
             >
@@ -253,6 +268,7 @@ export function RescheduleSheet({
                 mode="date"
                 display={Platform.OS === "ios" ? "compact" : "default"}
                 minimumDate={new Date()}
+                timeZoneName={timeZone}
                 onChange={(_, date) => {
                   if (date) setSelectedDate(date);
                 }}
@@ -265,6 +281,7 @@ export function RescheduleSheet({
                 mode="time"
                 display={Platform.OS === "ios" ? "compact" : "default"}
                 minuteInterval={5}
+                timeZoneName={timeZone}
                 onChange={(_, time) => {
                   if (time) setSelectedTime(time);
                 }}

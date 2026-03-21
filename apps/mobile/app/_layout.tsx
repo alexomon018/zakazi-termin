@@ -14,7 +14,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
@@ -37,11 +37,8 @@ function RootLayoutNav() {
 
   const isReady = !isLoading && (fontsLoaded || !!fontError);
 
-  useEffect(() => {
-    void SplashScreen.hideAsync();
-  }, []);
-
   const handleSplashFinish = useCallback(() => {
+    void SplashScreen.hideAsync();
     setShowSplash(false);
   }, []);
 
@@ -82,14 +79,14 @@ const rootStyles = StyleSheet.create({
 
 export default function RootLayout() {
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <TRPCProvider>
-          <ThemeProvider>
+    <AuthProvider>
+      <TRPCProvider>
+        <ThemeProvider>
+          <ErrorBoundary>
             <RootLayoutNav />
-          </ThemeProvider>
-        </TRPCProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+          </ErrorBoundary>
+        </ThemeProvider>
+      </TRPCProvider>
+    </AuthProvider>
   );
 }

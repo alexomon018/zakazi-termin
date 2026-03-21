@@ -17,17 +17,19 @@ import { Calendar, Clock, Mail, Phone, Store, User } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Alert, Linking, Pressable, StyleSheet, View } from "react-native";
 
-function formatBookingDate(date: Date): string {
+function formatBookingDate(date: Date, timeZone?: string): string {
   return date.toLocaleDateString("sr-RS", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone,
   });
 }
 
-function formatBookingTime(start: Date, end: Date): string {
-  const fmt = (d: Date) => d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+function formatBookingTime(start: Date, end: Date, timeZone?: string): string {
+  const fmt = (d: Date) =>
+    d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit", timeZone });
   return `${fmt(start)} - ${fmt(end)}`;
 }
 
@@ -133,6 +135,7 @@ export default function BookingDetailScreen() {
   const startTime = new Date(booking.startTime);
   const endTime = new Date(booking.endTime);
   const durationMinutes = computeDurationMinutes(startTime, endTime);
+  const timeZone = booking.user?.timeZone;
   const color = statusColor(booking.status, theme);
   const attendee = booking.attendees[0];
   const isPending = booking.status === "PENDING";
@@ -167,14 +170,14 @@ export default function BookingDetailScreen() {
           {/* Date */}
           <View style={styles.infoRow}>
             <Calendar size={18} color={theme.colors.mutedForeground} />
-            <AppText variant="body">{formatBookingDate(startTime)}</AppText>
+            <AppText variant="body">{formatBookingDate(startTime, timeZone)}</AppText>
           </View>
 
           {/* Time */}
           <View style={styles.infoRow}>
             <Clock size={18} color={theme.colors.mutedForeground} />
             <View>
-              <AppText variant="body">{formatBookingTime(startTime, endTime)}</AppText>
+              <AppText variant="body">{formatBookingTime(startTime, endTime, timeZone)}</AppText>
               <AppText variant="caption" muted>
                 {durationMinutes} minuta
               </AppText>
@@ -333,6 +336,7 @@ export default function BookingDetailScreen() {
         currentStart={startTime}
         durationMinutes={durationMinutes}
         bookingUid={uid!}
+        timeZone={timeZone}
         onClose={() => setShowReschedule(false)}
         onSuccess={() => {
           setShowReschedule(false);
