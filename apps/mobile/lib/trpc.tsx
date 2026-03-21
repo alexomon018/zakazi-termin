@@ -1,6 +1,6 @@
 import type { AppRouter } from "@salonko/trpc";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createTRPCReact, httpBatchLink } from "@trpc/react-query";
+import { TRPCClientError, createTRPCReact, httpBatchLink } from "@trpc/react-query";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import superjson from "superjson";
@@ -36,8 +36,13 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // On mobile, retry less aggressively
-            retry: 2,
+            retry: (failureCount, error) => {
+              // Don't retry FORBIDDEN errors — subscription is inactive
+              if (error instanceof TRPCClientError && error.data?.code === "FORBIDDEN") {
+                return false;
+              }
+              return failureCount < 2;
+            },
             staleTime: 30 * 1000, // 30 seconds
           },
         },

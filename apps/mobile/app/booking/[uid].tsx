@@ -8,6 +8,7 @@ import {
 } from "@/components/atoms";
 import { SettingsScrollView } from "@/components/molecules";
 import { RescheduleSheet } from "@/components/molecules/RescheduleSheet";
+import { SubscriptionGate } from "@/components/organisms/SubscriptionGate";
 import { statusColor, statusLabel } from "@/lib/booking-status";
 import { useTheme } from "@/lib/theme-context";
 import { trpc } from "@/lib/trpc";
@@ -140,7 +141,7 @@ export default function BookingDetailScreen() {
   const refId = booking.uid.slice(0, 8).toUpperCase();
 
   return (
-    <>
+    <SubscriptionGate>
       <SettingsScrollView
         stickyHeader={
           <ScreenHeader title={booking.eventType?.title ?? booking.title ?? "Termin"} />
@@ -339,6 +340,6 @@ export default function BookingDetailScreen() {
           invalidateAll();
         }}
       />
-    </>
+    </SubscriptionGate>
   );
 }
