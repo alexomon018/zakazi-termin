@@ -11,6 +11,18 @@ import { refreshAccessToken } from "./token-refresh";
 
 export const trpc = createTRPCReact<AppRouter>();
 
+/**
+ * Module-level ref to the QueryClient instance.
+ * Allows clearSession (outside React tree) to purge cached data
+ * when a session is terminated, preventing stale user data leaks.
+ */
+let queryClientRef: QueryClient | null = null;
+
+/** Imperatively clear all react-query caches. Safe to call outside React components. */
+export function clearQueryCache(): void {
+  queryClientRef?.clear();
+}
+
 async function authAwareFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const firstResponse = await fetch(input, init);
   if (firstResponse.status !== 401) {
@@ -80,6 +92,9 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
         }),
       })
   );
+
+  // Expose queryClient to module-level ref so clearSession can purge caches
+  queryClientRef = queryClient;
 
   const [trpcClient] = useState(() =>
     trpc.createClient({

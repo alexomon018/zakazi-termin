@@ -4,17 +4,23 @@ import { API_URL } from "./api-url";
 import { authorize, isTokenExpired, revokeToken } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
 import { refreshAccessToken } from "./token-refresh";
+import { clearQueryCache } from "./trpc";
 
 /**
  * Module-level ref to the current clearSession function.
  * Allows TRPC error handlers (outside React tree) to clear auth state
  * when the server rejects the session (FORBIDDEN/401 on user.me).
  */
-let clearSessionRef: (() => void) | null = null;
+let clearSessionRef: (() => Promise<void>) | null = null;
 
 /** Imperatively clear local auth state (token + user). Safe to call outside React components. */
-export function clearSession(): void {
-  clearSessionRef?.();
+export async function clearSession(): Promise<void> {
+  try {
+    clearQueryCache();
+    await clearSessionRef?.();
+  } catch (err) {
+    console.error("[clearSession] Failed to clear credentials:", err);
+  }
 }
 
 interface User {
@@ -59,10 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Expose clearSession to module-level ref so TRPC error handlers can clear auth state
   useEffect(() => {
-    clearSessionRef = () => {
+    clearSessionRef = async () => {
       setToken(null);
       setUser(null);
-      void tokenStorage.clear();
+      await tokenStorage.clear();
     };
     return () => {
       clearSessionRef = null;
@@ -156,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await revokeToken(currentToken);
     }
 
+    clearQueryCache();
     await tokenStorage.clear();
     setToken(null);
     setUser(null);

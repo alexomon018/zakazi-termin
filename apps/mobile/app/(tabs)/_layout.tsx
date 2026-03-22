@@ -1,4 +1,4 @@
-import { useAuth } from "@/lib/auth-context";
+import { clearSession, useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useMe } from "@/lib/use-me";
 
@@ -15,7 +15,10 @@ export default function TabsLayout() {
   useEffect(() => {
     if (!isAuthenticated || meQuery.isLoading) return;
     const data = meQuery.data;
-    if (!data) return;
+    if (!data) {
+      clearSession();
+      return;
+    }
 
     const isOwner = data.membership?.role === "OWNER";
     const missingName = !data.name?.trim();
