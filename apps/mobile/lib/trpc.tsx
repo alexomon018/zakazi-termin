@@ -1,27 +1,15 @@
 import type { AppRouter } from "@salonko/trpc";
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TRPCClientError, createTRPCReact, httpBatchLink } from "@trpc/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import superjson from "superjson";
 import { API_URL } from "./api-url";
-import { clearSession } from "./auth-context";
 import { tokenStorage } from "./secure-store";
+import { clearSession, registerQueryClient } from "./session-cache-registry";
 import { refreshAccessToken } from "./token-refresh";
 
 export const trpc = createTRPCReact<AppRouter>();
-
-/**
- * Module-level ref to the QueryClient instance.
- * Allows clearSession (outside React tree) to purge cached data
- * when a session is terminated, preventing stale user data leaks.
- */
-let queryClientRef: QueryClient | null = null;
-
-/** Imperatively clear all react-query caches. Safe to call outside React components. */
-export function clearQueryCache(): void {
-  queryClientRef?.clear();
-}
 
 async function authAwareFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const firstResponse = await fetch(input, init);
@@ -31,7 +19,7 @@ async function authAwareFetch(input: RequestInfo | URL, init?: RequestInit): Pro
 
   const newToken = await refreshAccessToken();
   if (!newToken) {
-    clearSession();
+    await clearSession();
     return firstResponse;
   }
 
@@ -93,8 +81,13 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
       })
   );
 
-  // Expose queryClient to module-level ref so clearSession can purge caches
-  queryClientRef = queryClient;
+  // Expose queryClient to registry so clearSession can purge caches
+  useEffect(() => {
+    registerQueryClient(queryClient);
+    return () => {
+      registerQueryClient(null);
+    };
+  }, [queryClient]);
 
   const [trpcClient] = useState(() =>
     trpc.createClient({

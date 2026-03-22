@@ -1,8 +1,9 @@
-import { clearSession, useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/auth-context";
+import { clearSession } from "@/lib/session-cache-registry";
 import { useTheme } from "@/lib/theme-context";
 import { useMe } from "@/lib/use-me";
 
-import { Tabs, router } from "expo-router";
+import { Tabs, router, useSegments } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
 import { useEffect, useMemo } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
@@ -11,6 +12,7 @@ export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const meQuery = useMe();
+  const segments = useSegments();
 
   useEffect(() => {
     if (!isAuthenticated || meQuery.isLoading) return;
@@ -24,10 +26,11 @@ export default function TabsLayout() {
     const missingName = !data.name?.trim();
     const missingSalonName = isOwner && !data.salonName?.trim();
 
-    if (missingName || missingSalonName) {
+    const currentPath = `/${segments.join("/")}`;
+    if ((missingName || missingSalonName) && !currentPath.startsWith("/setting/profile")) {
       router.replace("/setting/profile");
     }
-  }, [isAuthenticated, meQuery.isLoading, meQuery.data]);
+  }, [isAuthenticated, meQuery.isLoading, meQuery.data, segments]);
 
   const loadingStyle = useMemo(
     () => ({

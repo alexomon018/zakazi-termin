@@ -3,25 +3,10 @@ import type { ReactNode } from "react";
 import { API_URL } from "./api-url";
 import { authorize, isTokenExpired, revokeToken } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
+import { clearQueryCache, registerClearSession } from "./session-cache-registry";
 import { refreshAccessToken } from "./token-refresh";
-import { clearQueryCache } from "./trpc";
 
-/**
- * Module-level ref to the current clearSession function.
- * Allows TRPC error handlers (outside React tree) to clear auth state
- * when the server rejects the session (FORBIDDEN/401 on user.me).
- */
-let clearSessionRef: (() => Promise<void>) | null = null;
-
-/** Imperatively clear local auth state (token + user). Safe to call outside React components. */
-export async function clearSession(): Promise<void> {
-  try {
-    clearQueryCache();
-    await clearSessionRef?.();
-  } catch (err) {
-    console.error("[clearSession] Failed to clear credentials:", err);
-  }
-}
+export { clearSession } from "./session-cache-registry";
 
 interface User {
   id: string;
@@ -63,15 +48,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  // Expose clearSession to module-level ref so TRPC error handlers can clear auth state
+  // Expose clearSession to registry so TRPC error handlers can clear auth state
   useEffect(() => {
-    clearSessionRef = async () => {
+    registerClearSession(async () => {
       setToken(null);
       setUser(null);
       await tokenStorage.clear();
-    };
+    });
     return () => {
-      clearSessionRef = null;
+      registerClearSession(null);
     };
   }, []);
 
