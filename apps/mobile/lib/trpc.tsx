@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import superjson from "superjson";
 import { API_URL } from "./api-url";
+import { clearSession } from "./auth-context";
 import { tokenStorage } from "./secure-store";
 import { refreshAccessToken } from "./token-refresh";
 
@@ -18,6 +19,7 @@ async function authAwareFetch(input: RequestInfo | URL, init?: RequestInit): Pro
 
   const newToken = await refreshAccessToken();
   if (!newToken) {
+    clearSession();
     return firstResponse;
   }
 
@@ -48,11 +50,22 @@ export function TRPCProvider({ children }: { children: ReactNode }) {
         },
         queryCache: new QueryCache({
           onError: (error, query) => {
-            // Skip user.me itself to avoid infinite invalidation loops
             const key = query.queryKey as unknown[];
             const isUserMe = Array.isArray(key[0]) && key[0][0] === "user" && key[0][1] === "me";
-            if (!isUserMe && error instanceof TRPCClientError && error.data?.code === "FORBIDDEN") {
-              queryClient.invalidateQueries({ queryKey: [["user", "me"]] });
+
+            if (error instanceof TRPCClientError) {
+              const code = error.data?.code;
+
+              // When user.me itself fails with auth error, the session is invalid — clear local auth state
+              if (isUserMe && (code === "FORBIDDEN" || code === "UNAUTHORIZED")) {
+                clearSession();
+                return;
+              }
+
+              // For other queries, re-fetch user.me to check if session is still valid
+              if (!isUserMe && code === "FORBIDDEN") {
+                queryClient.invalidateQueries({ queryKey: [["user", "me"]] });
+              }
             }
           },
         }),

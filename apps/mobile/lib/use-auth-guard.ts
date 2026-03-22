@@ -19,8 +19,13 @@ export function useAuthGuard(areFontsReady: boolean) {
     if (!isReady) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    // Top-level routes outside "(auth)" and "(tabs)" (e.g. /oauth/callback)
+    // are intentionally exempt from redirect logic so deep-link handlers
+    // can complete before the guard intervenes.
+    const path = `/${segments.join("/")}`;
+    const isWhitelistedRoute = path.startsWith("/oauth/callback");
 
-    if (!isAuthenticated && !inAuthGroup) {
+    if (!isAuthenticated && !inAuthGroup && !isWhitelistedRoute) {
       router.replace("/(auth)/login");
     } else if (isAuthenticated && inAuthGroup) {
       router.replace("/(tabs)");

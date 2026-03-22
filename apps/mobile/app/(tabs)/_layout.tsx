@@ -4,17 +4,16 @@ import { useMe } from "@/lib/use-me";
 
 import { Tabs, router } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const meQuery = useMe();
-  const redirectedToProfile = useRef(false);
 
   useEffect(() => {
-    if (!isAuthenticated || meQuery.isLoading || redirectedToProfile.current) return;
+    if (!isAuthenticated || meQuery.isLoading) return;
     const data = meQuery.data;
     if (!data) return;
 
@@ -23,7 +22,6 @@ export default function TabsLayout() {
     const missingSalonName = isOwner && !data.salonName?.trim();
 
     if (missingName || missingSalonName) {
-      redirectedToProfile.current = true;
       router.replace("/setting/profile");
     }
   }, [isAuthenticated, meQuery.isLoading, meQuery.data]);
@@ -38,7 +36,7 @@ export default function TabsLayout() {
     [theme.colors.background]
   );
 
-  if (isLoading) {
+  if (isLoading || meQuery.isLoading) {
     return (
       <View style={loadingStyle}>
         <ActivityIndicator size="large" color={theme.colors.primary} />

@@ -80,13 +80,24 @@ function LoginForm() {
         setServerError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
         setIsLoading(false);
       } else if (result?.ok) {
-        // OAuth flow: callbackUrl points to an API route that redirects to
-        // a custom scheme (salonko://). router.push can't follow server
-        // redirects from API routes, so use a full page navigation.
-        if (callbackUrl.includes("/api/")) {
-          window.location.href = callbackUrl;
+        const fallbackPath = "/dashboard";
+        let normalizedPath = fallbackPath;
+        let isApiRoute = false;
+
+        try {
+          const parsed = new URL(callbackUrl, window.location.origin);
+          if (parsed.origin === window.location.origin) {
+            normalizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+            isApiRoute = parsed.pathname.startsWith("/api/");
+          }
+        } catch {
+          // malformed URL — keep fallbackPath
+        }
+
+        if (isApiRoute) {
+          window.location.assign(normalizedPath);
         } else {
-          router.push(callbackUrl);
+          router.push(normalizedPath);
           router.refresh();
         }
       }
