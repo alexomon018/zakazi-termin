@@ -80,8 +80,15 @@ function LoginForm() {
         setServerError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
         setIsLoading(false);
       } else if (result?.ok) {
-        router.push(callbackUrl);
-        router.refresh();
+        // OAuth flow: callbackUrl points to an API route that redirects to
+        // a custom scheme (salonko://). router.push can't follow server
+        // redirects from API routes, so use a full page navigation.
+        if (callbackUrl.includes("/api/")) {
+          window.location.href = callbackUrl;
+        } else {
+          router.push(callbackUrl);
+          router.refresh();
+        }
       }
     } catch {
       setServerError("Došlo je do greške. Pokušajte ponovo.");

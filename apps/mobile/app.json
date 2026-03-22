@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Salonko",
-    "slug": "zakazi-termin",
+    "slug": "salonko",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
+      "image": "./assets/splash.png",
       "backgroundColor": "#BA3678"
     },
     "ios": {
@@ -35,6 +36,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "81fe5488-5e98-4892-ac99-ea5bfb736344"
+      }
+    },
+    "owner": "alexomon018"
   }
 }

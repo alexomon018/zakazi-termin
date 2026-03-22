@@ -64,7 +64,7 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
   // If callbackUrl points to the OAuth authorize endpoint, honor it instead of going to /dashboard
   if (isAuthPage && token && !pathname.startsWith("/verify-email")) {
     const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
-    if (callbackUrl?.startsWith("/api/auth/oauth/authorize")) {
+    if (callbackUrl?.includes("/api/auth/oauth/authorize")) {
       return NextResponse.redirect(new URL(callbackUrl, req.url));
     }
     return NextResponse.redirect(new URL("/dashboard", req.url));

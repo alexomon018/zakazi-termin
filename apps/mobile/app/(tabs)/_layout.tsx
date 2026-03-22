@@ -2,7 +2,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useMe } from "@/lib/use-me";
 
-import { Redirect, Tabs, router } from "expo-router";
+import { Tabs, router } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
 import { useEffect, useMemo, useRef } from "react";
 import { ActivityIndicator, Platform, View } from "react-native";
@@ -44,10 +44,6 @@ export default function TabsLayout() {
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
-  }
-
-  if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
   }
 
   return (

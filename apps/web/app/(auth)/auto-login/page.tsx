@@ -44,7 +44,7 @@ function AutoLoginHandler() {
     // callbackUrl stays in the query string (safe, non-sensitive).
     const { token, email } = parseFragment();
     const rawCallbackUrl = searchParams.get("callbackUrl") || "/dashboard/settings/billing";
-    const callbackUrl = rawCallbackUrl.startsWith("/dashboard")
+    const callbackUrl = /^\/dashboard(?:\/|$)/.test(rawCallbackUrl)
       ? rawCallbackUrl
       : "/dashboard/settings/billing";
 
