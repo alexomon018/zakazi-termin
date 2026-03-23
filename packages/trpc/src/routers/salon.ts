@@ -55,7 +55,9 @@ function buildOpenNowCondition(
  * and the current Belgrade time.
  */
 function isOpenNow(
-  schedules: { availability: { days: number[]; startTime: Date; endTime: Date }[] }[],
+  schedules: {
+    availability: { days: number[]; startTime: Date; endTime: Date }[];
+  }[],
   belgradeNow: ReturnType<typeof getBelgradeNow>
 ): boolean {
   return schedules.some((schedule) =>
@@ -176,7 +178,7 @@ export const salonRouter = router({
             },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: limit + 1,
         cursor: cursorClause,
         ...(cursor ? { skip: 1 } : {}),

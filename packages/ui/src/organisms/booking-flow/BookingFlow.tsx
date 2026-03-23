@@ -102,17 +102,22 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
     }));
   }, [eventType.hosts]);
 
+  const hostUserIds = useMemo(
+    () => new Set(eventType.hosts?.map((host) => host.userId) ?? []),
+    [eventType.hosts]
+  );
+
   // For single-host events, derive the staff ID synchronously to avoid
   // a redundant query cycle (effect would set it one render too late).
   const effectiveStaffId = useMemo(() => {
-    if (selectedStaffId) return selectedStaffId;
+    if (selectedStaffId && hostUserIds.has(selectedStaffId)) return selectedStaffId;
     if (eventType.hosts?.length === 1) return eventType.hosts[0].userId;
     return null;
-  }, [selectedStaffId, eventType.hosts]);
+  }, [selectedStaffId, eventType.hosts, hostUserIds]);
 
   // Sync back to the store so other components see the selected staff
   useEffect(() => {
-    if (effectiveStaffId && !selectedStaffId) {
+    if (effectiveStaffId !== selectedStaffId) {
       setSelectedStaffId(effectiveStaffId);
     }
   }, [effectiveStaffId, selectedStaffId, setSelectedStaffId]);

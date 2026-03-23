@@ -19,7 +19,8 @@ export function SalonDiscoverySectionContainer() {
   const salons = data?.items ?? [];
 
   const seeAllParams = new URLSearchParams();
-  if (debouncedQuery) seeAllParams.set("query", debouncedQuery);
+  const normalizedQuery = searchQuery.trim();
+  if (normalizedQuery) seeAllParams.set("query", normalizedQuery);
   if (selectedType) seeAllParams.set("type", selectedType);
   const seeAllHref = seeAllParams.toString() ? `/saloni?${seeAllParams.toString()}` : "/saloni";
 
