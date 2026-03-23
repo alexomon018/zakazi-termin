@@ -80,8 +80,26 @@ function LoginForm() {
         setServerError(errorMessages[result.error as ErrorCode] || "Greška pri prijavi");
         setIsLoading(false);
       } else if (result?.ok) {
-        router.push(callbackUrl);
-        router.refresh();
+        const fallbackPath = "/dashboard";
+        let normalizedPath = fallbackPath;
+        let isApiRoute = false;
+
+        try {
+          const parsed = new URL(callbackUrl, window.location.origin);
+          if (parsed.origin === window.location.origin) {
+            normalizedPath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+            isApiRoute = parsed.pathname.startsWith("/api/");
+          }
+        } catch {
+          // malformed URL — keep fallbackPath
+        }
+
+        if (isApiRoute) {
+          window.location.assign(normalizedPath);
+        } else {
+          router.push(normalizedPath);
+          router.refresh();
+        }
       }
     } catch {
       setServerError("Došlo je do greške. Pokušajte ponovo.");

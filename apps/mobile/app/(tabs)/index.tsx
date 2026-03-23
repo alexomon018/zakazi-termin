@@ -16,7 +16,7 @@ import { trpc } from "@/lib/trpc";
 import { useMe } from "@/lib/use-me";
 import * as Clipboard from "expo-clipboard";
 import { router } from "expo-router";
-import { Clock, Copy, Eye, EyeOff, Menu, Pencil, Plus, Trash2 } from "lucide-react-native";
+import { Clock, Copy, Eye, EyeOff, Menu, Pencil, Plus, Trash2, User } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 
@@ -28,6 +28,7 @@ export default function EventTypesScreen() {
     title: string;
     slug: string;
     hidden: boolean;
+    isOwner: boolean;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string;
@@ -79,35 +80,45 @@ export default function EventTypesScreen() {
 
   const sheetActions: BottomSheetAction[] = activeItem
     ? [
-        {
-          label: "Uredi",
-          icon: <Pencil size={20} color={theme.colors.foreground} />,
-          onPress: () => router.push(`/event-type/${activeItem.id}`),
-        },
+        ...(activeItem.isOwner
+          ? [
+              {
+                label: "Uredi",
+                icon: <Pencil size={20} color={theme.colors.foreground} />,
+                onPress: () => router.push(`/event-type/${activeItem.id}`),
+              },
+            ]
+          : []),
         {
           label: "Kopiraj link",
           icon: <Copy size={20} color={theme.colors.foreground} />,
           onPress: () => handleCopyLink(activeItem.slug),
         },
-        {
-          label: activeItem.hidden ? "Prikaži" : "Sakrij",
-          icon: activeItem.hidden ? (
-            <Eye size={20} color={theme.colors.foreground} />
-          ) : (
-            <EyeOff size={20} color={theme.colors.foreground} />
-          ),
-          onPress: () =>
-            toggleMutation.mutate({
-              id: activeItem.id,
-              hidden: !activeItem.hidden,
-            }),
-        },
-        {
-          label: "Obriši",
-          icon: <Trash2 size={20} color={theme.colors.destructive} />,
-          onPress: () => setDeleteTarget({ id: activeItem.id, title: activeItem.title }),
-          destructive: true,
-        },
+        ...(activeItem.isOwner
+          ? [
+              {
+                label: activeItem.hidden ? "Prikaži" : "Sakrij",
+                icon: activeItem.hidden ? (
+                  <Eye size={20} color={theme.colors.foreground} />
+                ) : (
+                  <EyeOff size={20} color={theme.colors.foreground} />
+                ),
+                onPress: () => {
+                  if (toggleMutation.isPending) return;
+                  toggleMutation.mutate({
+                    id: activeItem.id,
+                    hidden: !activeItem.hidden,
+                  });
+                },
+              },
+              {
+                label: "Obriši",
+                icon: <Trash2 size={20} color={theme.colors.destructive} />,
+                onPress: () => setDeleteTarget({ id: activeItem.id, title: activeItem.title }),
+                destructive: true,
+              },
+            ]
+          : []),
       ]
     : [];
 
@@ -244,6 +255,14 @@ export default function EventTypesScreen() {
                       </AppText>
                     </View>
                   )}
+                  {item.ownerName && (
+                    <View style={styles.badge}>
+                      <User size={12} color={theme.colors.mutedForeground} />
+                      <AppText variant="bodySm" muted style={{ fontWeight: "500" }}>
+                        {item.ownerName}
+                      </AppText>
+                    </View>
+                  )}
                 </View>
               </Pressable>
               <Pressable
@@ -257,6 +276,7 @@ export default function EventTypesScreen() {
                     title: item.title,
                     slug: item.slug,
                     hidden: item.hidden,
+                    isOwner: item.isOwner,
                   })
                 }
               >

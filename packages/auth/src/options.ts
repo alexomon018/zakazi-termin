@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { logger, normalizeToSlug } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
@@ -185,7 +186,7 @@ export const authOptions: NextAuthOptions = {
         // Auto-login flow: validate one-time token after email verification
         if (autoLoginToken) {
           // Use transaction to atomically validate and clear token (prevents race condition)
-          const user = await prisma.$transaction(async (tx) => {
+          const { user, isFirstVerification } = await prisma.$transaction(async (tx) => {
             const user = await tx.user.findUnique({
               where: { email },
             });
@@ -195,11 +196,12 @@ export const authOptions: NextAuthOptions = {
             }
 
             const now = new Date();
+            const presentedTokenHash = createHash("sha256").update(autoLoginToken).digest("hex");
 
-            // Validate the auto-login token
+            // Validate the auto-login token (compare hashes, not raw tokens)
             if (
               !user.autoLoginToken ||
-              user.autoLoginToken !== autoLoginToken ||
+              user.autoLoginToken !== presentedTokenHash ||
               !user.autoLoginTokenExpires ||
               user.autoLoginTokenExpires < now
             ) {
@@ -213,33 +215,37 @@ export const authOptions: NextAuthOptions = {
             }
 
             // Token is valid - clear it atomically (one-time use)
+            const isFirstVerification = !user.emailVerified;
             const updatedUser = await tx.user.update({
               where: { id: user.id },
               data: {
                 autoLoginToken: null,
                 autoLoginTokenExpires: null,
+                emailVerified: user.emailVerified ?? new Date(),
               },
             });
 
-            return updatedUser;
+            return { user: updatedUser, isFirstVerification };
           });
 
-          // Send welcome email AFTER successful OTP verification + successful sign-in.
-          // This guarantees the welcome email doesn't go out just because OTP was issued,
-          // and also avoids sending it if auto-login fails.
-          try {
-            await emailService.sendWelcomeEmail({
-              userName: user.name || "Korisnik",
-              userEmail: user.email,
-              salonName: user.salonName || "",
-            });
-          } catch (error) {
-            logger.error("Failed to send welcome email after auto-login", {
-              error,
-              email,
-              userId: user.id,
-            });
-            // Don't block sign-in if email fails
+          // Send welcome email only for newly verified users (first-time signup).
+          // Existing users (emailVerified already set) skip this — they're using
+          // auto-login for cross-app navigation (e.g. mobile → web billing).
+          if (isFirstVerification) {
+            try {
+              await emailService.sendWelcomeEmail({
+                userName: user.name || "Korisnik",
+                userEmail: user.email,
+                salonName: user.salonName || "",
+              });
+            } catch (error) {
+              logger.error("Failed to send welcome email after auto-login", {
+                error,
+                email,
+                userId: user.id,
+              });
+              // Don't block sign-in if email fails
+            }
           }
 
           return {

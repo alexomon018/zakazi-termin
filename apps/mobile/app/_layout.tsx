@@ -1,8 +1,9 @@
 import { AnimatedSplash, ErrorBoundary } from "@/components/atoms";
-import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { AuthProvider } from "@/lib/auth-context";
 import { initErrorReporting } from "@/lib/error-reporting";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
 import { TRPCProvider } from "@/lib/trpc";
+import { useAuthGuard } from "@/lib/use-auth-guard";
 import { Lato_400Regular, Lato_700Bold, Lato_900Black } from "@expo-google-fonts/lato";
 import {
   OpenSans_400Regular,
@@ -14,15 +15,19 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
 import { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
+// Required for expo-web-browser auth session redirect handling on Android.
+// Must be called at module scope before any auth session is started.
+WebBrowser.maybeCompleteAuthSession();
+
 initErrorReporting();
 
 function RootLayoutNav() {
-  const { isLoading } = useAuth();
   const { theme, colorScheme } = useTheme();
   const [fontsLoaded, fontError] = useFonts({
     Lato_400Regular,
@@ -35,6 +40,7 @@ function RootLayoutNav() {
   });
   const [showSplash, setShowSplash] = useState(true);
 
+  const { isLoading } = useAuthGuard(fontsLoaded || !!fontError);
   const isReady = !isLoading && (fontsLoaded || !!fontError);
 
   const handleSplashFinish = useCallback(() => {

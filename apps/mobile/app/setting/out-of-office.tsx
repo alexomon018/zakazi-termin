@@ -119,10 +119,12 @@ export default function OutOfOfficeScreen() {
   const styles = useMemo(
     () =>
       StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
         stickyHeader: {
           paddingHorizontal: theme.spacing.lg,
           paddingTop: insets.top + theme.spacing.sm,
           paddingBottom: theme.spacing.sm,
+          backgroundColor: theme.colors.background,
         },
         listContent: {
           paddingHorizontal: theme.spacing.lg,
@@ -151,7 +153,7 @@ export default function OutOfOfficeScreen() {
   );
 
   return (
-    <>
+    <View style={styles.container}>
       <View style={styles.stickyHeader}>
         <ScreenHeader
           title="Odsustvo"
@@ -301,6 +303,6 @@ export default function OutOfOfficeScreen() {
         }}
         onCancel={() => setDeleteTarget(null)}
       />
-    </>
+    </View>
   );
 }

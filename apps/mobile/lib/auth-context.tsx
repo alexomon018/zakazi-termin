@@ -3,7 +3,10 @@ import type { ReactNode } from "react";
 import { API_URL } from "./api-url";
 import { authorize, isTokenExpired, revokeToken } from "./oauth-service";
 import { tokenStorage } from "./secure-store";
+import { clearQueryCache, registerClearSession } from "./session-cache-registry";
 import { refreshAccessToken } from "./token-refresh";
+
+export { clearSession } from "./session-cache-registry";
 
 interface User {
   id: string;
@@ -44,6 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  // Expose clearSession to registry so TRPC error handlers can clear auth state
+  useEffect(() => {
+    registerClearSession(async () => {
+      setToken(null);
+      setUser(null);
+      await tokenStorage.clear();
+    });
+    return () => {
+      registerClearSession(null);
+    };
+  }, []);
 
   // Restore session from secure storage on mount
   useEffect(() => {
@@ -132,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await revokeToken(currentToken);
     }
 
+    clearQueryCache();
     await tokenStorage.clear();
     setToken(null);
     setUser(null);
