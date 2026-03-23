@@ -265,6 +265,10 @@ export { CtaBanner } from "./organisms/landing/CtaBanner";
 export { TestimonialsSection } from "./organisms/landing/TestimonialsSection";
 export { LandingFooter } from "./organisms/landing/LandingFooter";
 export { SalonDiscoverySection } from "./organisms/landing/SalonDiscoverySection";
+export type {
+  SalonDiscoverySectionProps,
+  SalonItem,
+} from "./organisms/landing/SalonDiscoverySection";
 export { UserHeroSection } from "./organisms/landing/UserHeroSection";
 export { UserProcessSection } from "./organisms/landing/UserProcessSection";
 export { SalonCategoriesSection } from "./organisms/landing/SalonCategoriesSection";
@@ -272,6 +276,7 @@ export { VERTICALS, VERTICAL_SLUGS } from "./organisms/landing/vertical-data";
 
 // Organisms - Salon Listing
 export { SalonListingClient } from "./organisms/salon-listing/SalonListingClient";
+export type { SalonListingClientProps } from "./organisms/salon-listing/SalonListingClient";
 export type { VerticalLandingData, VerticalFeature } from "./organisms/landing/vertical-data";
 
 // Organisms - Cookie Consent

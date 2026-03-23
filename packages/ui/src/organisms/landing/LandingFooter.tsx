@@ -6,7 +6,6 @@ export function LandingFooter() {
     {
       title: "Za klijente",
       links: [
-        { label: "Pronađi salon", href: "/saloni" },
         { label: "Svi saloni", href: "/saloni" },
         { label: "FAQ", href: "/faq" },
       ],

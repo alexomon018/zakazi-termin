@@ -74,12 +74,14 @@ export function BookingConfirmation({
             </div>
           </div>
 
-          <p className="mb-6 text-sm text-muted-foreground">
-            Referentni kod:{" "}
-            <code className="px-2 py-1 bg-muted rounded">
-              {bookingUid?.slice(0, 8).toUpperCase()}
-            </code>
-          </p>
+          {bookingUid && (
+            <p className="mb-6 text-sm text-muted-foreground">
+              Referentni kod:{" "}
+              <code className="px-2 py-1 bg-muted rounded">
+                {bookingUid.slice(0, 8).toUpperCase()}
+              </code>
+            </p>
+          )}
 
           {/* Add to Calendar */}
           <div className="mb-6">
@@ -105,9 +107,11 @@ export function BookingConfirmation({
             </div>
           </div>
 
-          <Link href={`/booking/${bookingUid}`} className="text-primary hover:underline">
-            Pogledaj detalje termina
-          </Link>
+          {bookingUid && (
+            <Link href={`/booking/${bookingUid}`} className="text-primary hover:underline">
+              Pogledaj detalje termina
+            </Link>
+          )}
         </CardContent>
       </Card>
     </div>

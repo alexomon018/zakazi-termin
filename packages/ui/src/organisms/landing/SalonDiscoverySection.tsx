@@ -1,29 +1,38 @@
 "use client";
 
-import { trpc } from "@/lib/trpc/client";
-import { Card, CardContent } from "@salonko/ui";
-import { useDebounce } from "@salonko/ui/hooks/useDebounce";
+import { Card, CardContent, ServerErrorAlert } from "@salonko/ui";
 import { cn } from "@salonko/ui/utils";
 import { ArrowRight, SearchX } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { SalonCard } from "../../molecules/landing/SalonCard";
+import { SalonCard, type SalonCardProps } from "../../molecules/landing/SalonCard";
 import { SalonSearchInput } from "../../molecules/landing/SalonSearchInput";
 import { SalonTypeFilter } from "../../molecules/landing/SalonTypeFilter";
 
-export function SalonDiscoverySection() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const debouncedQuery = useDebounce(searchQuery, 300);
+export type SalonItem = SalonCardProps & { id: string };
 
-  const { data, isLoading } = trpc.salon.search.useQuery({
-    query: debouncedQuery || undefined,
-    salonType: selectedType ?? undefined,
-    limit: 8,
-  });
+export interface SalonDiscoverySectionProps {
+  salons: SalonItem[];
+  isLoading: boolean;
+  error?: string | null;
+  searchQuery: string;
+  selectedType: string | null;
+  seeAllHref: string;
+  onSearchChange: (query: string) => void;
+  onTypeChange: (typeId: string | null) => void;
+}
 
-  const salons = data?.items ?? [];
+export function SalonDiscoverySection({
+  salons,
+  isLoading,
+  error,
+  searchQuery,
+  selectedType,
+  seeAllHref,
+  onSearchChange,
+  onTypeChange,
+}: SalonDiscoverySectionProps) {
   const hasResults = salons.length > 0;
+  const isFiltered = searchQuery.length > 0 || selectedType !== null;
 
   return (
     <section id="pronadji-salon" className="py-16 sm:py-20 bg-gray-50/50 dark:bg-muted/10">
@@ -40,16 +49,18 @@ export function SalonDiscoverySection() {
 
         {/* Search input */}
         <div className="max-w-2xl mx-auto mb-6">
-          <SalonSearchInput value={searchQuery} onChange={setSearchQuery} />
+          <SalonSearchInput value={searchQuery} onChange={onSearchChange} />
         </div>
 
         {/* Type filters */}
         <div className="mb-8">
-          <SalonTypeFilter selected={selectedType} onChange={setSelectedType} />
+          <SalonTypeFilter selected={selectedType} onChange={onTypeChange} />
         </div>
 
         {/* Salon grid */}
-        {isLoading ? (
+        {error ? (
+          <ServerErrorAlert message={error} />
+        ) : isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {["a", "b", "c", "d"].map((key) => (
               <Card key={key}>
@@ -84,7 +95,7 @@ export function SalonDiscoverySection() {
             <CardContent className="py-12 text-center">
               <SearchX className="w-12 h-12 mx-auto mb-4 text-primary/30 dark:text-primary/40" />
               <p className="text-muted-foreground">
-                {debouncedQuery || selectedType
+                {isFiltered
                   ? "Nema salona koji odgovaraju vašoj pretrazi. Pokušajte sa drugim filterima."
                   : "Trenutno nema dostupnih salona."}
               </p>
@@ -96,7 +107,7 @@ export function SalonDiscoverySection() {
         {hasResults && (
           <div className="mt-8 text-center">
             <Link
-              href="/saloni"
+              href={seeAllHref}
               className={cn(
                 "inline-flex items-center gap-2 text-primary font-medium hover:underline underline-offset-4 transition-colors"
               )}

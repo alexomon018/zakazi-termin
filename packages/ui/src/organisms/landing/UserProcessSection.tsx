@@ -23,7 +23,7 @@ const steps = [
 
 export function UserProcessSection() {
   return (
-    <section className="py-20 lg:py-28 bg-gray-50 dark:bg-muted/30">
+    <section className="py-20 lg:py-28 bg-muted/50 dark:bg-muted/30">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Header */}
         <div className="max-w-2xl mx-auto text-center">
@@ -44,11 +44,11 @@ export function UserProcessSection() {
             <div key={step.step} className="relative text-center">
               {/* Connector line (hidden on mobile, visible on desktop) */}
               {index < steps.length - 1 && (
-                <div className="absolute hidden md:block top-8 left-[60%] w-[80%] h-px bg-gray-200 dark:bg-border" />
+                <div className="absolute hidden md:block top-8 left-[60%] w-[80%] h-px bg-border" />
               )}
 
               {/* Step number with icon */}
-              <div className="relative inline-flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-white dark:bg-card ring-1 ring-gray-200 dark:ring-border">
+              <div className="relative inline-flex items-center justify-center w-16 h-16 mx-auto rounded-full bg-card ring-1 ring-border">
                 <step.icon className="w-7 h-7 text-primary" aria-hidden="true" />
                 <span className="absolute -top-1 -right-1 flex items-center justify-center w-6 h-6 text-xs font-bold text-white rounded-full bg-primary">
                   {step.step}

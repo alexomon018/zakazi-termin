@@ -19,6 +19,7 @@ export function SalonSearchInput({ value, onChange, className }: SalonSearchInpu
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Pretražite salone po imenu, gradu ili usluzi..."
+        aria-label="Pretražite salone po imenu, gradu ili usluzi"
         className="pl-10 h-12 text-base rounded-xl border-border/60 bg-background shadow-sm focus-visible:ring-primary"
       />
     </div>

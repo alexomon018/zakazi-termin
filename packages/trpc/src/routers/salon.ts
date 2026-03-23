@@ -17,6 +17,57 @@ async function getSalonIconUrl(salonIconKey: string | null): Promise<string | nu
   }
 }
 
+/**
+ * Returns the current Belgrade day-of-week index and a comparable Date
+ * anchored to 1970-01-01 for schedule startTime/endTime comparisons.
+ */
+function getBelgradeNow() {
+  const now = dayjs().tz("Europe/Belgrade");
+  const todayDayOfWeek = now.day(); // 0=Sun, 1=Mon, ...
+  const currentTime = new Date(`1970-01-01T${now.format("HH:mm")}:00.000Z`);
+  return { todayDayOfWeek, currentTime };
+}
+
+/**
+ * Builds a Prisma condition that filters users whose schedules
+ * include availability covering the current Belgrade time.
+ */
+function buildOpenNowCondition(
+  belgradeNow: ReturnType<typeof getBelgradeNow>
+): Prisma.UserWhereInput {
+  return {
+    schedules: {
+      some: {
+        availability: {
+          some: {
+            days: { has: belgradeNow.todayDayOfWeek },
+            startTime: { lte: belgradeNow.currentTime },
+            endTime: { gt: belgradeNow.currentTime },
+          },
+        },
+      },
+    },
+  };
+}
+
+/**
+ * Checks whether a salon is currently open based on its schedules
+ * and the current Belgrade time.
+ */
+function isOpenNow(
+  schedules: { availability: { days: number[]; startTime: Date; endTime: Date }[] }[],
+  belgradeNow: ReturnType<typeof getBelgradeNow>
+): boolean {
+  return schedules.some((schedule) =>
+    schedule.availability.some(
+      (avail) =>
+        avail.days.includes(belgradeNow.todayDayOfWeek) &&
+        avail.startTime <= belgradeNow.currentTime &&
+        avail.endTime > belgradeNow.currentTime
+    )
+  );
+}
+
 export const salonRouter = router({
   /**
    * Search and list salons with filters.
@@ -97,23 +148,7 @@ export const salonRouter = router({
 
       // Filter by "open now" — check if any schedule has availability for today
       if (openNow) {
-        const now = dayjs().tz("Europe/Belgrade");
-        const todayDayOfWeek = now.day(); // 0=Sun, 1=Mon, ...
-        const currentTime = new Date(`1970-01-01T${now.format("HH:mm")}:00.000Z`);
-
-        conditions.push({
-          schedules: {
-            some: {
-              availability: {
-                some: {
-                  days: { has: todayDayOfWeek },
-                  startTime: { lte: currentTime },
-                  endTime: { gt: currentTime },
-                },
-              },
-            },
-          },
-        });
+        conditions.push(buildOpenNowCondition(getBelgradeNow()));
       }
 
       // Cursor-based pagination
@@ -155,23 +190,11 @@ export const salonRouter = router({
       }
 
       // Compute "open now" status and generate presigned URLs
-      const now = dayjs().tz("Europe/Belgrade");
-      const todayDayOfWeek = now.day();
-      const currentTime = new Date(`1970-01-01T${now.format("HH:mm")}:00.000Z`);
+      const belgradeNow = getBelgradeNow();
 
       const items = await Promise.all(
         users.map(async (user) => {
           const salonIconUrl = await getSalonIconUrl(user.salonIconKey);
-
-          // Determine if salon is currently open
-          const isOpenNow = user.schedules.some((schedule) =>
-            schedule.availability.some(
-              (avail) =>
-                avail.days.includes(todayDayOfWeek) &&
-                avail.startTime <= currentTime &&
-                avail.endTime > currentTime
-            )
-          );
 
           return {
             id: user.id,
@@ -181,7 +204,7 @@ export const salonRouter = router({
             salonTypes: user.salonTypes,
             salonIconUrl,
             serviceCount: user._count.eventTypes,
-            isOpenNow,
+            isOpenNow: isOpenNow(user.schedules, belgradeNow),
           };
         })
       );

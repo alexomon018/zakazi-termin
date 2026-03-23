@@ -1,6 +1,5 @@
 "use client";
 
-import { trpc } from "@/lib/trpc/client";
 import {
   Button,
   Card,
@@ -11,41 +10,52 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  ServerErrorAlert,
   Switch,
 } from "@salonko/ui";
-import { useDebounce } from "@salonko/ui/hooks/useDebounce";
 import { SearchX } from "lucide-react";
-import { useState } from "react";
 import { SalonCard } from "../../molecules/landing/SalonCard";
 import { SalonSearchInput } from "../../molecules/landing/SalonSearchInput";
 import { SalonTypeFilter } from "../../molecules/landing/SalonTypeFilter";
+import type { SalonItem } from "../landing/SalonDiscoverySection";
 
-const PAGE_SIZE = 12;
+export interface SalonListingClientProps {
+  salons: SalonItem[];
+  isLoading: boolean;
+  error?: string | null;
+  searchQuery: string;
+  selectedType: string | null;
+  selectedCity: string | null;
+  openNow: boolean;
+  cities: string[];
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isFiltered: boolean;
+  onSearchChange: (query: string) => void;
+  onTypeChange: (typeId: string | null) => void;
+  onCityChange: (city: string | null) => void;
+  onOpenNowChange: (open: boolean) => void;
+  onFetchNextPage: () => void;
+}
 
-export function SalonListingClient() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [openNow, setOpenNow] = useState(false);
-  const debouncedQuery = useDebounce(searchQuery, 300);
-
-  const { data: cities } = trpc.salon.cities.useQuery();
-
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    trpc.salon.search.useInfiniteQuery(
-      {
-        query: debouncedQuery || undefined,
-        salonType: selectedType ?? undefined,
-        city: selectedCity ?? undefined,
-        openNow: openNow || undefined,
-        limit: PAGE_SIZE,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-      }
-    );
-
-  const salons = data?.pages.flatMap((page) => page.items) ?? [];
+export function SalonListingClient({
+  salons,
+  isLoading,
+  error,
+  searchQuery,
+  selectedType,
+  selectedCity,
+  openNow,
+  cities,
+  hasNextPage,
+  isFetchingNextPage,
+  isFiltered,
+  onSearchChange,
+  onTypeChange,
+  onCityChange,
+  onOpenNowChange,
+  onFetchNextPage,
+}: SalonListingClientProps) {
   const hasResults = salons.length > 0;
 
   return (
@@ -60,27 +70,27 @@ export function SalonListingClient() {
 
       {/* Search */}
       <div className="mb-6">
-        <SalonSearchInput value={searchQuery} onChange={setSearchQuery} />
+        <SalonSearchInput value={searchQuery} onChange={onSearchChange} />
       </div>
 
       {/* Filters row */}
       <div className="space-y-4 mb-8">
         {/* Type filter */}
-        <SalonTypeFilter selected={selectedType} onChange={setSelectedType} />
+        <SalonTypeFilter selected={selectedType} onChange={onTypeChange} />
 
         {/* City + open now */}
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           {/* City filter */}
           <Select
             value={selectedCity ?? "all"}
-            onValueChange={(value) => setSelectedCity(value === "all" ? null : value)}
+            onValueChange={(value) => onCityChange(value === "all" ? null : value)}
           >
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Svi gradovi" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Svi gradovi</SelectItem>
-              {cities?.map((city) => (
+              {cities.map((city) => (
                 <SelectItem key={city} value={city}>
                   {city}
                 </SelectItem>
@@ -90,7 +100,7 @@ export function SalonListingClient() {
 
           {/* Open now toggle */}
           <div className="flex items-center gap-2">
-            <Switch id="open-now" checked={openNow} onCheckedChange={setOpenNow} />
+            <Switch id="open-now" checked={openNow} onCheckedChange={onOpenNowChange} />
             <Label htmlFor="open-now" className="text-sm cursor-pointer">
               Otvoreno sada
             </Label>
@@ -99,7 +109,9 @@ export function SalonListingClient() {
       </div>
 
       {/* Results */}
-      {isLoading ? (
+      {error ? (
+        <ServerErrorAlert message={error} />
+      ) : isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {["a", "b", "c", "d", "e", "f", "g", "h"].map((key) => (
             <Card key={key}>
@@ -134,11 +146,7 @@ export function SalonListingClient() {
           {/* Load more */}
           {hasNextPage && (
             <div className="mt-8 text-center">
-              <Button
-                variant="outline"
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
+              <Button variant="outline" onClick={onFetchNextPage} disabled={isFetchingNextPage}>
                 {isFetchingNextPage ? "Učitavanje..." : "Učitaj još"}
               </Button>
             </div>
@@ -149,7 +157,7 @@ export function SalonListingClient() {
           <CardContent className="py-12 text-center">
             <SearchX className="w-12 h-12 mx-auto mb-4 text-primary/30 dark:text-primary/40" />
             <p className="text-muted-foreground">
-              {debouncedQuery || selectedType || selectedCity || openNow
+              {isFiltered
                 ? "Nema salona koji odgovaraju vašoj pretrazi. Pokušajte sa drugim filterima."
                 : "Trenutno nema dostupnih salona."}
             </p>

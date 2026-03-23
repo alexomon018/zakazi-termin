@@ -102,12 +102,20 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
     }));
   }, [eventType.hosts]);
 
-  // Auto-select the single host when there's exactly one
+  // For single-host events, derive the staff ID synchronously to avoid
+  // a redundant query cycle (effect would set it one render too late).
+  const effectiveStaffId = useMemo(() => {
+    if (selectedStaffId) return selectedStaffId;
+    if (eventType.hosts?.length === 1) return eventType.hosts[0].userId;
+    return null;
+  }, [selectedStaffId, eventType.hosts]);
+
+  // Sync back to the store so other components see the selected staff
   useEffect(() => {
-    if (eventType.hosts?.length === 1 && !selectedStaffId) {
-      setSelectedStaffId(eventType.hosts[0].userId);
+    if (effectiveStaffId && !selectedStaffId) {
+      setSelectedStaffId(effectiveStaffId);
     }
-  }, [eventType.hosts, selectedStaffId, setSelectedStaffId]);
+  }, [effectiveStaffId, selectedStaffId, setSelectedStaffId]);
 
   const selectedStaffName = useMemo(() => {
     if (!selectedStaffId) {
@@ -162,10 +170,10 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
       eventTypeId: eventType.id,
       dateFrom: dateRange.start,
       dateTo: dateRange.end,
-      hostUserId: selectedStaffId || undefined,
+      hostUserId: effectiveStaffId || undefined,
     },
     {
-      enabled: !!eventType.id && (!hasMultipleHosts || !!selectedStaffId),
+      enabled: !!eventType.id && (!hasMultipleHosts || !!effectiveStaffId),
     }
   );
 
@@ -265,7 +273,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
         email: data.email,
         phoneNumber: data.phoneNumber || undefined,
         notes: data.notes || undefined,
-        hostUserId: selectedStaffId || undefined,
+        hostUserId: effectiveStaffId || undefined,
       });
     }
   };

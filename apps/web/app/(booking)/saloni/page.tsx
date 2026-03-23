@@ -1,6 +1,8 @@
+import { SalonListingClientContainer } from "@/components/SalonListingClientContainer";
 import { getAppUrl } from "@/lib/utils";
-import { LandingFooter, LandingHeader, SalonListingClient } from "@salonko/ui";
+import { LandingFooter, LandingHeader } from "@salonko/ui";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 const baseUrl = getAppUrl();
 
@@ -27,7 +29,9 @@ export default function SaloniPage() {
     <div className="min-h-dvh flex flex-col">
       <LandingHeader />
       <main className="flex-1">
-        <SalonListingClient />
+        <Suspense>
+          <SalonListingClientContainer />
+        </Suspense>
       </main>
       <LandingFooter />
     </div>

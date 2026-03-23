@@ -140,7 +140,14 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
           process.env.NODE_ENV === "production"
             ? "__Secure-next-auth.session-token"
             : "next-auth.session-token";
-        response.cookies.delete(cookieName);
+        const staleSessionCookies = req.cookies
+          .getAll()
+          .map((c) => c.name)
+          .filter((name) => name === cookieName || name.startsWith(`${cookieName}.`));
+
+        for (const name of staleSessionCookies) {
+          response.cookies.delete(name);
+        }
         return response;
       }
       // For 401 or other errors, let the request continue - the dashboard layout will handle auth

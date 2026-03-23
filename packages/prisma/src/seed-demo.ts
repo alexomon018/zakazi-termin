@@ -845,6 +845,20 @@ const PIERCING_LAB_ACCOUNT: AccountDef = {
   ],
 };
 
+const SEED_ACCOUNTS: AccountDef[] = [
+  BARBER_ACCOUNT,
+  NAILS_ACCOUNT,
+  EXPIRED_ACCOUNT,
+  GLAMOUR_HAIR_ACCOUNT,
+  RELAX_SPA_ACCOUNT,
+  LASH_BROW_ACCOUNT,
+  TATTOO_ACCOUNT,
+  PET_SALON_ACCOUNT,
+  STUDIO_LEPOTE_ACCOUNT,
+  WAX_STUDIO_ACCOUNT,
+  PIERCING_LAB_ACCOUNT,
+];
+
 // ── Helpers ──
 
 function bookingTime(dayOffset: number, hour: number, durationMinutes: number) {
@@ -1307,19 +1321,7 @@ async function main() {
   console.log("🌱 Seeding demo accounts...");
 
   const soloResults = [];
-  for (const account of [
-    BARBER_ACCOUNT,
-    NAILS_ACCOUNT,
-    EXPIRED_ACCOUNT,
-    GLAMOUR_HAIR_ACCOUNT,
-    RELAX_SPA_ACCOUNT,
-    LASH_BROW_ACCOUNT,
-    TATTOO_ACCOUNT,
-    PET_SALON_ACCOUNT,
-    STUDIO_LEPOTE_ACCOUNT,
-    WAX_STUDIO_ACCOUNT,
-    PIERCING_LAB_ACCOUNT,
-  ]) {
+  for (const account of SEED_ACCOUNTS) {
     soloResults.push(await seedAccount(account));
   }
 

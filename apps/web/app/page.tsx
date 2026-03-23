@@ -1,3 +1,4 @@
+import { SalonDiscoverySectionContainer } from "@/components/SalonDiscoverySectionContainer";
 import { OrganizationSchema, WebsiteSchema } from "@/components/StructuredData";
 import { getSession } from "@/lib/auth";
 import { TRPCProvider } from "@/lib/trpc/provider";
@@ -6,7 +7,6 @@ import {
   LandingFooter,
   LandingHeader,
   SalonCategoriesSection,
-  SalonDiscoverySection,
   UserHeroSection,
   UserProcessSection,
   userFAQs,
@@ -27,7 +27,7 @@ export default async function Home() {
       <LandingHeader />
       <UserHeroSection />
       <TRPCProvider>
-        <SalonDiscoverySection />
+        <SalonDiscoverySectionContainer />
       </TRPCProvider>
       <SalonCategoriesSection />
       <UserProcessSection />
