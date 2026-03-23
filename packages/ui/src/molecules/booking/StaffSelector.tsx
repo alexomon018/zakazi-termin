@@ -33,7 +33,7 @@ export function StaffSelector({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Izaberite zaposlenog</h3>
+      <h3 className="text-sm font-medium text-muted-foreground">Izaberite zaposlenog</h3>
       <div className="flex flex-wrap gap-3">
         {staff.map((member) => {
           const isSelected = selectedStaffId === member.userId;
@@ -45,11 +45,10 @@ export function StaffSelector({
               onClick={() => onSelectStaff(isSelected ? null : member.userId)}
               className={cn(
                 "flex gap-3 items-center px-4 py-3 rounded-lg border-2 transition-all",
-                "hover:border-gray-300 dark:hover:border-gray-600",
-                "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+                "hover:border-border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring",
                 isSelected
-                  ? "bg-gray-50 border-[var(--brand-color)] dark:border-[var(--brand-color-dark)] dark:bg-gray-800"
-                  : "bg-white border-gray-200 dark:border-gray-700 dark:bg-gray-900"
+                  ? "bg-accent border-[var(--brand-color)] dark:border-[var(--brand-color-dark)]"
+                  : "bg-card border-border"
               )}
             >
               <div className="relative">
@@ -60,16 +59,14 @@ export function StaffSelector({
                 />
                 {isSelected && (
                   <div className="absolute -right-1 -bottom-1 p-0.5 rounded-full bg-[var(--brand-color)] dark:bg-[var(--brand-color-dark)]">
-                    <Check className="w-3 h-3 text-white dark:text-gray-900" />
+                    <Check className="w-3 h-3 text-white dark:text-foreground" />
                   </div>
                 )}
               </div>
               <span
                 className={cn(
                   "font-medium",
-                  isSelected
-                    ? "text-gray-900 dark:text-gray-100"
-                    : "text-gray-700 dark:text-gray-300"
+                  isSelected ? "text-foreground" : "text-muted-foreground"
                 )}
               >
                 {member.user.name || "Bez imena"}

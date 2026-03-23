@@ -6,11 +6,25 @@ import { Calendar, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+type HeaderVariant = "owner" | "user";
+
 interface LandingHeaderProps {
   loginHref?: string;
+  variant?: HeaderVariant;
 }
 
-export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
+const ownerNavLinks = [
+  { href: "/za-salone#funkcije", label: "Funkcije" },
+  { href: "/za-salone#kako-radi", label: "Kako radi" },
+  { href: "/za-salone#cene", label: "Cene" },
+];
+
+const userNavLinks = [
+  { href: "/saloni", label: "Svi saloni" },
+  { href: "/za-salone", label: "Za salone" },
+];
+
+export function LandingHeader({ loginHref = "/login", variant = "user" }: LandingHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -22,11 +36,7 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { href: "/#funkcije", label: "Funkcije" },
-    { href: "/#kako-radi", label: "Kako radi" },
-    { href: "/#cene", label: "Cene" },
-  ];
+  const navLinks = variant === "owner" ? ownerNavLinks : userNavLinks;
 
   return (
     <header
@@ -67,9 +77,15 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
           >
             Prijavi se
           </Link>
-          <Button size="sm" asChild>
-            <Link href="/signup">Započni besplatno</Link>
-          </Button>
+          {variant === "owner" ? (
+            <Button size="sm" asChild>
+              <Link href="/signup">Započni besplatno</Link>
+            </Button>
+          ) : (
+            <Button size="sm" asChild>
+              <Link href="/saloni">Pronađi salon</Link>
+            </Button>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -105,11 +121,19 @@ export function LandingHeader({ loginHref = "/login" }: LandingHeaderProps) {
               >
                 Prijavi se
               </Link>
-              <Button className="w-full" asChild>
-                <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                  Započni besplatno
-                </Link>
-              </Button>
+              {variant === "owner" ? (
+                <Button className="w-full" asChild>
+                  <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                    Započni besplatno
+                  </Link>
+                </Button>
+              ) : (
+                <Button className="w-full" asChild>
+                  <Link href="/saloni" onClick={() => setIsMobileMenuOpen(false)}>
+                    Pronađi salon
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -4,11 +4,20 @@ import Link from "next/link";
 export function LandingFooter() {
   const footerSections = [
     {
-      title: "Proizvod",
+      title: "Za klijente",
       links: [
-        { label: "Funkcije", href: "/#funkcije" },
-        { label: "Cene", href: "/#cene" },
-        { label: "Kako radi", href: "/#kako-radi" },
+        { label: "Pronađi salon", href: "/saloni" },
+        { label: "Svi saloni", href: "/saloni" },
+        { label: "FAQ", href: "/faq" },
+      ],
+    },
+    {
+      title: "Za salone",
+      links: [
+        { label: "Funkcije", href: "/za-salone#funkcije" },
+        { label: "Cene", href: "/za-salone#cene" },
+        { label: "Kako radi", href: "/za-salone#kako-radi" },
+        { label: "Započni besplatno", href: "/signup" },
       ],
     },
     {
@@ -16,13 +25,6 @@ export function LandingFooter() {
       links: [
         { label: "Centar za pomoć", href: "/help" },
         { label: "Kontaktiraj podršku", href: "/help/podrska" },
-        { label: "FAQ", href: "/faq" },
-      ],
-    },
-    {
-      title: "Pravno",
-      links: [
-        { label: "Uslovi korišćenja", href: "#" },
         { label: "Politika privatnosti", href: "/privacy-policy" },
         { label: "Kolačići", href: "/cookies" },
       ],
@@ -45,7 +47,7 @@ export function LandingFooter() {
               <span className="text-lg font-semibold text-foreground">Salonko</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Platforma za online zakazivanje termina za salone.
+              Pronađite i zakažite termin u najboljim salonima u Srbiji.
             </p>
           </div>
 

@@ -118,7 +118,7 @@ export const faqCategories: FAQCategory[] = [
   },
 ];
 
-// Subset for homepage - most common questions
+// Subset for /za-salone page - owner-focused questions
 export const homepageFAQs: FAQItem[] = [
   generalFAQs[0], // Da li je besplatno
   generalFAQs[1], // Kako da se registrujem
@@ -126,4 +126,38 @@ export const homepageFAQs: FAQItem[] = [
   generalFAQs[4], // Koliko brzo mogu da primam rezervacije
   salonOwnerFAQs[0], // Kako funkcioniše online zakazivanje
   salonOwnerFAQs[4], // Da li klijenti dobijaju podsetnik
+];
+
+// User-facing FAQs for homepage (/)
+export const userFAQs: FAQItem[] = [
+  {
+    question: "Da li je zakazivanje termina besplatno?",
+    answer:
+      "Da. Zakazivanje termina preko Salonko platforme je potpuno besplatno za klijente. Nema skrivenih troškova niti potrebe za registracijom.",
+  },
+  {
+    question: "Da li moram da kreiram nalog da bih zakazao/la termin?",
+    answer:
+      "Ne. Za zakazivanje termina nije potrebna registracija — samo unesite svoje ime i email adresu prilikom rezervacije.",
+  },
+  {
+    question: "Kako da pronađem salon u svom gradu?",
+    answer:
+      'Na stranici "Svi saloni" možete filtrirati salone po gradu, tipu salona ili pretražiti po imenu. Takođe možete koristiti pretragu na početnoj stranici.',
+  },
+  {
+    question: "Šta ako želim da otkažem ili promenim termin?",
+    answer:
+      "U email potvrdi koju dobijete nakon zakazivanja nalazi se link za upravljanje terminom. Preko njega možete otkazati ili pomeriti rezervaciju.",
+  },
+  {
+    question: "Da li ću dobiti potvrdu i podsetnik?",
+    answer:
+      "Da. Odmah nakon zakazivanja dobijate email sa svim detaljima termina, kao i podsetnik pre samog termina kako ne biste zaboravili.",
+  },
+  {
+    question: "Kako znam da li je salon trenutno otvoren?",
+    answer:
+      'Svaki salon na platformi prikazuje status "Otvoreno" ili "Zatvoreno" u realnom vremenu. Takođe možete koristiti filter "Otvoreno sada" na stranici svih salona.',
+  },
 ];

@@ -3,6 +3,7 @@ export { cn } from "./utils";
 export { formatLocalDateForInput } from "./lib/utils/formatLocalDateForInput";
 
 // Atoms
+export { Badge, badgeVariants } from "./atoms/Badge";
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
 export { Textarea } from "./atoms/Textarea";
@@ -191,6 +192,9 @@ export { PricingCard } from "./molecules/landing/PricingCard";
 export { FooterColumn } from "./molecules/landing/FooterColumn";
 export { TrialBadge } from "./molecules/landing/TrialBadge";
 export { NavLink } from "./molecules/landing/NavLink";
+export { SalonCard, type SalonCardProps } from "./molecules/landing/SalonCard";
+export { SalonSearchInput } from "./molecules/landing/SalonSearchInput";
+export { SalonTypeFilter } from "./molecules/landing/SalonTypeFilter";
 
 // Organisms - Navigation
 /** @deprecated Use DashboardShell instead */
@@ -260,7 +264,14 @@ export { PricingSection } from "./organisms/landing/PricingSection";
 export { CtaBanner } from "./organisms/landing/CtaBanner";
 export { TestimonialsSection } from "./organisms/landing/TestimonialsSection";
 export { LandingFooter } from "./organisms/landing/LandingFooter";
+export { SalonDiscoverySection } from "./organisms/landing/SalonDiscoverySection";
+export { UserHeroSection } from "./organisms/landing/UserHeroSection";
+export { UserProcessSection } from "./organisms/landing/UserProcessSection";
+export { SalonCategoriesSection } from "./organisms/landing/SalonCategoriesSection";
 export { VERTICALS, VERTICAL_SLUGS } from "./organisms/landing/vertical-data";
+
+// Organisms - Salon Listing
+export { SalonListingClient } from "./organisms/salon-listing/SalonListingClient";
 export type { VerticalLandingData, VerticalFeature } from "./organisms/landing/vertical-data";
 
 // Organisms - Cookie Consent
@@ -278,6 +289,7 @@ export {
   clientFAQs,
   faqCategories,
   homepageFAQs,
+  userFAQs,
 } from "./organisms/faq/faq-data";
 
 // Organisms - Help Center

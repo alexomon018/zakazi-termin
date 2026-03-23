@@ -421,6 +421,430 @@ const EXPIRED_ACCOUNT: AccountDef = {
   ],
 };
 
+// ── Additional salon accounts for discovery/search testing ──
+
+const GLAMOUR_HAIR_ACCOUNT: AccountDef = {
+  email: "demo-glamour@salonko.app",
+  name: "Jovana Glamour",
+  salonName: "Glamour Frizerski Salon",
+  salonTypes: ["frizerski_salon"],
+  salonPhone: "0111112233",
+  salonEmail: "info@glamoursalon.rs",
+  salonCity: "Beograd",
+  salonAddress: "Balkanska 18",
+  ownerFirstName: "Jovana",
+  ownerLastName: "Glamurović",
+  ownerPhone: "0641112233",
+  bio: "Moderni frizerski salon specijalizovan za ženske frizure, pramenove i keratinske tretmane.",
+  brandColor: "#e91e63",
+  darkBrandColor: "#f48fb1",
+  stripeIdSuffix: "004",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 8, endHour: 20, isDefault: true },
+    { name: "Subota", days: [6], startHour: 9, endHour: 16, isDefault: false },
+  ],
+  eventTypes: [
+    {
+      title: "Žensko šišanje",
+      slug: "zensko-sisanje",
+      description: "Šišanje i stilizovanje za dame",
+      length: 45,
+    },
+    {
+      title: "Pramenovi",
+      slug: "pramenovi",
+      description: "Pramenovi po izboru tehnike",
+      length: 120,
+    },
+    {
+      title: "Feniranje",
+      slug: "feniranje",
+      description: "Profesionalno feniranje i oblikovanje",
+      length: 30,
+    },
+    {
+      title: "Keratinski tretman",
+      slug: "keratinski-tretman",
+      description: "Keratinsko ispravljanje kose",
+      length: 150,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 9, status: "ACCEPTED", attendeeIndex: 0 },
+    { etIndex: 1, dayOffset: 1, hour: 13, status: "ACCEPTED", attendeeIndex: 2 },
+    { etIndex: 2, dayOffset: 2, hour: 10, status: "PENDING", attendeeIndex: 4 },
+    { etIndex: 0, dayOffset: -2, hour: 14, status: "ACCEPTED", attendeeIndex: 6 },
+    { etIndex: 3, dayOffset: -5, hour: 11, status: "CANCELLED", attendeeIndex: 8 },
+  ],
+};
+
+const RELAX_SPA_ACCOUNT: AccountDef = {
+  email: "demo-relax@salonko.app",
+  name: "Milan Relaksović",
+  salonName: "Relax Spa & Masaža",
+  salonTypes: ["masaza", "spa_centar"],
+  salonPhone: "0212223344",
+  salonEmail: "info@relaxspa.rs",
+  salonCity: "Novi Sad",
+  salonAddress: "Zmaj Jovina 15",
+  ownerFirstName: "Milan",
+  ownerLastName: "Relaksović",
+  ownerPhone: "0652223344",
+  bio: "Spa centar u srcu Novog Sada. Opustite se uz naše profesionalne masaže i wellness tretmane.",
+  brandColor: "#00897b",
+  darkBrandColor: "#4db6ac",
+  stripeIdSuffix: "005",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 10, endHour: 21, isDefault: true },
+    { name: "Vikend", days: [6, 0], startHour: 10, endHour: 18, isDefault: false },
+  ],
+  eventTypes: [
+    {
+      title: "Relaks masaža",
+      slug: "relaks-masaza",
+      description: "Opuštajuća masaža celog tela",
+      length: 60,
+    },
+    {
+      title: "Sportska masaža",
+      slug: "sportska-masaza",
+      description: "Dubinska masaža za sportiste",
+      length: 45,
+    },
+    {
+      title: "Hot stone masaža",
+      slug: "hot-stone",
+      description: "Masaža vrućim kamenjem",
+      length: 75,
+    },
+    {
+      title: "Aromaterapija",
+      slug: "aromaterapija",
+      description: "Masaža sa eteričnim uljima",
+      length: 60,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 11, status: "ACCEPTED", attendeeIndex: 1 },
+    { etIndex: 2, dayOffset: 1, hour: 14, status: "ACCEPTED", attendeeIndex: 3 },
+    { etIndex: 1, dayOffset: 2, hour: 10, status: "PENDING", attendeeIndex: 5 },
+    { etIndex: 3, dayOffset: -1, hour: 16, status: "ACCEPTED", attendeeIndex: 7 },
+    { etIndex: 0, dayOffset: -4, hour: 12, status: "CANCELLED", attendeeIndex: 9 },
+  ],
+};
+
+const LASH_BROW_ACCOUNT: AccountDef = {
+  email: "demo-lashbrow@salonko.app",
+  name: "Ana Trepavičić",
+  salonName: "Lash & Brow Studio Ana",
+  salonTypes: ["obrve_i_trepavice"],
+  salonPhone: "0113334455",
+  salonEmail: "info@lashbrowana.rs",
+  salonCity: "Beograd",
+  salonAddress: "Bulevar Kralja Aleksandra 78",
+  ownerFirstName: "Ana",
+  ownerLastName: "Trepavičić",
+  ownerPhone: "0643334455",
+  bio: "Specijalizovani studio za obrve i trepavice. Laminacija, nadogradnja i dizajn.",
+  brandColor: "#8e24aa",
+  darkBrandColor: "#ba68c8",
+  stripeIdSuffix: "006",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 19, isDefault: true },
+  ],
+  eventTypes: [
+    {
+      title: "Laminacija obrva",
+      slug: "laminacija-obrva",
+      description: "Laminacija i oblikovanje obrva",
+      length: 45,
+    },
+    {
+      title: "Nadogradnja trepavica",
+      slug: "nadogradnja-trepavica",
+      description: "Klasična nadogradnja trepavica",
+      length: 90,
+    },
+    {
+      title: "Regulacija obrva",
+      slug: "regulacija-obrva",
+      description: "Regulacija i oblikovanje obrva koncem",
+      length: 20,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 10, status: "ACCEPTED", attendeeIndex: 0 },
+    { etIndex: 1, dayOffset: 2, hour: 13, status: "ACCEPTED", attendeeIndex: 2 },
+    { etIndex: 2, dayOffset: 3, hour: 9, status: "PENDING", attendeeIndex: 4 },
+    { etIndex: 1, dayOffset: -3, hour: 15, status: "ACCEPTED", attendeeIndex: 6 },
+  ],
+};
+
+const TATTOO_ACCOUNT: AccountDef = {
+  email: "demo-tattoo@salonko.app",
+  name: "Đorđe Tetovator",
+  salonName: "Tattoo House",
+  salonTypes: ["tetoviraliste"],
+  salonPhone: "0184445566",
+  salonEmail: "info@tattoohouse.rs",
+  salonCity: "Niš",
+  salonAddress: "Obrenovićeva 42",
+  ownerFirstName: "Đorđe",
+  ownerLastName: "Tetovator",
+  ownerPhone: "0644445566",
+  bio: "Profesionalni tattoo studio sa dugogodišnjim iskustvom. Svi stilovi tetoviranja.",
+  brandColor: "#212121",
+  darkBrandColor: "#e0e0e0",
+  stripeIdSuffix: "007",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5, 6], startHour: 11, endHour: 20, isDefault: true },
+  ],
+  eventTypes: [
+    {
+      title: "Tetoviranje - malo",
+      slug: "tetoviranje-malo",
+      description: "Manja tetovaža do 10cm",
+      length: 60,
+    },
+    {
+      title: "Tetoviranje - veliko",
+      slug: "tetoviranje-veliko",
+      description: "Veća tetovaža preko 10cm",
+      length: 180,
+    },
+    { title: "Cover-up", slug: "cover-up", description: "Prekrivanje stare tetovaže", length: 120 },
+    {
+      title: "Konsultacija",
+      slug: "konsultacija",
+      description: "Besplatna konsultacija za dizajn",
+      length: 30,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 12, status: "ACCEPTED", attendeeIndex: 1 },
+    { etIndex: 3, dayOffset: 2, hour: 11, status: "ACCEPTED", attendeeIndex: 3 },
+    { etIndex: 1, dayOffset: 3, hour: 13, status: "PENDING", attendeeIndex: 5 },
+    { etIndex: 2, dayOffset: -2, hour: 14, status: "ACCEPTED", attendeeIndex: 7 },
+    { etIndex: 0, dayOffset: -6, hour: 16, status: "CANCELLED", attendeeIndex: 9 },
+  ],
+};
+
+const PET_SALON_ACCOUNT: AccountDef = {
+  email: "demo-pet@salonko.app",
+  name: "Maja Šapić",
+  salonName: "Pet Salon Šapica",
+  salonTypes: ["salon_za_kucne_ljubimce"],
+  salonPhone: "0115556677",
+  salonEmail: "info@sapica.rs",
+  salonCity: "Beograd",
+  salonAddress: "Vojvode Stepe 120",
+  ownerFirstName: "Maja",
+  ownerLastName: "Šapić",
+  ownerPhone: "0645556677",
+  bio: "Salon za negu kućnih ljubimaca. Kupanje, šišanje i trimovanje za vaše mezimce.",
+  brandColor: "#ff9800",
+  darkBrandColor: "#ffb74d",
+  stripeIdSuffix: "008",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 18, isDefault: true },
+    { name: "Subota", days: [6], startHour: 10, endHour: 15, isDefault: false },
+  ],
+  eventTypes: [
+    {
+      title: "Kupanje psa",
+      slug: "kupanje-psa",
+      description: "Kompletno kupanje i sušenje",
+      length: 45,
+    },
+    {
+      title: "Šišanje psa",
+      slug: "sisanje-psa",
+      description: "Šišanje po rasi i želji vlasnika",
+      length: 60,
+    },
+    {
+      title: "Trimovanje",
+      slug: "trimovanje",
+      description: "Profesionalno trimovanje dlake",
+      length: 90,
+    },
+    {
+      title: "Čišćenje ušiju",
+      slug: "ciscenje-usiju",
+      description: "Higijensko čišćenje ušiju",
+      length: 15,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 10, status: "ACCEPTED", attendeeIndex: 0 },
+    { etIndex: 1, dayOffset: 1, hour: 14, status: "ACCEPTED", attendeeIndex: 2 },
+    { etIndex: 2, dayOffset: 2, hour: 11, status: "PENDING", attendeeIndex: 4 },
+    { etIndex: 0, dayOffset: -1, hour: 9, status: "ACCEPTED", attendeeIndex: 6 },
+  ],
+};
+
+const STUDIO_LEPOTE_ACCOUNT: AccountDef = {
+  email: "demo-lepota@salonko.app",
+  name: "Maja Lepotić",
+  salonName: "Studio Lepote Maja",
+  salonTypes: ["sminkanje", "kozmeticki_salon"],
+  salonPhone: "0345556677",
+  salonEmail: "info@studiolepote.rs",
+  salonCity: "Kragujevac",
+  salonAddress: "Kralja Petra I 35",
+  ownerFirstName: "Maja",
+  ownerLastName: "Lepotić",
+  ownerPhone: "0646667788",
+  bio: "Profesionalno šminkanje i kozmetički tretmani za svaku priliku.",
+  brandColor: "#c2185b",
+  darkBrandColor: "#f06292",
+  stripeIdSuffix: "009",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 19, isDefault: true },
+    { name: "Subota", days: [6], startHour: 10, endHour: 16, isDefault: false },
+  ],
+  eventTypes: [
+    {
+      title: "Dnevna šminka",
+      slug: "dnevna-sminka",
+      description: "Lagana dnevna šminka",
+      length: 30,
+    },
+    {
+      title: "Večernja šminka",
+      slug: "vecernja-sminka",
+      description: "Glamurozna večernja šminka",
+      length: 45,
+    },
+    {
+      title: "Mladenačka šminka",
+      slug: "mladenacka-sminka",
+      description: "Kompletna mladenačka šminka sa probom",
+      length: 90,
+    },
+    {
+      title: "Tretman lica",
+      slug: "tretman-lica",
+      description: "Dubinsko čišćenje i hidratacija",
+      length: 60,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 10, status: "ACCEPTED", attendeeIndex: 1 },
+    { etIndex: 2, dayOffset: 2, hour: 9, status: "ACCEPTED", attendeeIndex: 3 },
+    { etIndex: 3, dayOffset: 3, hour: 14, status: "PENDING", attendeeIndex: 5 },
+    { etIndex: 1, dayOffset: -2, hour: 16, status: "ACCEPTED", attendeeIndex: 7 },
+    { etIndex: 0, dayOffset: -4, hour: 11, status: "CANCELLED", attendeeIndex: 9 },
+  ],
+};
+
+const WAX_STUDIO_ACCOUNT: AccountDef = {
+  email: "demo-wax@salonko.app",
+  name: "Tamara Voštarević",
+  salonName: "Wax Studio",
+  salonTypes: ["depilacija"],
+  salonPhone: "0217778899",
+  salonEmail: "info@waxstudio.rs",
+  salonCity: "Novi Sad",
+  salonAddress: "Laze Telečkog 8",
+  ownerFirstName: "Tamara",
+  ownerLastName: "Voštarević",
+  ownerPhone: "0657778899",
+  bio: "Specijalizovani studio za depilaciju. Vosak, šećerna pasta i laser.",
+  brandColor: "#f4511e",
+  darkBrandColor: "#ff8a65",
+  stripeIdSuffix: "011",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5], startHour: 9, endHour: 20, isDefault: true },
+  ],
+  eventTypes: [
+    {
+      title: "Depilacija nogu",
+      slug: "depilacija-nogu",
+      description: "Kompletna depilacija nogu voskom",
+      length: 30,
+    },
+    {
+      title: "Depilacija ruku",
+      slug: "depilacija-ruku",
+      description: "Depilacija ruku voskom",
+      length: 20,
+    },
+    {
+      title: "Bikini zona",
+      slug: "bikini-zona",
+      description: "Depilacija bikini zone",
+      length: 20,
+    },
+    {
+      title: "Brazilska depilacija",
+      slug: "brazilska-depilacija",
+      description: "Kompletna brazilska depilacija",
+      length: 30,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 10, status: "ACCEPTED", attendeeIndex: 0 },
+    { etIndex: 2, dayOffset: 1, hour: 14, status: "ACCEPTED", attendeeIndex: 2 },
+    { etIndex: 3, dayOffset: 2, hour: 11, status: "PENDING", attendeeIndex: 4 },
+    { etIndex: 1, dayOffset: -3, hour: 13, status: "ACCEPTED", attendeeIndex: 6 },
+  ],
+};
+
+const PIERCING_LAB_ACCOUNT: AccountDef = {
+  email: "demo-piercing@salonko.app",
+  name: "Stefan Pirsinger",
+  salonName: "Piercing Lab",
+  salonTypes: ["studio_za_pirsing"],
+  salonPhone: "0118889900",
+  salonEmail: "info@piercinglab.rs",
+  salonCity: "Beograd",
+  salonAddress: "Cetinjska 11",
+  ownerFirstName: "Stefan",
+  ownerLastName: "Pirsinger",
+  ownerPhone: "0648889900",
+  bio: "Profesionalni piercing studio sa sterilnim uslovima i širokim izborom nakita.",
+  brandColor: "#1565c0",
+  darkBrandColor: "#64b5f6",
+  stripeIdSuffix: "012",
+  schedules: [
+    { name: "Radno vreme", days: [1, 2, 3, 4, 5, 6], startHour: 12, endHour: 21, isDefault: true },
+  ],
+  eventTypes: [
+    {
+      title: "Pirsing uha",
+      slug: "pirsing-uha",
+      description: "Pirsing uha sa nakitom po izboru",
+      length: 15,
+    },
+    {
+      title: "Pirsing nosa",
+      slug: "pirsing-nosa",
+      description: "Pirsing nosa (nostril ili septum)",
+      length: 15,
+    },
+    {
+      title: "Pirsing pupka",
+      slug: "pirsing-pupka",
+      description: "Pirsing pupka sa nakitom",
+      length: 15,
+    },
+    {
+      title: "Konsultacija",
+      slug: "konsultacija-pirsing",
+      description: "Besplatna konsultacija za pirsing",
+      length: 15,
+    },
+  ],
+  bookings: [
+    { etIndex: 0, dayOffset: 1, hour: 13, status: "ACCEPTED", attendeeIndex: 1 },
+    { etIndex: 1, dayOffset: 2, hour: 15, status: "ACCEPTED", attendeeIndex: 3 },
+    { etIndex: 2, dayOffset: 3, hour: 14, status: "PENDING", attendeeIndex: 5 },
+    { etIndex: 0, dayOffset: -1, hour: 17, status: "ACCEPTED", attendeeIndex: 7 },
+    { etIndex: 3, dayOffset: -5, hour: 12, status: "CANCELLED", attendeeIndex: 9 },
+  ],
+};
+
 // ── Helpers ──
 
 function bookingTime(dayOffset: number, hour: number, durationMinutes: number) {
@@ -883,7 +1307,19 @@ async function main() {
   console.log("🌱 Seeding demo accounts...");
 
   const soloResults = [];
-  for (const account of [BARBER_ACCOUNT, NAILS_ACCOUNT, EXPIRED_ACCOUNT]) {
+  for (const account of [
+    BARBER_ACCOUNT,
+    NAILS_ACCOUNT,
+    EXPIRED_ACCOUNT,
+    GLAMOUR_HAIR_ACCOUNT,
+    RELAX_SPA_ACCOUNT,
+    LASH_BROW_ACCOUNT,
+    TATTOO_ACCOUNT,
+    PET_SALON_ACCOUNT,
+    STUDIO_LEPOTE_ACCOUNT,
+    WAX_STUDIO_ACCOUNT,
+    PIERCING_LAB_ACCOUNT,
+  ]) {
     soloResults.push(await seedAccount(account));
   }
 
