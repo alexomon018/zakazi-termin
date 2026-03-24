@@ -63,4 +63,4 @@ Prihvaćene metode plaćanja uključuju:
 
 > **Napomena:** Cene su u RSD (srpski dinar). Za mesečne planove koji se aktiviraju tokom probnog perioda, prvi račun se generiše tek po isteku probnog perioda.
 
-<!-- Screenshot: pricing-plans.png -->
+![Pregled planova i cena](/images/help/pricing-plans.png)

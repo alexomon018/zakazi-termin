@@ -46,5 +46,6 @@ Na listi tipova termina, klikni na ikonu korpe pored usluge koju želiš da obri
 
 > **Napomena:** Brisanje usluge ne utiče na već zakazane termine za tu uslugu.
 
-<!-- Screenshot: new-event-type.png -->
-<!-- Screenshot: event-type-advanced.png -->
+![Formular za kreiranje novog tipa događaja](/images/help/new-event-type.png)
+
+![Napredna podešavanja tipa događaja](/images/help/event-type-advanced.png)

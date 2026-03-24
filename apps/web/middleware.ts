@@ -130,8 +130,25 @@ export async function middleware(req: NextRequest, _event: NextFetchEvent) {
           return NextResponse.redirect(new URL("/onboarding/complete-profile", req.url));
         }
       } else if (profileRes.status === 404) {
-        // User not found in database - redirect to onboarding
-        return NextResponse.redirect(new URL("/onboarding/complete-profile", req.url));
+        // User ID in JWT doesn't match any DB record (e.g., database was re-seeded).
+        // Session is stale — force re-login instead of onboarding.
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("callbackUrl", pathname);
+        const response = NextResponse.redirect(loginUrl);
+        // Clear the stale session cookie so the user can log in fresh
+        const cookieName =
+          process.env.NODE_ENV === "production"
+            ? "__Secure-next-auth.session-token"
+            : "next-auth.session-token";
+        const staleSessionCookies = req.cookies
+          .getAll()
+          .map((c) => c.name)
+          .filter((name) => name === cookieName || name.startsWith(`${cookieName}.`));
+
+        for (const name of staleSessionCookies) {
+          response.cookies.delete(name);
+        }
+        return response;
       }
       // For 401 or other errors, let the request continue - the dashboard layout will handle auth
     } catch {

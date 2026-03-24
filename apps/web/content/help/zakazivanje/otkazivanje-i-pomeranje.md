@@ -51,4 +51,4 @@ Pomeranje termina funkcioniše tako što klijent ponovo prolazi proces zakazivan
 
 > **Napomena:** Trenutno pomeranje termina nije dostupno direktno iz kontrolne table vlasnika. Klijent mora pristupiti stranici za pomeranje putem linka.
 
-<!-- Screenshot: cancel-booking-dialog.png -->
+![Dijalog za otkazivanje rezervacije](/images/help/cancel-booking-dialog.png)

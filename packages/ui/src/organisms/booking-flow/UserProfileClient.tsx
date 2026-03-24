@@ -48,7 +48,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
   return (
     <div
-      className="px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900"
+      className="px-4 py-12 min-h-screen bg-background"
       style={
         {
           "--brand-color": brandColor,
@@ -72,10 +72,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
               <User className="w-10 h-10 text-brand" />
             </div>
           )}
-          <h1
-            data-testid="public-profile-name"
-            className="text-2xl font-bold text-gray-900 dark:text-white"
-          >
+          <h1 data-testid="public-profile-name" className="text-2xl font-bold text-foreground">
             {user.salonName}
           </h1>
         </div>
@@ -84,7 +81,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
         {visibleEventTypes.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <p className="text-gray-500">Ovaj korisnik nema aktivne tipove termina.</p>
+              <p className="text-muted-foreground">Ovaj korisnik nema aktivne tipove termina.</p>
             </CardContent>
           </Card>
         ) : (
@@ -103,15 +100,13 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
                       {/* Event info */}
                       <div className="flex flex-col flex-1 justify-center ml-4">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {eventType.title}
-                        </h3>
+                        <h3 className="font-semibold text-foreground">{eventType.title}</h3>
                         {eventType.description && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+                          <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
                             {eventType.description}
                           </p>
                         )}
-                        <div className="flex gap-4 items-center mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex gap-4 items-center mt-2 text-sm text-muted-foreground">
                           <span className="flex gap-1 items-center">
                             <Clock className="w-3.5 h-3.5" />
                             {eventType.length < 60
@@ -136,7 +131,7 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
                       {/* Arrow */}
                       <div className="flex items-center">
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
+                        <ArrowRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                     </div>
                   </CardContent>
@@ -147,9 +142,9 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-sm text-center text-gray-500">
+        <div className="mt-8 text-sm text-center text-muted-foreground">
           Pokreće{" "}
-          <Link href="/" className="text-blue-600 hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             Salonko
           </Link>
         </div>
@@ -160,11 +155,13 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
 
 export function UserNotFound() {
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+    <div className="flex justify-center items-center min-h-screen bg-background">
       <Card className="mx-auto max-w-md">
         <CardContent className="py-12 text-center">
-          <h2 className="mb-2 text-xl font-semibold text-gray-900">Korisnik nije pronađen</h2>
-          <p className="text-gray-500">Ovaj korisnik ne postoji ili nema javne tipove termina.</p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">Korisnik nije pronađen</h2>
+          <p className="text-muted-foreground">
+            Ovaj korisnik ne postoji ili nema javne tipove termina.
+          </p>
         </CardContent>
       </Card>
     </div>

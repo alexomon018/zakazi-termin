@@ -69,7 +69,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
         );
       case "REJECTED":
         return (
-          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-gray-700 bg-gray-100 rounded-full dark:bg-gray-800 dark:text-gray-300">
+          <span className="inline-flex gap-1 items-center px-3 py-1 text-sm font-medium text-muted-foreground bg-muted rounded-full">
             <XCircle className="w-4 h-4" />
             Odbijeno
           </span>
@@ -91,17 +91,17 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
   const attendee = booking.attendees[0];
 
   return (
-    <div className="flex justify-center items-center px-4 py-8 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex justify-center items-center px-4 py-8 min-h-screen bg-background">
       <div className="w-full max-w-2xl">
         <Card>
           <CardContent className="p-6">
             {/* Header */}
             <div className="flex flex-col gap-4 justify-between items-start mb-6 sm:flex-row sm:items-center">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h1 className="text-2xl font-bold text-foreground">
                   {booking.eventType?.title || booking.title}
                 </h1>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Ref: {booking.uid.slice(0, 8).toUpperCase()}
                 </p>
               </div>
@@ -111,21 +111,19 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
             {/* Booking details */}
             <div className="space-y-4">
               <div className="flex gap-3 items-start">
-                <Calendar className="flex-shrink-0 mt-0.5 w-5 h-5 text-gray-400" />
+                <Calendar className="flex-shrink-0 mt-0.5 w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {formatDate(booking.startTime)}
-                  </p>
+                  <p className="font-medium text-foreground">{formatDate(booking.startTime)}</p>
                 </div>
               </div>
 
               <div className="flex gap-3 items-start">
-                <Clock className="flex-shrink-0 mt-0.5 w-5 h-5 text-gray-400" />
+                <Clock className="flex-shrink-0 mt-0.5 w-5 h-5 text-muted-foreground" />
                 <div>
-                  <p className="text-gray-900 dark:text-white">
+                  <p className="text-foreground">
                     {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     {booking.eventType?.length || 30} minuta
                   </p>
                 </div>
@@ -133,28 +131,24 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
               {booking.location && (
                 <div className="flex gap-3 items-start">
-                  <MapPin className="flex-shrink-0 mt-0.5 w-5 h-5 text-gray-400" />
-                  <p className="text-gray-900 dark:text-white">{booking.location}</p>
+                  <MapPin className="flex-shrink-0 mt-0.5 w-5 h-5 text-muted-foreground" />
+                  <p className="text-foreground">{booking.location}</p>
                 </div>
               )}
 
               {/* Salon */}
               {booking.user?.salonName && (
-                <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                  <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Salon
-                  </h3>
+                <div className="pt-4 mt-4 border-t border-border">
+                  <h3 className="mb-3 text-sm font-medium text-muted-foreground">Salon</h3>
                   <div className="flex gap-3 items-center">
-                    <div className="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900">
-                      <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <div className="flex justify-center items-center w-10 h-10 bg-primary/10 rounded-full">
+                      <User className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
+                      <p className="font-medium text-foreground">
                         {formatSalonName(booking.user.salonName)}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {booking.user?.email}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{booking.user?.email}</p>
                     </div>
                   </div>
                 </div>
@@ -162,22 +156,20 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
               {/* Attendee */}
               {attendee && (
-                <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                  <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Vaši podaci
-                  </h3>
+                <div className="pt-4 mt-4 border-t border-border">
+                  <h3 className="mb-3 text-sm font-medium text-muted-foreground">Vaši podaci</h3>
                   <div className="space-y-2">
-                    <div className="flex gap-2 items-center text-gray-900 dark:text-white">
-                      <User className="w-4 h-4 text-gray-400" />
+                    <div className="flex gap-2 items-center text-foreground">
+                      <User className="w-4 h-4 text-muted-foreground" />
                       {attendee.name}
                     </div>
-                    <div className="flex gap-2 items-center text-gray-900 dark:text-white">
-                      <Mail className="w-4 h-4 text-gray-400" />
+                    <div className="flex gap-2 items-center text-foreground">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
                       {attendee.email}
                     </div>
                     {attendee.phoneNumber && (
-                      <div className="flex gap-2 items-center text-gray-900 dark:text-white">
-                        <Phone className="w-4 h-4 text-gray-400" />
+                      <div className="flex gap-2 items-center text-foreground">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
                         {attendee.phoneNumber}
                       </div>
                     )}
@@ -187,11 +179,9 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
               {/* Description/Notes */}
               {booking.description && (
-                <div className="pt-4 mt-4 border-t dark:border-gray-700">
-                  <h3 className="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Napomena
-                  </h3>
-                  <p className="text-gray-900 dark:text-white">{booking.description}</p>
+                <div className="pt-4 mt-4 border-t border-border">
+                  <h3 className="mb-2 text-sm font-medium text-muted-foreground">Napomena</h3>
+                  <p className="text-foreground">{booking.description}</p>
                 </div>
               )}
 
@@ -207,18 +197,16 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
               {/* Rejection reason */}
               {booking.rejectionReason && (
-                <div className="p-4 mt-4 bg-gray-50 rounded-lg dark:bg-gray-800">
-                  <h3 className="mb-1 text-sm font-medium text-gray-800 dark:text-gray-300">
-                    Razlog odbijanja
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-400">{booking.rejectionReason}</p>
+                <div className="p-4 mt-4 bg-muted rounded-lg">
+                  <h3 className="mb-1 text-sm font-medium text-foreground">Razlog odbijanja</h3>
+                  <p className="text-muted-foreground">{booking.rejectionReason}</p>
                 </div>
               )}
             </div>
 
             {/* Actions */}
             {(canReschedule || canCancel) && (
-              <div className="flex flex-col gap-3 pt-6 mt-6 border-t dark:border-gray-700 sm:flex-row">
+              <div className="flex flex-col gap-3 pt-6 mt-6 border-t border-border sm:flex-row">
                 {canReschedule && booking.bookingSlug && booking.eventType?.slug && (
                   <Button
                     variant="outline"
@@ -253,16 +241,14 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
           <div className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50">
             <Card className="w-full max-w-md">
               <CardContent className="p-6">
-                <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
-                  Otkazivanje termina
-                </h2>
-                <p className="mb-4 text-gray-600 dark:text-gray-400">
+                <h2 className="mb-4 text-xl font-semibold text-foreground">Otkazivanje termina</h2>
+                <p className="mb-4 text-muted-foreground">
                   Da li ste sigurni da želite da otkažete ovaj termin?
                 </p>
                 <div className="mb-4">
                   <label
                     htmlFor="cancel-reason"
-                    className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block mb-2 text-sm font-medium text-muted-foreground"
                   >
                     Razlog otkazivanja (opciono)
                   </label>
@@ -272,7 +258,7 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
                     placeholder="Unesite razlog..."
                     value={cancelReason}
                     onChange={(e) => setCancelReason(e.target.value)}
-                    className="px-3 py-2 w-full text-gray-900 bg-white rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-3 py-2 w-full text-foreground bg-background rounded-md border border-input focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                   />
                 </div>
                 <div className="flex gap-3">
@@ -303,9 +289,9 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
+        <div className="mt-8 text-sm text-center text-muted-foreground">
           Pokreće{" "}
-          <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href="/" className="text-primary hover:underline">
             Salonko
           </Link>
         </div>
@@ -316,15 +302,11 @@ export function BookingDetailsClient({ initialBooking }: BookingDetailsClientPro
 
 export function BookingNotFound() {
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex justify-center items-center min-h-screen bg-background">
       <Card className="mx-auto max-w-md">
         <CardContent className="py-12 text-center">
-          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-            Termin nije pronađen
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Ovaj termin ne postoji ili je uklonjen.
-          </p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">Termin nije pronađen</h2>
+          <p className="text-muted-foreground">Ovaj termin ne postoji ili je uklonjen.</p>
         </CardContent>
       </Card>
     </div>

@@ -59,5 +59,6 @@ Nakon svih izmena, klikni na **Sačuvaj**. Dugme je aktivno samo ako si napravio
 - Slobodni termini se automatski računaju na osnovu tvog rasporeda, trajanja usluge i pauza pre/posle
 - Ako povežeš Google Calendar, zauzetost iz kalendara se takođe uzima u obzir
 
-<!-- Screenshot: availability-editor.png -->
-<!-- Screenshot: day-time-ranges.png -->
+![Editor rasporeda dostupnosti](/images/help/availability-editor.png)
+
+![Podešavanje vremenskih opsega po danima](/images/help/day-time-ranges.png)

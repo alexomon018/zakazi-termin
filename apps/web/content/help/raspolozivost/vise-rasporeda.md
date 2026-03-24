@@ -64,4 +64,4 @@ Kada kreiraš ili uređuješ tip usluge:
 - Funkcija **Dupliraj** je najbrži način da napraviš varijaciju postojećeg rasporeda
 - Samo jedan raspored može biti podrazumevani u isto vreme
 
-<!-- Screenshot: multiple-schedules.png -->
+![Lista rasporeda dostupnosti](/images/help/multiple-schedules.png)

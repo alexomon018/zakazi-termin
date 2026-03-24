@@ -51,19 +51,19 @@ export function BookingDetailsForm({
       <button
         type="button"
         onClick={onBack}
-        className="flex items-center mb-4 sm:mb-6 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+        className="flex items-center mb-4 sm:mb-6 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="mr-1 w-4 h-4" />
         Nazad na izbor termina
       </button>
 
       {/* Selected time summary */}
-      <div className="p-3 sm:p-4 mb-4 sm:mb-6 bg-gray-50 rounded-lg dark:bg-gray-800">
-        <div className="flex gap-2 items-center mb-1 text-sm text-gray-600 dark:text-gray-400">
+      <div className="p-3 sm:p-4 mb-4 sm:mb-6 bg-muted rounded-lg">
+        <div className="flex gap-2 items-center mb-1 text-sm text-muted-foreground">
           <Calendar className="w-4 h-4" />
           <span>{selectedSlot && formatDate(selectedSlot, "shortDate")}</span>
         </div>
-        <div className="flex gap-2 items-center text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex gap-2 items-center text-sm text-muted-foreground">
           <Clock className="w-4 h-4" />
           <span>
             {selectedSlot && formatTime(selectedSlot)} ({eventLength} min)
@@ -153,7 +153,7 @@ export function BookingDetailsForm({
                 placeholder="Dodatne informacije ili pitanja..."
                 disabled={isPending}
                 {...register("notes")}
-                className="px-3 py-2 w-full rounded-md border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 w-full rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </>

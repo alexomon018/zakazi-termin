@@ -5,6 +5,7 @@ import { calendarRouter } from "./calendar";
 import { eventTypeRouter } from "./eventType";
 import { organizationRouter } from "./organization";
 import { outOfOfficeRouter } from "./outOfOffice";
+import { salonRouter } from "./salon";
 import { subscriptionRouter } from "./subscription";
 import { teamRouter } from "./team";
 import { userRouter } from "./user";
@@ -19,6 +20,7 @@ export const appRouter = router({
   subscription: subscriptionRouter,
   organization: organizationRouter,
   team: teamRouter,
+  salon: salonRouter,
 });
 
 export type AppRouter = typeof appRouter;

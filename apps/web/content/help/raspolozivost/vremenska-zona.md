@@ -42,4 +42,4 @@ Koristi **Europe/Belgrade** — klijenti iz inostranstva treba da znaju tačno v
 
 Salonko automatski prilagođava prikaz vremena prema pravilima za letnje i zimsko računanje vremena za izabranu zonu. Ne moraš ručno ništa menjati.
 
-<!-- Screenshot: timezone-setting.png -->
+![Podešavanje vremenske zone](/images/help/timezone-setting.png)

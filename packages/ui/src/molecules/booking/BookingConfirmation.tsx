@@ -31,20 +31,20 @@ export function BookingConfirmation({
   calendarLinks,
 }: BookingConfirmationProps) {
   return (
-    <div className="flex justify-center items-center px-4 py-12 min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex justify-center items-center px-4 py-12 min-h-screen bg-background">
       <Card className="w-full max-w-lg">
         <CardContent className="py-12 text-center">
           <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-green-100 rounded-full dark:bg-green-900">
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="mb-2 text-2xl font-bold text-foreground">
             {isRescheduling
               ? "Termin je promenjen!"
               : requiresConfirmation
                 ? "Zahtev je poslat!"
                 : "Termin je zakazan!"}
           </h2>
-          <p className="mb-6 text-gray-600 dark:text-gray-400">
+          <p className="mb-6 text-muted-foreground">
             {isRescheduling
               ? "Uspešno ste promenili termin. Detalje ćete dobiti na email."
               : requiresConfirmation
@@ -52,9 +52,9 @@ export function BookingConfirmation({
                 : "Uspešno ste zakazali termin. Detalje ćete dobiti na email."}
           </p>
 
-          <div className="p-4 mb-6 text-left bg-gray-50 rounded-lg dark:bg-gray-800">
-            <h3 className="mb-3 font-medium text-gray-900 dark:text-gray-100">{eventTitle}</h3>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="p-4 mb-6 text-left bg-muted rounded-lg">
+            <h3 className="mb-3 font-medium text-foreground">{eventTitle}</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex gap-2 items-center">
                 <Calendar className="w-4 h-4" />
                 <span>{selectedSlot && formatDate(selectedSlot, "shortDate")}</span>
@@ -74,18 +74,18 @@ export function BookingConfirmation({
             </div>
           </div>
 
-          <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-            Referentni kod:{" "}
-            <code className="px-2 py-1 bg-gray-100 rounded dark:bg-gray-800">
-              {bookingUid?.slice(0, 8).toUpperCase()}
-            </code>
-          </p>
+          {bookingUid && (
+            <p className="mb-6 text-sm text-muted-foreground">
+              Referentni kod:{" "}
+              <code className="px-2 py-1 bg-muted rounded">
+                {bookingUid.slice(0, 8).toUpperCase()}
+              </code>
+            </p>
+          )}
 
           {/* Add to Calendar */}
           <div className="mb-6">
-            <p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Dodaj u kalendar:
-            </p>
+            <p className="mb-3 text-sm font-medium text-muted-foreground">Dodaj u kalendar:</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {calendarLinks.map((link) => (
                 <a
@@ -94,7 +94,7 @@ export function BookingConfirmation({
                   target="_blank"
                   rel="noopener noreferrer"
                   download={link.id === "ics" ? `${eventTitle}.ics` : undefined}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg transition-colors hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg transition-colors hover:bg-accent"
                 >
                   {link.id === "ics" ? (
                     <Download className="w-4 h-4" />
@@ -107,12 +107,11 @@ export function BookingConfirmation({
             </div>
           </div>
 
-          <Link
-            href={`/booking/${bookingUid}`}
-            className="text-blue-600 dark:text-blue-400 hover:underline"
-          >
-            Pogledaj detalje termina
-          </Link>
+          {bookingUid && (
+            <Link href={`/booking/${bookingUid}`} className="text-primary hover:underline">
+              Pogledaj detalje termina
+            </Link>
+          )}
         </CardContent>
       </Card>
     </div>

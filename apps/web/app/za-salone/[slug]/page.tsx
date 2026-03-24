@@ -87,7 +87,7 @@ export default async function VerticalLandingPage({ params }: Props) {
         ]}
       />
       <FAQSchema items={vertical.faqItems} />
-      <LandingHeader />
+      <LandingHeader variant="owner" />
       <HeroSection
         headline={vertical.heroHeadline}
         highlightText={vertical.heroHighlight}

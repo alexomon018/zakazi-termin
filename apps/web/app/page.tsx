@@ -1,21 +1,16 @@
+import { SalonDiscoverySectionContainer } from "@/components/SalonDiscoverySectionContainer";
 import { OrganizationSchema, WebsiteSchema } from "@/components/StructuredData";
 import { getSession } from "@/lib/auth";
+import { TRPCProvider } from "@/lib/trpc/provider";
 import {
-  Button,
-  CtaBanner,
   FAQSection,
-  FeaturesSection,
-  HeroSection,
   LandingFooter,
   LandingHeader,
-  PricingSection,
-  ProcessSection,
-  SocialProofBar,
-  TestimonialsSection,
-  homepageFAQs,
+  SalonCategoriesSection,
+  UserHeroSection,
+  UserProcessSection,
+  userFAQs,
 } from "@salonko/ui";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
@@ -30,28 +25,18 @@ export default async function Home() {
       <OrganizationSchema />
       <WebsiteSchema />
       <LandingHeader />
-      <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Salonko Dashboard" />
-      <SocialProofBar />
-      <FeaturesSection />
-
-      {/* Mid-page CTA */}
-      <div className="py-12 text-center bg-gray-50 dark:bg-muted/30">
-        <p className="text-lg font-medium text-foreground">
-          Spremni da probate? Podešavanje traje samo 5 minuta.
-        </p>
-        <Button size="lg" className="mt-4 h-12 px-6 text-base font-medium" asChild>
-          <Link href="/signup">
-            Započnite besplatan probni period
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Link>
-        </Button>
-      </div>
-
-      <ProcessSection />
-      <TestimonialsSection />
-      <PricingSection />
-      <FAQSection items={homepageFAQs} showBackground />
-      <CtaBanner />
+      <UserHeroSection />
+      <TRPCProvider>
+        <SalonDiscoverySectionContainer />
+      </TRPCProvider>
+      <SalonCategoriesSection />
+      <UserProcessSection />
+      <FAQSection
+        title="Pitanja i odgovori"
+        description="Sve što treba da znate o zakazivanju termina preko Salonko platforme."
+        items={userFAQs}
+        showBackground
+      />
       <LandingFooter />
     </div>
   );

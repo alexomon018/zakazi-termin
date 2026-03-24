@@ -51,5 +51,6 @@ Klijent će automatski dobiti email obaveštenje o otkazivanju.
 
 Ako imaš mnogo termina, koristi dugme **Vidi još** na dnu liste da učitaš dodatne rezultate. Termini se učitavaju po 5.
 
-<!-- Screenshot: bookings-dashboard.png -->
-<!-- Screenshot: pending-booking.png -->
+![Kontrolna tabla za rezervacije](/images/help/bookings-dashboard.png)
+
+![Rezervacija na čekanju](/images/help/pending-booking.png)

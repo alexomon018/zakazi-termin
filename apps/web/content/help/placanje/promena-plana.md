@@ -58,5 +58,6 @@ Da promeniš karticu ili način plaćanja:
 2. Bićeš preusmeren/a na Stripe portal za upravljanje plaćanjem
 3. Tu možeš ažurirati podatke o kartici
 
-<!-- Screenshot: cancel-subscription.png -->
-<!-- Screenshot: change-plan.png -->
+![Otkazivanje pretplate](/images/help/cancel-subscription.png)
+
+![Promena plana pretplate](/images/help/change-plan.png)

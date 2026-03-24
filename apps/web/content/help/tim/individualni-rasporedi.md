@@ -58,4 +58,4 @@ Kada klijent zakazuje termin:
 3. Slobodni termini se računaju na osnovu ličnog rasporeda tog zaposlenog
 4. Uzimaju se u obzir i već zakazani termini tog zaposlenog
 
-<!-- Screenshot: member-schedule.png -->
+![Individualni raspored člana tima](/images/help/member-schedule.png)

@@ -88,7 +88,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
   } = useBookingStore();
 
   // Check if this event type has multiple hosts (team booking)
-  const hasMultipleHosts = (eventType.hosts?.length ?? 0) > 0;
+  const hasMultipleHosts = (eventType.hosts?.length ?? 0) > 1;
   const staffMembers: StaffMember[] = useMemo(() => {
     if (!eventType.hosts) return [];
     return eventType.hosts.map((host) => ({
@@ -101,6 +101,26 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
       },
     }));
   }, [eventType.hosts]);
+
+  const hostUserIds = useMemo(
+    () => new Set(eventType.hosts?.map((host) => host.userId) ?? []),
+    [eventType.hosts]
+  );
+
+  // For single-host events, derive the staff ID synchronously to avoid
+  // a redundant query cycle (effect would set it one render too late).
+  const effectiveStaffId = useMemo(() => {
+    if (selectedStaffId && hostUserIds.has(selectedStaffId)) return selectedStaffId;
+    if (eventType.hosts?.length === 1) return eventType.hosts[0].userId;
+    return null;
+  }, [selectedStaffId, eventType.hosts, hostUserIds]);
+
+  // Sync back to the store so other components see the selected staff
+  useEffect(() => {
+    if (effectiveStaffId !== selectedStaffId) {
+      setSelectedStaffId(effectiveStaffId);
+    }
+  }, [effectiveStaffId, selectedStaffId, setSelectedStaffId]);
 
   const selectedStaffName = useMemo(() => {
     if (!selectedStaffId) {
@@ -155,10 +175,10 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
       eventTypeId: eventType.id,
       dateFrom: dateRange.start,
       dateTo: dateRange.end,
-      hostUserId: selectedStaffId || undefined,
+      hostUserId: effectiveStaffId || undefined,
     },
     {
-      enabled: !!eventType.id && (!hasMultipleHosts || !!selectedStaffId),
+      enabled: !!eventType.id && (!hasMultipleHosts || !!effectiveStaffId),
     }
   );
 
@@ -258,7 +278,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
         email: data.email,
         phoneNumber: data.phoneNumber || undefined,
         notes: data.notes || undefined,
-        hostUserId: selectedStaffId || undefined,
+        hostUserId: effectiveStaffId || undefined,
       });
     }
   };
@@ -285,8 +305,8 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
+      <div className="flex justify-center items-center min-h-screen bg-background">
+        <div className="text-muted-foreground">Učitavanje...</div>
       </div>
     );
   }
@@ -325,7 +345,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
   return (
     <FramerMotionProvider>
       <div
-        className="px-2 py-8 min-h-screen bg-gray-50 sm:px-4 dark:bg-gray-900"
+        className="px-2 py-8 min-h-screen bg-background sm:px-4"
         style={
           {
             "--brand-color": brandColor,
@@ -358,7 +378,7 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
                 staff={staffMembers}
                 selectedStaffId={selectedStaffId}
                 onSelectStaff={handleStaffSelect}
-                className="p-4 bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700"
+                className="p-4 bg-card rounded-lg border border-border"
               />
             </div>
           )}
@@ -375,12 +395,12 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
                   hasMultipleHosts && !selectedStaffId ? (
                     /* Prompt to select staff first */
                     <div className="p-8 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">
+                      <p className="text-muted-foreground">
                         Molimo izaberite zaposlenog iznad da biste videli dostupne termine.
                       </p>
                     </div>
                   ) : (
-                    <div className="flex flex-col divide-y divide-gray-200 md:flex-row dark:divide-gray-700 md:divide-y-0 md:divide-x">
+                    <div className="flex flex-col divide-y divide-border md:flex-row md:divide-y-0 md:divide-x">
                       {/* Calendar */}
                       <BookingCalendar
                         currentMonth={currentMonth}
@@ -424,9 +444,9 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
           </m.div>
 
           {/* Footer */}
-          <div className="mt-8 text-sm text-center text-gray-500 dark:text-gray-400">
+          <div className="mt-8 text-sm text-center text-muted-foreground">
             Pokreće{" "}
-            <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/" className="text-primary hover:underline">
               Salonko
             </Link>
           </div>
@@ -438,15 +458,11 @@ export function BookingFlow({ eventType, salonName, eventSlug }: BookingFlowProp
 
 export function EventNotFound() {
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex justify-center items-center min-h-screen bg-background">
       <Card className="mx-auto max-w-md">
         <CardContent className="py-12 text-center">
-          <h2 className="mb-2 text-xl font-semibold text-gray-900 dark:text-gray-100">
-            Stranica nije pronađena
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Ovaj tip termina ne postoji ili nije dostupan.
-          </p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">Stranica nije pronađena</h2>
+          <p className="text-muted-foreground">Ovaj tip termina ne postoji ili nije dostupan.</p>
         </CardContent>
       </Card>
     </div>

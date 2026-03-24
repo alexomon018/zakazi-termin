@@ -30,19 +30,17 @@ export function BookingEventHeader({
         <UserAvatar name={salonName || ""} image={userAvatarUrl || undefined} size="lg" />
         {salonName && (
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              {formatSalonName(salonName)}
-            </h1>
+            <h1 className="text-xl font-semibold text-foreground">{formatSalonName(salonName)}</h1>
           </div>
         )}
       </div>
-      <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+      <h2 className="mb-2 text-2xl font-bold text-foreground">
         {isRescheduling ? `Promena termina: ${eventTitle}` : eventTitle}
       </h2>
       {eventDescription && (
-        <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">{eventDescription}</p>
+        <p className="mx-auto max-w-lg text-muted-foreground">{eventDescription}</p>
       )}
-      <div className="flex flex-wrap gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap gap-4 justify-center items-center mt-4 text-sm text-muted-foreground">
         <span className="flex gap-1 items-center">
           <Clock className="w-4 h-4" />
           {eventLength} minuta
@@ -55,7 +53,7 @@ export function BookingEventHeader({
         )}
         {staffName && (
           <span className="flex gap-1 items-center">
-            <span className="text-gray-400 dark:text-gray-500">•</span>
+            <span className="text-muted-foreground">•</span>
             {staffName}
           </span>
         )}

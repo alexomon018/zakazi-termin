@@ -67,5 +67,6 @@ Klijent automatski dobija email sa:
 - Detaljima termina (datum, vreme, lokacija)
 - Referentnim kodom
 
-<!-- Screenshot: booking-calendar.png -->
-<!-- Screenshot: booking-confirmation.png -->
+![Kalendar za izbor termina](/images/help/booking-calendar.png)
+
+![Formular za potvrdu zakazivanja](/images/help/booking-confirmation.png)

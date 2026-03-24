@@ -59,5 +59,6 @@ Ne. Nikakvi podaci o plaćanju nisu potrebni da bi započeo/la probni period.
 
 Nalog ostaje aktivan do kraja probnog perioda. Nakon toga, pristup se ograničava dok ne izabereš plan.
 
-<!-- Screenshot: trial-banner.png -->
-<!-- Screenshot: trial-billing-page.png -->
+![Baner probnog perioda](/images/help/trial-banner.png)
+
+![Stranica za naplatu tokom probnog perioda](/images/help/trial-billing-page.png)

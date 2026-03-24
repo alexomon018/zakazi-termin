@@ -62,5 +62,6 @@ Da ukloniš izuzetak, klikni na dugme za brisanje pored njega. Dan će se vratit
 - Ne možeš izabrati datume u prošlosti
 - Već zakazani termini za taj dan neće biti automatski otkazani — moraš ih ručno otkazati ako treba
 
-<!-- Screenshot: date-override-dialog.png -->
-<!-- Screenshot: date-overrides-list.png -->
+![Dijalog za dodavanje izuzetka datuma](/images/help/date-override-dialog.png)
+
+![Lista izuzetaka datuma](/images/help/date-overrides-list.png)

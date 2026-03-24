@@ -39,7 +39,7 @@ export function TimeSlotsList({
           exit="exit"
           className="px-5 py-6 md:px-6 md:py-8 w-full md:w-[280px] lg:w-[320px]"
         >
-          <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="mb-6 text-lg font-semibold text-foreground">
             {selectedDate ? formatDate(selectedDate, "shortDate") : "Izaberite datum"}
           </h3>
 
@@ -67,7 +67,7 @@ export function TimeSlotsList({
                           ? "border-brand bg-brand text-white dark:text-gray-900 shadow-md"
                           : isSelected
                             ? "border-brand bg-brand/10 text-brand ring-2 ring-brand/50"
-                            : "border-border hover:border-brand/50 hover:bg-secondary dark:text-gray-100"
+                            : "border-border hover:border-brand/50 hover:bg-secondary text-foreground"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -86,13 +86,13 @@ export function TimeSlotsList({
                   );
                 })
               ) : (
-                <p className="py-4 text-center text-gray-500 dark:text-gray-400">
+                <p className="py-4 text-center text-muted-foreground">
                   Nema dostupnih termina za ovaj dan
                 </p>
               )}
             </m.div>
           ) : (
-            <p className="py-12 text-center text-gray-500 dark:text-gray-400">
+            <p className="py-12 text-center text-muted-foreground">
               Izaberite datum sa kalendara da vidite dostupne termine
             </p>
           )}

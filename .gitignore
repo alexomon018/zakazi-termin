@@ -16,7 +16,9 @@ coverage
 **/playwright-report/
 **/playwright/.cache/
 **/test-results/
+playwright-console/
 apps/web/.env.test
+
 
 # Misc
 .DS_Store

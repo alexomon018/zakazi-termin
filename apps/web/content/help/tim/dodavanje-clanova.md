@@ -46,5 +46,6 @@ Kada osoba prihvati pozivnicu:
 3. Dobija pristup prema svojoj ulozi (Član ili Administrator)
 4. Možeš joj dodeliti usluge i podesiti individualni raspored
 
-<!-- Screenshot: invite-member.png -->
-<!-- Screenshot: pending-invites.png -->
+![Pozivanje novog člana tima](/images/help/invite-member.png)
+
+![Lista poziva na čekanju](/images/help/pending-invites.png)
