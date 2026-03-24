@@ -53,5 +53,6 @@ Ako želiš brži proces, klikni na **Nastavite sa Google**. Nakon Google prijav
 
 Čim se registruješ, automatski počinje tvoj **besplatni probni period od 30 dana**. Tokom tog perioda imaš pristup svim funkcijama platforme bez ikakvih ograničenja.
 
-<!-- Screenshot: signup-form.png -->
-<!-- Screenshot: verify-email.png -->
+![Formular za registraciju](/images/help/signup-form.png)
+
+![Verifikacija email adrese](/images/help/verify-email.png)

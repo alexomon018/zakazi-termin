@@ -84,5 +84,6 @@ Da ukloniš člana tima:
 - **Srednji salon (4-8 osoba):** Vlasnik + 1 Administrator + Članovi — administrator može pomagati sa pozivanjem i upravljanjem
 - **Veći salon (8+ osoba):** Vlasnik + 2-3 Administratora + Članovi — raspodeli odgovornost za upravljanje timom
 
-<!-- Screenshot: team-roles.png -->
-<!-- Screenshot: change-role.png -->
+![Pregled uloga u timu](/images/help/team-roles.png)
+
+![Promena uloge člana tima](/images/help/change-role.png)

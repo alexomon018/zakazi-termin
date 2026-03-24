@@ -49,5 +49,6 @@ Ako nijedan zaposleni nije izabran, prikazuje se poruka: „Molimo izaberite zap
 - Ako zaposleni odlazi na odmor, njegovo odsustvo se automatski reflektuje kroz funkciju „Van kancelarije" — ne moraš mu oduzimati usluge
 - Za usluge koje ne zahtevaju specifičnog zaposlenog, možeš ostaviti bez dodele — termin će se zakazati prema opštem rasporedu salona
 
-<!-- Screenshot: staff-selector.png -->
-<!-- Screenshot: assign-services.png -->
+![Izbor člana tima za uslugu](/images/help/staff-selector.png)
+
+![Dodela usluga članovima tima](/images/help/assign-services.png)

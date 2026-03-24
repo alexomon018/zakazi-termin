@@ -37,5 +37,6 @@ Na dnu stranice za izgled videćeš **pregled** kako tvoja stranica za zakazivan
 - **Izbegavaj previše tamne boje** na tamnoj temi — isti razlog
 - **Testiraj na mobilnom uređaju** — otvori svoj link na telefonu da vidiš kako izgleda
 
-<!-- Screenshot: brand-color-picker.png -->
-<!-- Screenshot: booking-preview.png -->
+![Birač boje brenda u podešavanjima izgleda](/images/help/brand-color-picker.png)
+
+![Pregled stranice za zakazivanje sa prilagođenom bojom](/images/help/booking-preview.png)

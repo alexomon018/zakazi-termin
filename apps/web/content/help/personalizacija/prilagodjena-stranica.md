@@ -70,5 +70,6 @@ Napiši kratak, privlačan opis koji objašnjava:
 - Aktiviraj samo one koje su spremne za zakazivanje
 - Skrivene usluge se ne prikazuju klijentima ali ostaju u sistemu
 
-<!-- Screenshot: public-profile.png -->
-<!-- Screenshot: booking-page-customized.png -->
+![Javni profil salona](/images/help/public-profile.png)
+
+![Prilagođena stranica za zakazivanje](/images/help/booking-page-customized.png)

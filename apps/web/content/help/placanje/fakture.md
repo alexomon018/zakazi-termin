@@ -53,4 +53,4 @@ Fakture sadrže sve potrebne informacije za evidenciju:
 
 > **Saveti:** Preuzmi PDF fakture redovno i čuvaj ih za svoju dokumentaciju. Možeš ih proslediti svom knjigovođi direktno.
 
-<!-- Screenshot: invoice-history.png -->
+![Istorija faktura](/images/help/invoice-history.png)

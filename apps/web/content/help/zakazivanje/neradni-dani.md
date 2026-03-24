@@ -46,5 +46,6 @@ Za svaki period možeš:
 - Za praznike koji se ponavljaju (Božić, Nova Godina), moraš ručno dodati period svake godine
 - Ako trebaš da blokiraš samo određene sate, a ne ceo dan, koristi **izuzetke datuma** u podešavanjima dostupnosti umesto odsustva
 
-<!-- Screenshot: out-of-office.png -->
-<!-- Screenshot: add-out-of-office.png -->
+![Lista neradnih dana](/images/help/out-of-office.png)
+
+![Dodavanje neradnog dana](/images/help/add-out-of-office.png)

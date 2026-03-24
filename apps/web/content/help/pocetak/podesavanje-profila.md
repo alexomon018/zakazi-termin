@@ -56,5 +56,6 @@ Podrazumevana vrednost je **Europe/Belgrade**, što odgovara većini korisnika i
 
 Nakon što izmenjiš podatke, klikni na **Sačuvaj promene**. Dugme je dostupno samo ako si nešto izmenio/la.
 
-<!-- Screenshot: profile-settings.png -->
-<!-- Screenshot: salon-logo-upload.png -->
+![Podešavanja profila](/images/help/profile-settings.png)
+
+![Postavljanje logotipa salona](/images/help/salon-logo-upload.png)

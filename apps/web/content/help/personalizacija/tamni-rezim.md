@@ -36,4 +36,4 @@ Tema koju izabereš utiče i na to kako klijenti vide tvoju stranicu za zakaziva
 
 Na dnu stranice za izgled videćeš pregled tvoje stranice za zakazivanje koji se ažurira u realnom vremenu dok menjaš temu. Tako možeš videti tačno kako će klijenti videti tvoju stranicu.
 
-<!-- Screenshot: theme-selector.png -->
+![Izbor teme u podešavanjima izgleda](/images/help/theme-selector.png)

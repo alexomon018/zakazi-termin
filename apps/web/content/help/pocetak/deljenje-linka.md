@@ -60,5 +60,6 @@ Klijent **ne mora da kreira nalog** da bi zakazao termin.
 - Koristi **link do profila** kad želiš da klijent vidi celu ponudu
 - Redovno deli link na društvenim mrežama — posebno kad imaš slobodne termine
 
-<!-- Screenshot: copy-link.png -->
-<!-- Screenshot: public-booking-page.png -->
+![Kopiranje linka za zakazivanje](/images/help/copy-link.png)
+
+![Javna stranica za zakazivanje](/images/help/public-booking-page.png)
