@@ -1,10 +1,41 @@
+import type { PrismaClient } from "@salonko/prisma";
 import { expect, test } from "../fixtures";
+import type { TestUser } from "../fixtures/users";
 import { TeamSettingsPage } from "../pages";
 
+async function createOrgWithOwner(prisma: PrismaClient, user: TestUser) {
+  return prisma.organization.create({
+    data: {
+      name: user.salonName,
+      slug: user.salonSlug,
+      members: {
+        create: {
+          userId: user.id,
+          role: "OWNER",
+          accepted: true,
+        },
+      },
+    },
+  });
+}
+
 test.describe("Team Settings", () => {
-  test.beforeEach(async ({ users }) => {
+  test.beforeEach(async ({ page, users }) => {
     const user = await users.create({ withSchedule: true });
     await users.login(user);
+    await page.context().addCookies([
+      {
+        name: "cookie-consent",
+        value: JSON.stringify({
+          version: 1,
+          necessary: true,
+          analytics: false,
+          timestamp: Date.now(),
+        }),
+        domain: "localhost",
+        path: "/",
+      },
+    ]);
   });
 
   test("should display team settings page", async ({ page }) => {
@@ -18,7 +49,6 @@ test.describe("Team Settings", () => {
     const teamPage = new TeamSettingsPage(page);
     await teamPage.goto();
 
-    // New users without organization should see create org UI
     await teamPage.expectCreateOrganizationVisible();
   });
 });
@@ -28,31 +58,14 @@ test.describe("Team Settings - With Organization", () => {
     const user = await users.create({ withSchedule: true });
     await users.login(user);
 
-    // Create organization for this user
-    const org = await prisma.organization.create({
-      data: {
-        name: user.salonName,
-        slug: user.salonSlug,
-        members: {
-          create: {
-            userId: user.id,
-            role: "OWNER",
-            accepted: true,
-          },
-        },
-      },
-    });
+    const org = await createOrgWithOwner(prisma, user);
 
     const teamPage = new TeamSettingsPage(page);
     await teamPage.goto();
 
-    // Should see team title
     await expect(teamPage.pageTitle).toBeVisible();
-
-    // Should see current user in the members list
     await teamPage.expectCurrentUserInList(user.name);
 
-    // Cleanup
     await prisma.membership.deleteMany({ where: { organizationId: org.id } });
     await prisma.organization.delete({ where: { id: org.id } });
   });
@@ -61,26 +74,13 @@ test.describe("Team Settings - With Organization", () => {
     const user = await users.create({ withSchedule: true });
     await users.login(user);
 
-    const org = await prisma.organization.create({
-      data: {
-        name: user.salonName,
-        slug: user.salonSlug,
-        members: {
-          create: {
-            userId: user.id,
-            role: "OWNER",
-            accepted: true,
-          },
-        },
-      },
-    });
+    const org = await createOrgWithOwner(prisma, user);
 
     const teamPage = new TeamSettingsPage(page);
     await teamPage.goto();
 
     await teamPage.expectInviteActionsVisible();
 
-    // Cleanup
     await prisma.membership.deleteMany({ where: { organizationId: org.id } });
     await prisma.organization.delete({ where: { id: org.id } });
   });

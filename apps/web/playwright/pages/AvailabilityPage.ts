@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from "@playwright/test";
-import { ROUTES } from "../lib/constants";
+import { ROUTES, TIMEOUTS } from "../lib/constants";
 import { BasePage } from "./BasePage";
 
 /**
@@ -40,6 +40,14 @@ export class AvailabilityPage extends BasePage {
   async goto(): Promise<void> {
     await this.navigateTo(ROUTES.AVAILABILITY);
     await this.waitForPageLoad();
+  }
+
+  async navigateToScheduleEditor(): Promise<void> {
+    const scheduleLink = this.page.locator("text=Working Hours").first();
+    await scheduleLink.click();
+    await this.page.waitForURL(/\/dashboard\/availability\//, {
+      timeout: TIMEOUTS.NAVIGATION,
+    });
   }
 
   /**

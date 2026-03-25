@@ -32,7 +32,7 @@ test.describe("Salon Discovery", () => {
     const discoveryPage = new SalonDiscoveryPage(page);
     await discoveryPage.goto();
 
-    // Page should load - either shows salons or no results
     await discoveryPage.expectPageVisible();
+    await discoveryPage.expectAtLeastOneSalonCard();
   });
 });

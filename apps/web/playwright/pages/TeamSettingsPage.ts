@@ -4,6 +4,7 @@ import { BasePage } from "./BasePage";
 
 export class TeamSettingsPage extends BasePage {
   readonly pageTitle: Locator;
+  readonly membersList: Locator;
   readonly inviteMemberButton: Locator;
   readonly createInviteLinkButton: Locator;
   readonly createOrganizationButton: Locator;
@@ -11,13 +12,22 @@ export class TeamSettingsPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.pageTitle = page.locator('h1:has-text("Tim")').first();
-    this.inviteMemberButton = page.locator('button:has-text("Pozovi putem email-a")').first();
+    this.pageTitle = page
+      .locator('[data-testid="team-settings-title"]')
+      .or(page.locator('h1:has-text("Tim")'))
+      .first();
+    this.membersList = page.getByTestId("team-members-list");
+    this.inviteMemberButton = page
+      .locator('[data-testid="invite-member-button"]')
+      .or(page.locator('button:has-text("Pozovi putem email-a")'))
+      .first();
     this.createInviteLinkButton = page
-      .locator('button:has-text("Kreiraj link za pozivnicu")')
+      .locator('[data-testid="create-invite-link-button"]')
+      .or(page.locator('button:has-text("Kreiraj link za pozivnicu")'))
       .first();
     this.createOrganizationButton = page
-      .locator('button:has-text("Kreiraj organizaciju")')
+      .locator('[data-testid="create-organization-button"]')
+      .or(page.locator('button:has-text("Kreiraj organizaciju")'))
       .or(page.locator('button:has-text("Kreiraj")'))
       .first();
   }
@@ -35,12 +45,12 @@ export class TeamSettingsPage extends BasePage {
   }
 
   async expectMembersListVisible(): Promise<void> {
-    const membersSection = this.page.locator("text=Članovi tima").first();
-    await expect(membersSection).toBeVisible();
+    await expect(this.membersList).toBeVisible();
   }
 
   async expectInviteActionsVisible(): Promise<void> {
     await expect(this.inviteMemberButton).toBeVisible();
+    await expect(this.createInviteLinkButton).toBeVisible();
   }
 
   async openInviteDialog(): Promise<void> {
@@ -81,7 +91,7 @@ export class TeamSettingsPage extends BasePage {
   }
 
   async expectCurrentUserInList(name: string): Promise<void> {
-    await expect(this.page.locator(`text=${name}`).first()).toBeVisible();
+    await expect(this.membersList.locator(`text=${name}`).first()).toBeVisible();
   }
 
   async expectCreateOrganizationVisible(): Promise<void> {

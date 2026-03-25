@@ -114,8 +114,7 @@ test.describe("Complete Booking Flow", () => {
     await profilePage.expectEventTypeVisible("30 Minute Meeting");
     await profilePage.selectEventType("30 Minute Meeting");
 
-    // Wait for navigation to complete after clicking event type
-    await page.waitForURL(new RegExp(`/${user.salonName}/30-minute-meeting`), { timeout: 10000 });
+    await page.waitForURL(`**/${user.salonName}/30-minute-meeting`, { timeout: 10000 });
 
     const bookingPage = new EventTypeBookingPage(page);
     await bookingPage.expectEventDetailsVisible();

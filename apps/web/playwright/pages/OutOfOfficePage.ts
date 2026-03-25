@@ -37,21 +37,20 @@ export class OutOfOfficePage extends BasePage {
   }
 
   async selectDateRange(startDay: number, endDay: number): Promise<void> {
-    // The dialog uses react-day-picker v9 Calendar with mode="range"
-    // v9 renders days as buttons inside [role="gridcell"] divs (CSS grid, no <td>)
     const dialog = this.page.locator('[role="dialog"]');
+    const currentMonthCell = dialog.locator('[role="gridcell"]:not(.day-outside)');
 
-    const startButton = dialog.locator(`[role="gridcell"] button:has-text("${startDay}")`).first();
-    await startButton.click();
-
-    const endButton = dialog.locator(`[role="gridcell"] button:has-text("${endDay}")`).first();
-    await endButton.click();
+    await currentMonthCell.locator(`button:has-text("${startDay}")`).click();
+    await currentMonthCell.locator(`button:has-text("${endDay}")`).click();
   }
 
   async selectReason(): Promise<void> {
     // ReasonSelector uses a grid of buttons, not a select/combobox
     const dialog = this.page.locator('[role="dialog"]');
-    const reasonButton = dialog.locator("button.rounded-lg:has(span)").first();
+    const reasonButton = dialog
+      .locator('div:has(> label:has-text("Razlog"))')
+      .locator("button")
+      .first();
     if (await this.isVisible(reasonButton)) {
       await reasonButton.click();
     }
@@ -82,13 +81,13 @@ export class OutOfOfficePage extends BasePage {
     await expect(this.page.locator(`text=${text}`).first()).toBeVisible();
   }
 
-  async deleteFirstEntry(): Promise<void> {
-    // Delete button contains a Trash2 icon from lucide-react
-    const deleteButton = this.page
+  async deleteEntry(entryText: string): Promise<void> {
+    // Scope to the row containing the identifier text, then find its delete button
+    const row = this.page.locator("div.flex.justify-between", { hasText: entryText });
+    const deleteButton = row
       .locator("button:has(svg.lucide-trash-2)")
-      .or(this.page.locator("button:has(svg.lucide-trash)"))
-      .first();
-    await this.clickButton(deleteButton);
+      .or(row.locator("button:has(svg.lucide-trash)"));
+    await this.clickButton(deleteButton.first());
 
     // Confirm deletion dialog
     const confirmButton = this.page

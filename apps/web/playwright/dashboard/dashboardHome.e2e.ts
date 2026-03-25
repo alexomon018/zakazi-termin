@@ -2,34 +2,35 @@ import { expect, test } from "../fixtures";
 import { DashboardHomePage } from "../pages";
 
 test.describe("Dashboard Home", () => {
-  test.beforeEach(async ({ users }) => {
-    const user = await users.create({ withSchedule: true });
-    await users.login(user);
-  });
+  test.describe("default user", () => {
+    test.beforeEach(async ({ users }) => {
+      const user = await users.create({ withSchedule: true });
+      await users.login(user);
+    });
 
-  test("should display welcome heading", async ({ page }) => {
-    const dashboardPage = new DashboardHomePage(page);
-    await dashboardPage.goto();
+    test("should display welcome heading", async ({ page }) => {
+      const dashboardPage = new DashboardHomePage(page);
+      await dashboardPage.goto();
 
-    await dashboardPage.expectWelcomeVisible();
-  });
+      await dashboardPage.expectWelcomeVisible();
+    });
 
-  test("should display stats cards", async ({ page }) => {
-    const dashboardPage = new DashboardHomePage(page);
-    await dashboardPage.goto();
+    test("should display stats cards", async ({ page }) => {
+      const dashboardPage = new DashboardHomePage(page);
+      await dashboardPage.goto();
 
-    await dashboardPage.expectStatsCardsVisible();
-  });
+      await dashboardPage.expectStatsCardsVisible();
+    });
 
-  test("should show empty bookings state when no bookings", async ({ page }) => {
-    const dashboardPage = new DashboardHomePage(page);
-    await dashboardPage.goto();
+    test("should show empty bookings state when no bookings", async ({ page }) => {
+      const dashboardPage = new DashboardHomePage(page);
+      await dashboardPage.goto();
 
-    await dashboardPage.expectEmptyBookingsState();
+      await dashboardPage.expectEmptyBookingsState();
+    });
   });
 
   test("should display upcoming booking when exists", async ({ page, prisma, users }) => {
-    // This test needs a user with an event type to create a booking
     const user = await users.create({ withSchedule: true, withEventType: true });
     await users.login(user);
 
@@ -69,14 +70,13 @@ test.describe("Dashboard Home", () => {
     await dashboardPage.expectBookingVisible("Dashboard Test Attendee");
   });
 
-  test("should show event types stats card with event type", async ({ page, users }) => {
+  test("should show non-zero event types count when event type exists", async ({ page, users }) => {
     const user = await users.create({ withSchedule: true, withEventType: true });
     await users.login(user);
 
     const dashboardPage = new DashboardHomePage(page);
     await dashboardPage.goto();
 
-    // With one event type created, the stats card should be visible
-    await expect(dashboardPage.eventTypesStatsCard).toBeVisible();
+    await dashboardPage.expectEventTypesCount("1");
   });
 });

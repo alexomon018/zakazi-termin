@@ -1,5 +1,4 @@
 import { expect, test } from "../fixtures";
-import { TIMEOUTS } from "../lib/constants";
 import { AvailabilityPage } from "../pages";
 
 test.describe("Edit Availability Schedule", () => {
@@ -13,23 +12,15 @@ test.describe("Edit Availability Schedule", () => {
     await availabilityPage.goto();
   });
 
-  async function navigateToScheduleEditor(page: import("@playwright/test").Page) {
-    const scheduleLink = page.locator("text=Working Hours").first();
-    await scheduleLink.click();
-    await page.waitForURL(/\/dashboard\/availability\//, {
-      timeout: TIMEOUTS.NAVIGATION,
-    });
-  }
-
   test("should navigate to schedule editor", async ({ page }) => {
-    await navigateToScheduleEditor(page);
+    await availabilityPage.navigateToScheduleEditor();
 
     // Should see the schedule name on the editor page
     await expect(page.locator("text=Working Hours")).toBeVisible();
   });
 
   test("should display day availability rows", async ({ page }) => {
-    await navigateToScheduleEditor(page);
+    await availabilityPage.navigateToScheduleEditor();
     await availabilityPage.waitForPageLoad();
 
     // Should see days of the week
@@ -37,7 +28,7 @@ test.describe("Edit Availability Schedule", () => {
   });
 
   test("should have save button", async ({ page }) => {
-    await navigateToScheduleEditor(page);
+    await availabilityPage.navigateToScheduleEditor();
     await availabilityPage.waitForPageLoad();
 
     // Save button should exist (may be disabled if no changes)
@@ -48,20 +39,22 @@ test.describe("Edit Availability Schedule", () => {
     await expect(saveButton).toBeVisible();
   });
 
-  test("should have back navigation to availability list", async ({ page }) => {
-    await navigateToScheduleEditor(page);
+  test("should have back navigation to availability list", async () => {
+    await availabilityPage.navigateToScheduleEditor();
 
     // Should have a back button/link to availability list (in main content, not sidebar)
-    const backLink = page.locator('main a[href="/dashboard/availability"]').first();
+    const backLink = availabilityPage.page
+      .locator('main a[href="/dashboard/availability"]')
+      .first();
     await expect(backLink).toBeVisible();
   });
 
-  test("should show date overrides section", async ({ page }) => {
-    await navigateToScheduleEditor(page);
+  test("should show date overrides section", async () => {
+    await availabilityPage.navigateToScheduleEditor();
     await availabilityPage.waitForPageLoad();
 
     // "Izuzeci za određene datume" is the actual heading text
-    const dateOverrides = page.locator("text=Izuzeci za određene datume").first();
+    const dateOverrides = availabilityPage.page.locator("text=Izuzeci za određene datume").first();
     await expect(dateOverrides).toBeVisible();
   });
 });

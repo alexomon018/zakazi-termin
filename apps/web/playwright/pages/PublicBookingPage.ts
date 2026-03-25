@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from "@playwright/test";
-import { ROUTES } from "../lib/constants";
+import { LOCALIZED_STRINGS, ROUTES } from "../lib/constants";
 import { BasePage } from "./BasePage";
 
 /**
@@ -164,8 +164,9 @@ export class EventTypeBookingPage extends BasePage {
     const slots = this.getTimeSlots();
     await slots.nth(index).click();
 
-    // After selecting a slot, click the "Potvrdi i nastavi" button to proceed to booking form
-    const confirmSlotButton = this.page.locator('button:has-text("Potvrdi i nastavi")');
+    const confirmSlotButton = this.page.locator(
+      `button:has-text("${LOCALIZED_STRINGS.CONFIRM_AND_CONTINUE}")`
+    );
     await confirmSlotButton.waitFor({ state: "visible", timeout: 5000 });
     await confirmSlotButton.click();
   }

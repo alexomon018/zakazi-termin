@@ -63,26 +63,16 @@ test.describe("Subscription Gating", () => {
     await expect(page).toHaveURL(/\/dashboard\/availability/);
   });
 
-  test("should redirect unauthenticated users to login", async ({ page }) => {
-    // Try to access dashboard without logging in
-    await page.goto(ROUTES.DASHBOARD, { waitUntil: "networkidle" });
+  for (const { name, route } of [
+    { name: "dashboard", route: ROUTES.DASHBOARD },
+    { name: "bookings", route: ROUTES.BOOKINGS },
+    { name: "event types", route: ROUTES.EVENT_TYPES },
+  ] as const) {
+    test(`should redirect unauthenticated users from ${name} to login`, async ({ page }) => {
+      await page.goto(route, { waitUntil: "networkidle" });
 
-    // Should redirect to login
-    await page.waitForURL(/\/login/, { timeout: 30000 });
-    await expect(page).toHaveURL(/\/login/);
-  });
-
-  test("should redirect unauthenticated users from bookings to login", async ({ page }) => {
-    await page.goto(ROUTES.BOOKINGS, { waitUntil: "networkidle" });
-
-    await page.waitForURL(/\/login/, { timeout: 30000 });
-    await expect(page).toHaveURL(/\/login/);
-  });
-
-  test("should redirect unauthenticated users from event types to login", async ({ page }) => {
-    await page.goto(ROUTES.EVENT_TYPES, { waitUntil: "networkidle" });
-
-    await page.waitForURL(/\/login/, { timeout: 30000 });
-    await expect(page).toHaveURL(/\/login/);
-  });
+      await page.waitForURL(/\/login/, { timeout: 30000 });
+      await expect(page).toHaveURL(/\/login/);
+    });
+  }
 });

@@ -142,6 +142,11 @@ export const SELECTORS = {
   },
 } as const;
 
+// Localized button/label strings used in page objects and tests
+export const LOCALIZED_STRINGS = {
+  CONFIRM_AND_CONTINUE: "Potvrdi i nastavi",
+} as const;
+
 // Timeout constants
 export const TIMEOUTS = {
   SHORT: 5000,

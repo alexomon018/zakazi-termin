@@ -53,9 +53,15 @@ export class VerifyEmailPage extends BasePage {
    * Enter OTP code digit by digit
    */
   async enterCode(code: string): Promise<void> {
-    // InputOTP renders a single hidden input — click the container to focus it, then type
     const container = this.codeInput;
+    await container.waitFor({ state: "visible", timeout: TIMEOUTS.MEDIUM });
     await container.click();
+
+    const isFocused = await container.evaluate((el) => el.contains(document.activeElement));
+    if (!isFocused) {
+      await container.focus();
+    }
+
     await this.page.keyboard.type(code);
   }
 

@@ -36,43 +36,44 @@ test.describe("Onboarding - Complete Profile", () => {
       },
     });
 
-    // Login manually
-    await page.context().addCookies([
-      {
-        name: "cookie-consent",
-        value: JSON.stringify({
-          version: 1,
-          necessary: true,
-          analytics: false,
-          timestamp: Date.now(),
-        }),
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
-
-    await page.goto("/login", { waitUntil: "networkidle" });
-    await page.fill('input[id="email"]', email);
-    await page.fill('input[id="password"]', "TestPassword123!");
-
-    const responsePromise = page.waitForResponse(
-      (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
-      { timeout: 30000 }
-    );
-    await page.click('button[type="submit"]');
-    await responsePromise;
-
-    // Should be redirected to onboarding or dashboard
     try {
-      await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
-    } catch {
-      // If stuck on login, session cookie should be set — navigate directly
-      await page.goto("/dashboard", { waitUntil: "networkidle" });
-      await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
-    }
+      // Login manually
+      await page.context().addCookies([
+        {
+          name: "cookie-consent",
+          value: JSON.stringify({
+            version: 1,
+            necessary: true,
+            analytics: false,
+            timestamp: Date.now(),
+          }),
+          domain: "localhost",
+          path: "/",
+        },
+      ]);
 
-    // Cleanup
-    await prisma.user.delete({ where: { id: user.id } });
+      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.fill('input[id="email"]', email);
+      await page.fill('input[id="password"]', "TestPassword123!");
+
+      const responsePromise = page.waitForResponse(
+        (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
+        { timeout: 30000 }
+      );
+      await page.click('button[type="submit"]');
+      await responsePromise;
+
+      // Must redirect incomplete profile users to onboarding
+      try {
+        await page.waitForURL(/\/onboarding/, { timeout: 15000 });
+      } catch {
+        // If stuck on login, session cookie should be set — navigate directly
+        await page.goto("/dashboard", { waitUntil: "networkidle" });
+        await page.waitForURL(/\/onboarding/, { timeout: 15000 });
+      }
+    } finally {
+      await prisma.user.delete({ where: { id: user.id } });
+    }
   });
 
   test("should display onboarding form for incomplete profile", async ({ page, prisma }) => {
@@ -101,43 +102,46 @@ test.describe("Onboarding - Complete Profile", () => {
       },
     });
 
-    // Login
-    await page.context().addCookies([
-      {
-        name: "cookie-consent",
-        value: JSON.stringify({
-          version: 1,
-          necessary: true,
-          analytics: false,
-          timestamp: Date.now(),
-        }),
-        domain: "localhost",
-        path: "/",
-      },
-    ]);
-
-    await page.goto("/login", { waitUntil: "networkidle" });
-    await page.fill('input[id="email"]', email);
-    await page.fill('input[id="password"]', "TestPassword123!");
-
-    const responsePromise2 = page.waitForResponse(
-      (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
-      { timeout: 30000 }
-    );
-    await page.click('button[type="submit"]');
-    await responsePromise2;
-
-    // Wait for redirect
     try {
-      await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
-    } catch {
-      // If stuck on login, session cookie should be set — navigate directly
-      await page.goto("/dashboard", { waitUntil: "networkidle" });
-      await page.waitForURL(/\/(dashboard|onboarding)/, { timeout: 15000 });
-    }
+      // Login
+      await page.context().addCookies([
+        {
+          name: "cookie-consent",
+          value: JSON.stringify({
+            version: 1,
+            necessary: true,
+            analytics: false,
+            timestamp: Date.now(),
+          }),
+          domain: "localhost",
+          path: "/",
+        },
+      ]);
 
-    // If on onboarding page, verify form is visible
-    if (page.url().includes("onboarding")) {
+      await page.goto("/login", { waitUntil: "networkidle" });
+      await page.fill('input[id="email"]', email);
+      await page.fill('input[id="password"]', "TestPassword123!");
+
+      const responsePromise2 = page.waitForResponse(
+        (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
+        { timeout: 30000 }
+      );
+      await page.click('button[type="submit"]');
+      await responsePromise2;
+
+      // Wait for redirect to onboarding
+      try {
+        await page.waitForURL(/\/onboarding/, { timeout: 15000 });
+      } catch {
+        // If stuck on login, session cookie should be set — navigate directly
+        await page.goto("/dashboard", { waitUntil: "networkidle" });
+        await page.waitForURL(/\/onboarding/, { timeout: 15000 });
+      }
+
+      // Assert we are on the onboarding page
+      expect(page.url()).toContain("onboarding");
+
+      // Verify form is visible
       await expect(page.locator("text=Završite podešavanje vašeg salona")).toBeVisible();
 
       // Verify form fields exist
@@ -147,9 +151,8 @@ test.describe("Onboarding - Complete Profile", () => {
 
       // Verify submit button
       await expect(page.locator('button:has-text("Sačuvaj i nastavi na dashboard")')).toBeVisible();
+    } finally {
+      await prisma.user.delete({ where: { id: user.id } });
     }
-
-    // Cleanup
-    await prisma.user.delete({ where: { id: user.id } });
   });
 });

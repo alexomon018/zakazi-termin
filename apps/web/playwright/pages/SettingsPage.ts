@@ -120,28 +120,12 @@ export class ProfileSettingsPage extends BasePage {
     await expect(this.salonNameInput).toHaveValue(expectedSalonName, { timeout: 5000 });
   }
 
-  /**
-   * Check if profile link in settings is visible and navigate
-   */
   async navigateFromSettingsIndex(): Promise<void> {
-    // On mobile, the sidebar is hidden and navigation is via a dropdown menu.
-    const mobileSettingsBar = this.page.getByTestId("mobile-settings-top-bar");
-    const isMobile = await mobileSettingsBar.isVisible().catch(() => false);
-
-    if (isMobile) {
-      await mobileSettingsBar.locator('button:has-text("Podešavanja")').click();
-      const dropdown = this.page.getByTestId("mobile-settings-dropdown");
-      await expect(dropdown).toBeVisible({ timeout: 5000 });
-      await dropdown.locator("text=Moj profil").click();
-    } else {
-      const profileLink = this.page.locator(
-        'a[href="/dashboard/settings/profile"], button:has-text("Profil")'
-      );
-      if (await profileLink.isVisible().catch(() => false)) {
-        await profileLink.click();
-      }
-    }
-    await expect(this.page).toHaveURL(/\/dashboard\/settings\/profile/, { timeout: 10000 });
+    await this.openSettingsSubPage(
+      "Moj profil",
+      'a[href="/dashboard/settings/profile"], button:has-text("Profil")',
+      /\/dashboard\/settings\/profile/
+    );
   }
 }
 
@@ -291,32 +275,11 @@ export class AppearanceSettingsPage extends BasePage {
     return await this.isVisible(this.brandColorInput);
   }
 
-  /**
-   * Navigate from settings index
-   */
   async navigateFromSettingsIndex(): Promise<void> {
-    // On mobile, the sidebar is hidden and navigation is via a dropdown menu.
-    const mobileSettingsBar = this.page.getByTestId("mobile-settings-top-bar");
-    const isMobile = await mobileSettingsBar.isVisible().catch(() => false);
-
-    if (isMobile) {
-      // Open the "Podešavanja" dropdown and click "Izgled"
-      await mobileSettingsBar.locator('button:has-text("Podešavanja")').click();
-      const dropdown = this.page.getByTestId("mobile-settings-dropdown");
-      await expect(dropdown).toBeVisible({ timeout: 5000 });
-      await dropdown.locator("text=Izgled").click();
-    } else {
-      // Desktop: click the sidebar link
-      const appearanceLink = this.page
-        .locator('a[href="/dashboard/settings/appearance"]')
-        .filter({ hasText: "Izgled" })
-        .filter({ visible: true })
-        .first();
-      await expect(appearanceLink).toBeVisible({ timeout: 5000 });
-      await appearanceLink.click();
-    }
-
-    // Wait for navigation to complete
-    await expect(this.page).toHaveURL(/\/dashboard\/settings\/appearance/, { timeout: 10000 });
+    await this.openSettingsSubPage(
+      "Izgled",
+      'a[href="/dashboard/settings/appearance"]:has-text("Izgled")',
+      /\/dashboard\/settings\/appearance/
+    );
   }
 }

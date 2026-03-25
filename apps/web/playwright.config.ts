@@ -55,7 +55,11 @@ export default defineConfig({
   webServer: {
     command: "yarn dev",
     url: "http://localhost:3000",
-    // In CI always start fresh; locally reuse if a server is already running
+    // In CI always start fresh; locally reuse if a server is already running.
+    // WARNING: global-setup.ts only pushes the Prisma schema to the test DB —
+    // it does NOT verify that a reused server is connected to the same database
+    // or has the current schema. If tests fail after schema changes, restart
+    // the local dev server or set this to `false`.
     reuseExistingServer: !isCI,
     timeout: 120000,
     env: {

@@ -15,7 +15,9 @@ export class LandingPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.heroSection = page.locator("#hero, section").first();
+    this.heroSection = page
+      .locator('#hero, section[aria-label="hero"], [data-testid="hero"]')
+      .first();
     this.salonDiscoverySection = page.locator("text=Pronađi salon").first();
     this.categoriesSection = page
       .locator("text=Pronađite salon po kategoriji")
@@ -38,6 +40,8 @@ export class LandingPage extends BasePage {
 
   async expectPageVisible(): Promise<void> {
     await expect(this.header).toBeVisible();
+    await expect(this.heroSection).toBeVisible();
+    await expect(this.footer).toBeVisible();
   }
 
   async expectHeaderVisible(): Promise<void> {
@@ -66,7 +70,8 @@ export class LandingPage extends BasePage {
 export class SalonDiscoveryPage extends BasePage {
   readonly pageTitle: Locator;
   readonly searchInput: Locator;
-  readonly salonCards: Locator;
+  /** Salon listing cards: grid of links to `/{salonSlug}` (see SalonCard). */
+  readonly salonCardLinks: Locator;
   readonly noResultsMessage: Locator;
   readonly loadMoreButton: Locator;
 
@@ -78,7 +83,7 @@ export class SalonDiscoveryPage extends BasePage {
       .locator('input[placeholder*="Pretražite"]')
       .or(page.locator('input[type="search"]'))
       .first();
-    this.salonCards = page.locator(".grid > a, .grid > div > a").first();
+    this.salonCardLinks = page.locator('[data-testid="salon-card"], main .grid > a[href^="/"]');
     this.noResultsMessage = page
       .locator("text=Nema salona koji odgovaraju")
       .or(page.locator("text=Trenutno nema dostupnih salona"))
@@ -100,6 +105,10 @@ export class SalonDiscoveryPage extends BasePage {
 
   async expectSearchVisible(): Promise<void> {
     await expect(this.searchInput).toBeVisible();
+  }
+
+  async expectAtLeastOneSalonCard(): Promise<void> {
+    await expect(this.salonCardLinks.first()).toBeVisible();
   }
 
   async search(query: string): Promise<void> {
