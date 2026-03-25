@@ -24,14 +24,14 @@ export class ResetPasswordPage extends BasePage {
   }
 
   async goto(token: string, email: string): Promise<void> {
-    await this.page.goto(
+    await this.navigateTo(
       `${ROUTES.RESET_PASSWORD}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`
     );
     await this.waitForPageLoad();
   }
 
   async gotoWithoutParams(): Promise<void> {
-    await this.page.goto(ROUTES.RESET_PASSWORD);
+    await this.navigateTo(ROUTES.RESET_PASSWORD);
     await this.waitForPageLoad();
   }
 

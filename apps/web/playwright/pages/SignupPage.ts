@@ -79,7 +79,7 @@ export class SignupPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.SIGNUP);
+    await this.navigateTo(ROUTES.SIGNUP);
     await this.waitForPageLoad();
   }
 

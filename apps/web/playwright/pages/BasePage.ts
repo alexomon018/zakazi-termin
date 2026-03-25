@@ -19,6 +19,14 @@ export abstract class BasePage {
   abstract goto(...args: unknown[]): Promise<void>;
 
   /**
+   * Navigate to a URL, waiting only for domcontentloaded to avoid
+   * hanging on slow middleware fetch calls (profile/subscription checks).
+   */
+  protected async navigateTo(url: string): Promise<void> {
+    await this.page.goto(url, { waitUntil: "domcontentloaded" });
+  }
+
+  /**
    * Wait for the page to be fully loaded
    */
   async waitForPageLoad(): Promise<void> {
@@ -147,6 +155,37 @@ export abstract class BasePage {
    */
   protected getByTestId(testId: string): Locator {
     return this.page.getByTestId(testId);
+  }
+
+  /**
+   * Navigate to a settings sub-page via mobile dropdown or desktop sidebar link.
+   * @param mobileLabel  Text shown in the mobile dropdown (e.g. "Moj profil", "Izgled")
+   * @param desktopSelector  CSS selector for the desktop sidebar link
+   * @param expectedUrlPattern  RegExp to verify the final URL
+   */
+  protected async openSettingsSubPage(
+    mobileLabel: string,
+    desktopSelector: string,
+    expectedUrlPattern: RegExp
+  ): Promise<void> {
+    const mobileSettingsBar = this.page.getByTestId("mobile-settings-top-bar");
+    const isMobile = await mobileSettingsBar.isVisible().catch(() => false);
+
+    if (isMobile) {
+      await mobileSettingsBar.locator('button:has-text("Podešavanja")').click();
+      const dropdown = this.page.getByTestId("mobile-settings-dropdown");
+      await expect(dropdown).toBeVisible({ timeout: 5000 });
+      await dropdown.locator(`text=${mobileLabel}`).click();
+    } else {
+      const link = this.page.locator(desktopSelector).first();
+      await expect(link).toBeVisible({ timeout: 5000 });
+      await Promise.all([
+        this.page.waitForURL(expectedUrlPattern, { timeout: 10000 }),
+        link.click(),
+      ]);
+    }
+
+    await expect(this.page).toHaveURL(expectedUrlPattern, { timeout: 10000 });
   }
 
   /**

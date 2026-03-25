@@ -39,10 +39,8 @@ test.describe("Verify Email", () => {
       // Enter wrong code
       await verifyPage.verify("999999");
 
-      // Should show error
-      await expect(
-        page.locator("text=nevažeći").or(page.locator("text=pogrešan")).or(verifyPage.errorMessage)
-      ).toBeVisible({ timeout: 10000 });
+      // Should show error message
+      await expect(verifyPage.errorMessage).toBeVisible({ timeout: 10000 });
     } finally {
       await prisma.pendingRegistration.deleteMany({ where: { email: email.toLowerCase() } });
     }

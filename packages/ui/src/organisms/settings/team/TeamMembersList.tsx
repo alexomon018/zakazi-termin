@@ -37,7 +37,7 @@ export function TeamMembersList({
   onRemoveMember,
 }: TeamMembersListProps) {
   return (
-    <Card>
+    <Card data-testid="team-members-list">
       <CardHeader>
         <CardTitle className="flex gap-2 items-center text-lg">
           <Users className="w-5 h-5" />

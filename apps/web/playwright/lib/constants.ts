@@ -19,6 +19,15 @@ export const ROUTES = {
   SETTINGS_APPEARANCE: "/dashboard/settings/appearance",
   SETTINGS_OUT_OF_OFFICE: "/dashboard/settings/out-of-office",
   SETTINGS_BILLING: "/dashboard/settings/billing",
+  SETTINGS_TEAM: "/dashboard/settings/team",
+
+  // Public routes
+  SALONI: "/saloni",
+  HELP: "/help",
+  FAQ: "/faq",
+
+  // Onboarding
+  ONBOARDING_COMPLETE_PROFILE: "/onboarding/complete-profile",
 
   // Public booking routes
   publicBookingPage: (salonName: string) => `/${salonName}`,
@@ -131,6 +140,11 @@ export const SELECTORS = {
     DISMISS_CANCEL_BUTTON: '[data-testid="dismiss-cancel-button"]',
     INVOICE_HISTORY_CARD: '[data-testid="invoice-history-card"]',
   },
+} as const;
+
+// Localized button/label strings used in page objects and tests
+export const LOCALIZED_STRINGS = {
+  CONFIRM_AND_CONTINUE: "Potvrdi i nastavi",
 } as const;
 
 // Timeout constants

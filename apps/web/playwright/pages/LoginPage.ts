@@ -34,7 +34,7 @@ export class LoginPage extends BasePage {
    * Navigate to the login page
    */
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.LOGIN);
+    await this.navigateTo(ROUTES.LOGIN);
     await this.waitForPageLoad();
   }
 
@@ -60,12 +60,20 @@ export class LoginPage extends BasePage {
   }
 
   /**
-   * Perform a complete login with email and password
+   * Perform a complete login with email and password.
+   * Waits for the auth callback response to complete before returning.
    */
   async login(email: string, password: string): Promise<void> {
     await this.fillEmail(email);
     await this.fillPassword(password);
-    await this.submit();
+    // Start listening for the auth response before clicking submit.
+    // signIn() uses fetch internally, so we capture the response.
+    const responsePromise = this.page.waitForResponse(
+      (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
+      { timeout: 30000 }
+    );
+    await this.submitButton.click();
+    await responsePromise;
   }
 
   /**

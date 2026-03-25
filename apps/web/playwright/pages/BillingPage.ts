@@ -110,7 +110,7 @@ export class BillingPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.SETTINGS_BILLING);
+    await this.navigateTo(ROUTES.SETTINGS_BILLING);
     await this.waitForPageLoad();
   }
 

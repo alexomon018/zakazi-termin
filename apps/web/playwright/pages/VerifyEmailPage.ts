@@ -35,7 +35,7 @@ export class VerifyEmailPage extends BasePage {
     const url = email
       ? `${ROUTES.VERIFY_EMAIL}?email=${encodeURIComponent(email)}`
       : ROUTES.VERIFY_EMAIL;
-    await this.page.goto(url);
+    await this.navigateTo(url);
     await this.waitForPageLoad();
   }
 
@@ -53,14 +53,16 @@ export class VerifyEmailPage extends BasePage {
    * Enter OTP code digit by digit
    */
   async enterCode(code: string): Promise<void> {
-    // The InputOTP component uses individual input slots
-    // We need to type the code character by character
-    for (let i = 0; i < code.length; i++) {
-      const slot = this.page.locator(`[data-testid="verify-email-code-input"] input`).nth(i);
-      if (await slot.isVisible().catch(() => false)) {
-        await slot.fill(code[i]);
-      }
+    const container = this.codeInput;
+    await container.waitFor({ state: "visible", timeout: TIMEOUTS.MEDIUM });
+    await container.click();
+
+    const isFocused = await container.evaluate((el) => el.contains(document.activeElement));
+    if (!isFocused) {
+      await container.focus();
     }
+
+    await this.page.keyboard.type(code);
   }
 
   /**

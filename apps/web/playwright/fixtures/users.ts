@@ -1,6 +1,7 @@
 import { type Page, test as base } from "@playwright/test";
 import { PrismaClient } from "@salonko/prisma";
 import { hash } from "bcryptjs";
+import { LoginPage } from "../pages/LoginPage";
 
 export interface TestUser {
   id: string;
@@ -196,9 +197,8 @@ export const test = base.extend<UsersFixtureType>({
   },
 });
 
-async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void> {
-  // Set cookie consent before navigating to avoid banner blocking interactions
-  await page.context().addCookies([
+function setCookieConsent(page: Page): Promise<void> {
+  return page.context().addCookies([
     {
       name: "cookie-consent",
       value: JSON.stringify({
@@ -211,43 +211,40 @@ async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void>
       path: "/",
     },
   ]);
+}
+
+async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void> {
+  await page.context().clearCookies();
+  await setCookieConsent(page);
+
+  const loginPage = new LoginPage(page);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    // Navigate to login page
-    await page.goto("/login");
-
-    // Fill in credentials (using id selectors to match the actual form)
-    await page.fill('input[id="email"]', user.email);
-    await page.fill('input[id="password"]', user.password);
-
-    // Submit the form
-    await page.click('button[type="submit"]');
+    await page.goto("/login", { waitUntil: "networkidle" });
+    await loginPage.login(user.email, user.password);
 
     try {
-      // Wait for navigation to dashboard
       await page.waitForURL(/\/dashboard/, { timeout: 30000 });
+      await page.waitForLoadState("networkidle");
       return;
     } catch {
+      if (page.url().includes("/login")) {
+        await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+        try {
+          await page.waitForURL(/\/dashboard/, { timeout: 10000 });
+          return;
+        } catch {
+          // Fall through to retry
+        }
+      }
+
       if (attempt === retries) {
         throw new Error(
           `Login failed after ${retries + 1} attempts for user ${user.email}. Page URL: ${page.url()}`
         );
       }
-      // Clear state and retry
       await page.context().clearCookies();
-      await page.context().addCookies([
-        {
-          name: "cookie-consent",
-          value: JSON.stringify({
-            version: 1,
-            necessary: true,
-            analytics: false,
-            timestamp: Date.now(),
-          }),
-          domain: "localhost",
-          path: "/",
-        },
-      ]);
+      await setCookieConsent(page);
     }
   }
 }

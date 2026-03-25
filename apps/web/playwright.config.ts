@@ -13,7 +13,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  workers: isCI ? 1 : undefined,
+  workers: isCI ? 1 : 3,
   reporter: [["html", { open: "never" }], ["list"]],
   timeout: 60000,
   expect: {
@@ -25,6 +25,7 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+    navigationTimeout: 30000,
   },
 
   projects: [
@@ -54,9 +55,12 @@ export default defineConfig({
   webServer: {
     command: "yarn dev",
     url: "http://localhost:3000",
-    // Always start fresh server to ensure correct test database is used
-    // Previous: reuseExistingServer: !isCI (would reuse dev server with wrong DB)
-    reuseExistingServer: false,
+    // In CI always start fresh; locally reuse if a server is already running.
+    // WARNING: global-setup.ts only pushes the Prisma schema to the test DB —
+    // it does NOT verify that a reused server is connected to the same database
+    // or has the current schema. If tests fail after schema changes, restart
+    // the local dev server or set this to `false`.
+    reuseExistingServer: !isCI,
     timeout: 120000,
     env: {
       ...process.env,

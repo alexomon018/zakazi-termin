@@ -37,6 +37,7 @@ export function TimeSlotsList({
           initial="hidden"
           animate="visible"
           exit="exit"
+          data-testid="time-slots-list"
           className="px-5 py-6 md:px-6 md:py-8 w-full md:w-[280px] lg:w-[320px]"
         >
           <h3 className="mb-6 text-lg font-semibold text-foreground">
@@ -60,6 +61,7 @@ export function TimeSlotsList({
                       key={slot}
                       type="button"
                       onClick={() => onSlotSelect(slot)}
+                      data-testid="time-slot"
                       variants={staggerItem}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${

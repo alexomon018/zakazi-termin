@@ -85,12 +85,13 @@ export function UserProfileClient({ user, salonName }: UserProfileClientProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div data-testid="public-event-types-list" className="space-y-3">
             {visibleEventTypes.map((eventType) => (
               <Link
                 key={eventType.id}
                 href={`/${normalizeToSlug(salonName)}/${eventType.slug}`}
                 className="block"
+                data-testid={`public-event-type-${eventType.slug}`}
               >
                 <Card className="transition-shadow cursor-pointer hover:shadow-md">
                   <CardContent className="p-0">

@@ -27,7 +27,7 @@ export class EventTypesListPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.EVENT_TYPES);
+    await this.navigateTo(ROUTES.EVENT_TYPES);
     await this.waitForPageLoad();
   }
 
@@ -183,7 +183,7 @@ export class CreateEventTypePage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.EVENT_TYPES_NEW);
+    await this.navigateTo(ROUTES.EVENT_TYPES_NEW);
     await this.waitForPageLoad();
   }
 
@@ -360,7 +360,7 @@ export class EditEventTypePage extends BasePage {
   }
 
   async goto(eventTypeId: number | string): Promise<void> {
-    await this.page.goto(ROUTES.eventTypeEdit(eventTypeId));
+    await this.navigateTo(ROUTES.eventTypeEdit(eventTypeId));
     await this.waitForPageLoad();
   }
 

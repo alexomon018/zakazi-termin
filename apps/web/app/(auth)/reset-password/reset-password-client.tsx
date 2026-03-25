@@ -179,9 +179,11 @@ export default function ResetPasswordClient() {
             </div>
 
             <LoadingButton
+              type="submit"
               isLoading={isLoading}
               loadingText="Cuvanje..."
               disabled={isLoading || !hasRequiredParams}
+              className="w-full h-12 text-base font-medium transition-all duration-300 shadow-glow hover:shadow-lg"
             >
               Sacuvaj novu lozinku
             </LoadingButton>
