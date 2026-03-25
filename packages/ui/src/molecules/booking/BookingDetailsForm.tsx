@@ -88,6 +88,7 @@ export function BookingDetailsForm({
             type="text"
             placeholder="Vaše ime"
             disabled={isRescheduling || isPending}
+            data-testid="booking-name-input"
             {...register("name")}
             className={errors.name ? "border-red-500" : ""}
           />
@@ -106,6 +107,7 @@ export function BookingDetailsForm({
             type="text"
             placeholder="vas@email.com"
             disabled={isRescheduling || isPending}
+            data-testid="booking-email-input"
             {...register("email")}
             className={errors.email ? "border-red-500" : ""}
           />
@@ -152,6 +154,7 @@ export function BookingDetailsForm({
                 rows={3}
                 placeholder="Dodatne informacije ili pitanja..."
                 disabled={isPending}
+                data-testid="booking-notes-input"
                 {...register("notes")}
                 className="px-3 py-2 w-full rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               />
@@ -159,7 +162,12 @@ export function BookingDetailsForm({
           </>
         )}
 
-        <Button type="submit" className="btn-brand w-full" disabled={isPending}>
+        <Button
+          type="submit"
+          className="btn-brand w-full"
+          disabled={isPending}
+          data-testid="booking-confirm-button"
+        >
           {isPending
             ? isRescheduling
               ? "Menjam termin..."

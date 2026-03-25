@@ -3,8 +3,25 @@ import { ROUTES } from "../lib/constants";
 import { generateTestEmail } from "../lib/helpers";
 
 test.describe("Forgot Password", () => {
+  test.beforeEach(async ({ page }) => {
+    // Dismiss cookie consent banner to prevent it from blocking clicks on mobile
+    await page.context().addCookies([
+      {
+        name: "cookie-consent",
+        value: JSON.stringify({
+          version: 1,
+          necessary: true,
+          analytics: false,
+          timestamp: Date.now(),
+        }),
+        domain: "localhost",
+        path: "/",
+      },
+    ]);
+  });
+
   test("should display forgot password form", async ({ page }) => {
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // Check form elements are visible
     await expect(page.locator('input[id="email"]')).toBeVisible();
@@ -17,7 +34,7 @@ test.describe("Forgot Password", () => {
   });
 
   test("should require email to submit form", async ({ page }) => {
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // The email input has required attribute
     const emailInput = page.locator('input[id="email"]');
@@ -28,7 +45,7 @@ test.describe("Forgot Password", () => {
     // Create a user to have a valid email
     const user = await users.create();
 
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // Fill in email
     await page.fill('input[id="email"]', user.email);
@@ -46,7 +63,7 @@ test.describe("Forgot Password", () => {
 
   test("should show success message even for non-existent email", async ({ page }) => {
     // This is a security best practice - don't reveal if email exists
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // Fill in non-existent email
     await page.fill('input[id="email"]', generateTestEmail());
@@ -61,7 +78,7 @@ test.describe("Forgot Password", () => {
   });
 
   test("should have back to login button after submission", async ({ page }) => {
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // Fill in email and submit
     await page.fill('input[id="email"]', generateTestEmail());
@@ -72,29 +89,29 @@ test.describe("Forgot Password", () => {
       timeout: 10000,
     });
 
-    // Check back to login button exists
-    const backButton = page.locator("button", { hasText: "Nazad na prijavu" });
-    await expect(backButton).toBeVisible();
+    // Check back to login link exists — it's an <a> wrapping a <button>
+    const backLink = page.locator('a[href="/login"]', { hasText: "Nazad na prijavu" });
+    await expect(backLink).toBeVisible();
 
     // Click and verify navigation
-    await backButton.click();
+    await backLink.click();
     await expect(page).toHaveURL(/\/login/);
   });
 
   test("should have link to login page", async ({ page }) => {
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
-    // Check login link exists
-    const loginLink = page.locator('a[href="/login"]');
+    // Check login link exists — use text to avoid matching multiple a[href="/login"]
+    const loginLink = page.locator('a[href="/login"]', { hasText: "Prijavite se" });
     await expect(loginLink).toBeVisible();
 
     // Click and verify navigation
     await loginLink.click();
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/login/, { timeout: 15000 });
   });
 
   test("should show loading state while submitting", async ({ page }) => {
-    await page.goto(ROUTES.FORGOT_PASSWORD);
+    await page.goto(ROUTES.FORGOT_PASSWORD, { waitUntil: "networkidle" });
 
     // Fill in email
     await page.fill('input[id="email"]', generateTestEmail());

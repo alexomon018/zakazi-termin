@@ -19,7 +19,7 @@ export class PublicProfilePage extends BasePage {
   }
 
   async goto(salonName: string): Promise<void> {
-    await this.page.goto(ROUTES.publicBookingPage(salonName));
+    await this.navigateTo(ROUTES.publicBookingPage(salonName));
     await this.waitForPageLoad();
   }
 
@@ -99,7 +99,7 @@ export class EventTypeBookingPage extends BasePage {
   }
 
   async goto(salonName: string, eventSlug: string): Promise<void> {
-    await this.page.goto(ROUTES.publicEventType(salonName, eventSlug));
+    await this.navigateTo(ROUTES.publicEventType(salonName, eventSlug));
     await this.waitForPageLoad();
   }
 
@@ -158,11 +158,16 @@ export class EventTypeBookingPage extends BasePage {
   }
 
   /**
-   * Select a time slot
+   * Select a time slot and confirm the selection
    */
   async selectTimeSlot(index = 0): Promise<void> {
     const slots = this.getTimeSlots();
     await slots.nth(index).click();
+
+    // After selecting a slot, click the "Potvrdi i nastavi" button to proceed to booking form
+    const confirmSlotButton = this.page.locator('button:has-text("Potvrdi i nastavi")');
+    await confirmSlotButton.waitFor({ state: "visible", timeout: 5000 });
+    await confirmSlotButton.click();
   }
 
   /**
@@ -252,7 +257,7 @@ export class BookingConfirmationPage extends BasePage {
   }
 
   async goto(bookingUid: string): Promise<void> {
-    await this.page.goto(ROUTES.bookingDetails(bookingUid));
+    await this.navigateTo(ROUTES.bookingDetails(bookingUid));
     await this.waitForPageLoad();
   }
 

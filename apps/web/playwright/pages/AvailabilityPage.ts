@@ -38,7 +38,7 @@ export class AvailabilityPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.AVAILABILITY);
+    await this.navigateTo(ROUTES.AVAILABILITY);
     await this.waitForPageLoad();
   }
 

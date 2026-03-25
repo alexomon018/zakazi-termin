@@ -1,6 +1,8 @@
 import { expect, test } from "../fixtures";
 import { EventTypeBookingPage, PublicProfilePage } from "../pages";
 
+test.describe.configure({ mode: "serial" });
+
 test.describe("Complete Booking Flow", () => {
   test("should show time slots after selecting a date", async ({ page, users }) => {
     const user = await users.create({ withSchedule: true, withEventType: true });
@@ -112,7 +114,8 @@ test.describe("Complete Booking Flow", () => {
     await profilePage.expectEventTypeVisible("30 Minute Meeting");
     await profilePage.selectEventType("30 Minute Meeting");
 
-    await expect(page.url()).toContain(`/${user.salonName}/30-minute-meeting`);
+    // Wait for navigation to complete after clicking event type
+    await page.waitForURL(new RegExp(`/${user.salonName}/30-minute-meeting`), { timeout: 10000 });
 
     const bookingPage = new EventTypeBookingPage(page);
     await bookingPage.expectEventDetailsVisible();

@@ -34,19 +34,24 @@ export function BookingEventHeader({
           </div>
         )}
       </div>
-      <h2 className="mb-2 text-2xl font-bold text-foreground">
+      <h2 data-testid="booking-event-title" className="mb-2 text-2xl font-bold text-foreground">
         {isRescheduling ? `Promena termina: ${eventTitle}` : eventTitle}
       </h2>
       {eventDescription && (
-        <p className="mx-auto max-w-lg text-muted-foreground">{eventDescription}</p>
+        <p
+          data-testid="booking-event-description"
+          className="mx-auto max-w-lg text-muted-foreground"
+        >
+          {eventDescription}
+        </p>
       )}
       <div className="flex flex-wrap gap-4 justify-center items-center mt-4 text-sm text-muted-foreground">
-        <span className="flex gap-1 items-center">
+        <span data-testid="booking-event-duration" className="flex gap-1 items-center">
           <Clock className="w-4 h-4" />
           {eventLength} minuta
         </span>
         {eventLocation && (
-          <span className="flex gap-1 items-center">
+          <span data-testid="booking-event-location" className="flex gap-1 items-center">
             <MapPin className="w-4 h-4" />
             {eventLocation}
           </span>

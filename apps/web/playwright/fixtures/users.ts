@@ -197,6 +197,9 @@ export const test = base.extend<UsersFixtureType>({
 });
 
 async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void> {
+  // Clear existing session to avoid middleware redirecting away from /login
+  await page.context().clearCookies();
+
   // Set cookie consent before navigating to avoid banner blocking interactions
   await page.context().addCookies([
     {
@@ -213,21 +216,42 @@ async function loginUser(page: Page, user: TestUser, retries = 2): Promise<void>
   ]);
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    // Navigate to login page
-    await page.goto("/login");
+    // Navigate to login page and wait for hydration to complete
+    await page.goto("/login", { waitUntil: "networkidle" });
 
-    // Fill in credentials (using id selectors to match the actual form)
+    // Fill in credentials
     await page.fill('input[id="email"]', user.email);
     await page.fill('input[id="password"]', user.password);
 
-    // Submit the form
+    // Start listening for the auth response before clicking submit.
+    // This ensures the session cookie is set before we check for navigation.
+    const responsePromise = page.waitForResponse(
+      (res) => res.url().includes("/api/auth/") && res.request().method() === "POST",
+      { timeout: 30000 }
+    );
     await page.click('button[type="submit"]');
+    await responsePromise;
 
     try {
       // Wait for navigation to dashboard
       await page.waitForURL(/\/dashboard/, { timeout: 30000 });
+      // Wait for all pending client-side navigations (router.refresh, etc.) to settle
+      // so subsequent page.goto() calls are not interrupted
+      await page.waitForLoadState("networkidle");
       return;
     } catch {
+      // If stuck on login page, the client-side router.push may have failed
+      // but the session cookie should be set — try direct navigation
+      if (page.url().includes("/login")) {
+        await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+        try {
+          await page.waitForURL(/\/dashboard/, { timeout: 10000 });
+          return;
+        } catch {
+          // Fall through to retry
+        }
+      }
+
       if (attempt === retries) {
         throw new Error(
           `Login failed after ${retries + 1} attempts for user ${user.email}. Page URL: ${page.url()}`

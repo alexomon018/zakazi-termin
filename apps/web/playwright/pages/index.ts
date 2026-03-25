@@ -25,9 +25,22 @@ export { AvailabilityPage } from "./AvailabilityPage";
 
 export { BillingPage } from "./BillingPage";
 
+export { DashboardHomePage } from "./DashboardHomePage";
+
+export { TeamSettingsPage } from "./TeamSettingsPage";
+
+export { OutOfOfficePage } from "./OutOfOfficePage";
+
 // Public Pages
 export {
   PublicProfilePage,
   EventTypeBookingPage,
   BookingConfirmationPage,
 } from "./PublicBookingPage";
+
+export {
+  LandingPage,
+  SalonDiscoveryPage,
+  HelpCenterPage,
+  FAQPage,
+} from "./LandingPage";

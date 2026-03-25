@@ -37,7 +37,10 @@ export function BookingConfirmation({
           <div className="flex justify-center items-center mx-auto mb-6 w-16 h-16 bg-green-100 rounded-full dark:bg-green-900">
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-foreground">
+          <h2
+            data-testid="booking-success-message"
+            className="mb-2 text-2xl font-bold text-foreground"
+          >
             {isRescheduling
               ? "Termin je promenjen!"
               : requiresConfirmation

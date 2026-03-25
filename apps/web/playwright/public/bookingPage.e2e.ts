@@ -20,7 +20,7 @@ test.describe("Public Booking Page", () => {
 
   test("should show 404 for non-existent user", async ({ page }) => {
     // Navigate to a non-existent user's page
-    await page.goto("/nonexistent-user-12345");
+    await page.goto("/nonexistent-user-12345", { waitUntil: "domcontentloaded" });
 
     // Should show some kind of not found message
     const notFound =

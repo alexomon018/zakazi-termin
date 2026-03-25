@@ -19,6 +19,15 @@ export const ROUTES = {
   SETTINGS_APPEARANCE: "/dashboard/settings/appearance",
   SETTINGS_OUT_OF_OFFICE: "/dashboard/settings/out-of-office",
   SETTINGS_BILLING: "/dashboard/settings/billing",
+  SETTINGS_TEAM: "/dashboard/settings/team",
+
+  // Public routes
+  SALONI: "/saloni",
+  HELP: "/help",
+  FAQ: "/faq",
+
+  // Onboarding
+  ONBOARDING_COMPLETE_PROFILE: "/onboarding/complete-profile",
 
   // Public booking routes
   publicBookingPage: (salonName: string) => `/${salonName}`,

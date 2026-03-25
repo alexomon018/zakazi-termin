@@ -43,7 +43,7 @@ test.describe("Checkout Flow", () => {
     await subscription.createWithActiveSubscription(user.id, { planTier: "starter" });
 
     // Navigate to billing page with success param (simulating redirect from Stripe)
-    await page.goto("/dashboard/settings/billing?success=true");
+    await page.goto("/dashboard/settings/billing?success=true", { waitUntil: "domcontentloaded" });
     await billingPage.waitForPageLoad();
 
     // Verify subscription is now active
@@ -83,7 +83,7 @@ test.describe("Checkout Flow", () => {
     await subscription.createWithActiveSubscription(user.id, { planTier: "growth" });
 
     // Navigate to billing page with success param
-    await page.goto("/dashboard/settings/billing?success=true");
+    await page.goto("/dashboard/settings/billing?success=true", { waitUntil: "domcontentloaded" });
     await billingPage.waitForPageLoad();
 
     // Verify subscription is now active
@@ -117,7 +117,7 @@ test.describe("Checkout Flow", () => {
     await subscription.createWithActiveSubscription(user.id, { planTier: "growth_yearly" });
 
     // Navigate to billing page with success param
-    await page.goto("/dashboard/settings/billing?success=true");
+    await page.goto("/dashboard/settings/billing?success=true", { waitUntil: "domcontentloaded" });
     await billingPage.waitForPageLoad();
 
     // Verify subscription is now active
@@ -144,7 +144,7 @@ test.describe("Checkout Flow", () => {
     await users.login(user);
 
     // Navigate to billing page with canceled param (simulating canceled checkout)
-    await page.goto("/dashboard/settings/billing?canceled=true");
+    await page.goto("/dashboard/settings/billing?canceled=true", { waitUntil: "domcontentloaded" });
 
     const billingPage = new BillingPage(page);
     await billingPage.waitForPageLoad();

@@ -19,6 +19,14 @@ export abstract class BasePage {
   abstract goto(...args: unknown[]): Promise<void>;
 
   /**
+   * Navigate to a URL, waiting only for domcontentloaded to avoid
+   * hanging on slow middleware fetch calls (profile/subscription checks).
+   */
+  protected async navigateTo(url: string): Promise<void> {
+    await this.page.goto(url, { waitUntil: "domcontentloaded" });
+  }
+
+  /**
    * Wait for the page to be fully loaded
    */
   async waitForPageLoad(): Promise<void> {
