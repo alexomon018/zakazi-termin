@@ -1,47 +1,56 @@
+import { useTheme } from "@/lib/theme-context";
 import LottieView from "lottie-react-native";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Animated, Easing, StyleSheet } from "react-native";
 import animation from "../../hair-saloon-animation.json";
 
 interface AnimatedSplashProps {
   isReady: boolean;
   onFinish: () => void;
+  backgroundColor?: string;
 }
 
-export function AnimatedSplash({ isReady, onFinish }: AnimatedSplashProps) {
+export function AnimatedSplash({ isReady, onFinish, backgroundColor }: AnimatedSplashProps) {
+  const { theme } = useTheme();
   const containerOpacity = useRef(new Animated.Value(1)).current;
-  const lottieRef = useRef<LottieView>(null);
+  const animationFinished = useRef(false);
+  const readyRef = useRef(isReady);
+  readyRef.current = isReady;
+
+  const fadeOut = useCallback(() => {
+    Animated.timing(containerOpacity, {
+      toValue: 0,
+      duration: 350,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) onFinish();
+    });
+  }, [containerOpacity, onFinish]);
+
+  const handleAnimationFinish = useCallback(() => {
+    animationFinished.current = true;
+    if (readyRef.current) fadeOut();
+  }, [fadeOut]);
 
   useEffect(() => {
-    lottieRef.current?.play();
-  }, []);
+    if (isReady && animationFinished.current) fadeOut();
+  }, [isReady, fadeOut]);
 
-  useEffect(() => {
-    if (!isReady) return;
-
-    const timeout = setTimeout(() => {
-      Animated.timing(containerOpacity, {
-        toValue: 0,
-        duration: 350,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }).start(({ finished }) => {
-        if (finished) onFinish();
-      });
-    }, 1500);
-
-    return () => clearTimeout(timeout);
-  }, [isReady, containerOpacity, onFinish]);
-
-  const backgroundColor = "#BA3678";
+  const splashBackgroundColor = backgroundColor ?? theme.colors.primary;
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor, opacity: containerOpacity }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        { backgroundColor: splashBackgroundColor, opacity: containerOpacity },
+      ]}
+    >
       <LottieView
-        ref={lottieRef}
         source={animation}
         autoPlay
         loop={false}
+        onAnimationFinish={handleAnimationFinish}
         style={styles.animation}
       />
     </Animated.View>
