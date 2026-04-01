@@ -34,7 +34,9 @@
       "@salonko/config": ["../../packages/config/src"],
       "@salonko/config/*": ["../../packages/config/src/*"],
       "@salonko/trpc": ["../../packages/trpc/src"],
-      "@salonko/trpc/*": ["../../packages/trpc/src/*"]
+      "@salonko/trpc/*": ["../../packages/trpc/src/*"],
+      "react-hook-form": ["./node_modules/react-hook-form"],
+      "react-hook-form/*": ["./node_modules/react-hook-form/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

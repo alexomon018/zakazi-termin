@@ -9,6 +9,8 @@ import Constants from "expo-constants";
  *
  * In production:
  *  - Uses EXPO_PUBLIC_API_URL (must be set in EAS build config)
+ *  - Returns empty string during `expo export` static rendering when the env var
+ *    is unavailable — the real value is baked into the JS bundle by EAS Build.
  */
 function getApiUrl(): string {
   const isProduction = process.env.NODE_ENV === "production";
@@ -22,7 +24,7 @@ function getApiUrl(): string {
   }
 
   if (isProduction) {
-    throw new Error("EXPO_PUBLIC_API_URL must be set in production");
+    return "";
   }
 
   const debuggerHost =

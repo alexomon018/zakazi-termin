@@ -26,6 +26,12 @@
       "bundler": "metro",
       "output": "static"
     },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/81fe5488-5e98-4892-ac99-ea5bfb736344"
+    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
