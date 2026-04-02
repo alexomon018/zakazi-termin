@@ -4,12 +4,11 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "jsx": "react-jsx",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
-    "types": ["react", "node"]
+    "types": ["node"],
+    "allowJs": false
   },
-  "include": ["src"],
+  "include": ["src", "generated/client/index.d.ts"],
   "references": [{ "path": "../config" }]
 }

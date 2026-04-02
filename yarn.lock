@@ -6316,6 +6316,7 @@ __metadata:
     "@upstash/ratelimit": "npm:^2.0.8"
     "@upstash/redis": "npm:^1.35.7"
     dayjs: "npm:^1.11.13"
+    typescript: "npm:^5.0.0"
   languageName: unknown
   linkType: soft
 

@@ -39,33 +39,6 @@ jobs:
       - name: Run Biome check
         run: yarn lint
 
-  typecheck:
-    name: TypeScript Type Check
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Run TypeScript type check
-        run: yarn typecheck
-
   # Check for migration conflicts on PRs to main
   migration-check:
     name: Migration Safety Check

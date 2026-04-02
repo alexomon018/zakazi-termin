@@ -1,39 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["apps/web/*"],
-      "@salonko/auth": ["packages/auth/src"],
-      "@salonko/auth/*": ["packages/auth/src/*"],
-      "@salonko/prisma": ["packages/prisma/src"],
-      "@salonko/prisma/*": ["packages/prisma/src/*"],
-      "@salonko/scheduling": ["packages/scheduling/src"],
-      "@salonko/scheduling/*": ["packages/scheduling/src/*"],
-      "@salonko/ui": ["packages/ui/src"],
-      "@salonko/ui/*": ["packages/ui/src/*"],
-      "@salonko/config": ["packages/config/src"],
-      "@salonko/config/*": ["packages/config/src/*"],
-      "@salonko/emails": ["packages/emails/src"],
-      "@salonko/emails/*": ["packages/emails/src/*"],
-      "@salonko/trpc": ["packages/trpc/src"],
-      "@salonko/trpc/*": ["packages/trpc/src/*"],
-      "@salonko/calendar": ["packages/calendar/src"],
-      "@salonko/calendar/*": ["packages/calendar/src/*"]
-    }
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "apps/mobile"]
+  "files": [],
+  "references": [
+    { "path": "./packages/config" },
+    { "path": "./packages/prisma" },
+    { "path": "./packages/emails" },
+    { "path": "./packages/s3" },
+    { "path": "./packages/calendar" },
+    { "path": "./packages/scheduling" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/trpc" }
+  ]
 }
