@@ -1,18 +1,8 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
+    "noEmit": true,
     "plugins": [
       {
         "name": "next"
@@ -35,10 +25,42 @@
       "@salonko/config/*": ["../../packages/config/src/*"],
       "@salonko/trpc": ["../../packages/trpc/src"],
       "@salonko/trpc/*": ["../../packages/trpc/src/*"],
+      "@salonko/calendar": ["../../packages/calendar/src"],
+      "@salonko/calendar/*": ["../../packages/calendar/src/*"],
+      "@salonko/emails": ["../../packages/emails/src"],
+      "@salonko/emails/*": ["../../packages/emails/src/*"],
       "react-hook-form": ["./node_modules/react-hook-form"],
       "react-hook-form/*": ["./node_modules/react-hook-form/*"]
-    }
+    },
+    "types": ["react", "react-dom", "node", "google.maps"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "lib/**/*.ts",
+    "lib/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "content/**/*.ts",
+    "content/**/*.tsx",
+    "types/**/*.ts",
+    "middleware.ts",
+    "instrumentation.ts",
+    "instrumentation-client.ts",
+    "sentry.edge.config.ts",
+    "sentry.server.config.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "playwright", "playwright-report", "test-results"],
+  "references": [
+    { "path": "../../packages/auth" },
+    { "path": "../../packages/calendar" },
+    { "path": "../../packages/config" },
+    { "path": "../../packages/emails" },
+    { "path": "../../packages/prisma" },
+    { "path": "../../packages/s3" },
+    { "path": "../../packages/scheduling" },
+    { "path": "../../packages/trpc" }
+  ]
 }

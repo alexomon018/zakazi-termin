@@ -17,6 +17,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
+    "tsc": "tsc -b && tsc --noEmit -p apps/web/tsconfig.json",
     "typecheck": "turbo run typecheck",
     "migrate": "node ./scripts/migrate-preview.mjs",
     "db:generate": "turbo run db:generate",

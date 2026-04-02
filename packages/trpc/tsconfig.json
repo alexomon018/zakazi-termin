@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@salonko/auth/*": ["../auth/src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../auth" },
+    { "path": "../calendar" },
+    { "path": "../config" },
+    { "path": "../emails" },
+    { "path": "../prisma" },
+    { "path": "../s3" },
+    { "path": "../scheduling" }
+  ]
+}

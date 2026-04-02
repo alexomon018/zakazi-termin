@@ -4,11 +4,9 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",
-    "types": ["react", "node"]
+    "types": ["node"]
   },
-  "include": ["src"],
-  "references": [{ "path": "../config" }]
+  "include": ["src"]
 }
