@@ -150,8 +150,11 @@ jobs:
   sync-develop-schema:
     name: Sync Develop Database
     runs-on: ubuntu-latest
-    needs: migrate-production
-    if: always() && needs.migrate-production.result == 'success'
+    needs: [validate, migrate-production]
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.migrate-production.result == 'success' || needs.migrate-production.result == 'skipped')
 
     steps:
       - name: Checkout code
@@ -192,8 +195,11 @@ jobs:
   cleanup-old-backups:
     name: Cleanup Old Backup Branches
     runs-on: ubuntu-latest
-    needs: migrate-production
-    if: always() && needs.migrate-production.result == 'success'
+    needs: [validate, migrate-production]
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.migrate-production.result == 'success' || needs.migrate-production.result == 'skipped')
 
     steps:
       - name: Checkout code
@@ -207,8 +213,11 @@ jobs:
   eas-update-production:
     name: EAS Update (Production)
     runs-on: ubuntu-latest
-    needs: migrate-production
-    if: always() && needs.migrate-production.result == 'success'
+    needs: [validate, migrate-production]
+    if: |
+      always() &&
+      needs.validate.result == 'success' &&
+      (needs.migrate-production.result == 'success' || needs.migrate-production.result == 'skipped')
 
     steps:
       - name: Checkout code
