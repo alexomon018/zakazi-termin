@@ -101,9 +101,10 @@ jobs:
       - name: Publish EAS Update
         working-directory: apps/mobile
         run: |
-          eas update --channel staging --message "staging: ${{ github.event.head_commit.message }}"
+          eas update --channel staging --message "staging: $COMMIT_MESSAGE"
         env:
           EXPO_PUBLIC_API_URL: https://dev.salonko.rs
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
       - name: Summary
         run: |

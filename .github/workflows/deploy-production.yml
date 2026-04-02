@@ -236,9 +236,10 @@ jobs:
       - name: Publish EAS Update
         working-directory: apps/mobile
         run: |
-          eas update --channel production --message "production: ${{ github.event.head_commit.message }}"
+          eas update --channel production --message "production: $COMMIT_MESSAGE"
         env:
           EXPO_PUBLIC_API_URL: https://salonko.rs
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
       - name: Summary
         run: |
