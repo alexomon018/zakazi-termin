@@ -4,6 +4,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
+    "lib": ["dom", "esnext"],
     "rootDir": "src",
     "outDir": "dist",
     "types": ["node"]

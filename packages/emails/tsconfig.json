@@ -4,6 +4,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",

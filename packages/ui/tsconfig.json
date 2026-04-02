@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
     "noEmit": true,
     "jsx": "react-jsx",
     "types": ["react", "react-dom", "google.maps"],
