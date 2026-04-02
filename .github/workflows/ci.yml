@@ -63,11 +63,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma Client
-        run: yarn db:generate
-        env:
-          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
-
       - name: Run TypeScript type check
         run: yarn typecheck
 

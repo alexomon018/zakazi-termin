@@ -69,3 +69,45 @@ jobs:
           echo "| **Branch** | develop |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Migrations Applied** | ${{ steps.migration-status.outputs.has_pending == 'true' && 'Yes' || 'No (up to date)' }} |" >> $GITHUB_STEP_SUMMARY
+
+  eas-update-staging:
+    name: EAS Update (Staging)
+    runs-on: ubuntu-latest
+    needs: migrate-staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Publish EAS Update
+        working-directory: apps/mobile
+        run: |
+          eas update --channel staging --message "staging: $COMMIT_MESSAGE"
+        env:
+          EXPO_PUBLIC_API_URL: https://dev.salonko.rs
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+
+      - name: Summary
+        run: |
+          echo "## Mobile OTA Update (Staging)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Published EAS Update to the **staging** channel." >> $GITHUB_STEP_SUMMARY
