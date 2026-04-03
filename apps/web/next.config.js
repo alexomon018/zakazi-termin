@@ -12,10 +12,13 @@ const nextConfig = {
   outputFileTracingRoot: path.resolve(__dirname, "../.."),
   outputFileTracingIncludes: {
     // Include Prisma generated client + native engine for all server entries.
-    "/**/*": ["../../packages/prisma/generated/client/**"],
+    "/**/*": [
+      "../../packages/prisma/generated/client/**",
+      "../../node_modules/.prisma/client/**",
+    ],
   },
   // Prevent Prisma from being bundled; keeps native engine resolution working on Vercel.
-  serverExternalPackages: ["@prisma/client", "prisma"],
+  serverExternalPackages: ["@salonko/prisma", "@prisma/client", "@prisma/engines", "prisma"],
   images: {
     remotePatterns: [
       {
@@ -26,7 +29,6 @@ const nextConfig = {
   },
   transpilePackages: [
     "@salonko/auth",
-    "@salonko/prisma",
     "@salonko/s3",
     "@salonko/ui",
     "@salonko/trpc",
