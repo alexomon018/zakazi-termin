@@ -18,7 +18,7 @@ const nextConfig = {
     ],
   },
   // Prevent Prisma from being bundled; keeps native engine resolution working on Vercel.
-  serverExternalPackages: ["@salonko/prisma", "@prisma/client", "@prisma/engines", "prisma"],
+  serverExternalPackages: ["@prisma/client", "@prisma/engines", "prisma"],
   images: {
     remotePatterns: [
       {
@@ -28,6 +28,7 @@ const nextConfig = {
     ],
   },
   transpilePackages: [
+    "@salonko/prisma",
     "@salonko/auth",
     "@salonko/s3",
     "@salonko/ui",
