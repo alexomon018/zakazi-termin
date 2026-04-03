@@ -16,7 +16,8 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const systemScheme = useColorScheme() ?? "light";
+  const rawScheme = useColorScheme();
+  const systemScheme = rawScheme === "dark" ? "dark" : "light";
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const meQuery = trpc.user.me.useQuery(undefined, {
     retry: false,
