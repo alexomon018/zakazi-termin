@@ -4436,6 +4436,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prisma/nextjs-monorepo-workaround-plugin@npm:^7.6.0":
+  version: 7.6.0
+  resolution: "@prisma/nextjs-monorepo-workaround-plugin@npm:7.6.0"
+  checksum: 10c0/fcc983631b933f39bef7a4745b00199bf48be3f291ffcd56763d182846c194c0bb1fac6d9be5346d7852af083fd2044fa768b8bb4ef57696d39a4c2918b32299
+  languageName: node
+  linkType: hard
+
 "@radix-ui/number@npm:1.1.1":
   version: 1.1.1
   resolution: "@radix-ui/number@npm:1.1.1"
@@ -6432,6 +6439,7 @@ __metadata:
   dependencies:
     "@hookform/resolvers": "npm:^5.2.2"
     "@playwright/test": "npm:^1.57.0"
+    "@prisma/nextjs-monorepo-workaround-plugin": "npm:^7.6.0"
     "@radix-ui/react-accordion": "npm:^1.2.12"
     "@radix-ui/react-dialog": "npm:^1.1.15"
     "@radix-ui/react-label": "npm:^2.1.8"
