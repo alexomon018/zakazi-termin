@@ -7,7 +7,6 @@
     "icon": "./assets/icon.png",
     "scheme": "salonko",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash.png",
       "backgroundColor": "#BA3678"
@@ -37,7 +36,9 @@
       "expo-secure-store",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
-      "@sentry/react-native/expo"
+      "@sentry/react-native/expo",
+      "@sentry/react-native",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
