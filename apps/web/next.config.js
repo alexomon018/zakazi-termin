@@ -1,4 +1,5 @@
 const path = require("path");
+const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 
 // Load .env from monorepo root
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
@@ -11,14 +12,9 @@ const nextConfig = {
   // Ensure Next's output file tracing can "see" outside apps/web and ships the query engine.
   outputFileTracingRoot: path.resolve(__dirname, "../.."),
   outputFileTracingIncludes: {
-    // Include Prisma generated client + native engine for all server entries.
-    "/**/*": [
-      "../../packages/prisma/generated/client/**",
-      "../../node_modules/.prisma/client/**",
-    ],
+    "/**/*": ["../../packages/prisma/generated/client/**"],
   },
-  // Prevent Prisma from being bundled; keeps native engine resolution working on Vercel.
-  serverExternalPackages: ["@prisma/client", "@prisma/engines", "prisma"],
+  serverExternalPackages: ["@prisma/client", "prisma"],
   images: {
     remotePatterns: [
       {
@@ -36,6 +32,12 @@ const nextConfig = {
     "@salonko/scheduling",
     "@salonko/config",
   ],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+    return config;
+  },
   async headers() {
     return [
       {
