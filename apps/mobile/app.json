@@ -4,19 +4,20 @@
     "slug": "salonko",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "scheme": "salonko",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "backgroundColor": "#BA3678"
-    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.zakazitermin.app"
+      "bundleIdentifier": "com.zakazitermin.app",
+      "icon": {
+        "light": "./assets/icons/ios-light.png",
+        "dark": "./assets/icons/ios-dark.png",
+        "tinted": "./assets/icons/ios-tinted.png"
+      }
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.zakazitermin.app"
@@ -38,7 +39,16 @@
       "expo-web-browser",
       "@sentry/react-native/expo",
       "@sentry/react-native",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icons/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/icons/splash-icon-dark.png"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

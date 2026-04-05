@@ -1,12 +1,11 @@
-import { AppButton, AppScreen, AppText } from "@/components/atoms";
+import { AppButton, AppScreen, AppText, SalonkoIcon } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
-import { Calendar } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 export default function LoginScreen() {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
   const { loginWithOAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,12 +38,6 @@ export default function LoginScreen() {
           gap: theme.spacing.md,
         },
         logoIcon: {
-          width: 56,
-          height: 56,
-          borderRadius: theme.radius.md,
-          backgroundColor: theme.colors.primary,
-          alignItems: "center",
-          justifyContent: "center",
           marginBottom: theme.spacing.sm,
         },
         bottom: {
@@ -60,7 +53,10 @@ export default function LoginScreen() {
       <View style={styles.container}>
         <View style={styles.center}>
           <View style={styles.logoIcon}>
-            <Calendar size={28} color={theme.colors.primaryForeground} />
+            <SalonkoIcon
+              size={40}
+              color={colorScheme === "dark" ? "#FFFFFF" : theme.colors.primary}
+            />
           </View>
           <AppText variant="h1">Salonko</AppText>
           <AppText variant="bodySm" muted centered>
