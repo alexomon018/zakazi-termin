@@ -18,6 +18,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SalonkoIcon } from "../../atoms/Icons";
 
 interface DashboardNavProps {
   user: {
@@ -131,9 +132,7 @@ export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: Dashb
             href={session ? "/dashboard" : "/"}
             className="flex flex-shrink-0 items-center gap-2.5"
           >
-            <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary">
-              <Calendar className="w-4 h-4 text-white" aria-hidden="true" />
-            </div>
+            <SalonkoIcon className="w-6 h-6 text-primary dark:text-white" aria-hidden="true" />
             <span className="text-lg font-semibold text-foreground">Salonko</span>
           </Link>
 

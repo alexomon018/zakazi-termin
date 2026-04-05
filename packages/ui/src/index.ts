@@ -69,7 +69,7 @@ export {
 } from "./atoms/Command";
 export { PhoneInput } from "./atoms/PhoneInput";
 export { Checkbox } from "./atoms/Checkbox";
-export { GoogleIcon } from "./atoms/Icons";
+export { GoogleIcon, SalonkoIcon } from "./atoms/Icons";
 export { FormErrorMessage } from "./atoms/FormErrorMessage";
 export { ServerErrorAlert } from "./atoms/ServerErrorAlert";
 export { LoadingButton } from "./atoms/LoadingButton";

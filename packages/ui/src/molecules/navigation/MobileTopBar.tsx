@@ -7,11 +7,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@salonko/ui/atoms/DropdownMenu";
-import { Calendar, CalendarOff, HelpCircle, LogOut, Settings, User } from "lucide-react";
+import { CalendarOff, HelpCircle, LogOut, Settings, User } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
+import { SalonkoIcon } from "../../atoms/Icons";
 
 interface MobileTopBarProps {
   user: {
@@ -48,9 +49,7 @@ export const MobileTopBar = memo(function MobileTopBar({ user, salonIconUrl }: M
     >
       {/* Logo */}
       <Link href="/dashboard" className="flex gap-2 items-center">
-        <div className="flex justify-center items-center w-8 h-8 rounded-lg bg-primary">
-          <Calendar className="w-4 h-4 text-primary-foreground" aria-hidden="true" />
-        </div>
+        <SalonkoIcon className="w-6 h-6 text-primary dark:text-white" aria-hidden="true" />
         <span className="text-lg font-semibold text-foreground">Salonko</span>
       </Link>
 

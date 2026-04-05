@@ -2,9 +2,10 @@
 
 import { Button } from "@salonko/ui/atoms/Button";
 import { cn } from "@salonko/ui/utils";
-import { Calendar, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SalonkoIcon } from "../../atoms/Icons";
 
 type HeaderVariant = "owner" | "user";
 
@@ -50,9 +51,7 @@ export function LandingHeader({ loginHref = "/login", variant = "user" }: Landin
       <nav className="flex items-center justify-between px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary">
-            <Calendar className="w-5 h-5 text-white" aria-hidden="true" />
-          </div>
+          <SalonkoIcon className="w-7 h-7 text-primary dark:text-white" aria-hidden="true" />
           <span className="text-xl font-semibold text-foreground">Salonko</span>
         </Link>
 

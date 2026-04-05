@@ -1,5 +1,5 @@
-import { Calendar } from "lucide-react";
 import Link from "next/link";
+import { SalonkoIcon } from "../../atoms/Icons";
 
 export function LandingFooter() {
   const footerSections = [
@@ -40,9 +40,7 @@ export function LandingFooter() {
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary">
-                <Calendar className="w-4 h-4 text-white" aria-hidden="true" />
-              </div>
+              <SalonkoIcon className="w-6 h-6 text-primary dark:text-white" aria-hidden="true" />
               <span className="text-lg font-semibold text-foreground">Salonko</span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">

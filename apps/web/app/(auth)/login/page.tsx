@@ -3,7 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ErrorCode, errorMessages } from "@salonko/auth";
 import { Button, Card, CardContent, GoogleIcon, Input, Label } from "@salonko/ui";
-import { AlertCircle, Calendar, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { SalonkoIcon } from "@salonko/ui";
+import { AlertCircle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -121,9 +122,7 @@ function LoginForm() {
               href="/"
               className="inline-flex gap-2 justify-center items-center mb-3 transition-transform hover:scale-105"
             >
-              <div className="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-lg from-primary to-primary/70 shadow-primary/20">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
+              <SalonkoIcon className="w-8 h-8 text-primary dark:text-white" />
               <span
                 data-testid="login-title"
                 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300"
