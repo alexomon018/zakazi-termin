@@ -1,7 +1,6 @@
 "use client";
 
-import { Button, Card, CardContent, Input, Label, LoadingButton } from "@salonko/ui";
-import { SalonkoIcon } from "@salonko/ui";
+import { Button, Card, CardContent, Input, Label, LoadingButton, SalonkoIcon } from "@salonko/ui";
 import { AlertTriangle, CheckCircle, KeyRound, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";

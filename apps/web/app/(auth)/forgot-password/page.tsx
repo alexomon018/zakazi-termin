@@ -1,8 +1,7 @@
 "use client";
 
-import { Button, Card, CardContent, Input, Label, LoadingButton } from "@salonko/ui";
-import { SalonkoIcon } from "@salonko/ui";
-import { AlertCircle, CheckCircle, Loader2, Mail } from "lucide-react";
+import { Button, Card, CardContent, Input, Label, LoadingButton, SalonkoIcon } from "@salonko/ui";
+import { AlertCircle, CheckCircle, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { forgotPasswordAction } from "../actions";

@@ -6,12 +6,6 @@
     "orientation": "portrait",
     "scheme": "salonko",
     "userInterfaceStyle": "automatic",
-    "splashScreen": {
-      "image": "./assets/icons/splash-icon-light.png",
-      "dark": {
-        "image": "./assets/icons/splash-icon-dark.png"
-      }
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.zakazitermin.app",
@@ -45,7 +39,16 @@
       "expo-web-browser",
       "@sentry/react-native/expo",
       "@sentry/react-native",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icons/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/icons/splash-icon-dark.png"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

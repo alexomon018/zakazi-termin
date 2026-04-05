@@ -2,8 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ErrorCode, errorMessages } from "@salonko/auth";
-import { Button, Card, CardContent, GoogleIcon, Input, Label } from "@salonko/ui";
-import { SalonkoIcon } from "@salonko/ui";
+import { Button, Card, CardContent, GoogleIcon, Input, Label, SalonkoIcon } from "@salonko/ui";
 import { AlertCircle, CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
@@ -122,7 +121,7 @@ function LoginForm() {
               href="/"
               className="inline-flex gap-2 justify-center items-center mb-3 transition-transform hover:scale-105"
             >
-              <SalonkoIcon className="w-8 h-8 text-primary dark:text-white" />
+              <SalonkoIcon aria-hidden="true" className="w-8 h-8 text-primary dark:text-white" />
               <span
                 data-testid="login-title"
                 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300"
