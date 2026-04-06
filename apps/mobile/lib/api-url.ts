@@ -1,19 +1,23 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
+function stripTrailingSlash(url: string): string {
+  return url.replace(/\/$/, "");
+}
+
 function normalizeAndroidDevHost(url: string): string {
   if (Platform.OS !== "android") {
-    return url;
+    return stripTrailingSlash(url);
   }
   try {
     const parsed = new URL(url);
     if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
       parsed.hostname = "10.0.2.2";
-      return parsed.toString().replace(/\/$/, "");
+      return stripTrailingSlash(parsed.toString());
     }
-    return url;
+    return stripTrailingSlash(url);
   } catch {
-    return url;
+    return stripTrailingSlash(url);
   }
 }
 

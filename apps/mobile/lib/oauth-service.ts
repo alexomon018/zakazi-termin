@@ -60,7 +60,6 @@ export async function authorize(): Promise<{
 
   let callbackUrl: string | null = null;
   let didTimeout = false;
-  let wasCancelled = false;
 
   if (Platform.OS === "android") {
     // On Android, Chrome Custom Tabs doesn't reliably deliver deep link URLs
@@ -69,15 +68,11 @@ export async function authorize(): Promise<{
     const androidResult = await new Promise<{
       url: string | null;
       timedOut: boolean;
-      cancelled: boolean;
     }>((resolve) => {
       let settled = false;
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-      const settle = (
-        url: string | null,
-        options: { timedOut?: boolean; cancelled?: boolean } = {}
-      ) => {
+      const settle = (url: string | null, options: { timedOut?: boolean } = {}) => {
         if (settled) return;
         settled = true;
         if (timeoutId) {
@@ -93,7 +88,6 @@ export async function authorize(): Promise<{
         resolve({
           url,
           timedOut: options.timedOut === true,
-          cancelled: options.cancelled === true,
         });
       };
 
@@ -104,21 +98,18 @@ export async function authorize(): Promise<{
         }
       });
 
-      // Fallback: when app returns to foreground, poll getInitialURL
+      // UX fallback: when the app returns to foreground without the primary
+      // Linking "url" listener firing, settle as cancelled to avoid an
+      // indefinite loading state. This is NOT a reliable deep-link capture —
+      // Linking.addEventListener("url", ...) above is the authoritative handler.
+      // (Linking.getInitialURL() is intentionally not used here: it only
+      // returns the cold-start URL, not deep links delivered to a running app.)
       const appStateSub = AppState.addEventListener("change", async (nextState) => {
         if (nextState === "active" && !settled) {
+          // Brief delay to give the primary "url" listener a chance to fire first.
           await new Promise((r) => setTimeout(r, 300));
-          try {
-            const initialUrl = await Linking.getInitialURL();
-            if (initialUrl?.startsWith(REDIRECT_URI)) {
-              settle(initialUrl);
-              return;
-            }
-            // User returned to app, but no OAuth callback URL was delivered.
-            // Avoid indefinite loading state in UI.
-            settle(null, { cancelled: true });
-          } catch {
-            settle(null, { cancelled: true });
+          if (!settled) {
+            settle(null);
           }
         }
       });
@@ -130,14 +121,13 @@ export async function authorize(): Promise<{
       WebBrowser.openBrowserAsync(authUrl, { showTitle: false, createTask: true })
         .then((result) => {
           if (result.type === "cancel" || result.type === "dismiss") {
-            settle(null, { cancelled: true });
+            settle(null);
           }
         })
         .catch(() => settle(null));
     });
     callbackUrl = androidResult.url;
     didTimeout = androidResult.timedOut;
-    wasCancelled = androidResult.cancelled;
   } else {
     const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
     if (result.type === "success") {
@@ -148,9 +138,6 @@ export async function authorize(): Promise<{
   if (!callbackUrl) {
     if (didTimeout) {
       throw new Error("Prijava je istekla. Vratite se u aplikaciju i pokušajte ponovo.");
-    }
-    if (wasCancelled) {
-      throw new Error("Autorizacija je otkazana.");
     }
     throw new Error("Autorizacija je otkazana.");
   }

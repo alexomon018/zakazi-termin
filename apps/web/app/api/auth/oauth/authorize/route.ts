@@ -104,20 +104,26 @@ export async function GET(request: NextRequest) {
         "__Secure-next-auth.session-token",
         "next-auth.session-token",
       ]);
-      const cookieNamesToDelete = request.cookies
-        .getAll()
-        .map((cookie) => cookie.name)
-        .filter((name) =>
+      const cookieNamesToDelete = new Set<string>(candidateBaseNames);
+      for (const cookie of request.cookies.getAll()) {
+        if (
           [...candidateBaseNames].some(
-            (baseName) => name === baseName || name.startsWith(`${baseName}.`)
+            (baseName) => cookie.name === baseName || cookie.name.startsWith(`${baseName}.`)
           )
-        );
-
-      for (const baseName of candidateBaseNames) {
-        response.cookies.set(baseName, "", { maxAge: 0, path: "/" });
+        ) {
+          cookieNamesToDelete.add(cookie.name);
+        }
       }
+
+      // Match the options used when the session cookie was set in
+      // packages/auth/src/options.ts so the browser actually clears it.
+      const deleteOptions = {
+        path: "/",
+        sameSite: "lax" as const,
+        secure: isSecure,
+      };
       for (const name of cookieNamesToDelete) {
-        response.cookies.delete(name);
+        response.cookies.delete({ name, ...deleteOptions });
       }
     }
 
