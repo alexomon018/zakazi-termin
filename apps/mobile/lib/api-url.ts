@@ -1,4 +1,21 @@
 import Constants from "expo-constants";
+import { Platform } from "react-native";
+
+function normalizeAndroidDevHost(url: string): string {
+  if (Platform.OS !== "android") {
+    return url;
+  }
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1") {
+      parsed.hostname = "10.0.2.2";
+      return parsed.toString().replace(/\/$/, "");
+    }
+    return url;
+  } catch {
+    return url;
+  }
+}
 
 /**
  * Resolves the base URL for API requests.
@@ -20,7 +37,7 @@ function getApiUrl(): string {
     if (isProduction && envUrl.startsWith("http://")) {
       throw new Error("EXPO_PUBLIC_API_URL must use https:// in production");
     }
-    return envUrl;
+    return normalizeAndroidDevHost(envUrl);
   }
 
   if (isProduction) {
@@ -32,10 +49,10 @@ function getApiUrl(): string {
 
   if (debuggerHost) {
     const host = debuggerHost.split(":")[0];
-    return `http://${host}:3000`;
+    return normalizeAndroidDevHost(`http://${host}:3000`);
   }
 
-  return "http://localhost:3000";
+  return normalizeAndroidDevHost("http://localhost:3000");
 }
 
 export const API_URL = getApiUrl();

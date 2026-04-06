@@ -2,7 +2,7 @@ import { AppButton, AppScreen, AppText, SalonkoIcon } from "@/components/atoms";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function LoginScreen() {
   const { theme, colorScheme } = useTheme();
@@ -44,6 +44,14 @@ export default function LoginScreen() {
           gap: theme.spacing.md,
           paddingBottom: theme.spacing.xxl,
         },
+        loadingOverlay: {
+          ...StyleSheet.absoluteFillObject,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: theme.colors.background,
+          opacity: 0.94,
+          gap: theme.spacing.sm,
+        },
       }),
     [theme]
   );
@@ -73,6 +81,14 @@ export default function LoginScreen() {
           <AppButton label="Prijavite se" onPress={handleLogin} loading={isSubmitting} />
         </View>
       </View>
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <AppText variant="bodySm" muted centered>
+            Završavamo prijavu...
+          </AppText>
+        </View>
+      )}
     </AppScreen>
   );
 }

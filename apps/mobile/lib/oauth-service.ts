@@ -1,9 +1,12 @@
 import * as Crypto from "expo-crypto";
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
+import { AppState, Platform } from "react-native";
 import { API_URL } from "./api-url";
 
 const OAUTH_CLIENT_ID = process.env.EXPO_PUBLIC_OAUTH_CLIENT_ID ?? "";
 const REDIRECT_URI = "salonko://oauth/callback";
+const ANDROID_OAUTH_CALLBACK_TIMEOUT_MS = 120000;
 
 interface TokenResponse {
   access_token: string;
@@ -51,18 +54,108 @@ export async function authorize(): Promise<{
     code_challenge_method: "S256",
     state,
     scope: "openid profile",
-    prompt: "login",
   });
 
   const authUrl = `${API_URL}/api/auth/oauth/authorize?${params.toString()}`;
 
-  const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+  let callbackUrl: string | null = null;
+  let didTimeout = false;
+  let wasCancelled = false;
 
-  if (result.type !== "success") {
+  if (Platform.OS === "android") {
+    // On Android, Chrome Custom Tabs doesn't reliably deliver deep link URLs
+    // via Linking events. We open the browser and wait for the app to return
+    // to foreground, then read the intent URL that brought us back.
+    const androidResult = await new Promise<{
+      url: string | null;
+      timedOut: boolean;
+      cancelled: boolean;
+    }>((resolve) => {
+      let settled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const settle = (
+        url: string | null,
+        options: { timedOut?: boolean; cancelled?: boolean } = {}
+      ) => {
+        if (settled) return;
+        settled = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        linkingSub.remove();
+        appStateSub.remove();
+        try {
+          WebBrowser.dismissBrowser();
+        } catch {
+          // Browser dismiss is best-effort on Android.
+        }
+        resolve({
+          url,
+          timedOut: options.timedOut === true,
+          cancelled: options.cancelled === true,
+        });
+      };
+
+      // Primary: listen for Linking url event
+      const linkingSub = Linking.addEventListener("url", (event) => {
+        if (event.url.startsWith(REDIRECT_URI)) {
+          settle(event.url);
+        }
+      });
+
+      // Fallback: when app returns to foreground, poll getInitialURL
+      const appStateSub = AppState.addEventListener("change", async (nextState) => {
+        if (nextState === "active" && !settled) {
+          await new Promise((r) => setTimeout(r, 300));
+          try {
+            const initialUrl = await Linking.getInitialURL();
+            if (initialUrl?.startsWith(REDIRECT_URI)) {
+              settle(initialUrl);
+              return;
+            }
+            // User returned to app, but no OAuth callback URL was delivered.
+            // Avoid indefinite loading state in UI.
+            settle(null, { cancelled: true });
+          } catch {
+            settle(null, { cancelled: true });
+          }
+        }
+      });
+
+      timeoutId = setTimeout(() => {
+        settle(null, { timedOut: true });
+      }, ANDROID_OAUTH_CALLBACK_TIMEOUT_MS);
+
+      WebBrowser.openBrowserAsync(authUrl, { showTitle: false, createTask: true })
+        .then((result) => {
+          if (result.type === "cancel" || result.type === "dismiss") {
+            settle(null, { cancelled: true });
+          }
+        })
+        .catch(() => settle(null));
+    });
+    callbackUrl = androidResult.url;
+    didTimeout = androidResult.timedOut;
+    wasCancelled = androidResult.cancelled;
+  } else {
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+    if (result.type === "success") {
+      callbackUrl = result.url;
+    }
+  }
+
+  if (!callbackUrl) {
+    if (didTimeout) {
+      throw new Error("Prijava je istekla. Vratite se u aplikaciju i pokušajte ponovo.");
+    }
+    if (wasCancelled) {
+      throw new Error("Autorizacija je otkazana.");
+    }
     throw new Error("Autorizacija je otkazana.");
   }
 
-  const url = new URL(result.url);
+  const url = new URL(callbackUrl);
   const error = url.searchParams.get("error");
   if (error) {
     const description = url.searchParams.get("error_description") ?? error;
