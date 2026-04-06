@@ -1,9 +1,12 @@
 import * as Crypto from "expo-crypto";
+import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
+import { AppState, Platform } from "react-native";
 import { API_URL } from "./api-url";
 
 const OAUTH_CLIENT_ID = process.env.EXPO_PUBLIC_OAUTH_CLIENT_ID ?? "";
 const REDIRECT_URI = "salonko://oauth/callback";
+const ANDROID_OAUTH_CALLBACK_TIMEOUT_MS = 120000;
 
 interface TokenResponse {
   access_token: string;
@@ -51,18 +54,95 @@ export async function authorize(): Promise<{
     code_challenge_method: "S256",
     state,
     scope: "openid profile",
-    prompt: "login",
   });
 
   const authUrl = `${API_URL}/api/auth/oauth/authorize?${params.toString()}`;
 
-  const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+  let callbackUrl: string | null = null;
+  let didTimeout = false;
 
-  if (result.type !== "success") {
+  if (Platform.OS === "android") {
+    // On Android, Chrome Custom Tabs doesn't reliably deliver deep link URLs
+    // via Linking events. We open the browser and wait for the app to return
+    // to foreground, then read the intent URL that brought us back.
+    const androidResult = await new Promise<{
+      url: string | null;
+      timedOut: boolean;
+    }>((resolve) => {
+      let settled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const settle = (url: string | null, options: { timedOut?: boolean } = {}) => {
+        if (settled) return;
+        settled = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        linkingSub.remove();
+        appStateSub.remove();
+        try {
+          WebBrowser.dismissBrowser();
+        } catch {
+          // Browser dismiss is best-effort on Android.
+        }
+        resolve({
+          url,
+          timedOut: options.timedOut === true,
+        });
+      };
+
+      // Primary: listen for Linking url event
+      const linkingSub = Linking.addEventListener("url", (event) => {
+        if (event.url.startsWith(REDIRECT_URI)) {
+          settle(event.url);
+        }
+      });
+
+      // UX fallback: when the app returns to foreground without the primary
+      // Linking "url" listener firing, settle as cancelled to avoid an
+      // indefinite loading state. This is NOT a reliable deep-link capture —
+      // Linking.addEventListener("url", ...) above is the authoritative handler.
+      // (Linking.getInitialURL() is intentionally not used here: it only
+      // returns the cold-start URL, not deep links delivered to a running app.)
+      const appStateSub = AppState.addEventListener("change", async (nextState) => {
+        if (nextState === "active" && !settled) {
+          // Brief delay to give the primary "url" listener a chance to fire first.
+          await new Promise((r) => setTimeout(r, 300));
+          if (!settled) {
+            settle(null);
+          }
+        }
+      });
+
+      timeoutId = setTimeout(() => {
+        settle(null, { timedOut: true });
+      }, ANDROID_OAUTH_CALLBACK_TIMEOUT_MS);
+
+      WebBrowser.openBrowserAsync(authUrl, { showTitle: false, createTask: true })
+        .then((result) => {
+          if (result.type === "cancel" || result.type === "dismiss") {
+            settle(null);
+          }
+        })
+        .catch(() => settle(null));
+    });
+    callbackUrl = androidResult.url;
+    didTimeout = androidResult.timedOut;
+  } else {
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+    if (result.type === "success") {
+      callbackUrl = result.url;
+    }
+  }
+
+  if (!callbackUrl) {
+    if (didTimeout) {
+      throw new Error("Prijava je istekla. Vratite se u aplikaciju i pokušajte ponovo.");
+    }
     throw new Error("Autorizacija je otkazana.");
   }
 
-  const url = new URL(result.url);
+  const url = new URL(callbackUrl);
   const error = url.searchParams.get("error");
   if (error) {
     const description = url.searchParams.get("error_description") ?? error;

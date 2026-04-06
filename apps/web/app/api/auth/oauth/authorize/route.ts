@@ -1,12 +1,13 @@
 import { getSession } from "@/lib/auth";
 import { authOptions } from "@/lib/auth-options";
-import { getAppUrl } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const origin = getAppUrl();
+  const requestOrigin = url.origin;
+  const configuredOrigin = process.env.NEXTAUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+  const authOrigin = configuredOrigin || requestOrigin;
   const clientId = url.searchParams.get("client_id");
   const redirectUri = url.searchParams.get("redirect_uri");
   const responseType = url.searchParams.get("response_type");
@@ -84,20 +85,46 @@ export async function GET(request: Request) {
     // Strip `prompt` so we don't loop after the user logs in fresh
     const callbackParams = new URLSearchParams(url.search);
     callbackParams.delete("prompt");
-    const callbackUrl = new URL(`${url.pathname}?${callbackParams.toString()}`, origin).toString();
-    const loginUrl = new URL("/login", origin);
-    loginUrl.searchParams.set("callbackUrl", callbackUrl);
+    const callbackQuery = callbackParams.toString();
+    const callbackPath = callbackQuery ? `${url.pathname}?${callbackQuery}` : url.pathname;
+    const loginUrl = new URL("/login", authOrigin);
+    loginUrl.searchParams.set("callbackUrl", callbackPath);
 
     const response = NextResponse.redirect(loginUrl.toString());
 
     // When prompt=login, clear the existing session cookie so the middleware
     // won't auto-redirect the user back here, forcing a fresh login.
     if (prompt === "login" && session?.user?.id) {
-      const isSecure = origin.startsWith("https");
-      const cookieName =
+      const isSecure = authOrigin.startsWith("https");
+      const configuredCookieName =
         authOptions.cookies?.sessionToken?.name ??
         (isSecure ? "__Secure-next-auth.session-token" : "next-auth.session-token");
-      response.cookies.set(cookieName, "", { maxAge: 0, path: "/" });
+      const candidateBaseNames = new Set([
+        configuredCookieName,
+        "__Secure-next-auth.session-token",
+        "next-auth.session-token",
+      ]);
+      const cookieNamesToDelete = new Set<string>(candidateBaseNames);
+      for (const cookie of request.cookies.getAll()) {
+        if (
+          [...candidateBaseNames].some(
+            (baseName) => cookie.name === baseName || cookie.name.startsWith(`${baseName}.`)
+          )
+        ) {
+          cookieNamesToDelete.add(cookie.name);
+        }
+      }
+
+      // Match the options used when the session cookie was set in
+      // packages/auth/src/options.ts so the browser actually clears it.
+      const deleteOptions = {
+        path: "/",
+        sameSite: "lax" as const,
+        secure: isSecure,
+      };
+      for (const name of cookieNamesToDelete) {
+        response.cookies.delete({ name, ...deleteOptions });
+      }
     }
 
     return response;
@@ -121,7 +148,9 @@ export async function GET(request: Request) {
     const redirectUrl = new URL(redirectUri);
     redirectUrl.searchParams.set("code", authCode.code);
     redirectUrl.searchParams.set("state", state);
-    return NextResponse.redirect(redirectUrl.toString());
+    const target = redirectUrl.toString();
+
+    return NextResponse.redirect(target);
   }
 
   // Non-first-party clients would need a consent screen (not implemented yet)
