@@ -31,13 +31,14 @@ The mobile login screen uses **OAuth** (`loginWithOAuth` in `apps/mobile/app/(au
 |--------|---------|
 | `yarn maestro:coverage` | Validates [`maestro/coverage/screens.yaml`](../maestro/coverage/screens.yaml) — every screen lists existing flow files |
 | `yarn test:e2e:mobile` | Runs [`scripts/e2e-mobile.sh`](../scripts/e2e-mobile.sh): DB → `db:push` → Next dev → one Maestro flow (pass path as first arg) |
-| `yarn maestro:smoke` | Every `*.yaml` under `maestro/flows` (except `_helpers/`) with `--include-tags smoke`. |
-| `yarn maestro:test` | **All** flows, no tag filter (full local regression). Same path expansion as smoke — Maestro does not recurse into subfolders by default. |
+| `yarn maestro:smoke` | Every `*.yaml` under `maestro/flows` (except `_helpers/`) with `--include-tags smoke`. **Requires `MAESTRO_APP_ID`** in the environment. |
+| `yarn maestro:test` | **All** flows, no tag filter (full local regression). **Requires `MAESTRO_APP_ID`**. Same path expansion — Maestro does not recurse into subfolders by default. |
 
 Example:
 
 ```bash
 yarn test:e2e:mobile maestro/flows/auth/login_smoke.yaml -e MAESTRO_APP_ID=com.zakazitermin.app
+MAESTRO_APP_ID=com.zakazitermin.app yarn maestro:smoke
 ```
 
 ## Screen coverage manifest

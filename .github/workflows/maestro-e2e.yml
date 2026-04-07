@@ -59,11 +59,29 @@ jobs:
       - name: Validate screen coverage YAML
         run: yarn maestro:coverage
 
+  check-mobile-app:
+    name: Check apps/mobile exists
+    runs-on: ubuntu-latest
+    outputs:
+      mobile_exists: ${{ steps.check.outputs.mobile_exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set mobile presence output
+        id: check
+        run: |
+          if [ -f apps/mobile/package.json ]; then
+            echo "mobile_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mobile_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # Expo app: native android/ is gitignored — expo prebuild generates it before assembleDebug.
   maestro-e2e-android:
     name: Maestro E2E (Android emulator + Expo)
-    needs: maestro-coverage
-    if: ${{ hashFiles('apps/mobile/package.json') != '' }}
+    needs: [maestro-coverage, check-mobile-app]
+    if: needs.check-mobile-app.outputs.mobile_exists == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 75
     env:
@@ -120,11 +138,14 @@ jobs:
       - name: Start Next.js
         run: |
           export NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-ci-e2e-nextauth-secret-placeholder-min-32-chars}"
-          yarn workspace @salonko/web dev &
-          for i in $(seq 1 60); do
+          nohup yarn workspace @salonko/web dev >> /tmp/next-dev.log 2>&1 &
+          echo $! > /tmp/next_pid
+          for _ in $(seq 1 60); do
             curl -sf http://localhost:3000 >/dev/null && exit 0
             sleep 2
           done
+          echo "Next.js failed to start. Log:" >&2
+          cat /tmp/next-dev.log >&2 || true
           exit 1
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
@@ -134,7 +155,7 @@ jobs:
       - name: Install Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Expo prebuild (Android)
         working-directory: apps/mobile
@@ -152,10 +173,12 @@ jobs:
           profile: pixel_6
           script: |
             adb reverse tcp:3000 tcp:3000
-            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -name "app-debug.apk" -o -name "*debug*.apk" | grep -E "outputs/apk/.*debug" | head -1)
+            adb reverse tcp:8081 tcp:8081
+            # Debug APK from Gradle: .../outputs/apk/<variant>/debug/*.apk
+            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -path "*/outputs/apk/*/debug/*.apk" | head -1)
             if [ -z "$APK" ]; then
               echo "No debug APK found after assembleDebug"
-              find "$GITHUB_WORKSPACE/apps/mobile/android" -name "*.apk" 2>/dev/null || true
+              find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -name "*.apk" 2>/dev/null || true
               exit 1
             fi
             echo "Installing $APK"
@@ -164,8 +187,7 @@ jobs:
             if [ -z "$APP_ID" ]; then
               APP_ID="${{ env.DEFAULT_MAESTRO_APP_ID }}"
             fi
-            maestro test "$GITHUB_WORKSPACE/maestro/flows" --include-tags smoke \
-              -e MAESTRO_APP_ID="$APP_ID"
+            bash "$GITHUB_WORKSPACE/scripts/maestro-expand-flows.sh" | xargs -0 maestro test --include-tags smoke -e MAESTRO_APP_ID="$APP_ID"
 
       - name: Upload Maestro artifacts
         if: failure()

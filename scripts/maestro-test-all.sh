@@ -10,6 +10,11 @@ if ! command -v maestro >/dev/null 2>&1; then
   exit 1
 fi
 
+if [ -z "${MAESTRO_APP_ID:-}" ]; then
+  echo "MAESTRO_APP_ID is not set. Export it, e.g. MAESTRO_APP_ID=com.zakazitermin.app yarn maestro:test" >&2
+  exit 1
+fi
+
 flows=()
 while IFS= read -r f; do
   case "$f" in

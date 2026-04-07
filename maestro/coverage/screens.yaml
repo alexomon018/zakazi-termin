@@ -18,7 +18,7 @@ screens:
     platform: all
     flowFiles:
       - flows/auth/login_smoke.yaml
-      - flows/edge_cases/invalid_login.yaml
+      - flows/edge_cases/login_screen_loads.yaml
 
   - id: tabs.event_types
     routeOrComponent: "(tabs)/index"
@@ -180,7 +180,7 @@ screens:
     requiredLevel: regression
     platform: all
     flowFiles:
-      - flows/auth/signup_happy_path.yaml
+      - flows/auth/signup_oauth_only.yaml
 
   - id: auth.forgot_placeholder
     routeOrComponent: "(web-only parity)"

@@ -5,4 +5,10 @@ tags:
 ---
 - runFlow:
     file: ../_helpers/launch_app.yaml
-# Add Android-specific assertions (hardware back, edge-to-edge) when wiring apps/mobile.
+# Android-specific branch: ensure Maestro runs platform checks on Android CI.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: "Salonko"

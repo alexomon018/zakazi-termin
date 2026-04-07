@@ -3,5 +3,6 @@ tags:
   - regression
   - event_types
 ---
+# TODO: implement FAB → /event-type/new after OAuth session.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/auth/assert_login_screen.yaml

@@ -3,7 +3,7 @@ tags:
   - regression
   - auth
 ---
-# Mobile auth is OAuth-only; there is no in-app signup screen. Kept for manifest compatibility.
+# Mobile auth is OAuth-only; no in-app signup. Name reflects N/A for native signup.
 - runFlow:
     file: ../_helpers/launch_app.yaml
 - assertVisible:

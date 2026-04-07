@@ -204,6 +204,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable
           style={styles.profileRow}
+          testID="e2e.settings.profileRow"
           onPress={() => router.push("/setting/profile")}
           accessibilityRole="button"
           accessibilityLabel={`${name}, ${email}`}

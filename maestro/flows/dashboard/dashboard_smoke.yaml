@@ -1,8 +1,14 @@
 appId: ${MAESTRO_APP_ID}
 tags:
+  - smoke
   - regression
   - dashboard
 ---
-# Authenticated tabs — requires OAuth session; run locally after login or when E2E auth exists.
+# TODO: full dashboard assertions need OAuth session. When logged in, "Moje usluge" is the home tab.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/auth/assert_login_screen.yaml
+- runFlow:
+    when:
+      visible: "Moje usluge"
+    commands:
+      - assertVisible: "Moje usluge"

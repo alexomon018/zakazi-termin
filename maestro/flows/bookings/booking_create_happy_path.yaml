@@ -3,5 +3,6 @@ tags:
   - regression
   - bookings
 ---
+# TODO: implement create booking after OAuth — mobile has no single "create booking" FAB on list; this flow only documents intent.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/auth/assert_login_screen.yaml

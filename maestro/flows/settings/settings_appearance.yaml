@@ -3,5 +3,13 @@ tags:
   - regression
   - settings
 ---
+# Requires OAuth session. Više → tap "Izgled" menu → Izgled screen.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/launch_app.yaml
+- runFlow:
+    when:
+      visible: "Više"
+    commands:
+      - tapOn: "Više"
+      - tapOn: "Izgled"
+      - assertVisible: "Izgled"

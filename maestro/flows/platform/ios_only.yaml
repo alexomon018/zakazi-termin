@@ -5,4 +5,9 @@ tags:
 ---
 - runFlow:
     file: ../_helpers/launch_app.yaml
-# Add iOS-specific assertions (permissions, swipe back) when wiring apps/mobile.
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          text: "Salonko"

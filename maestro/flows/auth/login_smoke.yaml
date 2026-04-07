@@ -3,6 +3,5 @@ tags:
   - smoke
   - auth
 ---
-# Does not tap "Prijavite se" — that opens OAuth and cannot complete unattended in CI without extra setup.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/auth/assert_login_screen.yaml

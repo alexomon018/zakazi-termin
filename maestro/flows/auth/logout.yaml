@@ -3,6 +3,7 @@ tags:
   - regression
   - auth
 ---
+# Logout: Više → Odjavite se, or noop if already on login (OAuth; no password form).
 # Handles both states: already logged out (login visible) or logged in (session restored).
 - runFlow:
     file: ../_helpers/launch_app.yaml

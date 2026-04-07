@@ -13,6 +13,11 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is required (used to wait for Next.js)" >&2
+  exit 1
+fi
+
 echo "🐳 Starting test database..."
 yarn test:db:start
 
@@ -68,5 +73,11 @@ fi
 FLOW="${1:-maestro/flows/auth/login_smoke.yaml}"
 shift || true
 
-echo "📱 Running Maestro: $FLOW $*"
-maestro test "$ROOT/$FLOW" "$@"
+if [[ "$FLOW" = /* ]]; then
+  RESOLVED_FLOW="$FLOW"
+else
+  RESOLVED_FLOW="$ROOT/$FLOW"
+fi
+
+echo "📱 Running Maestro: $RESOLVED_FLOW $*"
+maestro test "$RESOLVED_FLOW" "$@"

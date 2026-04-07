@@ -3,7 +3,10 @@ tags:
   - regression
   - edge
 ---
+# OAuth app has no password form — this only verifies the login screen loads (was invalid_login).
 - runFlow:
     file: ../_helpers/launch_app.yaml
 - assertVisible:
     text: "Salonko"
+- assertVisible:
+    text: "Prijavite se"
