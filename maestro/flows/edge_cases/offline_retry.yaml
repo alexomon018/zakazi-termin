@@ -3,11 +3,11 @@ tags:
   - regression
   - edge
 ---
-# Use Maestro network conditioning when available for your platform/Maestro version.
+# Placeholder: add Maestro network conditioning when you need true offline behavior.
+# Uses the same visible assertions as login (no testIDs — app does not set auth.screen).
 - runFlow:
     file: ../_helpers/launch_app.yaml
 - assertVisible:
-    id: "auth.screen"
-# Placeholder: enable airplane mode / network off via Maestro or OS-specific runScript.
+    text: "Salonko"
 - assertVisible:
-    id: "auth.screen"
+    text: "Prijavite se"

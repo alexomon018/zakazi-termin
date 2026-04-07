@@ -73,6 +73,10 @@ If you use **`expo-dev-client`**, a cold start can show the **Development Build*
 
 **Android:** if the app cannot load the bundle, run `adb reverse tcp:8081 tcp:8081` (and `tcp:3000` for the Next API as already documented).
 
+## Logout flow (`maestro/flows/auth/logout.yaml`)
+
+If a **saved OAuth session** loads, the app opens on tabs — there is no **“Prijavite se”** until you sign out. The logout flow taps **“Više”** (settings tab) → **“Odjavite se”**, then waits for the login CTA. If you are forced onto **`/setting/profile`** (incomplete profile), the tab bar may be hidden; finish onboarding manually or extend the flow for that screen.
+
 ## Maintenance
 
 - Prefer **smoke** for PR gates (login UI only until OAuth E2E exists).

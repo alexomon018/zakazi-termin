@@ -2,6 +2,8 @@ appId: ${MAESTRO_APP_ID}
 tags:
   - regression
 ---
-# Authenticated flows need a stored OAuth session or a future E2E bypass. Until then, only login UI is asserted.
+# Placeholder until OAuth E2E or dev bypass. Works whether session restores (tabs) or cold login.
 - runFlow:
-    file: ../_helpers/auth/login_with_test_user.yaml
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    text: "Salonko"
