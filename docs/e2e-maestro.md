@@ -65,7 +65,7 @@ See [`.github/workflows/maestro-e2e.yml`](../.github/workflows/maestro-e2e.yml).
 
 ## Expo dev client / “Development Build” launcher
 
-**iOS vs Android:** The dev-client URL row differs. Android often exposes **`8081`** as tappable text; iOS Simulator usually shows a full URL (e.g. `http://localhost:8081`). [`launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) uses **`tapOn: "8081"`** on Android and **`tapOn: ".*:8081.*"`** on iOS so the Metro URL line matches. If your build shows a different pattern, adjust that step or open the app once before Maestro so the picker is skipped.
+**iOS vs Android:** Android usually exposes **`8081`** as tappable text. On **iOS**, the Metro URL is often **not** one accessibility text node, so text/regex taps fail — [`launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) uses **`tapOn: point: "50%, 60%"`** on the first server row instead. If your Expo dev-client layout differs, change that percentage in Maestro Studio or open the app once so the picker is skipped.
 
 If you use **`expo-dev-client`**, a cold start can show the **Development Build** screen instead of your app when:
 

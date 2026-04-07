@@ -5,9 +5,9 @@ appId: ${MAESTRO_APP_ID}
 - launchApp
 
 # Expo dev-client launcher differs by platform:
-# - Android: URL often contains "10.0.2.2:8081" — substring "8081" matches.
-# - iOS Simulator: URL is often "http://localhost:8081" or LAN IP — bare "8081" may NOT match
-#   as a separate node; use regex on the full URL line or tap by point.
+# - Android: Metro URL row usually exposes "8081" as tappable text.
+# - iOS: The URL is often NOT a single accessibility text node — text/regex taps fail.
+#   Tap the first server row by coordinates (tune point if your Expo UI layout differs).
 - runFlow:
     when:
       visible: "Development Build"
@@ -23,8 +23,9 @@ appId: ${MAESTRO_APP_ID}
       visible: "Development Build"
       platform: iOS
     commands:
-      # Match Metro URL as one line (regex; Maestro text selectors are regex-based).
-      - tapOn: ".*:8081.*"
+      # First URL row is typically ~55–65% from top on iPhone; adjust via Maestro Studio if needed.
+      - tapOn:
+          point: "50%,60%"
       - extendedWaitUntil:
           visible: "Salonko"
           timeout: 120000
