@@ -1,4 +1,15 @@
 appId: ${MAESTRO_APP_ID}
 ---
-- launchApp:
-    clearState: true
+# Do NOT use clearState: true with expo-dev-client — it wipes storage and forces the
+# "Development Build" server picker; Maestro then never reaches your app UI.
+- launchApp
+
+# If the Expo dev-client launcher is showing, open the bundled JS (Metro on 8081 by default).
+- runFlow:
+    when:
+      visible: "Development Build"
+    commands:
+      - tapOn: "8081"
+      - extendedWaitUntil:
+          visible: "Salonko"
+          timeout: 120000

@@ -62,6 +62,17 @@ See [`.github/workflows/maestro-e2e.yml`](../.github/workflows/maestro-e2e.yml).
 - **`maestro-coverage`**: `yarn maestro:coverage` on every matching PR/push.
 - **`maestro-e2e-android`**: runs when `apps/mobile/package.json` exists. Uses Postgres service, `db:push`, Next.js dev server, **`npx expo prebuild --platform android`** (native `android/` is gitignored), **`assembleDebug`**, then Maestro **smoke** flows on the emulator with `adb reverse tcp:3000 tcp:3000`. Optional secret **`MAESTRO_APP_ID`** overrides the default bundle id; optional **`NEXTAUTH_SECRET_E2E`** for Next.
 
+## Expo dev client / “Development Build” launcher
+
+If you use **`expo-dev-client`**, a cold start can show the **Development Build** screen (list of Metro URLs) instead of your app. That happens often when:
+
+- Maestro used **`clearState: true`** (we removed it from [`maestro/flows/_helpers/launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) — clearing storage resets the dev client and brings the picker back).
+- Metro is not running yet — start it before Maestro: `yarn dev:mobile` or `yarn workspace @salonko/mobile dev`.
+
+[`launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) **conditionally** taps the **`8081`** entry when **“Development Build”** is visible, then waits for **“Salonko”**. Ensure your dev server uses port **8081** (Expo default), or adjust the flow / run Metro on that port.
+
+**Android:** if the app cannot load the bundle, run `adb reverse tcp:8081 tcp:8081` (and `tcp:3000` for the Next API as already documented).
+
 ## Maintenance
 
 - Prefer **smoke** for PR gates (login UI only until OAuth E2E exists).
