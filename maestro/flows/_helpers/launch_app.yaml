@@ -4,12 +4,27 @@ appId: ${MAESTRO_APP_ID}
 # "Development Build" server picker; Maestro then never reaches your app UI.
 - launchApp
 
-# If the Expo dev-client launcher is showing, open the bundled JS (Metro on 8081 by default).
+# Expo dev-client launcher differs by platform:
+# - Android: URL often contains "10.0.2.2:8081" — substring "8081" matches.
+# - iOS Simulator: URL is often "http://localhost:8081" or LAN IP — bare "8081" may NOT match
+#   as a separate node; use regex on the full URL line or tap by point.
 - runFlow:
     when:
       visible: "Development Build"
+      platform: Android
     commands:
       - tapOn: "8081"
+      - extendedWaitUntil:
+          visible: "Salonko"
+          timeout: 120000
+
+- runFlow:
+    when:
+      visible: "Development Build"
+      platform: iOS
+    commands:
+      # Match Metro URL as one line (regex; Maestro text selectors are regex-based).
+      - tapOn: ".*:8081.*"
       - extendedWaitUntil:
           visible: "Salonko"
           timeout: 120000

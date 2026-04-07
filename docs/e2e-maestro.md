@@ -65,14 +65,16 @@ See [`.github/workflows/maestro-e2e.yml`](../.github/workflows/maestro-e2e.yml).
 
 ## Expo dev client / “Development Build” launcher
 
-If you use **`expo-dev-client`**, a cold start can show the **Development Build** screen (list of Metro URLs) instead of your app. That happens often when:
+**iOS vs Android:** The dev-client URL row differs. Android often exposes **`8081`** as tappable text; iOS Simulator usually shows a full URL (e.g. `http://localhost:8081`). [`launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) uses **`tapOn: "8081"`** on Android and **`tapOn: ".*:8081.*"`** on iOS so the Metro URL line matches. If your build shows a different pattern, adjust that step or open the app once before Maestro so the picker is skipped.
 
-- Maestro used **`clearState: true`** (we removed it from [`maestro/flows/_helpers/launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) — clearing storage resets the dev client and brings the picker back).
-- Metro is not running yet — start it before Maestro: `yarn dev:mobile` or `yarn workspace @salonko/mobile dev`.
+If you use **`expo-dev-client`**, a cold start can show the **Development Build** screen instead of your app when:
 
-[`launch_app.yaml`](../maestro/flows/_helpers/launch_app.yaml) **conditionally** taps the **`8081`** entry when **“Development Build”** is visible, then waits for **“Salonko”**. Ensure your dev server uses port **8081** (Expo default), or adjust the flow / run Metro on that port.
+- Maestro used **`clearState: true`** (removed from `launch_app.yaml`).
+- Metro is not running — start it before Maestro: `yarn dev:mobile`.
 
-**Android:** if the app cannot load the bundle, run `adb reverse tcp:8081 tcp:8081` (and `tcp:3000` for the Next API as already documented).
+When **“Development Build”** is visible, the flow dismisses it and waits for **“Salonko”**. Use Metro on port **8081** (Expo default), or change the tap step.
+
+**Android:** if the bundle fails to load, run `adb reverse tcp:8081 tcp:8081` and `adb reverse tcp:3000 tcp:3000`.
 
 ## Logout flow (`maestro/flows/auth/logout.yaml`)
 
