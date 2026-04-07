@@ -31,7 +31,7 @@ The mobile login screen uses **OAuth** (`loginWithOAuth` in `apps/mobile/app/(au
 |--------|---------|
 | `yarn maestro:coverage` | Validates [`maestro/coverage/screens.yaml`](../maestro/coverage/screens.yaml) — every screen lists existing flow files |
 | `yarn test:e2e:mobile` | Runs [`scripts/e2e-mobile.sh`](../scripts/e2e-mobile.sh): DB → `db:push` → Next dev → one Maestro flow (pass path as first arg) |
-| `yarn maestro:smoke` | Runs all flows under `maestro/flows` with `--include-tags smoke` (expects backend + app already running) |
+| `yarn maestro:smoke` | Runs every `*.yaml` under `maestro/flows` (except `_helpers/`) with `--include-tags smoke`. Maestro does not scan subdirectories when given a folder only — the script expands paths for you. |
 
 Example:
 
