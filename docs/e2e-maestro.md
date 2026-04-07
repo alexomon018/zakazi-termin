@@ -19,7 +19,7 @@ End-to-end tests for **apps/mobile** live under [`maestro/`](../maestro/) and us
 3. Run Next: `yarn workspace @salonko/web dev` with the same env as Playwright’s `webServer` in [`playwright.config.ts`](../apps/web/playwright.config.ts)
 4. Point the mobile app at the machine running Next:
    - **iOS Simulator**: `http://localhost:3000`
-   - **Android Emulator**: `http://10.0.2.2:3000` (not `localhost`)
+   - **Android Emulator**: `http://10.0.2.2:3000` (not `localhost`), or use `adb reverse tcp:3000 tcp:3000` and `http://localhost:3000` (CI does this in the Maestro job)
 
 ## Scripts
 

@@ -138,6 +138,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           script: |
+            adb reverse tcp:3000 tcp:3000
             APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -name "*.apk" -path "*/outputs/*/*debug*.apk" | head -1)
             if [ -z "$APK" ]; then
               echo "No debug APK found after assembleDebug"
