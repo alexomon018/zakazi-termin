@@ -1,6 +1,6 @@
 import { Link, Section, Text } from "@react-email/components";
+import { formatDate, formatTime, getAppUrl } from "@salonko/config";
 import type { BookingEmailData } from "../types";
-import { getAppUrl } from "../utils";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export function BookingRescheduledEmail(props: BookingEmailData) {
@@ -15,33 +15,11 @@ export function BookingRescheduledEmail(props: BookingEmailData) {
     rescheduledFromDate,
   } = props;
 
-  const formattedDate = new Date(startTime).toLocaleDateString("sr-RS", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const formattedDate = formatDate(startTime);
+  const formattedTime = formatTime(startTime);
 
-  const formattedTime = new Date(startTime).toLocaleTimeString("sr-RS", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const formattedOldDate = rescheduledFromDate
-    ? new Date(rescheduledFromDate).toLocaleDateString("sr-RS", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : null;
-
-  const formattedOldTime = rescheduledFromDate
-    ? new Date(rescheduledFromDate).toLocaleTimeString("sr-RS", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : null;
+  const formattedOldDate = rescheduledFromDate ? formatDate(rescheduledFromDate) : null;
+  const formattedOldTime = rescheduledFromDate ? formatTime(rescheduledFromDate) : null;
 
   const bookingUrl = `${getAppUrl()}/booking/${bookingUid}`;
 

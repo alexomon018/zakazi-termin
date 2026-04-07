@@ -16,6 +16,27 @@ export {
   protectedProcedure,
   createCallerFactory,
 } from "./trpc";
+export {
+  validateSubscriptionData,
+  validateStatusTransition,
+  assertValidSubscriptionData,
+  assertValidStatusTransition,
+  type SubscriptionData,
+  type ValidationResult,
+} from "./lib/subscription-validation";
+
+export { getAppOriginFromHeaders, getAppOriginFromRequest } from "./lib/app-origin";
+export { getPlanTierFromPriceId } from "./lib/stripe";
+export {
+  getUserMembership,
+  hasOrganizationRole,
+  isOrganizationAdmin,
+  isOrganizationOwner,
+  getOrganizationsWithRoles,
+  canViewAllBookings,
+  canManageEventTypes,
+  type TeamPermission,
+} from "./lib/permissions";
 
 export type RouterInputs = inferRouterInputs<AppRouter>;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;

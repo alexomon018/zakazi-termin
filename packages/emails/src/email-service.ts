@@ -9,15 +9,37 @@ import { BookingPendingEmail } from "./templates/booking-pending";
 import { BookingPendingOrganizerEmail } from "./templates/booking-pending-organizer";
 import { BookingRejectedEmail } from "./templates/booking-rejected";
 import { BookingRescheduledEmail } from "./templates/booking-rescheduled";
+import {
+  EmailVerificationEmail,
+  type EmailVerificationEmailProps,
+} from "./templates/email-verification";
 import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
+import { PaymentFailedEmail } from "./templates/payment-failed";
+import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
+import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+import { SubscriptionSuccessEmail } from "./templates/subscription-success";
+import { SupportRequestEmail } from "./templates/support-request";
+import { TeamInviteEmail } from "./templates/team-invite";
+import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
-import type { BookingEmailData } from "./types";
+import type {
+  BookingEmailData,
+  PaymentFailedEmailData,
+  SubscriptionCanceledEmailData,
+  SubscriptionExpiredEmailData,
+  SubscriptionSuccessEmailData,
+  SupportRequestEmailData,
+  TeamInviteEmailData,
+  TrialEndingEmailData,
+} from "./types";
 
 export interface SendEmailOptions {
   to: string;
   subject: string;
   react: ReactElement;
 }
+
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "salonko.rs@gmail.com";
 
 class EmailService {
   private resend: Resend | null = null;
@@ -69,14 +91,22 @@ class EmailService {
       });
 
       if (error) {
-        logger.error("Failed to send email", { error, to: options.to, subject: options.subject });
+        logger.error("Failed to send email", {
+          error,
+          to: options.to,
+          subject: options.subject,
+        });
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      logger.error("Email service error", { error: err, to: options.to, subject: options.subject });
+      logger.error("Email service error", {
+        error: err,
+        to: options.to,
+        subject: options.subject,
+      });
       return { success: false, error: errorMessage };
     }
   }
@@ -210,6 +240,93 @@ class EmailService {
       to: data.userEmail,
       subject: "Resetujte vašu lozinku - Salonko",
       react: createElement(PasswordResetEmail, data),
+    });
+  }
+
+  // Send email verification OTP
+  async sendEmailVerification(data: EmailVerificationEmailProps): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Vaš verifikacioni kod za Salonko",
+      react: createElement(EmailVerificationEmail, data),
+    });
+  }
+
+  // Subscription-related emails
+
+  // Send payment failed notification
+  async sendPaymentFailedEmail(data: PaymentFailedEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Plaćanje nije uspelo - Salonko",
+      react: createElement(PaymentFailedEmail, data),
+    });
+  }
+
+  // Send trial ending reminder (3 days before)
+  async sendTrialEndingEmail(data: TrialEndingEmailData): Promise<void> {
+    const daysText = data.daysRemaining === 1 ? "dan" : "dana";
+    await this.send({
+      to: data.userEmail,
+      subject: `Probni period ističe za ${data.daysRemaining} ${daysText} - Salonko`,
+      react: createElement(TrialEndingEmail, data),
+    });
+  }
+
+  // Send subscription canceled confirmation
+  async sendSubscriptionCanceledEmail(data: SubscriptionCanceledEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata otkazana - Salonko",
+      react: createElement(SubscriptionCanceledEmail, data),
+    });
+  }
+
+  // Send subscription expired notification
+  async sendSubscriptionExpiredEmail(data: SubscriptionExpiredEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata istekla - Salonko",
+      react: createElement(SubscriptionExpiredEmail, data),
+    });
+  }
+
+  // Send subscription success notification
+  async sendSubscriptionSuccessEmail(data: SubscriptionSuccessEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Pretplata uspešno aktivirana - Salonko",
+      react: createElement(SubscriptionSuccessEmail, data),
+    });
+  }
+
+  // Support-related emails
+
+  // Send support request notification to the support team
+  async sendSupportRequestEmail(
+    data: SupportRequestEmailData,
+    supportEmail = SUPPORT_EMAIL
+  ): Promise<{ success: boolean; error?: string }> {
+    return this.send({
+      to: supportEmail,
+      subject: `Zahtev za podršku: ${data.subject}`,
+      react: createElement(SupportRequestEmail, data),
+    });
+  }
+
+  // Team-related emails
+
+  // Send team invitation email
+  async sendTeamInviteEmail(data: TeamInviteEmailData): Promise<void> {
+    await this.send({
+      to: data.recipientEmail,
+      subject: `Poziv u tim: ${data.organizationName} - Salonko`,
+      react: createElement(TeamInviteEmail, {
+        inviterName: data.inviterName,
+        organizationName: data.organizationName,
+        role: data.role,
+        inviteUrl: data.inviteUrl,
+      }),
     });
   }
 }

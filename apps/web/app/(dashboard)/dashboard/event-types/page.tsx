@@ -5,7 +5,16 @@ export default async function EventTypesPage() {
   const caller = await createServerCaller();
 
   // Fetch data in parallel
-  const [eventTypes, currentUser] = await Promise.all([caller.eventType.list(), caller.user.me()]);
+  const [{ items: eventTypes, total }, currentUser] = await Promise.all([
+    caller.eventType.list(),
+    caller.user.me(),
+  ]);
 
-  return <EventTypesClient initialEventTypes={eventTypes} currentUser={currentUser} />;
+  return (
+    <EventTypesClient
+      initialEventTypes={eventTypes}
+      initialTotal={total}
+      currentUser={currentUser}
+    />
+  );
 }

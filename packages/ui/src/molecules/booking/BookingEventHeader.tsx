@@ -9,6 +9,8 @@ interface BookingEventHeaderProps {
   eventLocation?: string;
   salonName?: string | null;
   userAvatarUrl?: string | null;
+  /** Name of the staff member who created/provides this service */
+  staffName?: string | null;
   isRescheduling?: boolean;
 }
 
@@ -19,6 +21,7 @@ export function BookingEventHeader({
   eventLocation,
   salonName,
   userAvatarUrl,
+  staffName,
   isRescheduling,
 }: BookingEventHeaderProps) {
   return (
@@ -27,27 +30,36 @@ export function BookingEventHeader({
         <UserAvatar name={salonName || ""} image={userAvatarUrl || undefined} size="lg" />
         {salonName && (
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-              {formatSalonName(salonName)}
-            </h1>
+            <h1 className="text-xl font-semibold text-foreground">{formatSalonName(salonName)}</h1>
           </div>
         )}
       </div>
-      <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+      <h2 data-testid="booking-event-title" className="mb-2 text-2xl font-bold text-foreground">
         {isRescheduling ? `Promena termina: ${eventTitle}` : eventTitle}
       </h2>
       {eventDescription && (
-        <p className="mx-auto max-w-lg text-gray-600 dark:text-gray-400">{eventDescription}</p>
+        <p
+          data-testid="booking-event-description"
+          className="mx-auto max-w-lg text-muted-foreground"
+        >
+          {eventDescription}
+        </p>
       )}
-      <div className="flex gap-4 justify-center items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
-        <span className="flex gap-1 items-center">
+      <div className="flex flex-wrap gap-4 justify-center items-center mt-4 text-sm text-muted-foreground">
+        <span data-testid="booking-event-duration" className="flex gap-1 items-center">
           <Clock className="w-4 h-4" />
           {eventLength} minuta
         </span>
         {eventLocation && (
-          <span className="flex gap-1 items-center">
+          <span data-testid="booking-event-location" className="flex gap-1 items-center">
             <MapPin className="w-4 h-4" />
             {eventLocation}
+          </span>
+        )}
+        {staffName && (
+          <span className="flex gap-1 items-center">
+            <span className="text-muted-foreground">•</span>
+            {staffName}
           </span>
         )}
       </div>

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
+    <div className="min-h-dvh bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
         <div className="mb-8">
           <h1 className="text-9xl font-bold text-gray-200 dark:text-gray-800">404</h1>
@@ -26,7 +26,7 @@ export default function NotFound() {
           <Link href="/">
             <Button size="lg">Nazad na početnu</Button>
           </Link>
-          <Link href="/faq">
+          <Link href="/help">
             <Button variant="outline" size="lg">
               Pomoć i podrška
             </Button>

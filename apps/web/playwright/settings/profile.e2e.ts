@@ -87,7 +87,7 @@ test.describe("Profile Settings", () => {
   });
 
   test("should navigate to profile from settings index", async ({ page }) => {
-    await page.goto(ROUTES.SETTINGS);
+    await page.goto(ROUTES.SETTINGS, { waitUntil: "networkidle" });
 
     const profilePage = new ProfileSettingsPage(page);
     await profilePage.navigateFromSettingsIndex();

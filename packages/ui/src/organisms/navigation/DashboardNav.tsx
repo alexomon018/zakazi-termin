@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@salonko/ui";
-import { NavItem } from "@salonko/ui";
 import { MobileNavItem } from "@salonko/ui";
+import { NavItem } from "@salonko/ui";
 import { UserInfoDisplay } from "@salonko/ui";
 import useEmblaCarousel from "embla-carousel-react";
 import {
@@ -18,26 +18,54 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SalonkoIcon } from "../../atoms/Icons";
 
 interface DashboardNavProps {
   user: {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
     image?: string | null;
   };
+  isSubscribed?: boolean;
+  salonIconUrl?: string | null;
 }
 
 const navItems = [
-  { href: "/dashboard", label: "Pregled", icon: LayoutDashboard },
-  { href: "/dashboard/bookings", label: "Termini", icon: Calendar },
-  { href: "/dashboard/event-types", label: "Tipovi termina", icon: Clock },
-  { href: "/dashboard/availability", label: "Dostupnost", icon: Clock },
-  { href: "/dashboard/settings", label: "Podešavanja", icon: Settings },
+  {
+    href: "/dashboard",
+    label: "Pregled",
+    icon: LayoutDashboard,
+    requiresSubscription: false,
+  },
+  {
+    href: "/dashboard/bookings",
+    label: "Termini",
+    icon: Calendar,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/event-types",
+    label: "Tipovi termina",
+    icon: Clock,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/availability",
+    label: "Dostupnost",
+    icon: Clock,
+    requiresSubscription: true,
+  },
+  {
+    href: "/dashboard/settings/profile",
+    label: "Podešavanja",
+    icon: Settings,
+    requiresSubscription: false,
+  },
 ];
 
-export function DashboardNav({ user }: DashboardNavProps) {
+export function DashboardNav({ user, isSubscribed = false, salonIconUrl }: DashboardNavProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
 
@@ -96,14 +124,16 @@ export function DashboardNav({ user }: DashboardNavProps) {
   }, []);
 
   return (
-    <header className="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+    <header className="bg-background border-b border-border dark:bg-card">
       <div className="px-2 mx-auto max-w-7xl sm:px-4 lg:px-8">
         <div className="flex gap-2 justify-between items-center h-16 md:gap-4">
           {/* Logo */}
-          <Link href={session ? "/dashboard" : "/"} className="flex flex-shrink-0 items-center">
-            <span className="text-lg font-bold text-gray-900 md:text-xl dark:text-white">
-              Salonko
-            </span>
+          <Link
+            href={session ? "/dashboard" : "/"}
+            className="flex flex-shrink-0 items-center gap-2.5"
+          >
+            <SalonkoIcon className="w-6 h-6 text-primary dark:text-white" aria-hidden="true" />
+            <span className="text-lg font-semibold text-foreground">Salonko</span>
           </Link>
 
           {/* Navigation */}
@@ -115,20 +145,46 @@ export function DashboardNav({ user }: DashboardNavProps) {
                 label={item.label}
                 icon={item.icon}
                 isActive={item.isActive}
+                requiresSubscription={item.requiresSubscription}
+                isSubscribed={isSubscribed}
               />
             ))}
           </nav>
 
           {/* User menu */}
           <div className="flex flex-shrink-0 items-center space-x-2 md:space-x-3">
+            {/* Mobile: Show salon logo or name */}
+            <Link href="/dashboard/settings/profile" className="md:hidden">
+              {salonIconUrl ? (
+                <img
+                  src={salonIconUrl}
+                  alt={user.salonName || user.name || "Salon"}
+                  className="object-cover w-8 h-8 rounded-full"
+                />
+              ) : (
+                <span className="text-sm font-medium text-foreground truncate max-w-[100px]">
+                  {user.salonName || user.name || "Salon"}
+                </span>
+              )}
+            </Link>
+            {/* Desktop: Show salon info */}
             <div className="hidden lg:block">
-              <UserInfoDisplay name={user.name || ""} email={user.email} />
+              {salonIconUrl ? (
+                <img
+                  src={salonIconUrl}
+                  alt={user.salonName || user.name || "Salon"}
+                  className="object-cover w-9 h-9 rounded-full"
+                />
+              ) : (
+                <UserInfoDisplay name={user.salonName || user.name || ""} email={user.email} />
+              )}
             </div>
+            {/* Desktop: Show logout button */}
             <Button
               variant="outline"
               size="sm"
               onClick={handleSignOut}
-              className="flex items-center"
+              className="hidden items-center md:flex"
             >
               <LogOut className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Odjava</span>
@@ -137,18 +193,18 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </div>
       </div>
 
-      <nav className="relative py-2 border-t border-gray-200 md:hidden dark:border-gray-700">
+      <nav className="relative py-2 border-t border-border md:hidden">
         {/* Left arrow */}
         <button
           type="button"
           onClick={scrollPrev}
           disabled={!canScrollPrev}
-          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-opacity ${
+          className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-background dark:bg-card border-r border-border transition-opacity ${
             canScrollPrev ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll left"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <ChevronLeft className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         </button>
 
         {/* Carousel viewport */}
@@ -161,6 +217,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
                   label={item.label}
                   icon={item.icon}
                   isActive={item.isActive}
+                  requiresSubscription={item.requiresSubscription}
+                  isSubscribed={isSubscribed}
                 />
               </div>
             ))}
@@ -172,12 +230,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
           type="button"
           onClick={scrollNext}
           disabled={!canScrollNext}
-          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 transition-opacity ${
+          className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-8 h-8 bg-background dark:bg-card border-l border-border transition-opacity ${
             canScrollNext ? "opacity-100" : "opacity-40 cursor-not-allowed"
           }`}
           aria-label="Scroll right"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <ChevronRight className="w-5 h-5 text-muted-foreground" aria-hidden="true" />
         </button>
       </nav>
     </header>

@@ -1,4 +1,5 @@
 const path = require("path");
+const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 
 // Load .env from monorepo root
 require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
@@ -7,6 +8,13 @@ require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  // Monorepo: Prisma Client is generated into ../../packages/prisma/generated/client.
+  // Ensure Next's output file tracing can "see" outside apps/web and ships the query engine.
+  outputFileTracingRoot: path.resolve(__dirname, "../.."),
+  outputFileTracingIncludes: {
+    "/**/*": ["../../packages/prisma/generated/client/**"],
+  },
+  serverExternalPackages: ["@prisma/client", "prisma"],
   images: {
     remotePatterns: [
       {
@@ -16,13 +24,20 @@ const nextConfig = {
     ],
   },
   transpilePackages: [
-    "@salonko/auth",
     "@salonko/prisma",
+    "@salonko/auth",
+    "@salonko/s3",
     "@salonko/ui",
     "@salonko/trpc",
     "@salonko/scheduling",
     "@salonko/config",
   ],
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+    return config;
+  },
   async headers() {
     return [
       {
@@ -55,7 +70,6 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
 
 // Injected content via Sentry wizard below
 

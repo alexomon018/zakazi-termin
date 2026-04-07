@@ -1,31 +1,58 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import { getAppUrl, normalizeToSlug } from "@salonko/config";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, cn } from "@salonko/ui";
+import { Button, Card, CardContent, ConfirmDialog, cn } from "@salonko/ui";
 import { Clock, Copy, ExternalLink, Eye, EyeOff, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-type EventType = RouterOutputs["eventType"]["list"][number];
-type User = Pick<NonNullable<RouterOutputs["user"]["me"]>, "id" | "salonName" | "name">;
+type EventType = RouterOutputs["eventType"]["list"]["items"][number];
+type User = Pick<
+  NonNullable<RouterOutputs["user"]["me"]>,
+  "id" | "salonName" | "name" | "membership"
+>;
 
 type EventTypesClientProps = {
   initialEventTypes: EventType[];
+  initialTotal: number;
   currentUser: User | null;
 };
 
-export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesClientProps) {
-  const [copySuccess, setCopySuccess] = useState<number | null>(null);
+/**
+ * Get the booking page slug for the current user.
+ * Normalizes the salonName to ensure URL-safe format.
+ * - For salon owners: use their salonName (normalized)
+ * - For team members: use the organization slug
+ */
+function getBookingSlug(user: User | null): string | null {
+  if (!user) return null;
+  // If user has their own salonName, use it (salon owners) - normalize to ensure URL-safe
+  if (user.salonName) return normalizeToSlug(user.salonName);
+  // Otherwise use the organization slug (team members) - already normalized
+  return user.membership?.organization?.slug ?? null;
+}
+
+export function EventTypesClient({
+  initialEventTypes,
+  initialTotal,
+  currentUser,
+}: EventTypesClientProps) {
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventTypeToDelete, setEventTypeToDelete] = useState<string | null>(null);
   const utils = trpc.useUtils();
 
-  const { data: eventTypes } = trpc.eventType.list.useQuery(undefined, {
-    initialData: initialEventTypes,
+  const { data } = trpc.eventType.list.useQuery(undefined, {
+    initialData: { items: initialEventTypes, total: initialTotal },
   });
+  const eventTypes = data.items;
 
   const deleteEventType = trpc.eventType.delete.useMutation({
     onSuccess: () => {
       utils.eventType.list.invalidate();
+      setDeleteDialogOpen(false);
     },
   });
 
@@ -35,33 +62,37 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     },
   });
 
-  const handleCopyLink = async (eventType: { slug: string }) => {
-    // Use window.location.origin for client-side (always correct)
-    // Fall back to NEXT_PUBLIC_APP_URL for SSR
-    const baseUrl =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_APP_URL || "";
-    const link = `${baseUrl}/${currentUser?.salonName}/${eventType.slug}`;
+  const bookingSlug = getBookingSlug(currentUser);
+  const canShare = Boolean(bookingSlug);
+
+  const handleCopyLink = async (eventType: { id: string; slug: string }) => {
+    if (!bookingSlug) return;
+
+    const baseUrl = getAppUrl();
+    const link = `${baseUrl}/${bookingSlug}/${eventType.slug}`;
 
     try {
       await navigator.clipboard.writeText(link);
-      setCopySuccess(
-        eventTypes?.findIndex((e: { slug: string }) => e.slug === eventType.slug) ?? null
-      );
+      setCopySuccess(eventType.id);
       setTimeout(() => setCopySuccess(null), 2000);
     } catch (err) {
       console.error("Failed to copy:", err);
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Da li ste sigurni da želite da obrišete ovaj tip termina?")) {
-      deleteEventType.mutate({ id });
+  const handleDelete = (id: string) => {
+    setEventTypeToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (eventTypeToDelete) {
+      deleteEventType.mutate({ id: eventTypeToDelete });
+      setEventTypeToDelete(null);
     }
   };
 
-  const handleToggleVisibility = (id: number, currentHidden: boolean) => {
+  const handleToggleVisibility = (id: string, currentHidden: boolean) => {
     toggleHidden.mutate({ id, hidden: !currentHidden });
   };
 
@@ -73,42 +104,46 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
     return `${hours}h ${mins}min`;
   };
 
-  // Use window.location.origin for client-side (always correct)
-  // Fall back to NEXT_PUBLIC_APP_URL for SSR
-  const baseUrl =
-    typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL || "";
+  const baseUrl = getAppUrl();
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Tipovi termina</h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h1 data-testid="event-types-title" className="text-2xl font-bold text-foreground">
+            Tipovi termina
+          </h1>
+          <p className="mt-1 text-muted-foreground">
             Kreirajte i upravljajte vrstama termina koje nudite
           </p>
         </div>
-        <Link href="/dashboard/event-types/new" className="w-full sm:w-auto">
+        <Link
+          href="/dashboard/event-types/new"
+          data-testid="event-types-create-button"
+          className="w-full sm:w-auto"
+        >
           <Button className="w-full sm:w-auto">
-            <Plus className="mr-2 w-4 h-4" />
+            <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
             Novi tip termina
           </Button>
         </Link>
       </div>
 
-      {eventTypes?.length === 0 ? (
-        <Card>
+      {eventTypes.length === 0 ? (
+        <Card data-testid="event-types-empty-state">
           <CardContent className="py-12">
             <div className="text-center">
-              <Clock className="mx-auto mb-4 w-12 h-12 text-gray-300 dark:text-gray-600" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
-                Nemate tipove termina
-              </h3>
-              <p className="mb-4 text-gray-500 dark:text-gray-400">
+              <Clock
+                className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
+                aria-hidden="true"
+              />
+              <h3 className="mb-2 text-lg font-medium text-foreground">Nemate tipove termina</h3>
+              <p className="mb-4 text-muted-foreground">
                 Kreirajte svoj prvi tip termina da biste omogućili klijentima da zakazuju.
               </p>
               <Link href="/dashboard/event-types/new">
                 <Button>
-                  <Plus className="mr-2 w-4 h-4" />
+                  <Plus className="mr-2 w-4 h-4" aria-hidden="true" />
                   Kreiraj tip termina
                 </Button>
               </Link>
@@ -116,8 +151,8 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {eventTypes?.map((eventType: EventType, index: number) => (
+        <div data-testid="event-types-list" className="space-y-4">
+          {eventTypes.map((eventType: EventType) => (
             <Card
               key={eventType.id}
               className={`transition-opacity ${eventType.hidden ? "opacity-60" : ""}`}
@@ -131,16 +166,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                       <div
                         className={cn(
                           "w-1 h-12 rounded-full flex-shrink-0",
-                          eventType.hidden ? "bg-gray-400" : "bg-blue-500"
+                          eventType.hidden ? "bg-muted-foreground" : "bg-primary"
                         )}
                       />
                       <div className="min-w-0">
                         <div className="flex flex-wrap gap-2 items-center">
-                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                          <h3 className="font-medium truncate text-foreground">
                             {eventType.title}
                           </h3>
                           {eventType.hidden && (
-                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded flex-shrink-0">
+                            <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded flex-shrink-0">
                               Skriveno
                             </span>
                           )}
@@ -150,16 +185,16 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex flex-wrap gap-y-1 gap-x-4 items-center mt-1 text-sm text-muted-foreground">
                           <span className="flex gap-1 items-center">
-                            <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Clock className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                             {formatDuration(eventType.length)}
                           </span>
                           {eventType.locations &&
                           Array.isArray(eventType.locations) &&
                           eventType.locations.length > 0 ? (
                             <span className="flex gap-1 items-center min-w-0">
-                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                              <MapPin className="w-3.5 h-3.5 flex-shrink-0" aria-hidden="true" />
                               <span className="truncate">
                                 {(
                                   eventType.locations as {
@@ -175,28 +210,41 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                     </div>
 
                     {/* Right section - Actions */}
-                    <div className="flex gap-1 items-center flex-shrink-0 ml-5 sm:ml-0">
+                    <div className="flex flex-shrink-0 gap-1 items-center ml-5 sm:ml-0">
                       {/* Copy link button */}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleCopyLink(eventType)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                        disabled={!canShare}
+                        className={cn(
+                          "text-muted-foreground hover:text-foreground px-2",
+                          !canShare && "opacity-50 cursor-not-allowed"
+                        )}
                       >
-                        {copySuccess === index ? (
-                          <span className="text-xs text-green-600">Kopirano!</span>
+                        {copySuccess === eventType.id ? (
+                          <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                            Kopirano!
+                          </span>
                         ) : (
-                          <Copy className="w-4 h-4" />
+                          <Copy className="w-4 h-4" aria-hidden="true" />
                         )}
                       </Button>
 
                       {/* Preview link */}
                       <Link
-                        href={`/${currentUser?.salonName}/${eventType.slug}`}
+                        href={canShare ? `/${bookingSlug}/${eventType.slug}` : "#"}
+                        aria-disabled={!canShare}
+                        onClick={(e) => {
+                          if (!canShare) e.preventDefault();
+                        }}
                         target="_blank"
-                        className="p-2 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className={cn(
+                          "p-2 text-muted-foreground rounded-md hover:text-foreground hover:bg-muted",
+                          !canShare && "pointer-events-none opacity-50"
+                        )}
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" aria-hidden="true" />
                       </Link>
 
                       {/* Toggle visibility */}
@@ -204,12 +252,12 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleVisibility(eventType.id, eventType.hidden)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                        className="px-2 text-muted-foreground hover:text-foreground"
                       >
                         {eventType.hidden ? (
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4" aria-hidden="true" />
                         ) : (
-                          <EyeOff className="w-4 h-4" />
+                          <EyeOff className="w-4 h-4" aria-hidden="true" />
                         )}
                       </Button>
 
@@ -218,9 +266,9 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2"
+                          className="px-2 text-muted-foreground hover:text-foreground"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" aria-hidden="true" />
                         </Button>
                       </Link>
 
@@ -229,19 +277,19 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(eventType.id)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 px-2"
+                        className="px-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                         data-testid={`delete-event-type-${eventType.id}`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
                 </div>
 
                 {/* Public URL bar */}
-                <div className="px-4 py-2 bg-gray-50 rounded-b-lg border-t border-gray-100 dark:border-gray-700 dark:bg-gray-800/50 overflow-hidden">
-                  <code className="text-xs text-gray-600 dark:text-gray-400 block truncate">
-                    {baseUrl}/{currentUser?.salonName}/{eventType.slug}
+                <div className="overflow-hidden px-4 py-2 bg-muted/50 rounded-b-lg border-t border-border">
+                  <code className="block text-xs truncate text-muted-foreground">
+                    {canShare ? `${baseUrl}/${bookingSlug}/${eventType.slug}` : "—"}
                   </code>
                 </div>
               </CardContent>
@@ -251,15 +299,25 @@ export function EventTypesClient({ initialEventTypes, currentUser }: EventTypesC
       )}
 
       {/* Help section */}
-      {eventTypes && eventTypes.length > 0 && (
-        <div className="p-4 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-          <h4 className="mb-1 font-medium text-blue-900 dark:text-blue-300">Kako funkcioniše?</h4>
-          <p className="text-sm text-blue-700 dark:text-blue-400">
+      {eventTypes.length > 0 && (
+        <div className="p-4 bg-muted/50 rounded-lg border border-border dark:bg-muted/30">
+          <h4 className="mb-1 font-medium text-foreground">Kako funkcioniše?</h4>
+          <p className="text-sm text-muted-foreground">
             Podelite link za zakazivanje sa klijentima. Oni mogu izabrati slobodan termin iz vaše
             dostupnosti, a vi ćete dobiti obaveštenje o novom terminu.
           </p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Obriši tip termina"
+        description="Da li ste sigurni da želite da obrišete ovaj tip termina?"
+        confirmText="Obriši"
+        isLoading={deleteEventType.isPending}
+      />
     </div>
   );
 }

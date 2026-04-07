@@ -42,7 +42,12 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
     initialData: initialUser ?? undefined,
   });
 
+  const appearanceErrorMessage = "Došlo je do greške pri čuvanju izgleda. Pokušajte ponovo.";
+
   const updateAppearance = trpc.user.updateAppearance.useMutation({
+    onError: (error) => {
+      console.error("updateAppearance failed:", error);
+    },
     onSuccess: async () => {
       // Update theme immediately
       setTheme(selectedTheme === null ? "system" : selectedTheme);
@@ -81,8 +86,8 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
   return (
     <div className="space-y-6 md:px-0">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Izgled</h1>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <h1 className="text-2xl font-bold text-foreground">Izgled</h1>
+        <p className="mt-1 text-muted-foreground">
           Prilagodite izgled vaše stranice za zakazivanje
         </p>
       </div>
@@ -95,9 +100,13 @@ export function AppearanceClient({ initialUser }: AppearanceClientProps) {
       )}
 
       {updateAppearance.error && (
-        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-          <span className="text-red-800 dark:text-red-300">{updateAppearance.error.message}</span>
+        <div
+          role="alert"
+          aria-live="polite"
+          className="flex gap-3 items-center p-4 bg-destructive/10 rounded-lg border border-destructive/20"
+        >
+          <AlertCircle className="w-5 h-5 text-destructive" />
+          <span className="text-destructive">{appearanceErrorMessage}</span>
         </div>
       )}
 

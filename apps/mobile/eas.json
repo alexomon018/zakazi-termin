@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/expo/eas-cli/main/packages/eas-json/schema/eas.json",
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "node": "22.14.0",
+      "corepack": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000"
+      }
+    },
+    "staging": {
+      "distribution": "internal",
+      "channel": "staging",
+      "autoIncrement": true,
+      "node": "22.14.0",
+      "corepack": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://dev.salonko.rs"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "node": "22.14.0",
+      "corepack": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://salonko.rs"
+      }
+    }
+  }
+}

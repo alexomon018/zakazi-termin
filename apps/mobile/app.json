@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Salonko",
+    "slug": "salonko",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "salonko",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zakazitermin.app",
+      "icon": {
+        "light": "./assets/icons/ios-light.png",
+        "dark": "./assets/icons/ios-dark.png",
+        "tinted": "./assets/icons/ios-tinted.png"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.zakazitermin.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/81fe5488-5e98-4892-ac99-ea5bfb736344"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-web-browser",
+      "@sentry/react-native/expo",
+      "@sentry/react-native",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icons/splash-icon-light.png",
+          "dark": {
+            "image": "./assets/icons/splash-icon-dark.png"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "81fe5488-5e98-4892-ac99-ea5bfb736344"
+      }
+    },
+    "owner": "alexomon018"
+  }
+}

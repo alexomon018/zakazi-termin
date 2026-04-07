@@ -1,12 +1,34 @@
 import { GoogleCalendarService, googleCredentialSchema } from "@salonko/calendar";
-import { logger } from "@salonko/config";
+import { dayjs, getClientIp, logger, publicApiRateLimiter } from "@salonko/config";
 import { getAvailability, getBookingBusyTimes } from "@salonko/scheduling";
-import { protectedProcedure, publicProcedure, router } from "@salonko/trpc/trpc";
+import {
+  protectedProcedure,
+  publicProcedure,
+  router,
+  subscriptionProtectedProcedure,
+} from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+
+async function checkPublicApiRateLimit(req?: Request): Promise<void> {
+  if (!publicApiRateLimiter) return;
+  const ip = getClientIp(req);
+  if (!ip) {
+    logger.warn("Could not resolve client IP for public API rate limiting");
+    return;
+  }
+  const { success } = await publicApiRateLimiter.limit(`public-api:${ip}`);
+  if (!success) {
+    throw new TRPCError({
+      code: "TOO_MANY_REQUESTS",
+      message: "Previše zahteva. Pokušajte ponovo za minut.",
+    });
+  }
+}
 
 export const availabilityRouter = router({
   // List user's schedules
-  listSchedules: protectedProcedure.query(async ({ ctx }) => {
+  listSchedules: subscriptionProtectedProcedure.query(async ({ ctx }) => {
     const schedules = await ctx.prisma.schedule.findMany({
       where: { userId: ctx.session.user.id },
       include: {
@@ -17,8 +39,8 @@ export const availabilityRouter = router({
   }),
 
   // Get schedule by ID
-  getSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+  getSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const schedule = await ctx.prisma.schedule.findFirst({
         where: {
@@ -33,7 +55,7 @@ export const availabilityRouter = router({
     }),
 
   // Create a new schedule
-  createSchedule: protectedProcedure
+  createSchedule: subscriptionProtectedProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -52,10 +74,10 @@ export const availabilityRouter = router({
     }),
 
   // Update schedule
-  updateSchedule: protectedProcedure
+  updateSchedule: subscriptionProtectedProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         name: z.string().min(1).optional(),
         timeZone: z.string().optional(),
       })
@@ -73,8 +95,8 @@ export const availabilityRouter = router({
     }),
 
   // Delete schedule
-  deleteSchedule: protectedProcedure
-    .input(z.object({ id: z.number() }))
+  deleteSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.schedule.delete({
         where: {
@@ -85,11 +107,45 @@ export const availabilityRouter = router({
       return { success: true };
     }),
 
+  // Duplicate a schedule (copy name + availability)
+  duplicateSchedule: subscriptionProtectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const original = await ctx.prisma.schedule.findFirst({
+        where: { id: input.id, userId: ctx.session.user.id },
+        include: { availability: true },
+      });
+      if (!original) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Raspored nije pronađen.",
+        });
+      }
+
+      const newSchedule = await ctx.prisma.schedule.create({
+        data: {
+          name: `${original.name} (kopija)`,
+          timeZone: original.timeZone,
+          userId: ctx.session.user.id,
+          availability: {
+            create: original.availability.map((a) => ({
+              days: a.days,
+              startTime: a.startTime,
+              endTime: a.endTime,
+              date: a.date,
+            })),
+          },
+        },
+        include: { availability: true },
+      });
+      return newSchedule;
+    }),
+
   // Set availability for a schedule
-  setAvailability: protectedProcedure
+  setAvailability: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         availability: z.array(
           z.object({
             days: z.array(z.number().min(0).max(6)),
@@ -109,7 +165,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete existing availability
@@ -133,10 +189,10 @@ export const availabilityRouter = router({
     }),
 
   // Add a date override (specific date with custom hours)
-  addDateOverride: protectedProcedure
+  addDateOverride: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
         startTime: z.string(), // HH:mm format
         endTime: z.string(),
@@ -152,7 +208,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -178,10 +234,10 @@ export const availabilityRouter = router({
     }),
 
   // Remove a date override
-  removeDateOverride: protectedProcedure
+  removeDateOverride: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -195,7 +251,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       await ctx.prisma.availability.deleteMany({
@@ -209,10 +265,10 @@ export const availabilityRouter = router({
     }),
 
   // Block a specific date (no availability)
-  blockDate: protectedProcedure
+  blockDate: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         date: z.date(),
       })
     )
@@ -226,7 +282,7 @@ export const availabilityRouter = router({
       });
 
       if (!schedule) {
-        throw new Error("Raspored nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Raspored nije pronađen." });
       }
 
       // Delete any existing override for this date
@@ -252,10 +308,10 @@ export const availabilityRouter = router({
     }),
 
   // Get date overrides for a schedule
-  getDateOverrides: protectedProcedure
+  getDateOverrides: subscriptionProtectedProcedure
     .input(
       z.object({
-        scheduleId: z.number(),
+        scheduleId: z.string(),
         dateFrom: z.date().optional(),
         dateTo: z.date().optional(),
       })
@@ -285,13 +341,16 @@ export const availabilityRouter = router({
   getSlots: publicProcedure
     .input(
       z.object({
-        eventTypeId: z.number(),
+        eventTypeId: z.string(),
         dateFrom: z.date(),
         dateTo: z.date(),
         timeZone: z.string().default("Europe/Belgrade"),
+        hostUserId: z.string().optional(), // Optional: filter by specific host/staff member
       })
     )
     .query(async ({ ctx, input }) => {
+      await checkPublicApiRateLimit(ctx.req);
+
       const eventType = await ctx.prisma.eventType.findUnique({
         where: { id: input.eventTypeId },
         include: {
@@ -301,6 +360,16 @@ export const availabilityRouter = router({
               availability: true,
             },
           },
+          hosts: {
+            include: {
+              user: true,
+              schedule: {
+                include: {
+                  availability: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -308,13 +377,32 @@ export const availabilityRouter = router({
         return { slots: [] };
       }
 
-      // Get existing bookings in the date range
+      // Determine which user's schedule and bookings to use
+      let targetUserId = eventType.userId;
+      let targetSchedule = eventType.schedule;
+      let targetUserTimeZone = eventType.user.timeZone;
+
+      // If a specific host is requested, use their schedule instead
+      if (input.hostUserId && eventType.hosts.length > 0) {
+        const host = eventType.hosts.find((h) => h.userId === input.hostUserId);
+        if (host) {
+          targetUserId = host.userId;
+          // Use host's custom schedule if available, otherwise fall back to event type schedule
+          if (host.schedule) {
+            targetSchedule = host.schedule;
+          }
+          targetUserTimeZone = host.user.timeZone;
+        }
+      }
+
+      // Get existing bookings in the date range for the target user
+      // For team bookings, check both assignedHostId AND userId (for owner's own bookings)
       const bookings = await ctx.prisma.booking.findMany({
         where: {
-          userId: eventType.userId,
           status: { in: ["PENDING", "ACCEPTED"] },
           startTime: { gte: input.dateFrom },
           endTime: { lte: input.dateTo },
+          OR: [{ assignedHostId: targetUserId }, { userId: targetUserId, assignedHostId: null }],
         },
         select: {
           startTime: true,
@@ -324,7 +412,7 @@ export const availabilityRouter = router({
       });
 
       // Convert availability to working hours and date overrides format
-      const scheduleAvailability = eventType.schedule?.availability || [];
+      const scheduleAvailability = targetSchedule?.availability || [];
       const availability = scheduleAvailability.map((a) => {
         if (a.date) {
           // Date override
@@ -345,7 +433,36 @@ export const availabilityRouter = router({
       // Get busy times from bookings
       const bookingBusyTimes = getBookingBusyTimes(bookings);
 
-      // Get busy times from connected calendars
+      // Get out-of-office entries for the target user
+      const outOfOfficeEntries = await ctx.prisma.outOfOffice.findMany({
+        where: {
+          userId: targetUserId,
+          start: { lte: input.dateTo },
+          end: { gte: input.dateFrom },
+        },
+        select: {
+          start: true,
+          end: true,
+        },
+      });
+
+      // Convert out-of-office entries to busy times (full day blocks)
+      // Out-of-office dates are stored as date-only, so we need to cover the full day
+      // Use timezone-aware manipulation to ensure full-day blocks align with user's timezone
+      const userTz = targetSchedule?.timeZone || targetUserTimeZone;
+      const outOfOfficeBusyTimes = outOfOfficeEntries.map((entry) => {
+        // Start at beginning of start date in user's timezone
+        const startDateStr = entry.start.toISOString().split("T")[0];
+        const start = dayjs.tz(`${startDateStr} 00:00:00`, userTz).toDate();
+
+        // End at end of end date in user's timezone (23:59:59.999)
+        const endDateStr = entry.end.toISOString().split("T")[0];
+        const end = dayjs.tz(`${endDateStr} 23:59:59.999`, userTz).toDate();
+
+        return { start, end };
+      });
+
+      // Get busy times from connected calendars for the target user
       const calendarBusyTimes: { start: Date; end: Date }[] = [];
 
       const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -354,7 +471,7 @@ export const availabilityRouter = router({
       if (clientId && clientSecret) {
         const credentials = await ctx.prisma.credential.findMany({
           where: {
-            userId: eventType.userId,
+            userId: targetUserId,
             type: "google_calendar",
             invalid: { not: true },
           },
@@ -398,10 +515,10 @@ export const availabilityRouter = router({
       }
 
       // Combine all busy times
-      const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes];
+      const busyTimes = [...bookingBusyTimes, ...calendarBusyTimes, ...outOfOfficeBusyTimes];
 
       // Use scheduling package to calculate available slots
-      const timeZone = eventType.schedule?.timeZone || eventType.user.timeZone;
+      const timeZone = targetSchedule?.timeZone || targetUserTimeZone;
       const { slots, dateRanges } = getAvailability({
         availability,
         timeZone,

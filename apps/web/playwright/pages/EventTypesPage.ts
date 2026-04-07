@@ -27,7 +27,7 @@ export class EventTypesListPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.EVENT_TYPES);
+    await this.navigateTo(ROUTES.EVENT_TYPES);
     await this.waitForPageLoad();
   }
 
@@ -57,66 +57,32 @@ export class EventTypesListPage extends BasePage {
    * Delete an event type by title using the delete button
    */
   async deleteEventType(title: string): Promise<void> {
-    // Find the event type card by title, then find the delete button with data-testid within it
-    const titleLocator = this.page.locator(`text=${title}`).first();
+    // Scope to the card containing the event type title, then find its delete button
+    const card = this.eventTypeList.locator("> div").filter({ hasText: title });
+    const deleteButton = card.locator('[data-testid^="delete-event-type-"]').first();
 
-    // Navigate up to find the card containing this title, then find the delete button
-    // The button has data-testid="delete-event-type-{id}" pattern
-    const cardContainingTitle = titleLocator
-      .locator("..")
-      .locator("..")
-      .locator("..")
-      .locator("..");
-    const deleteButton = cardContainingTitle.locator('[data-testid^="delete-event-type-"]').first();
-
-    const deleteButtonVisible = await deleteButton.isVisible().catch(() => false);
-
-    if (!deleteButtonVisible) {
-      throw new Error(`Could not find delete button for event type: ${title}`);
-    }
-
-    // Set up dialog handler BEFORE clicking (native browser confirm)
-    // Use Promise.all to handle both the dialog and the API response
-    const dialogPromise = this.page.waitForEvent("dialog").then(async (dialog) => {
-      await dialog.accept();
-      return true;
-    });
-
-    // Set up response waiter for the delete mutation
-    const responsePromise = this.page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/trpc") &&
-        response.request().method() === "POST" &&
-        (response.url().includes("eventType.delete") ||
-          (response.request().postData()?.includes("eventType.delete") ?? false)),
-      { timeout: 30000 }
-    );
-
-    // Click the delete button
+    await expect(deleteButton).toBeVisible({ timeout: 5000 });
     await deleteButton.click();
 
-    // Wait for native dialog (with short timeout in case it's a custom dialog)
-    const dialogHandled = await dialogPromise.catch(() => false);
+    // Wait for confirm dialog to appear (ConfirmDialog component)
+    const confirmDialog = this.page.locator('[role="dialog"]').filter({
+      hasText: "Obriši tip termina",
+    });
+    await expect(confirmDialog).toBeVisible({ timeout: 5000 });
 
-    if (!dialogHandled) {
-      // Check for custom confirm dialog (fallback)
-      const confirmButton = this.page.locator('button:has-text("Potvrdi")');
-      const confirmButtonVisible = await confirmButton
-        .isVisible({ timeout: 2000 })
-        .catch(() => false);
+    // Find and click the confirm button in the dialog
+    const confirmButton = confirmDialog.locator('button:has-text("Obriši")').filter({
+      hasNotText: "Otkaži",
+    });
+    await expect(confirmButton).toBeVisible({ timeout: 2000 });
 
-      if (confirmButtonVisible) {
-        await confirmButton.click();
-      }
-    }
-
-    // Wait for the delete response to complete
-    await responsePromise.catch(() => {
-      // Response might have already completed, that's ok
+    // Wait for the delete mutation to complete
+    await this.waitForMutation(async () => {
+      await confirmButton.click();
     });
 
-    // Give the UI a moment to update
-    await this.page.waitForTimeout(500);
+    // Wait for dialog to close
+    await expect(confirmDialog).toBeHidden({ timeout: 5000 });
   }
 
   /**
@@ -158,7 +124,6 @@ export class CreateEventTypePage extends BasePage {
   readonly locationAddressInput: Locator;
   readonly durationInput: Locator;
   readonly submitButton: Locator;
-  readonly cancelButton: Locator;
   readonly backButton: Locator;
 
   // Duration preset buttons
@@ -198,10 +163,6 @@ export class CreateEventTypePage extends BasePage {
       .locator('[data-testid="event-type-submit-button"]')
       .or(page.locator('button[type="submit"]'))
       .first();
-    this.cancelButton = page
-      .locator('[data-testid="event-type-cancel-button"]')
-      .or(page.locator('button:has-text("Otkaži")'))
-      .first();
     this.backButton = page
       .locator('[data-testid="event-type-back-button"]')
       .or(page.getByText("Nazad"))
@@ -222,7 +183,7 @@ export class CreateEventTypePage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.EVENT_TYPES_NEW);
+    await this.navigateTo(ROUTES.EVENT_TYPES_NEW);
     await this.waitForPageLoad();
   }
 
@@ -313,14 +274,6 @@ export class CreateEventTypePage extends BasePage {
   }
 
   /**
-   * Click cancel button
-   */
-  async cancel(): Promise<void> {
-    await this.clickButton(this.cancelButton);
-    await this.waitForUrl(/\/dashboard\/event-types$/);
-  }
-
-  /**
    * Click back button
    */
   async goBack(): Promise<void> {
@@ -371,7 +324,6 @@ export class EditEventTypePage extends BasePage {
   readonly locationAddressInput: Locator;
   readonly durationInput: Locator;
   readonly saveButton: Locator;
-  readonly cancelButton: Locator;
   readonly deleteButton: Locator;
 
   constructor(page: Page) {
@@ -403,12 +355,12 @@ export class EditEventTypePage extends BasePage {
       .locator('[data-testid="event-type-save-button"]')
       .or(page.locator('button:has-text("Sačuvaj izmene")'))
       .first();
-    this.cancelButton = page.locator('[data-testid="event-type-cancel-button"]');
+
     this.deleteButton = page.locator('[data-testid="event-type-delete-button"]');
   }
 
   async goto(eventTypeId: number | string): Promise<void> {
-    await this.page.goto(ROUTES.eventTypeEdit(eventTypeId));
+    await this.navigateTo(ROUTES.eventTypeEdit(eventTypeId));
     await this.waitForPageLoad();
   }
 

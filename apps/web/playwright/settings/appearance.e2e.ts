@@ -78,7 +78,8 @@ test.describe("Appearance Settings", () => {
   });
 
   test("should navigate to appearance from settings index", async ({ page }) => {
-    await page.goto(ROUTES.SETTINGS);
+    // Navigate to settings index page first
+    await page.goto(ROUTES.SETTINGS, { waitUntil: "networkidle" });
 
     const appearancePage = new AppearanceSettingsPage(page);
     await appearancePage.navigateFromSettingsIndex();

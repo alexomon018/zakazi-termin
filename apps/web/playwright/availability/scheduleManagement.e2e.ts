@@ -1,4 +1,5 @@
 import { expect, test } from "../fixtures";
+import { TIMEOUTS } from "../lib/constants";
 import { AvailabilityPage } from "../pages";
 
 test.describe("Schedule Management", () => {
@@ -36,7 +37,12 @@ test.describe("Schedule Management", () => {
       const scheduleName = `Test Schedule ${Date.now()}`;
       await availabilityPage.createSchedule(scheduleName);
 
-      // Verify schedule was created
+      // After creation, the app navigates to the editor page for the new schedule
+      await page.waitForURL(/\/dashboard\/availability\//, {
+        timeout: TIMEOUTS.NAVIGATION,
+      });
+
+      // Verify schedule name is visible on the editor page
       await availabilityPage.expectScheduleVisible(scheduleName);
 
       // Cleanup
@@ -56,7 +62,24 @@ test.describe("Schedule Management", () => {
     const availabilityPage = new AvailabilityPage(page);
     await availabilityPage.goto();
 
-    // Should see days of the week (in Serbian or English)
+    // Wait for the page to fully load
+    await availabilityPage.waitForPageLoad();
+
+    // The default schedule should be visible on the list page
+    const scheduleName = "Working Hours";
+    await availabilityPage.expectScheduleVisible(scheduleName);
+
+    // Click on the schedule to navigate to the editor page
+    const scheduleLink = page.locator(`text=${scheduleName}`).first();
+    await scheduleLink.click();
+
+    // Wait for the editor page to load
+    await page.waitForURL(/\/dashboard\/availability\//, {
+      timeout: TIMEOUTS.NAVIGATION,
+    });
+    await availabilityPage.waitForPageLoad();
+
+    // Should see days of the week on the editor page
     await availabilityPage.expectDaysVisible();
   });
 

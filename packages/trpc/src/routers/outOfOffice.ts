@@ -1,4 +1,5 @@
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const outOfOfficeRouter = router({
@@ -7,7 +8,7 @@ export const outOfOfficeRouter = router({
     .input(
       z
         .object({
-          cursor: z.number().optional(),
+          cursor: z.string().optional(),
           limit: z.number().min(1).max(100).default(20),
         })
         .optional()
@@ -70,7 +71,7 @@ export const outOfOfficeRouter = router({
     });
 
     if (!entry) {
-      throw new Error("Unos nije pronađen.");
+      throw new TRPCError({ code: "NOT_FOUND", message: "Unos nije pronađen." });
     }
 
     return entry;
@@ -83,14 +84,17 @@ export const outOfOfficeRouter = router({
         uuid: z.string().optional(),
         startDate: z.date(),
         endDate: z.date(),
-        reasonId: z.number().optional(),
+        reasonId: z.string().optional(),
         notes: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
       // Validate dates
       if (input.endDate < input.startDate) {
-        throw new Error("Datum završetka mora biti nakon datuma početka.");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Datum završetka mora biti nakon datuma početka.",
+        });
       }
 
       // Check for overlapping entries
@@ -108,7 +112,7 @@ export const outOfOfficeRouter = router({
       });
 
       if (overlapping) {
-        throw new Error("Već imate unos za ovaj period.");
+        throw new TRPCError({ code: "CONFLICT", message: "Već imate unos za ovaj period." });
       }
 
       if (input.uuid) {
@@ -158,7 +162,7 @@ export const outOfOfficeRouter = router({
       });
 
       if (!entry) {
-        throw new Error("Unos nije pronađen.");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Unos nije pronađen." });
       }
 
       await ctx.prisma.outOfOffice.delete({

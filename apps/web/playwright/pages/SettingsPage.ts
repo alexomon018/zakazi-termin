@@ -42,7 +42,7 @@ export class ProfileSettingsPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.SETTINGS_PROFILE);
+    await this.navigateTo(ROUTES.SETTINGS_PROFILE);
     await this.waitForPageLoad();
   }
 
@@ -120,17 +120,12 @@ export class ProfileSettingsPage extends BasePage {
     await expect(this.salonNameInput).toHaveValue(expectedSalonName, { timeout: 5000 });
   }
 
-  /**
-   * Check if profile link in settings is visible and navigate
-   */
   async navigateFromSettingsIndex(): Promise<void> {
-    const profileLink = this.page.locator(
-      'a[href="/dashboard/settings/profile"], button:has-text("Profil")'
+    await this.openSettingsSubPage(
+      "Moj profil",
+      'a[href="/dashboard/settings/profile"], button:has-text("Profil")',
+      /\/dashboard\/settings\/profile/
     );
-    if (await profileLink.isVisible().catch(() => false)) {
-      await profileLink.click();
-      await expect(this.page).toHaveURL(/\/dashboard\/settings\/profile/);
-    }
   }
 }
 
@@ -172,7 +167,7 @@ export class AppearanceSettingsPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.SETTINGS_APPEARANCE);
+    await this.navigateTo(ROUTES.SETTINGS_APPEARANCE);
     await this.waitForPageLoad();
   }
 
@@ -280,16 +275,11 @@ export class AppearanceSettingsPage extends BasePage {
     return await this.isVisible(this.brandColorInput);
   }
 
-  /**
-   * Navigate from settings index
-   */
   async navigateFromSettingsIndex(): Promise<void> {
-    const appearanceLink = this.page.locator(
-      'a[href="/dashboard/settings/appearance"], button:has-text("Izgled")'
+    await this.openSettingsSubPage(
+      "Izgled",
+      'a[href="/dashboard/settings/appearance"]:has-text("Izgled")',
+      /\/dashboard\/settings\/appearance/
     );
-    if (await appearanceLink.isVisible().catch(() => false)) {
-      await appearanceLink.click();
-      await expect(this.page).toHaveURL(/\/dashboard\/settings\/appearance/);
-    }
   }
 }

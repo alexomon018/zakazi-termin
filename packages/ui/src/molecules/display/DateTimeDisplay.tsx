@@ -17,7 +17,7 @@ export function DateTimeDisplay({ date, locale = "sr-RS" }: DateTimeDisplayProps
   };
 
   return (
-    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-2 text-muted-foreground">
       <Calendar className="w-4 h-4" />
       <span>{formatDateTime(date)}</span>
     </div>

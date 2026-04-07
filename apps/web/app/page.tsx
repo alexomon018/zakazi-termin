@@ -1,16 +1,15 @@
+import { SalonDiscoverySectionContainer } from "@/components/SalonDiscoverySectionContainer";
 import { OrganizationSchema, WebsiteSchema } from "@/components/StructuredData";
 import { getSession } from "@/lib/auth";
+import { TRPCProvider } from "@/lib/trpc/provider";
 import {
-  CtaBanner,
   FAQSection,
-  FeaturesSection,
-  HeroSection,
   LandingFooter,
   LandingHeader,
-  PricingSection,
-  ProcessSection,
-  SocialProofBar,
-  homepageFAQs,
+  SalonCategoriesSection,
+  UserHeroSection,
+  UserProcessSection,
+  userFAQs,
 } from "@salonko/ui";
 import { redirect } from "next/navigation";
 
@@ -22,17 +21,22 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       <OrganizationSchema />
       <WebsiteSchema />
       <LandingHeader />
-      <HeroSection imageSrc="/images/hero-dashboard.png" imageAlt="Salonko Dashboard" />
-      <SocialProofBar />
-      <FeaturesSection />
-      <ProcessSection />
-      <PricingSection />
-      <FAQSection items={homepageFAQs} showBackground />
-      <CtaBanner />
+      <UserHeroSection />
+      <TRPCProvider>
+        <SalonDiscoverySectionContainer />
+      </TRPCProvider>
+      <SalonCategoriesSection />
+      <UserProcessSection />
+      <FAQSection
+        title="Pitanja i odgovori"
+        description="Sve što treba da znate o zakazivanju termina preko Salonko platforme."
+        items={userFAQs}
+        showBackground
+      />
       <LandingFooter />
     </div>
   );

@@ -31,3 +31,52 @@ export interface EmailRecipient {
   email: string;
   name?: string;
 }
+
+// Subscription-related email types
+export interface SubscriptionEmailData {
+  userEmail: string;
+  userName: string;
+  salonName?: string | null;
+}
+
+export interface PaymentFailedEmailData extends SubscriptionEmailData {
+  billingPortalUrl: string;
+}
+
+export interface TrialEndingEmailData extends SubscriptionEmailData {
+  daysRemaining: number;
+  billingUrl: string;
+}
+
+export interface SubscriptionCanceledEmailData extends SubscriptionEmailData {
+  currentPeriodEnd: Date;
+  resumeUrl: string;
+}
+
+export interface SubscriptionExpiredEmailData extends SubscriptionEmailData {
+  billingUrl: string;
+}
+
+export interface SubscriptionSuccessEmailData extends SubscriptionEmailData {
+  planName: string;
+  dashboardUrl: string;
+}
+
+// Team-related email types
+export interface TeamInviteEmailData {
+  inviterName: string;
+  organizationName: string;
+  role: "OWNER" | "ADMIN" | "MEMBER";
+  inviteUrl: string;
+  recipientEmail: string;
+}
+
+// Support-related email types
+export interface SupportRequestEmailData {
+  email: string;
+  subject: string;
+  salonName?: string;
+  category: string;
+  categoryLabel: string;
+  description: string;
+}

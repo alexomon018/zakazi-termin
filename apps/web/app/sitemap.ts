@@ -1,8 +1,25 @@
 import { getAppUrl } from "@/lib/utils";
+import { VERTICAL_SLUGS, helpCategories } from "@salonko/ui";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getAppUrl();
+
+  const helpArticleEntries: MetadataRoute.Sitemap = helpCategories.flatMap((category) =>
+    category.articles.map((article) => ({
+      url: `${baseUrl}/help/${category.id}/${article.id}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }))
+  );
+
+  const verticalEntries: MetadataRoute.Sitemap = VERTICAL_SLUGS.map((slug) => ({
+    url: `${baseUrl}/za-salone/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
 
   return [
     {
@@ -29,5 +46,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.3,
     },
+    {
+      url: `${baseUrl}/help`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/help/podrska`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/privacy-policy`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/cookies`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    ...verticalEntries,
+    ...helpArticleEntries,
   ];
 }

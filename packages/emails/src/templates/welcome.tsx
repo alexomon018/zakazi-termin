@@ -1,5 +1,5 @@
 import { Button, Link, Section, Text } from "@react-email/components";
-import { getAppUrl } from "../utils";
+import { getAppUrl } from "@salonko/config";
 import { BaseEmail, button, infoBox, infoRow, label, text } from "./base-email";
 
 export interface WelcomeEmailProps {

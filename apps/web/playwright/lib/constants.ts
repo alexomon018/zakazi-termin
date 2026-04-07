@@ -5,6 +5,8 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   FORGOT_PASSWORD: "/forgot-password",
+  VERIFY_EMAIL: "/verify-email",
+  RESET_PASSWORD: "/reset-password",
 
   // Dashboard routes
   DASHBOARD: "/dashboard",
@@ -16,6 +18,16 @@ export const ROUTES = {
   SETTINGS_PROFILE: "/dashboard/settings/profile",
   SETTINGS_APPEARANCE: "/dashboard/settings/appearance",
   SETTINGS_OUT_OF_OFFICE: "/dashboard/settings/out-of-office",
+  SETTINGS_BILLING: "/dashboard/settings/billing",
+  SETTINGS_TEAM: "/dashboard/settings/team",
+
+  // Public routes
+  SALONI: "/saloni",
+  HELP: "/help",
+  FAQ: "/faq",
+
+  // Onboarding
+  ONBOARDING_COMPLETE_PROFILE: "/onboarding/complete-profile",
 
   // Public booking routes
   publicBookingPage: (salonName: string) => `/${salonName}`,
@@ -52,6 +64,13 @@ export const SELECTORS = {
     BOOKINGS_LINK: 'a[href="/dashboard/bookings"]',
     AVAILABILITY_LINK: 'a[href="/dashboard/availability"]',
     SETTINGS_LINK: 'a[href="/dashboard/settings"]',
+    // Sidebar specific selectors
+    SIDEBAR: '[data-testid="dashboard-sidebar"]',
+    SIDEBAR_NAV: '[data-testid="sidebar-nav"]',
+    SIDEBAR_USER_DROPDOWN: '[data-testid="sidebar-user-dropdown"]',
+    // Mobile specific selectors
+    MOBILE_TOP_BAR: '[data-testid="mobile-top-bar"]',
+    MOBILE_BOTTOM_NAV: '[data-testid="mobile-bottom-nav"]',
   },
 
   // Common UI elements
@@ -83,6 +102,49 @@ export const SELECTORS = {
     EMAIL_INPUT: 'input[name="email"]',
     NOTES_INPUT: 'textarea[name="notes"]',
   },
+
+  // Billing
+  BILLING: {
+    STATUS_CARD: '[data-testid="billing-status-card"]',
+    TRIAL_ACTIVE: '[data-testid="trial-active"]',
+    SUBSCRIPTION_ACTIVE: '[data-testid="subscription-active"]',
+    SUBSCRIPTION_EXPIRED: '[data-testid="subscription-expired"]',
+    PLAN_PICKER: '[data-testid="billing-plan-picker"]',
+    // Legacy selectors (kept for backwards compatibility)
+    PLAN_MONTHLY: '[data-testid="plan-monthly"]',
+    PLAN_YEARLY: '[data-testid="plan-yearly"]',
+    // New plan tier selectors (4-plan model)
+    PLAN_STARTER: '[data-testid="plan-starter"]',
+    PLAN_GROWTH: '[data-testid="plan-growth"]',
+    PLAN_GROWTH_YEARLY: '[data-testid="plan-growth_yearly"]',
+    PLAN_WEB_PRESENCE: '[data-testid="plan-web_presence"]',
+    SUBSCRIBE_BUTTON: '[data-testid="subscribe-button"]',
+    MANAGE_SUBSCRIPTION_CARD: '[data-testid="manage-subscription-card"]',
+    MANAGE_PAYMENT_BUTTON: '[data-testid="manage-payment-button"]',
+    CANCEL_SUBSCRIPTION_BUTTON: '[data-testid="cancel-subscription-button"]',
+    RESUME_SUBSCRIPTION_BUTTON: '[data-testid="resume-subscription-button"]',
+    // Change plan (new 4-plan model)
+    CHANGE_PLAN_CARD: '[data-testid="change-plan-card"]',
+    CHANGE_PLAN_DIALOG: '[data-testid="change-plan-dialog"]',
+    // Legacy upgrade/downgrade selectors (kept for backwards compatibility)
+    UPGRADE_YEARLY_CARD: '[data-testid="upgrade-yearly-card"]',
+    UPGRADE_YEARLY_BUTTON: '[data-testid="upgrade-yearly-button"]',
+    UPGRADE_YEARLY_DIALOG: '[data-testid="upgrade-yearly-dialog"]',
+    CONFIRM_UPGRADE_BUTTON: '[data-testid="confirm-upgrade-button"]',
+    DOWNGRADE_MONTHLY_CARD: '[data-testid="downgrade-monthly-card"]',
+    DOWNGRADE_MONTHLY_BUTTON: '[data-testid="downgrade-monthly-button"]',
+    DOWNGRADE_MONTHLY_DIALOG: '[data-testid="downgrade-monthly-dialog"]',
+    CONFIRM_DOWNGRADE_BUTTON: '[data-testid="confirm-downgrade-button"]',
+    CANCEL_SUBSCRIPTION_DIALOG: '[data-testid="cancel-subscription-dialog"]',
+    CONFIRM_CANCEL_BUTTON: '[data-testid="confirm-cancel-button"]',
+    DISMISS_CANCEL_BUTTON: '[data-testid="dismiss-cancel-button"]',
+    INVOICE_HISTORY_CARD: '[data-testid="invoice-history-card"]',
+  },
+} as const;
+
+// Localized button/label strings used in page objects and tests
+export const LOCALIZED_STRINGS = {
+  CONFIRM_AND_CONTINUE: "Potvrdi i nastavi",
 } as const;
 
 // Timeout constants
@@ -90,5 +152,5 @@ export const TIMEOUTS = {
   SHORT: 5000,
   MEDIUM: 10000,
   LONG: 30000,
-  NAVIGATION: 15000,
+  NAVIGATION: 30000,
 } as const;

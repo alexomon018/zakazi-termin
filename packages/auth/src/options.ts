@@ -1,6 +1,8 @@
-import { logger } from "@salonko/config";
+import { createHash } from "node:crypto";
+import { logger, normalizeToSlug } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
+import { Redis } from "@upstash/redis";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -8,10 +10,101 @@ import { SalonkoAdapter } from "./adapter";
 import { ErrorCode } from "./error-codes";
 import { verifyPassword } from "./password";
 
+// =============================================================================
+// Redis-based subscription cache for multi-instance consistency
+// TTL: 300 seconds (5 minutes) - balances accuracy with performance
+// Falls back to database query if Redis is unavailable
+// =============================================================================
+
+const SUBSCRIPTION_CACHE_TTL_SECONDS = 300; // 5 minutes
+const SUBSCRIPTION_CACHE_KEY_PREFIX = "subscription:status:";
+
+// Initialize Redis client from environment variables (Upstash)
+// Returns null if environment variables are not configured (development mode)
+let redis: Redis | null = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  redis = Redis.fromEnv();
+}
+
+/**
+ * Get cached subscription status from Redis
+ * @returns The cached status, or undefined if not cached / Redis unavailable
+ */
+async function getCachedSubscriptionStatus(userId: string): Promise<string | null | undefined> {
+  if (!redis) {
+    return undefined; // Redis not configured, skip cache
+  }
+
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    const cached = await redis.get<string | null>(key);
+    // Redis returns null for non-existent keys, but we use undefined to mean "not cached"
+    // We store "null" as a string to distinguish "no subscription" from "not cached"
+    if (cached === null) {
+      return undefined; // Key doesn't exist
+    }
+    // Handle the special case where we cached "null" as a string
+    if (cached === "NULL_STATUS") {
+      return null;
+    }
+    return cached;
+  } catch (error) {
+    logger.warn("Redis cache read failed, will query database", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return undefined; // Fallback to database on error
+  }
+}
+
+/**
+ * Set subscription status in Redis cache with TTL
+ */
+async function setCachedSubscriptionStatus(userId: string, status: string | null): Promise<void> {
+  if (!redis) {
+    return; // Redis not configured, skip cache
+  }
+
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    // Store "NULL_STATUS" string to represent null (distinguishes from missing key)
+    const valueToStore = status === null ? "NULL_STATUS" : status;
+    await redis.set(key, valueToStore, { ex: SUBSCRIPTION_CACHE_TTL_SECONDS });
+  } catch (error) {
+    // Log but don't block the request - caching is best-effort
+    logger.warn("Redis cache write failed", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+/**
+ * Invalidate subscription cache for a user
+ * Call this from webhook handlers when subscription status changes
+ */
+export async function invalidateSubscriptionCache(userId: string): Promise<void> {
+  if (!redis) {
+    return; // Redis not configured, nothing to invalidate
+  }
+
+  try {
+    const key = `${SUBSCRIPTION_CACHE_KEY_PREFIX}${userId}`;
+    await redis.del(key);
+    logger.info("Subscription cache invalidated", { userId });
+  } catch (error) {
+    // Log but don't throw - invalidation failure shouldn't break the webhook
+    logger.warn("Failed to invalidate subscription cache", {
+      userId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 declare module "next-auth" {
   interface Session {
     user: {
-      id: number;
+      id: string;
       email: string;
       name?: string | null;
       salonName?: string | null;
@@ -22,7 +115,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
@@ -34,12 +127,13 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id: number;
+    id: string;
     email: string;
     name?: string | null;
     salonName?: string | null;
     locale: string;
     timeZone: string;
+    subscriptionStatus?: string | null;
   }
 }
 
@@ -47,7 +141,26 @@ export const authOptions: NextAuthOptions = {
   adapter: SalonkoAdapter(prisma),
   session: {
     strategy: "jwt",
+    // Shorter JWT lifetime reduces the impact of token leakage and limits stale auth state.
+    // Subscription access is enforced server-side (DB-backed) for protected routes.
     maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        // Explicit maxAge ensures cookie persists on mobile browsers
+        // Mobile browsers often clear session cookies when app is backgrounded
+        maxAge: 30 * 24 * 60 * 60, // 30 days (must match session.maxAge)
+      },
+    },
   },
   pages: {
     signIn: "/login",
@@ -60,14 +173,98 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Lozinka", type: "password" },
+        autoLoginToken: { label: "Auto Login Token", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email) {
+          throw new Error(ErrorCode.InvalidCredentials);
+        }
+
+        const email = credentials.email.toLowerCase();
+        const autoLoginToken = credentials.autoLoginToken;
+
+        // Auto-login flow: validate one-time token after email verification
+        if (autoLoginToken) {
+          // Use transaction to atomically validate and clear token (prevents race condition)
+          const { user, isFirstVerification } = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.findUnique({
+              where: { email },
+            });
+
+            if (!user) {
+              throw new Error(ErrorCode.IncorrectEmailPassword);
+            }
+
+            const now = new Date();
+            const presentedTokenHash = createHash("sha256").update(autoLoginToken).digest("hex");
+
+            // Validate the auto-login token (compare hashes, not raw tokens)
+            if (
+              !user.autoLoginToken ||
+              user.autoLoginToken !== presentedTokenHash ||
+              !user.autoLoginTokenExpires ||
+              user.autoLoginTokenExpires < now
+            ) {
+              // Log failed attempt for security monitoring
+              logger.warn("Auto-login token validation failed", {
+                email,
+                hasToken: !!user.autoLoginToken,
+                expired: user.autoLoginTokenExpires ? user.autoLoginTokenExpires < now : null,
+              });
+              throw new Error(ErrorCode.InvalidCredentials);
+            }
+
+            // Token is valid - clear it atomically (one-time use)
+            const isFirstVerification = !user.emailVerified;
+            const updatedUser = await tx.user.update({
+              where: { id: user.id },
+              data: {
+                autoLoginToken: null,
+                autoLoginTokenExpires: null,
+                emailVerified: user.emailVerified ?? new Date(),
+              },
+            });
+
+            return { user: updatedUser, isFirstVerification };
+          });
+
+          // Send welcome email only for newly verified users (first-time signup).
+          // Existing users (emailVerified already set) skip this — they're using
+          // auto-login for cross-app navigation (e.g. mobile → web billing).
+          if (isFirstVerification) {
+            try {
+              await emailService.sendWelcomeEmail({
+                userName: user.name || "Korisnik",
+                userEmail: user.email,
+                salonName: user.salonName || "",
+              });
+            } catch (error) {
+              logger.error("Failed to send welcome email after auto-login", {
+                error,
+                email,
+                userId: user.id,
+              });
+              // Don't block sign-in if email fails
+            }
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            salonName: user.salonName,
+            locale: user.locale,
+            timeZone: user.timeZone,
+          };
+        }
+
+        // Standard password-based login flow
+        if (!credentials.password) {
           throw new Error(ErrorCode.InvalidCredentials);
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email.toLowerCase() },
+          where: { email },
           include: { password: true },
         });
 
@@ -120,7 +317,7 @@ export const authOptions: NextAuthOptions = {
 
       // Initial sign in
       if (user) {
-        token.id = user.id as number;
+        token.id = user.id;
         token.email = user.email!;
         token.name = user.name;
         token.salonName = user.salonName;
@@ -128,7 +325,7 @@ export const authOptions: NextAuthOptions = {
         token.timeZone = user.timeZone ?? "Europe/Belgrade";
       }
 
-      // OAuth sign in - fetch additional user data
+      // OAuth sign in - fetch additional user data and ensure user exists
       if (account?.type === "oauth" && token.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email },
@@ -139,6 +336,52 @@ export const authOptions: NextAuthOptions = {
           token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
+        } else {
+          // User should have been created in signIn callback but wasn't found
+          // This can happen if there was an error during user creation
+          // Log the error for debugging
+          logger.error("OAuth user not found in database after signIn", {
+            email: token.email,
+            providerId: account.providerAccountId,
+          });
+        }
+      }
+
+      // Add subscription status to token (cached in Redis to reduce database queries)
+      // Cache TTL: 5 minutes - balances real-time trial expiry checks with performance
+      // Redis provides multi-instance consistency and webhook invalidation support
+      if (token.id) {
+        // Check Redis cache first (returns undefined if not cached or Redis unavailable)
+        const cachedStatus = await getCachedSubscriptionStatus(token.id);
+        if (cachedStatus !== undefined) {
+          token.subscriptionStatus = cachedStatus;
+        } else {
+          // Cache miss or Redis unavailable - query database
+          const subscription = await prisma.subscription.findUnique({
+            where: { userId: token.id },
+            select: { status: true, trialEndsAt: true },
+          });
+
+          let finalStatus: string | null;
+          if (subscription) {
+            // Check if trial has expired (real-time check for accuracy)
+            const now = new Date();
+            if (
+              subscription.status === "TRIALING" &&
+              subscription.trialEndsAt &&
+              now > subscription.trialEndsAt
+            ) {
+              finalStatus = "EXPIRED";
+            } else {
+              finalStatus = subscription.status;
+            }
+          } else {
+            finalStatus = null;
+          }
+
+          // Cache the result in Redis (best-effort, won't block on failure)
+          await setCachedSubscriptionStatus(token.id, finalStatus);
+          token.subscriptionStatus = finalStatus;
         }
       }
 
@@ -160,7 +403,7 @@ export const authOptions: NextAuthOptions = {
       };
     },
 
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Credentials provider - already validated in authorize
       if (account?.type === "credentials") {
         return true;
@@ -171,59 +414,67 @@ export const authOptions: NextAuthOptions = {
         const email = user.email?.toLowerCase();
         if (!email) return false;
 
-        // Check for existing user
-        const existingUser = await prisma.user.findUnique({
-          where: { email },
-        });
-
-        if (existingUser) {
-          // Update identity provider if switching from EMAIL to GOOGLE
-          if (existingUser.identityProvider === "EMAIL") {
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: {
-                identityProvider: "GOOGLE",
-                identityProviderId: account.providerAccountId,
-                emailVerified: new Date(),
-                avatarUrl: user.image ?? existingUser.avatarUrl,
-              },
-            });
-          }
-          return true;
-        }
-
-        // Create new user with Google
-        const salonName = email
-          .split("@")[0]
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "");
-        const generatedSalonName = await generateUniqueSalonName(salonName);
-
-        await prisma.user.create({
-          data: {
-            email,
-            name: user.name,
-            salonName: generatedSalonName,
-            avatarUrl: user.image,
-            emailVerified: new Date(),
-            identityProvider: "GOOGLE",
-            identityProviderId: account.providerAccountId,
-          },
-        });
-
-        // Send welcome email to new user
         try {
-          await emailService.sendWelcomeEmail({
-            userName: user.name || "Korisnik",
-            userEmail: email,
-            salonName: generatedSalonName,
+          // Check for existing user
+          const existingUser = await prisma.user.findUnique({
+            where: { email },
           });
-        } catch (error) {
-          logger.error("Failed to send welcome email", { error, email });
-          // Don't block sign-in if email fails
-        }
 
-        return true;
+          if (existingUser) {
+            // Update identity provider if switching from EMAIL to GOOGLE
+            if (existingUser.identityProvider === "EMAIL") {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                  identityProvider: "GOOGLE",
+                  identityProviderId: account.providerAccountId,
+                  emailVerified: new Date(),
+                  avatarUrl: user.image ?? existingUser.avatarUrl,
+                },
+              });
+            }
+            return true;
+          }
+
+          // Create new user with Google
+          const baseSlug = email
+            .split("@")[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          const safeSlug = baseSlug || "salon";
+          const generatedSalonSlug = await generateUniqueSalonSlug(safeSlug);
+          const generatedSalonName = generatedSalonSlug; // Use slug as display name for OAuth users
+
+          await prisma.user.create({
+            data: {
+              email,
+              name: user.name,
+              salonName: generatedSalonName,
+              salonSlug: generatedSalonSlug,
+              avatarUrl: user.image,
+              emailVerified: new Date(),
+              identityProvider: "GOOGLE",
+              identityProviderId: account.providerAccountId,
+            },
+          });
+
+          // Send welcome email to new user
+          try {
+            await emailService.sendWelcomeEmail({
+              userName: user.name || "Korisnik",
+              userEmail: email,
+              salonName: generatedSalonName,
+            });
+          } catch (emailError) {
+            logger.error("Failed to send welcome email", { error: emailError, email });
+            // Don't block sign-in if email fails
+          }
+
+          return true;
+        } catch (error) {
+          logger.error("Failed to create OAuth user", { error, email });
+          return false;
+        }
       }
 
       return false;
@@ -239,16 +490,17 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-const MAX_SALON_NAME_ATTEMPTS = 100;
+const MAX_SALON_SLUG_ATTEMPTS = 100;
 
-async function generateUniqueSalonName(base: string): Promise<string> {
-  const salonName = base.slice(0, 20);
+async function generateUniqueSalonSlug(base: string): Promise<string> {
+  const normalizedBase = normalizeToSlug(base).slice(0, 20);
+  const baseSlug = normalizedBase || "salon";
   let counter = 0;
 
-  while (counter < MAX_SALON_NAME_ATTEMPTS) {
-    const candidate = counter === 0 ? salonName : `${salonName}${counter}`;
+  while (counter < MAX_SALON_SLUG_ATTEMPTS) {
+    const candidate = counter === 0 ? baseSlug : `${baseSlug}${counter}`;
     const existing = await prisma.user.findUnique({
-      where: { salonName: candidate },
+      where: { salonSlug: candidate },
     });
     if (!existing) return candidate;
     counter++;
@@ -256,5 +508,5 @@ async function generateUniqueSalonName(base: string): Promise<string> {
 
   // Fallback: append random string if too many attempts
   const randomSuffix = Math.random().toString(36).substring(2, 8);
-  return `${salonName.slice(0, 14)}${randomSuffix}`;
+  return `${baseSlug.slice(0, 14)}${randomSuffix}`;
 }

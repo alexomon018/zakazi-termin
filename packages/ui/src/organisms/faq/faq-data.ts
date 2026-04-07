@@ -13,7 +13,7 @@ export const generalFAQs: FAQItem[] = [
   {
     question: "Da li je korišćenje Salonko platforme besplatno?",
     answer:
-      "Salonko nudi besplatan probni period od 14 dana. Nakon toga, platforma je dostupna kroz mesečnu pretplatu koja omogućava pristup digitalnom kalendaru, upravljanju uslugama, online zakazivanjima i naprednim funkcijama.",
+      "Salonko nudi besplatan probni period od 30 dana. Nakon toga, platforma je dostupna kroz mesečnu pretplatu koja omogućava pristup digitalnom kalendaru, upravljanju uslugama, online zakazivanjima i naprednim funkcijama.",
   },
   {
     question: "Kako mogu da registrujem svoj profil na Salonko?",
@@ -75,27 +75,31 @@ export const salonOwnerFAQs: FAQItem[] = [
   },
 ];
 
-export const clientFAQs: FAQItem[] = [
+const sharedClientFAQs: FAQItem[] = [
   {
-    question: "Kako da zakažem termin?",
+    question: "Da li moram da kreiram nalog da bih zakazao/la termin?",
     answer:
-      "Klikni na link za zakazivanje koji ti je podelio pružalac usluge, izaberi željenu uslugu, odaberi slobodan termin iz kalendara i potvrdi rezervaciju unosom svojih podataka.",
-  },
-  {
-    question: "Da li moram da kreiram nalog da bih zakazao termin?",
-    answer:
-      "Ne. Za zakazivanje termina nije potrebna registracija - samo uneseš svoje ime i email adresu prilikom rezervacije.",
+      "Ne. Za zakazivanje termina nije potrebna registracija — samo unesite svoje ime i email adresu prilikom rezervacije.",
   },
   {
     question: "Kako mogu da otkažem ili promenim termin?",
     answer:
-      "U email potvrdi koju dobiješ nakon zakazivanja nalazi se link za upravljanje terminom. Preko njega možeš otkazati ili pomeriti rezervaciju.",
+      "U email potvrdi koju dobijete nakon zakazivanja nalazi se link za upravljanje terminom. Preko njega možete otkazati ili pomeriti rezervaciju.",
   },
   {
-    question: "Da li ću dobiti potvrdu rezervacije?",
+    question: "Da li ću dobiti potvrdu i podsetnik?",
     answer:
-      "Da. Odmah nakon zakazivanja dobijaš email sa svim detaljima termina, kao i podsetnik pre samog termina.",
+      "Da. Odmah nakon zakazivanja dobijate email sa svim detaljima termina, kao i podsetnik pre samog termina kako ne biste zaboravili.",
   },
+];
+
+export const clientFAQs: FAQItem[] = [
+  {
+    question: "Kako da zakažem termin?",
+    answer:
+      "Kliknite na link za zakazivanje koji vam je podelio pružalac usluge, izaberite željenu uslugu, odaberite slobodan termin iz kalendara i potvrdite rezervaciju unosom svojih podataka.",
+  },
+  ...sharedClientFAQs,
 ];
 
 export const faqCategories: FAQCategory[] = [
@@ -118,7 +122,7 @@ export const faqCategories: FAQCategory[] = [
   },
 ];
 
-// Subset for homepage - most common questions
+// Subset for /za-salone page - owner-focused questions
 export const homepageFAQs: FAQItem[] = [
   generalFAQs[0], // Da li je besplatno
   generalFAQs[1], // Kako da se registrujem
@@ -126,4 +130,32 @@ export const homepageFAQs: FAQItem[] = [
   generalFAQs[4], // Koliko brzo mogu da primam rezervacije
   salonOwnerFAQs[0], // Kako funkcioniše online zakazivanje
   salonOwnerFAQs[4], // Da li klijenti dobijaju podsetnik
+];
+
+const userOnlyFAQs: FAQItem[] = [
+  {
+    question: "Da li je zakazivanje termina besplatno?",
+    answer:
+      "Da. Zakazivanje termina preko Salonko platforme je potpuno besplatno za klijente. Nema skrivenih troškova niti potrebe za registracijom.",
+  },
+  {
+    question: "Kako da pronađem salon u svom gradu?",
+    answer:
+      'Na stranici "Svi saloni" možete filtrirati salone po gradu, tipu salona ili pretražiti po imenu. Takođe možete koristiti pretragu na početnoj stranici.',
+  },
+  {
+    question: "Kako znam da li je salon trenutno otvoren?",
+    answer:
+      'Svaki salon na platformi prikazuje status "Otvoreno" ili "Zatvoreno" u realnom vremenu. Takođe možete koristiti filter "Otvoreno sada" na stranici svih salona.',
+  },
+];
+
+// User-facing FAQs for homepage (/)
+export const userFAQs: FAQItem[] = [
+  userOnlyFAQs[0],
+  sharedClientFAQs[0],
+  userOnlyFAQs[1],
+  sharedClientFAQs[1],
+  sharedClientFAQs[2],
+  userOnlyFAQs[2],
 ];

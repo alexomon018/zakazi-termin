@@ -1,4 +1,4 @@
-export { emailService, type SendEmailOptions } from "./email-service";
+export { SUPPORT_EMAIL, emailService, type SendEmailOptions } from "./email-service";
 export { BookingConfirmedEmail } from "./templates/booking-confirmed";
 export { BookingPendingEmail } from "./templates/booking-pending";
 export { BookingCancelledEmail } from "./templates/booking-cancelled";
@@ -8,4 +8,27 @@ export { BookingPendingOrganizerEmail } from "./templates/booking-pending-organi
 export { BookingRescheduledEmail } from "./templates/booking-rescheduled";
 export { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 export { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
-export type { BookingEmailData } from "./types";
+export {
+  EmailVerificationEmail,
+  type EmailVerificationEmailProps,
+} from "./templates/email-verification";
+export { PaymentFailedEmail } from "./templates/payment-failed";
+export { TrialEndingEmail } from "./templates/trial-ending";
+export { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
+export { SubscriptionExpiredEmail } from "./templates/subscription-expired";
+export { SubscriptionSuccessEmail } from "./templates/subscription-success";
+export {
+  SupportRequestEmail,
+  type SupportRequestEmailProps,
+} from "./templates/support-request";
+export { TeamInviteEmail, type TeamInviteEmailProps } from "./templates/team-invite";
+export type {
+  BookingEmailData,
+  PaymentFailedEmailData,
+  TrialEndingEmailData,
+  SubscriptionCanceledEmailData,
+  SubscriptionExpiredEmailData,
+  SubscriptionSuccessEmailData,
+  SupportRequestEmailData,
+  TeamInviteEmailData,
+} from "./types";

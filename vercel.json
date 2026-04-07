@@ -1,6 +1,12 @@
 {
-  "buildCommand": "yarn build",
+  "buildCommand": "turbo run build --filter=@salonko/web...",
   "devCommand": "yarn dev",
   "installCommand": "yarn install",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "crons": [
+    {
+      "path": "/api/cron/check-trials",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }
