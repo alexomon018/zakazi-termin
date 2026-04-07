@@ -60,8 +60,8 @@ MAESTRO_APP_ID=com.zakazitermin.app yarn maestro:smoke
 
 See [`.github/workflows/maestro-e2e.yml`](../.github/workflows/maestro-e2e.yml).
 
-- **`maestro-coverage`**: `yarn maestro:coverage` on every matching PR/push.
-- **`maestro-e2e-android`**: runs when `apps/mobile/package.json` exists. Uses Postgres service, `db:push`, Next.js dev server, **`npx expo prebuild --platform android`** (native `android/` is gitignored), **`assembleDebug`**, then Maestro **smoke** flows on the emulator with `adb reverse tcp:3000 tcp:3000`. Optional secret **`MAESTRO_APP_ID`** overrides the default bundle id; optional **`NEXTAUTH_SECRET_E2E`** for Next.
+- **Maestro E2E workflow is manual-only** (`workflow_dispatch`) — it does **not** run on push/PR until you re-enable those triggers in the workflow file.
+- When run manually: **`maestro-coverage`** runs `yarn maestro:coverage`; **`maestro-e2e-android`** (if `apps/mobile` exists) runs Postgres, `db:push`, Next, Expo prebuild Android, emulator, Maestro smoke. Optional secrets **`MAESTRO_APP_ID`**, **`NEXTAUTH_SECRET_E2E`**.
 
 ## Expo dev client / “Development Build” launcher
 

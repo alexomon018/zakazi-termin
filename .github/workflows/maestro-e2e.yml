@@ -1,29 +1,8 @@
 name: Maestro E2E
 
+# Manual only — re-enable push/pull_request when Maestro E2E in CI is ready.
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - "maestro/**"
-      - "scripts/**"
-      - "apps/web/**"
-      - "apps/mobile/**"
-      - "docker-compose.test.yml"
-      - "package.json"
-      - "yarn.lock"
-      - ".github/workflows/maestro-e2e.yml"
-  push:
-    branches: [main, develop]
-    paths:
-      - "maestro/**"
-      - "scripts/**"
-      - "apps/web/**"
-      - "apps/mobile/**"
-      - "docker-compose.test.yml"
-      - "package.json"
-      - "yarn.lock"
-      - ".github/workflows/maestro-e2e.yml"
 
 env:
   NODE_VERSION: "22"
