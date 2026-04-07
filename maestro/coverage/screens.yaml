@@ -1,0 +1,105 @@
+# Screen-to-flow manifest for apps/mobile. Update routeOrComponent when apps/mobile ships.
+# CI runs scripts/validate-maestro-coverage.mjs to ensure every screen maps to at least one flow.
+# requiredLevel: smoke = PR gate; regression = full suite / pre-release.
+
+screens:
+  - id: auth.login
+    routeOrComponent: "(auth)/login"
+    featureArea: auth
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/auth/login_smoke.yaml
+      - flows/edge_cases/invalid_login.yaml
+
+  - id: auth.signup
+    routeOrComponent: "(auth)/signup"
+    featureArea: auth
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/auth/signup_happy_path.yaml
+
+  - id: auth.forgot_password
+    routeOrComponent: "(auth)/forgot-password"
+    featureArea: auth
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/auth/forgot_password.yaml
+
+  - id: dashboard.home
+    routeOrComponent: "(dashboard)/dashboard"
+    featureArea: dashboard
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/dashboard/dashboard_smoke.yaml
+
+  - id: event_types.list
+    routeOrComponent: "(dashboard)/dashboard/event-types"
+    featureArea: event_types
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/event_types/event_types_list.yaml
+      - flows/event_types/event_type_create.yaml
+
+  - id: bookings.list
+    routeOrComponent: "(dashboard)/dashboard/bookings"
+    featureArea: bookings
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/bookings/bookings_list.yaml
+      - flows/bookings/booking_create_happy_path.yaml
+
+  - id: settings.root
+    routeOrComponent: "(dashboard)/dashboard/settings"
+    featureArea: settings
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/settings/settings_profile.yaml
+      - flows/settings/settings_appearance.yaml
+      - flows/auth/logout.yaml
+
+  - id: settings.profile
+    routeOrComponent: "(dashboard)/dashboard/settings/profile"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/settings/settings_profile.yaml
+
+  - id: settings.appearance
+    routeOrComponent: "(dashboard)/dashboard/settings/appearance"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/settings/settings_appearance.yaml
+
+  - id: edge.network
+    routeOrComponent: "network_error_boundary"
+    featureArea: edge
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/edge_cases/offline_retry.yaml
+
+  - id: platform.ios
+    routeOrComponent: "platform_ios"
+    featureArea: platform
+    requiredLevel: regression
+    platform: ios
+    flowFiles:
+      - flows/platform/ios_only.yaml
+
+  - id: platform.android
+    routeOrComponent: "platform_android"
+    featureArea: platform
+    requiredLevel: regression
+    platform: android
+    flowFiles:
+      - flows/platform/android_only.yaml

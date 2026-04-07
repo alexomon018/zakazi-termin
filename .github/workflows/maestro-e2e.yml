@@ -1,0 +1,167 @@
+name: Maestro E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "maestro/**"
+      - "scripts/**"
+      - "apps/web/**"
+      - "apps/mobile/**"
+      - "docker-compose.test.yml"
+      - "package.json"
+      - "yarn.lock"
+      - ".github/workflows/maestro-e2e.yml"
+  push:
+    branches: [main, develop]
+    paths:
+      - "maestro/**"
+      - "scripts/**"
+      - "apps/web/**"
+      - "apps/mobile/**"
+      - "docker-compose.test.yml"
+      - "package.json"
+      - "yarn.lock"
+      - ".github/workflows/maestro-e2e.yml"
+
+env:
+  NODE_VERSION: "22"
+  # Align with docker-compose.test.yml credentials; service maps host 5433 -> container 5432
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5433/zakazi_termin_test
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  maestro-coverage:
+    name: Maestro coverage manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Validate screen coverage YAML
+        run: yarn maestro:coverage
+
+  # Runs only when apps/mobile has an Android Gradle project (Maestro needs a device + APK).
+  maestro-e2e-android:
+    name: Maestro E2E (Android emulator)
+    needs: maestro-coverage
+    if: ${{ hashFiles('apps/mobile/android/**') != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: true
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: zakazi_termin_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d zakazi_termin_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Push database schema
+        run: yarn workspace @salonko/prisma db:push --skip-generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Start Next.js
+        run: |
+          export NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-ci-e2e-nextauth-secret-placeholder-min-32-chars}"
+          yarn workspace @salonko/web dev &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000 >/dev/null && exit 0
+            sleep 2
+          done
+          exit 1
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET_E2E }}
+          NEXT_PUBLIC_APP_URL: ${{ env.NEXT_PUBLIC_APP_URL }}
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Build Android debug APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Run Maestro smoke tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -name "*.apk" -path "*/outputs/*/*debug*.apk" | head -1)
+            if [ -z "$APK" ]; then
+              echo "No debug APK found after assembleDebug"
+              exit 1
+            fi
+            adb install -r "$APK"
+            export MAESTRO_APP_ID="${{ secrets.MAESTRO_APP_ID }}"
+            export E2E_USER_EMAIL="${{ secrets.E2E_USER_EMAIL }}"
+            export E2E_USER_PASSWORD="${{ secrets.E2E_USER_PASSWORD }}"
+            if [ -z "$MAESTRO_APP_ID" ] || [ -z "$E2E_USER_EMAIL" ] || [ -z "$E2E_USER_PASSWORD" ]; then
+              echo "Set repository secrets: MAESTRO_APP_ID, E2E_USER_EMAIL, E2E_USER_PASSWORD"
+              exit 1
+            fi
+            maestro test "$GITHUB_WORKSPACE/maestro/flows" --include-tags smoke \
+              -e MAESTRO_APP_ID="$MAESTRO_APP_ID" \
+              -e E2E_USER_EMAIL="$E2E_USER_EMAIL" \
+              -e E2E_USER_PASSWORD="$E2E_USER_PASSWORD"
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-artifacts
+          path: |
+            ~/.maestro/tests/**/*
+          retention-days: 7
+          if-no-files-found: ignore
