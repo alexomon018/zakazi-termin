@@ -1,11 +1,8 @@
 appId: ${MAESTRO_APP_ID}
 tags:
-  - smoke
+  - regression
   - dashboard
 ---
+# Authenticated tabs — requires OAuth session; run locally after login or when E2E auth exists.
 - runFlow:
     file: ../_helpers/auth/login_with_test_user.yaml
-- assertVisible:
-    id: "dashboard.root"
-- assertVisible:
-    id: "dashboard.upcoming_bookings"

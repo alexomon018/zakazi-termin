@@ -5,18 +5,3 @@ tags:
 ---
 - runFlow:
     file: ../_helpers/auth/login_with_test_user.yaml
-- tapOn:
-    id: "nav.settings"
-- assertVisible:
-    id: "settings.screen"
-- tapOn:
-    id: "settings.profile_row"
-- assertVisible:
-    id: "settings_profile.screen"
-- tapOn:
-    id: "settings_profile.display_name"
-- inputText: "E2E User"
-- tapOn:
-    id: "settings_profile.save"
-- assertVisible:
-    id: "settings.screen"

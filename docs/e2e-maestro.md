@@ -1,6 +1,10 @@
 # Maestro E2E (iOS & Android)
 
-End-to-end tests for **apps/mobile** live under [`maestro/`](../maestro/) and use the **same Next.js backend** as the web app ([`apps/web`](../apps/web/)) and the **same Docker Postgres** as Playwright ([`docker-compose.test.yml`](../docker-compose.test.yml)).
+End-to-end tests for **apps/mobile** (Expo + Expo Router) live under [`maestro/`](../maestro/) and use the **same Next.js backend** as the web app ([`apps/web`](../apps/web/)) and the **same Docker Postgres** as Playwright ([`docker-compose.test.yml`](../docker-compose.test.yml)).
+
+## Auth model (important)
+
+The mobile login screen uses **OAuth** (`loginWithOAuth` in `apps/mobile/app/(auth)/login.tsx`), not email/password fields. **Smoke flows** only assert the login UI (e.g. “Salonko”, “Prijavite se”) and do **not** tap through OAuth — that would open a browser and require extra automation. Flows tagged **regression** that need an authenticated session currently reuse [`maestro/flows/regression/oauth_session_placeholder.yaml`](../maestro/flows/regression/oauth_session_placeholder.yaml) until you add a dev E2E bypass or OAuth automation.
 
 ## Prerequisites
 
@@ -10,16 +14,16 @@ End-to-end tests for **apps/mobile** live under [`maestro/`](../maestro/) and us
   - `NEXTAUTH_SECRET`
   - `NEXT_PUBLIC_APP_URL` → `http://localhost:3000` (or your host IP for physical devices)
 - **Maestro CLI** — [install](https://maestro.mobile.dev/getting-started).
-- **Mobile app** built for simulator/emulator with **testIDs** matching the flows (see [`maestro/coverage/screens.yaml`](../maestro/coverage/screens.yaml)).
+- **App id**: default `com.zakazitermin.app` from [`apps/mobile/app.json`](../apps/mobile/app.json) (`MAESTRO_APP_ID`).
 
 ## Backend alignment (same as Playwright)
 
 1. Start test DB: `yarn test:db:start`
 2. Sync schema: `yarn workspace @salonko/prisma db:push --skip-generate` (same as [`apps/web/playwright/lib/global-setup.ts`](../apps/web/playwright/lib/global-setup.ts))
 3. Run Next: `yarn workspace @salonko/web dev` with the same env as Playwright’s `webServer` in [`playwright.config.ts`](../apps/web/playwright.config.ts)
-4. Point the mobile app at the machine running Next:
+4. Point the mobile app at the machine running Next (`EXPO_PUBLIC_API_URL` in [`apps/mobile/eas.json`](../apps/mobile/eas.json) development profile uses `http://localhost:3000`):
    - **iOS Simulator**: `http://localhost:3000`
-   - **Android Emulator**: `http://10.0.2.2:3000` (not `localhost`), or use `adb reverse tcp:3000 tcp:3000` and `http://localhost:3000` (CI does this in the Maestro job)
+   - **Android Emulator**: `http://10.0.2.2:3000`, or `adb reverse tcp:3000 tcp:3000` + `http://localhost:3000` (CI uses reverse)
 
 ## Scripts
 
@@ -32,38 +36,32 @@ End-to-end tests for **apps/mobile** live under [`maestro/`](../maestro/) and us
 Example:
 
 ```bash
-yarn test:e2e:mobile maestro/flows/auth/login_smoke.yaml -e MAESTRO_APP_ID=com.example.app -e E2E_USER_EMAIL=user@test.com -e E2E_USER_PASSWORD='TestPassword123!'
+yarn test:e2e:mobile maestro/flows/auth/login_smoke.yaml -e MAESTRO_APP_ID=com.zakazitermin.app
 ```
 
 ## Screen coverage manifest
 
-[`maestro/coverage/screens.yaml`](../maestro/coverage/screens.yaml) is the source of truth: each **screen** in the mobile app should have at least one **flow file**. Update it when you add routes in `apps/mobile`. CI runs `yarn maestro:coverage` to ensure referenced YAML files exist.
+[`maestro/coverage/screens.yaml`](../maestro/coverage/screens.yaml) lists **Expo routes** under `apps/mobile/app/`. CI runs `yarn maestro:coverage` so every entry references real YAML files. Add rows when you add screens.
 
 ## Parity with Playwright (web)
 
-Mobile Maestro flows mirror **product areas** covered by Playwright under `apps/web/playwright/`:
-
-| Web area (Playwright) | Maestro flows |
-|----------------------|---------------|
-| `playwright/auth/*.e2e.ts` | `maestro/flows/auth/*` |
+| Web area (Playwright) | Maestro area |
+|----------------------|--------------|
+| `playwright/auth/*.e2e.ts` | `maestro/flows/auth/*` (OAuth differs from web forms) |
 | `playwright/bookings/*.e2e.ts` | `maestro/flows/bookings/*` |
-| `playwright/event-types/*.e2e.ts` | `maestro/flows/event_types/*` |
-| `playwright/settings/*.e2e.ts` | `maestro/flows/settings/*` |
-| `playwright/bookings/*.e2e.ts` (list) | `maestro/flows/dashboard/dashboard_smoke.yaml` (dashboard home) |
+| `playwright/event-types/*.e2e.ts` | `maestro/flows/event_types/*` (tab **Termini** = `(tabs)/index`) |
+| `playwright/settings/*.e2e.ts` | `maestro/flows/settings/*` and `setting/*` routes |
 
-**Test users:** align with [`apps/web/playwright/fixtures/users.ts`](../apps/web/playwright/fixtures/users.ts) — same DB means same credentials and seed assumptions.
+**Test users:** Playwright uses DB fixtures ([`apps/web/playwright/fixtures/users.ts`](../apps/web/playwright/fixtures/users.ts)). Mobile OAuth does not use those credentials directly; keep backends aligned for API behavior.
 
 ## CI
 
 See [`.github/workflows/maestro-e2e.yml`](../.github/workflows/maestro-e2e.yml).
 
-- **`maestro-coverage`** (Ubuntu): runs on every matching PR/push — `yarn maestro:coverage` only.
-- **`maestro-e2e-android`** (Ubuntu + Postgres service + Android emulator): runs **only when** `apps/mobile/android/**` exists (Gradle project). It starts Postgres (same credentials as [`docker-compose.test.yml`](../docker-compose.test.yml)), runs `db:push`, starts Next.js, builds `assembleDebug`, then runs Maestro smoke flows on the emulator. Configure repo secrets: `MAESTRO_APP_ID`, `E2E_USER_EMAIL`, `E2E_USER_PASSWORD`; optional `NEXTAUTH_SECRET_E2E` (falls back to a long CI placeholder if unset).
-
-Until `apps/mobile/android` exists, only the coverage job runs — the workflow stays green.
+- **`maestro-coverage`**: `yarn maestro:coverage` on every matching PR/push.
+- **`maestro-e2e-android`**: runs when `apps/mobile/package.json` exists. Uses Postgres service, `db:push`, Next.js dev server, **`npx expo prebuild --platform android`** (native `android/` is gitignored), **`assembleDebug`**, then Maestro **smoke** flows on the emulator with `adb reverse tcp:3000 tcp:3000`. Optional secret **`MAESTRO_APP_ID`** overrides the default bundle id; optional **`NEXTAUTH_SECRET_E2E`** for Next.
 
 ## Maintenance
 
-- Add **testIDs** for every interactive control referenced in flows.
-- Prefer **smoke** tags for PR gates; **regression** for full pre-release runs.
-- Update `screens.yaml` when adding screens; keep `yarn maestro:coverage` green.
+- Prefer **smoke** for PR gates (login UI only until OAuth E2E exists).
+- Update `screens.yaml` when routes change; keep `yarn maestro:coverage` green.

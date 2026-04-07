@@ -27,9 +27,12 @@ on:
 
 env:
   NODE_VERSION: "22"
+  JAVA_VERSION: "17"
   # Align with docker-compose.test.yml credentials; service maps host 5433 -> container 5432
   DATABASE_URL: postgresql://postgres:postgres@localhost:5433/zakazi_termin_test
   NEXT_PUBLIC_APP_URL: http://localhost:3000
+  # Default from apps/mobile/app.json (Android package / iOS bundle); override via MAESTRO_APP_ID secret
+  DEFAULT_MAESTRO_APP_ID: com.zakazitermin.app
 
 jobs:
   maestro-coverage:
@@ -56,13 +59,13 @@ jobs:
       - name: Validate screen coverage YAML
         run: yarn maestro:coverage
 
-  # Runs only when apps/mobile has an Android Gradle project (Maestro needs a device + APK).
+  # Expo app: native android/ is gitignored — expo prebuild generates it before assembleDebug.
   maestro-e2e-android:
-    name: Maestro E2E (Android emulator)
+    name: Maestro E2E (Android emulator + Expo)
     needs: maestro-coverage
-    if: ${{ hashFiles('apps/mobile/android/**') != '' }}
+    if: ${{ hashFiles('apps/mobile/package.json') != '' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     env:
       CI: true
 
@@ -94,6 +97,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: yarn
           cache-dependency-path: yarn.lock
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -127,7 +136,11 @@ jobs:
           curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
 
-      - name: Build Android debug APK
+      - name: Expo prebuild (Android)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build debug APK
         working-directory: apps/mobile/android
         run: ./gradlew assembleDebug --no-daemon
 
@@ -139,23 +152,20 @@ jobs:
           profile: pixel_6
           script: |
             adb reverse tcp:3000 tcp:3000
-            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -name "*.apk" -path "*/outputs/*/*debug*.apk" | head -1)
+            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -name "app-debug.apk" -o -name "*debug*.apk" | grep -E "outputs/apk/.*debug" | head -1)
             if [ -z "$APK" ]; then
               echo "No debug APK found after assembleDebug"
+              find "$GITHUB_WORKSPACE/apps/mobile/android" -name "*.apk" 2>/dev/null || true
               exit 1
             fi
+            echo "Installing $APK"
             adb install -r "$APK"
-            export MAESTRO_APP_ID="${{ secrets.MAESTRO_APP_ID }}"
-            export E2E_USER_EMAIL="${{ secrets.E2E_USER_EMAIL }}"
-            export E2E_USER_PASSWORD="${{ secrets.E2E_USER_PASSWORD }}"
-            if [ -z "$MAESTRO_APP_ID" ] || [ -z "$E2E_USER_EMAIL" ] || [ -z "$E2E_USER_PASSWORD" ]; then
-              echo "Set repository secrets: MAESTRO_APP_ID, E2E_USER_EMAIL, E2E_USER_PASSWORD"
-              exit 1
+            APP_ID="${{ secrets.MAESTRO_APP_ID }}"
+            if [ -z "$APP_ID" ]; then
+              APP_ID="${{ env.DEFAULT_MAESTRO_APP_ID }}"
             fi
             maestro test "$GITHUB_WORKSPACE/maestro/flows" --include-tags smoke \
-              -e MAESTRO_APP_ID="$MAESTRO_APP_ID" \
-              -e E2E_USER_EMAIL="$E2E_USER_EMAIL" \
-              -e E2E_USER_PASSWORD="$E2E_USER_PASSWORD"
+              -e MAESTRO_APP_ID="$APP_ID"
 
       - name: Upload Maestro artifacts
         if: failure()

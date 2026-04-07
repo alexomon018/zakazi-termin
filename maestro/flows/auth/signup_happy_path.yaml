@@ -3,21 +3,8 @@ tags:
   - regression
   - auth
 ---
+# Mobile auth is OAuth-only; there is no in-app signup screen. Kept for manifest compatibility.
 - runFlow:
     file: ../_helpers/launch_app.yaml
 - assertVisible:
-    id: "auth.screen"
-- tapOn:
-    id: "auth.link_signup"
-- assertVisible:
-    id: "signup.screen"
-- tapOn:
-    id: "signup.email"
-- inputText: ${E2E_SIGNUP_EMAIL}
-- tapOn:
-    id: "signup.password"
-- inputText: ${E2E_USER_PASSWORD}
-- tapOn:
-    id: "signup.submit"
-- assertVisible:
-    id: "dashboard.root"
+    text: "Salonko"

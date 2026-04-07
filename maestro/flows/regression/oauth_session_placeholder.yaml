@@ -1,7 +1,7 @@
 appId: ${MAESTRO_APP_ID}
 tags:
   - regression
-  - settings
 ---
+# Authenticated flows need a stored OAuth session or a future E2E bypass. Until then, only login UI is asserted.
 - runFlow:
     file: ../_helpers/auth/login_with_test_user.yaml

@@ -1,17 +1,10 @@
 appId: ${MAESTRO_APP_ID}
 ---
-# Requires testIDs on the login form (align with apps/mobile).
+# App uses OAuth (see apps/mobile/app/(auth)/login.tsx). Use login_smoke for UI checks only.
+# Full session flows require OAuth automation or a dev E2E bypass — not implemented here.
 - runFlow:
     file: ../launch_app.yaml
 - assertVisible:
-    id: "auth.screen"
-- tapOn:
-    id: "auth.email"
-- inputText: ${E2E_USER_EMAIL}
-- tapOn:
-    id: "auth.password"
-- inputText: ${E2E_USER_PASSWORD}
-- tapOn:
-    id: "auth.submit"
+    text: "Salonko"
 - assertVisible:
-    id: "dashboard.root"
+    text: "Prijavite se"
