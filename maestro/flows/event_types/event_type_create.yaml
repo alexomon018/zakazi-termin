@@ -1,0 +1,25 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - event_types
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml
+- tapOn:
+    id: "nav.event_types"
+- assertVisible:
+    id: "event_types.screen"
+- tapOn:
+    id: "event_types.fab_new"
+- assertVisible:
+    id: "event_type_edit.screen"
+- tapOn:
+    id: "event_type_edit.title"
+- inputText: "E2E Meeting"
+- tapOn:
+    id: "event_type_edit.duration"
+- inputText: "30"
+- tapOn:
+    id: "event_type_edit.save"
+- assertVisible:
+    id: "event_types.screen"

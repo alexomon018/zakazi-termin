@@ -1,0 +1,7 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - auth
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml

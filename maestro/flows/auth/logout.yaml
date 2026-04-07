@@ -1,0 +1,15 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - auth
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml
+- tapOn:
+    id: "nav.settings"
+- assertVisible:
+    id: "settings.screen"
+- tapOn:
+    id: "settings.logout"
+- assertVisible:
+    id: "auth.screen"

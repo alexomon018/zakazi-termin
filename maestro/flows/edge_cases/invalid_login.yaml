@@ -1,0 +1,19 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - edge
+---
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    id: "auth.screen"
+- tapOn:
+    id: "auth.email"
+- inputText: "not-a-user@test.com"
+- tapOn:
+    id: "auth.password"
+- inputText: "wrong-password"
+- tapOn:
+    id: "auth.submit"
+- assertVisible:
+    id: "auth.error"

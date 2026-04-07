@@ -1,0 +1,8 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - platform
+  - ios
+---
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+# Add iOS-specific assertions (permissions, swipe back) when wiring apps/mobile.

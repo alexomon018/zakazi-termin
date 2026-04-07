@@ -1,0 +1,23 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - auth
+---
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    id: "auth.screen"
+- tapOn:
+    id: "auth.link_signup"
+- assertVisible:
+    id: "signup.screen"
+- tapOn:
+    id: "signup.email"
+- inputText: ${E2E_SIGNUP_EMAIL}
+- tapOn:
+    id: "signup.password"
+- inputText: ${E2E_USER_PASSWORD}
+- tapOn:
+    id: "signup.submit"
+- assertVisible:
+    id: "dashboard.root"

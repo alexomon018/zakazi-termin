@@ -1,0 +1,20 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - bookings
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml
+- tapOn:
+    id: "nav.bookings"
+- assertVisible:
+    id: "bookings.screen"
+- tapOn:
+    id: "bookings.fab_new"
+- assertVisible:
+    id: "booking_create.screen"
+# Steps below depend on your scheduling UI — adjust selectors when wiring apps/mobile.
+- tapOn:
+    id: "booking_create.confirm"
+- assertVisible:
+    id: "bookings.screen"

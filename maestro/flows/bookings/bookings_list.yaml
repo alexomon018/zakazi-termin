@@ -1,0 +1,13 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - bookings
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml
+- tapOn:
+    id: "nav.bookings"
+- assertVisible:
+    id: "bookings.screen"
+- assertVisible:
+    id: "bookings.list"

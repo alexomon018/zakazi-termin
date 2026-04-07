@@ -1,0 +1,13 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - event_types
+---
+- runFlow:
+    file: ../_helpers/auth/login_with_test_user.yaml
+- tapOn:
+    id: "nav.event_types"
+- assertVisible:
+    id: "event_types.screen"
+- assertVisible:
+    id: "event_types.list"
