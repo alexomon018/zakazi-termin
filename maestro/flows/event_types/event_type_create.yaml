@@ -1,0 +1,8 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - event_types
+---
+# TODO: implement FAB → /event-type/new after OAuth session.
+- runFlow:
+    file: ../_helpers/auth/assert_login_screen.yaml

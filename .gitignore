@@ -11,6 +11,9 @@ build
 
 # Testing
 coverage
+# Maestro screen manifest (not code coverage reports)
+!maestro/coverage/
+!maestro/coverage/**
 
 # Playwright
 **/playwright-report/

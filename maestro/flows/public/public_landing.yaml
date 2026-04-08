@@ -1,0 +1,10 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - public
+---
+# Cold start usually redirects to login; deep-link to (public) when OAuth E2E is available.
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    text: "Salonko"

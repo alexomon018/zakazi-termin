@@ -1,0 +1,16 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - settings
+---
+# Requires OAuth session. Opens Više → profile row (testID) → Profil header.
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- runFlow:
+    when:
+      visible: "Više"
+    commands:
+      - tapOn: "Više"
+      - tapOn:
+          id: "e2e.settings.profileRow"
+      - assertVisible: "Profil"

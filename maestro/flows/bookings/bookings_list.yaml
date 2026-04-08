@@ -1,0 +1,15 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - regression
+  - bookings
+---
+# TODO: stub until OAuth — navigates to Zakazivanja tab when session exists.
+- runFlow:
+    file: ../_helpers/auth/assert_login_screen.yaml
+- runFlow:
+    when:
+      visible: "Zakazivanja"
+    commands:
+      - tapOn: "Zakazivanja"
+      - assertVisible: "Zakazivanja"

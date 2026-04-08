@@ -1,0 +1,31 @@
+appId: ${MAESTRO_APP_ID}
+---
+# Do NOT use clearState: true with expo-dev-client — it wipes storage and forces the
+# "Development Build" server picker; Maestro then never reaches your app UI.
+- launchApp
+
+# Expo dev-client launcher differs by platform:
+# - Android: Metro URL row usually exposes "8081" as tappable text.
+# - iOS: The URL is often NOT a single accessibility text node — text/regex taps fail.
+#   Tap the first server row by coordinates (tune point if your Expo UI layout differs).
+- runFlow:
+    when:
+      visible: "Development Build"
+      platform: Android
+    commands:
+      - tapOn: "8081"
+      - extendedWaitUntil:
+          visible: "Salonko"
+          timeout: 120000
+
+- runFlow:
+    when:
+      visible: "Development Build"
+      platform: iOS
+    commands:
+      # First URL row is typically ~55–65% from top on iPhone; adjust via Maestro Studio if needed.
+      - tapOn:
+          point: "50%,60%"
+      - extendedWaitUntil:
+          visible: "Salonko"
+          timeout: 120000

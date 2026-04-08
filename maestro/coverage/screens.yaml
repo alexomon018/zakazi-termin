@@ -1,0 +1,215 @@
+# Screen-to-flow manifest for apps/mobile (Expo Router). Update routes when files move.
+# requiredLevel: smoke = PR gate (CI); regression = full suite / local.
+# Many entries share oauth_session_placeholder.yaml until OAuth E2E automation exists.
+
+screens:
+  - id: root.index
+    routeOrComponent: "app/index.tsx"
+    featureArea: shell
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/auth/login_smoke.yaml
+
+  - id: auth.login
+    routeOrComponent: "(auth)/login"
+    featureArea: auth
+    requiredLevel: smoke
+    platform: all
+    flowFiles:
+      - flows/auth/login_smoke.yaml
+      - flows/edge_cases/login_screen_loads.yaml
+
+  - id: tabs.event_types
+    routeOrComponent: "(tabs)/index"
+    featureArea: event_types
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/event_types/event_types_list.yaml
+      - flows/event_types/event_type_create.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: tabs.bookings
+    routeOrComponent: "(tabs)/bookings"
+    featureArea: bookings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/bookings/bookings_list.yaml
+      - flows/bookings/booking_create_happy_path.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: tabs.availability
+    routeOrComponent: "(tabs)/availability"
+    featureArea: availability
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: tabs.settings
+    routeOrComponent: "(tabs)/settings"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/settings/settings_profile.yaml
+      - flows/settings/settings_appearance.yaml
+      - flows/auth/logout.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: tabs.events_hidden
+    routeOrComponent: "(tabs)/events"
+    featureArea: events
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: public.landing
+    routeOrComponent: "(public)/index"
+    featureArea: public
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/public/public_landing.yaml
+
+  - id: public.salon
+    routeOrComponent: "(public)/[salonSlug]/index"
+    featureArea: public
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/public/public_landing.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: public.event
+    routeOrComponent: "(public)/[salonSlug]/[eventSlug]"
+    featureArea: public
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/public/public_landing.yaml
+
+  - id: booking.detail
+    routeOrComponent: "booking/[uid]"
+    featureArea: bookings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: event_type.new
+    routeOrComponent: "event-type/new"
+    featureArea: event_types
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/event_types/event_type_create.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: event_type.edit
+    routeOrComponent: "event-type/[id]"
+    featureArea: event_types
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/event_types/event_type_create.yaml
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: schedule.edit
+    routeOrComponent: "schedule/[id]"
+    featureArea: availability
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: setting.profile
+    routeOrComponent: "setting/profile"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/settings/settings_profile.yaml
+
+  - id: setting.appearance
+    routeOrComponent: "setting/appearance"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/settings/settings_appearance.yaml
+
+  - id: setting.calendar
+    routeOrComponent: "setting/calendar"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: setting.team
+    routeOrComponent: "setting/team"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: setting.out_of_office
+    routeOrComponent: "setting/out-of-office"
+    featureArea: settings
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: oauth.callback
+    routeOrComponent: "oauth/callback"
+    featureArea: auth
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/regression/oauth_session_placeholder.yaml
+
+  - id: auth.signup_placeholder
+    routeOrComponent: "(web-only parity)"
+    featureArea: auth
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/auth/signup_oauth_only.yaml
+
+  - id: auth.forgot_placeholder
+    routeOrComponent: "(web-only parity)"
+    featureArea: auth
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/auth/forgot_password.yaml
+
+  - id: edge.network
+    routeOrComponent: "network_error_boundary"
+    featureArea: edge
+    requiredLevel: regression
+    platform: all
+    flowFiles:
+      - flows/edge_cases/offline_retry.yaml
+
+  - id: platform.ios
+    routeOrComponent: "platform_ios"
+    featureArea: platform
+    requiredLevel: regression
+    platform: ios
+    flowFiles:
+      - flows/platform/ios_only.yaml
+
+  - id: platform.android
+    routeOrComponent: "platform_android"
+    featureArea: platform
+    requiredLevel: regression
+    platform: android
+    flowFiles:
+      - flows/platform/android_only.yaml

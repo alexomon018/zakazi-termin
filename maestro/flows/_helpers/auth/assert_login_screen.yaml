@@ -1,0 +1,10 @@
+appId: ${MAESTRO_APP_ID}
+---
+# Asserts the OAuth login screen is visible (does not perform login).
+# See apps/mobile/app/(auth)/login.tsx — real auth requires OAuth automation or a dev bypass.
+- runFlow:
+    file: ../launch_app.yaml
+- assertVisible:
+    text: "Salonko"
+- assertVisible:
+    text: "Prijavite se"
