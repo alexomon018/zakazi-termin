@@ -49,7 +49,7 @@ function RootLayoutNav() {
   }, []);
 
   return (
-    <View style={rootStyles.container}>
+    <View style={[rootStyles.container, { backgroundColor: theme.colors.background }]}>
       {isReady && (
         <>
           <Stack
@@ -58,6 +58,7 @@ function RootLayoutNav() {
               headerStyle: { backgroundColor: theme.colors.surface },
               headerTintColor: theme.colors.foreground,
               headerShadowVisible: false,
+              contentStyle: { backgroundColor: theme.colors.background },
             }}
           >
             <Stack.Screen name="(auth)" />

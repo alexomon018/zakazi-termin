@@ -18,6 +18,7 @@ export { uiStyles } from "./uiStyles";
 export { QueryStateView } from "./QueryStateView";
 export { FormField } from "./FormField";
 export { AnimatedSplash } from "./AnimatedSplash";
+export { FadeSlideIn } from "./FadeSlideIn";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { PaywallScreen } from "./PaywallScreen";
 export { SalonkoIcon } from "./SalonkoIcon";

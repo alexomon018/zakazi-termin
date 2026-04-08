@@ -5,8 +5,9 @@ import { useMe } from "@/lib/use-me";
 
 import { Tabs, router, useSegments } from "expo-router";
 import { CalendarDays, Clock, Link2, MoreHorizontal } from "lucide-react-native";
-import { useEffect, useMemo } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import type { LucideIcon } from "lucide-react-native";
+import { useEffect, useMemo, useRef } from "react";
+import { AccessibilityInfo, ActivityIndicator, Animated, Platform, View } from "react-native";
 
 export default function TabsLayout() {
   const { isLoading, isAuthenticated } = useAuth();
@@ -53,6 +54,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        sceneStyle: { backgroundColor: theme.colors.background },
         headerShown: true,
         headerStyle: { backgroundColor: theme.colors.surface },
         headerTintColor: theme.colors.foreground,
@@ -81,7 +83,9 @@ export default function TabsLayout() {
           headerShown: false,
           title: "Termini",
           tabBarLabel: "Termini",
-          tabBarIcon: ({ color, size }) => <Link2 size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <PoppingTabIcon icon={Link2} color={color} size={size} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -90,7 +94,9 @@ export default function TabsLayout() {
           headerShown: false,
           title: "Zakazivanja",
           tabBarLabel: "Zakazivanja",
-          tabBarIcon: ({ color, size }) => <CalendarDays size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <PoppingTabIcon icon={CalendarDays} color={color} size={size} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -99,7 +105,9 @@ export default function TabsLayout() {
           headerShown: false,
           title: "Dostupnost",
           tabBarLabel: "Dostupnost",
-          tabBarIcon: ({ color, size }) => <Clock size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <PoppingTabIcon icon={Clock} color={color} size={size} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -108,11 +116,57 @@ export default function TabsLayout() {
           headerShown: false,
           title: "Više",
           tabBarLabel: "Više",
-          tabBarIcon: ({ color, size }) => <MoreHorizontal size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <PoppingTabIcon icon={MoreHorizontal} color={color} size={size} focused={focused} />
+          ),
         }}
       />
       {/* Hidden tabs — these files exist but are not shown in tab bar */}
       <Tabs.Screen name="events" options={{ href: null }} />
     </Tabs>
+  );
+}
+
+interface PoppingTabIconProps {
+  icon: LucideIcon;
+  color: string;
+  size: number;
+  focused: boolean;
+}
+
+function PoppingTabIcon({ icon: Icon, color, size, focused }: PoppingTabIconProps) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const wasFocused = useRef(focused);
+
+  useEffect(() => {
+    if (focused && !wasFocused.current) {
+      let cancelled = false;
+      AccessibilityInfo.isReduceMotionEnabled().then((reduceMotion) => {
+        if (cancelled || reduceMotion) return;
+        Animated.sequence([
+          Animated.timing(scale, {
+            toValue: 1.18,
+            duration: 120,
+            useNativeDriver: true,
+          }),
+          Animated.spring(scale, {
+            toValue: 1,
+            friction: 4,
+            tension: 120,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+    wasFocused.current = focused;
+  }, [focused, scale]);
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Icon size={size} color={color} />
+    </Animated.View>
   );
 }

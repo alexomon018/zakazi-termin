@@ -5,6 +5,7 @@ import {
   type BottomSheetAction,
   ConfirmDialog,
   FAB,
+  FadeSlideIn,
   InfoDialog,
   QueryStateView,
 } from "@/components/atoms";
@@ -292,53 +293,55 @@ export default function EventTypesScreen() {
   return (
     <SubscriptionGate>
       <AppScreen>
-        <InfoDialog
-          visible={!!infoDialog}
-          title={infoDialog?.title ?? ""}
-          message={infoDialog?.message ?? ""}
-          onClose={() => setInfoDialog(null)}
-        />
-        <AppText variant="title" style={styles.title}>
-          Moje usluge
-        </AppText>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          refreshControl={
-            <RefreshControl
-              refreshing={eventsQuery.isRefetching}
-              onRefresh={() => eventsQuery.refetch()}
-              tintColor={theme.colors.primary}
-            />
-          }
-        >
-          {renderContent()}
-        </ScrollView>
+        <FadeSlideIn style={{ flex: 1 }}>
+          <InfoDialog
+            visible={!!infoDialog}
+            title={infoDialog?.title ?? ""}
+            message={infoDialog?.message ?? ""}
+            onClose={() => setInfoDialog(null)}
+          />
+          <AppText variant="title" style={styles.title}>
+            Moje usluge
+          </AppText>
+          <ScrollView
+            contentContainerStyle={styles.content}
+            refreshControl={
+              <RefreshControl
+                refreshing={eventsQuery.isRefetching}
+                onRefresh={() => eventsQuery.refetch()}
+                tintColor={theme.colors.primary}
+              />
+            }
+          >
+            {renderContent()}
+          </ScrollView>
 
-        <FAB
-          onPress={() => router.push("/event-type/new")}
-          icon={<Plus size={28} color={theme.colors.primaryForeground} />}
-          accessibilityLabel="Novi tip termina"
-        />
+          <FAB
+            onPress={() => router.push("/event-type/new")}
+            icon={<Plus size={28} color={theme.colors.primaryForeground} />}
+            accessibilityLabel="Novi tip termina"
+          />
 
-        <BottomSheet
-          visible={!!activeItem}
-          title={activeItem?.title}
-          actions={sheetActions}
-          onClose={() => setActiveItem(null)}
-        />
+          <BottomSheet
+            visible={!!activeItem}
+            title={activeItem?.title}
+            actions={sheetActions}
+            onClose={() => setActiveItem(null)}
+          />
 
-        <ConfirmDialog
-          visible={!!deleteTarget}
-          title="Obriši uslugu"
-          message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.title ?? ""}"?`}
-          confirmLabel="Obriši"
-          destructive
-          loading={deleteMutation.isPending}
-          onConfirm={() => {
-            if (deleteTarget) deleteMutation.mutate({ id: deleteTarget.id });
-          }}
-          onCancel={() => setDeleteTarget(null)}
-        />
+          <ConfirmDialog
+            visible={!!deleteTarget}
+            title="Obriši uslugu"
+            message={`Da li ste sigurni da želite da obrišete "${deleteTarget?.title ?? ""}"?`}
+            confirmLabel="Obriši"
+            destructive
+            loading={deleteMutation.isPending}
+            onConfirm={() => {
+              if (deleteTarget) deleteMutation.mutate({ id: deleteTarget.id });
+            }}
+            onCancel={() => setDeleteTarget(null)}
+          />
+        </FadeSlideIn>
       </AppScreen>
     </SubscriptionGate>
   );

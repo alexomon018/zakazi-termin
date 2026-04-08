@@ -1,4 +1,4 @@
-import { AppScreen, AppText, InfoDialog } from "@/components/atoms";
+import { AppScreen, AppText, FadeSlideIn, InfoDialog } from "@/components/atoms";
 import { API_URL, WEB_ORIGIN } from "@/lib/api-url";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
@@ -192,110 +192,115 @@ export default function SettingsScreen() {
 
   return (
     <AppScreen>
-      <InfoDialog
-        visible={!!infoDialog}
-        title={infoDialog?.title ?? ""}
-        message={infoDialog?.message ?? ""}
-        onClose={() => setInfoDialog(null)}
-      />
-      <AppText variant="title" style={styles.title}>
-        Podešavanja
-      </AppText>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Pressable
-          style={styles.profileRow}
-          testID="e2e.settings.profileRow"
-          onPress={() => router.push("/setting/profile")}
-          accessibilityRole="button"
-          accessibilityLabel={`${name}, ${email}`}
-          accessibilityHint="Pregledaj ili uredi profil"
-        >
-          <View style={styles.avatar}>
-            {avatarUrl ? (
-              <Image
-                source={{ uri: avatarUrl }}
-                style={{ width: 44, height: 44, borderRadius: 22 }}
-              />
-            ) : (
-              <Text
-                style={{
-                  fontSize: 17,
-                  fontWeight: "700",
-                  color: theme.colors.foreground,
-                }}
-              >
-                {initial}
-              </Text>
-            )}
-          </View>
-          <View style={styles.profileInfo}>
-            <AppText variant="body" style={{ fontWeight: "600" }}>
-              {name}
-            </AppText>
-            <AppText variant="caption" muted>
-              {email}
-            </AppText>
-          </View>
-          <ChevronRight size={16} color={theme.colors.mutedForeground} />
-        </Pressable>
-
-        {renderMenuGroup(ACCOUNT_ITEMS)}
-        {renderMenuGroup(INTEGRATION_ITEMS)}
-        {renderMenuGroup(managementItems)}
-
-        <View style={styles.menuSection}>
-          <Pressable
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Kopiraj javni link"
-            style={[styles.menuItem, { borderBottomWidth: StyleSheet.hairlineWidth }]}
-            onPress={copyPublicLink}
-          >
-            <View style={styles.menuIconContainer}>
-              <Copy size={18} color={theme.colors.primary} />
-            </View>
-            <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
-              Kopiraj javni link
-            </AppText>
-            <ChevronRight size={16} color={theme.colors.mutedForeground} />
-          </Pressable>
-          <Pressable
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Pomoć"
-            style={[styles.menuItem, { borderBottomWidth: 0 }]}
-            onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/help`)}
-          >
-            <View style={styles.menuIconContainer}>
-              <HelpCircle size={18} color={theme.colors.primary} />
-            </View>
-            <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
-              Pomoć
-            </AppText>
-            <ChevronRight size={16} color={theme.colors.mutedForeground} />
-          </Pressable>
-        </View>
-
-        {/* Logout */}
-        <View style={styles.logoutSection}>
-          <Pressable
-            style={styles.logoutItem}
-            onPress={logout}
-            accessibilityRole="button"
-            accessibilityLabel="Odjavite se"
-            accessibilityHint="Odjavite se sa svog naloga"
-          >
-            <LogOut size={18} color={theme.colors.destructive} />
-            <AppText variant="body" style={{ color: theme.colors.destructive, fontWeight: "500" }}>
-              Odjavite se
-            </AppText>
-          </Pressable>
-        </View>
-
-        <AppText variant="caption" muted centered>
-          Salonko v1.0.0
+      <FadeSlideIn style={{ flex: 1 }}>
+        <InfoDialog
+          visible={!!infoDialog}
+          title={infoDialog?.title ?? ""}
+          message={infoDialog?.message ?? ""}
+          onClose={() => setInfoDialog(null)}
+        />
+        <AppText variant="title" style={styles.title}>
+          Podešavanja
         </AppText>
-      </ScrollView>
+        <ScrollView contentContainerStyle={styles.content}>
+          <Pressable
+            style={styles.profileRow}
+            testID="e2e.settings.profileRow"
+            onPress={() => router.push("/setting/profile")}
+            accessibilityRole="button"
+            accessibilityLabel={`${name}, ${email}`}
+            accessibilityHint="Pregledaj ili uredi profil"
+          >
+            <View style={styles.avatar}>
+              {avatarUrl ? (
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={{ width: 44, height: 44, borderRadius: 22 }}
+                />
+              ) : (
+                <Text
+                  style={{
+                    fontSize: 17,
+                    fontWeight: "700",
+                    color: theme.colors.foreground,
+                  }}
+                >
+                  {initial}
+                </Text>
+              )}
+            </View>
+            <View style={styles.profileInfo}>
+              <AppText variant="body" style={{ fontWeight: "600" }}>
+                {name}
+              </AppText>
+              <AppText variant="caption" muted>
+                {email}
+              </AppText>
+            </View>
+            <ChevronRight size={16} color={theme.colors.mutedForeground} />
+          </Pressable>
+
+          {renderMenuGroup(ACCOUNT_ITEMS)}
+          {renderMenuGroup(INTEGRATION_ITEMS)}
+          {renderMenuGroup(managementItems)}
+
+          <View style={styles.menuSection}>
+            <Pressable
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Kopiraj javni link"
+              style={[styles.menuItem, { borderBottomWidth: StyleSheet.hairlineWidth }]}
+              onPress={copyPublicLink}
+            >
+              <View style={styles.menuIconContainer}>
+                <Copy size={18} color={theme.colors.primary} />
+              </View>
+              <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
+                Kopiraj javni link
+              </AppText>
+              <ChevronRight size={16} color={theme.colors.mutedForeground} />
+            </Pressable>
+            <Pressable
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Pomoć"
+              style={[styles.menuItem, { borderBottomWidth: 0 }]}
+              onPress={() => WebBrowser.openBrowserAsync(`${API_URL}/help`)}
+            >
+              <View style={styles.menuIconContainer}>
+                <HelpCircle size={18} color={theme.colors.primary} />
+              </View>
+              <AppText variant="body" style={{ flex: 1, fontWeight: "500" }}>
+                Pomoć
+              </AppText>
+              <ChevronRight size={16} color={theme.colors.mutedForeground} />
+            </Pressable>
+          </View>
+
+          {/* Logout */}
+          <View style={styles.logoutSection}>
+            <Pressable
+              style={styles.logoutItem}
+              onPress={logout}
+              accessibilityRole="button"
+              accessibilityLabel="Odjavite se"
+              accessibilityHint="Odjavite se sa svog naloga"
+            >
+              <LogOut size={18} color={theme.colors.destructive} />
+              <AppText
+                variant="body"
+                style={{ color: theme.colors.destructive, fontWeight: "500" }}
+              >
+                Odjavite se
+              </AppText>
+            </Pressable>
+          </View>
+
+          <AppText variant="caption" muted centered>
+            Salonko v1.0.0
+          </AppText>
+        </ScrollView>
+      </FadeSlideIn>
     </AppScreen>
   );
 }
