@@ -248,6 +248,8 @@ jobs:
           eas update --channel production --message "production: $COMMIT_MESSAGE"
         env:
           EXPO_PUBLIC_API_URL: https://salonko.rs
+          EXPO_PUBLIC_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_OAUTH_CLIENT_ID }}
+          EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
       - name: Summary
