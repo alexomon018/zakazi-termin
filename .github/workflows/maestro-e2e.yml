@@ -1,7 +1,14 @@
 name: Maestro E2E
 
-# Manual only — re-enable push/pull_request when Maestro E2E in CI is ready.
 on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/mobile/**"
+      - "packages/trpc/**"
+      - "packages/prisma/**"
+      - "packages/auth/**"
+      - "packages/config/**"
   workflow_dispatch:
 
 env:

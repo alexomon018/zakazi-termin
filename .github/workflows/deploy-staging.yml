@@ -12,9 +12,44 @@ env:
   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 
 jobs:
+  validate:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "yarn"
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run linting
+        run: yarn lint
+
+      - name: Generate Prisma Client
+        run: yarn db:generate
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+
+      - name: Type check
+        run: yarn typecheck
+
   migrate-staging:
     name: Apply Staging Migrations
     runs-on: ubuntu-latest
+    needs: validate
 
     steps:
       - name: Checkout code
@@ -104,6 +139,8 @@ jobs:
           eas update --channel staging --message "staging: $COMMIT_MESSAGE"
         env:
           EXPO_PUBLIC_API_URL: https://dev.salonko.rs
+          EXPO_PUBLIC_OAUTH_CLIENT_ID: ${{ secrets.EXPO_PUBLIC_OAUTH_CLIENT_ID }}
+          EXPO_PUBLIC_SENTRY_DSN: ${{ secrets.EXPO_PUBLIC_SENTRY_DSN }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
       - name: Summary
