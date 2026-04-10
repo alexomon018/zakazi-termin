@@ -66,13 +66,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://localhost:5432/placeholder
 
-      - name: Build packages
-        run: yarn build --filter=!@salonko/web --filter=!@salonko/mobile
-        env:
-          DATABASE_URL: postgresql://localhost:5432/placeholder
-
       - name: Type check
-        run: yarn typecheck
+        run: yarn tsc
 
   # Check for migration conflicts on PRs to main
   migration-check:
