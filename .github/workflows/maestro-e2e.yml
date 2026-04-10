@@ -20,7 +20,7 @@ env:
   DATABASE_URL: postgresql://postgres:postgres@localhost:5433/zakazi_termin_test
   NEXT_PUBLIC_APP_URL: http://localhost:3000
   # Default from apps/mobile/app.json (Android package / iOS bundle); override via MAESTRO_APP_ID secret
-  DEFAULT_MAESTRO_APP_ID: com.zakazitermin.app
+  DEFAULT_MAESTRO_APP_ID: com.salonko.app
 
 jobs:
   maestro-coverage:
@@ -155,27 +155,14 @@ jobs:
 
       - name: Run Maestro smoke tests on emulator
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MAESTRO_APP_ID_SECRET: ${{ secrets.MAESTRO_APP_ID }}
+          DEFAULT_MAESTRO_APP_ID: ${{ env.DEFAULT_MAESTRO_APP_ID }}
         with:
           api-level: 34
           arch: x86_64
           profile: pixel_6
-          script: |
-            adb reverse tcp:3000 tcp:3000
-            adb reverse tcp:8081 tcp:8081
-            # Debug APK from Gradle: .../outputs/apk/<variant>/debug/*.apk
-            APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -path "*/outputs/apk/*/debug/*.apk" | head -1)
-            if [ -z "$APK" ]; then
-              echo "No debug APK found after assembleDebug"
-              find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -name "*.apk" 2>/dev/null || true
-              exit 1
-            fi
-            echo "Installing $APK"
-            adb install -r "$APK"
-            APP_ID="${{ secrets.MAESTRO_APP_ID }}"
-            if [ -z "$APP_ID" ]; then
-              APP_ID="${{ env.DEFAULT_MAESTRO_APP_ID }}"
-            fi
-            bash "$GITHUB_WORKSPACE/scripts/maestro-expand-flows.sh" | xargs -0 maestro test --include-tags smoke -e MAESTRO_APP_ID="$APP_ID"
+          script: bash "$GITHUB_WORKSPACE/scripts/maestro-run-emulator.sh"
 
       - name: Upload Maestro artifacts
         if: failure()
