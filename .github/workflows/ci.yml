@@ -64,7 +64,12 @@ jobs:
       - name: Generate Prisma Client
         run: yarn db:generate
         env:
-          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+          DATABASE_URL: postgresql://localhost:5432/placeholder
+
+      - name: Build packages
+        run: yarn build --filter=!@salonko/web --filter=!@salonko/mobile
+        env:
+          DATABASE_URL: postgresql://localhost:5432/placeholder
 
       - name: Type check
         run: yarn typecheck

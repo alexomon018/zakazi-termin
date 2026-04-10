@@ -96,7 +96,7 @@ jobs:
           retention-days: 7
 
       - name: Delete Neon Branch
-        if: always()
+        if: always() && steps.create-branch.outcome == 'success'
         uses: neondatabase/delete-branch-action@v3
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
