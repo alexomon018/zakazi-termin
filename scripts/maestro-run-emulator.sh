@@ -4,8 +4,8 @@ set -euo pipefail
 adb reverse tcp:3000 tcp:3000
 adb reverse tcp:8081 tcp:8081
 
-# Debug APK from Gradle: .../outputs/apk/<variant>/debug/*.apk
-APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -path "*/outputs/apk/*/debug/*.apk" | head -1)
+# Debug APK from Gradle: .../outputs/apk/debug/*.apk or .../outputs/apk/<variant>/debug/*.apk
+APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -name "*debug*.apk" -path "*/outputs/apk/*" | head -1)
 if [ -z "$APK" ]; then
   echo "No debug APK found after assembleDebug"
   find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -name "*.apk" 2>/dev/null || true

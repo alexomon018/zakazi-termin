@@ -5,6 +5,7 @@ on:
   push:
     branches: [main, develop]
     paths:
+      - ".github/workflows/playwright-e2e.yml"
       - "apps/web/**"
       - "packages/trpc/**"
       - "packages/prisma/**"
