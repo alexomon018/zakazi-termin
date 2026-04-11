@@ -13,10 +13,7 @@ import {
   EmailVerificationEmail,
   type EmailVerificationEmailProps,
 } from "./templates/email-verification";
-import {
-  PasswordResetEmail,
-  type PasswordResetEmailProps,
-} from "./templates/password-reset";
+import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
 import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
 import { SubscriptionExpiredEmail } from "./templates/subscription-expired";
@@ -42,8 +39,7 @@ export interface SendEmailOptions {
   react: ReactElement;
 }
 
-export const SUPPORT_EMAIL =
-  process.env.SUPPORT_EMAIL || "salonko.rs@gmail.com";
+export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || "salonko.rs@gmail.com";
 
 class EmailService {
   private resend: Resend | null = null;
@@ -83,16 +79,12 @@ class EmailService {
   private getFromEmail(): string {
     const isDev = this.isDevEnvironment();
     if (isDev) {
-      return (
-        process.env.EMAIL_FROM_DEV || process.env.EMAIL_FROM || this.fromEmail
-      );
+      return process.env.EMAIL_FROM_DEV || process.env.EMAIL_FROM || this.fromEmail;
     }
     return process.env.EMAIL_FROM || this.fromEmail;
   }
 
-  async send(
-    options: SendEmailOptions,
-  ): Promise<{ success: boolean; error?: string }> {
+  async send(options: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
     if (this.isTestMode()) {
       logger.info("Test mode: skipping email send");
       return { success: true };
@@ -201,9 +193,7 @@ class EmailService {
   }
 
   // Send reschedule notification to organizer
-  async sendBookingRescheduledToOrganizer(
-    data: BookingEmailData,
-  ): Promise<void> {
+  async sendBookingRescheduledToOrganizer(data: BookingEmailData): Promise<void> {
     await this.send({
       to: data.organizerEmail,
       subject: `Termin promenjen: ${data.eventTypeTitle} - ${data.attendeeName}`,
@@ -212,15 +202,9 @@ class EmailService {
   }
 
   // Convenience method to send all notifications for a new booking
-  async sendNewBookingEmails(
-    data: BookingEmailData,
-    isPending: boolean,
-  ): Promise<void> {
+  async sendNewBookingEmails(data: BookingEmailData, isPending: boolean): Promise<void> {
     if (isPending) {
-      await Promise.all([
-        this.sendBookingPending(data),
-        this.sendBookingPendingToOrganizer(data),
-      ]);
+      await Promise.all([this.sendBookingPending(data), this.sendBookingPendingToOrganizer(data)]);
     } else {
       await Promise.all([
         this.sendBookingConfirmed(data),
@@ -269,9 +253,7 @@ class EmailService {
   }
 
   // Send email verification OTP
-  async sendEmailVerification(
-    data: EmailVerificationEmailProps,
-  ): Promise<void> {
+  async sendEmailVerification(data: EmailVerificationEmailProps): Promise<void> {
     await this.send({
       to: data.userEmail,
       subject: "Vaš verifikacioni kod za Salonko",
@@ -301,9 +283,7 @@ class EmailService {
   }
 
   // Send subscription canceled confirmation
-  async sendSubscriptionCanceledEmail(
-    data: SubscriptionCanceledEmailData,
-  ): Promise<void> {
+  async sendSubscriptionCanceledEmail(data: SubscriptionCanceledEmailData): Promise<void> {
     await this.send({
       to: data.userEmail,
       subject: "Pretplata otkazana - Salonko",
@@ -312,9 +292,7 @@ class EmailService {
   }
 
   // Send subscription expired notification
-  async sendSubscriptionExpiredEmail(
-    data: SubscriptionExpiredEmailData,
-  ): Promise<void> {
+  async sendSubscriptionExpiredEmail(data: SubscriptionExpiredEmailData): Promise<void> {
     await this.send({
       to: data.userEmail,
       subject: "Pretplata istekla - Salonko",
@@ -323,9 +301,7 @@ class EmailService {
   }
 
   // Send subscription success notification
-  async sendSubscriptionSuccessEmail(
-    data: SubscriptionSuccessEmailData,
-  ): Promise<void> {
+  async sendSubscriptionSuccessEmail(data: SubscriptionSuccessEmailData): Promise<void> {
     await this.send({
       to: data.userEmail,
       subject: "Pretplata uspešno aktivirana - Salonko",
@@ -338,7 +314,7 @@ class EmailService {
   // Send support request notification to the support team
   async sendSupportRequestEmail(
     data: SupportRequestEmailData,
-    supportEmail = SUPPORT_EMAIL,
+    supportEmail = SUPPORT_EMAIL
   ): Promise<{ success: boolean; error?: string }> {
     return this.send({
       to: supportEmail,
