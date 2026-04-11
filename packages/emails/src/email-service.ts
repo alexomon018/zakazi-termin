@@ -57,6 +57,10 @@ class EmailService {
     return false;
   }
 
+  private isTestMode(): boolean {
+    return process.env.PLAYWRIGHT_TEST_MODE === "true";
+  }
+
   private getResend(): Resend {
     if (!this.resend) {
       const isDev = this.isDevEnvironment();
@@ -81,6 +85,11 @@ class EmailService {
   }
 
   async send(options: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
+    if (this.isTestMode()) {
+      logger.info("Test mode: skipping email send", { to: options.to, subject: options.subject });
+      return { success: true };
+    }
+
     try {
       const resend = this.getResend();
       const { error } = await resend.emails.send({

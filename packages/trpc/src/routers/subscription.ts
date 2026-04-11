@@ -157,7 +157,6 @@ export const subscriptionRouter = router({
     let createdCustomerId: string | null = null;
 
     try {
-      const stripe = getStripe();
       return await ctx.prisma.$transaction(async (tx) => {
         // Check if subscription already exists
         const existing = await tx.subscription.findUnique({
@@ -184,6 +183,9 @@ export const subscriptionRouter = router({
             message: "Korisnik nije pronađen.",
           });
         }
+
+        // Only initialize Stripe when we actually need to create a new customer
+        const stripe = getStripe();
 
         // Create Stripe customer
         const customer = await stripe.customers.create({

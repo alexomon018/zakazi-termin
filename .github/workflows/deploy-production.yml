@@ -11,6 +11,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false  # Never cancel mid-flight production deploys — migrations could be partially applied
+
 env:
   NODE_VERSION: "22"
   NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
