@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Wait for emulator to be fully booted before proceeding
+echo "Waiting for emulator to fully boot..."
+adb wait-for-device
+# Wait until boot animation has completed
+for i in $(seq 1 120); do
+  BOOT_COMPLETED=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+  if [ "$BOOT_COMPLETED" = "1" ]; then
+    echo "Emulator boot completed after ~${i}s"
+    break
+  fi
+  if [ "$i" -eq 120 ]; then
+    echo "Emulator failed to boot within 120s"
+    adb shell getprop 2>/dev/null || true
+    exit 1
+  fi
+  sleep 1
+done
+
+# Extra settle time for system services to stabilize
+sleep 5
+
 adb reverse tcp:3000 tcp:3000
 adb reverse tcp:8081 tcp:8081
 
