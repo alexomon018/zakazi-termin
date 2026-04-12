@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { getAppUrl, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
@@ -54,8 +54,13 @@ export async function GET(req: Request) {
 
   // Validate HMAC token
   const expectedToken = createHmac("sha256", CRON_SECRET).update(`${userId}:${type}`).digest("hex");
+  const providedToken = Buffer.from(token, "hex");
+  const expectedTokenBuffer = Buffer.from(expectedToken, "hex");
 
-  if (token !== expectedToken) {
+  if (
+    providedToken.length !== expectedTokenBuffer.length ||
+    !timingSafeEqual(providedToken, expectedTokenBuffer)
+  ) {
     return new NextResponse(renderHtml("Nevažeći link za odjavu."), {
       status: 403,
       headers: { "Content-Type": "text/html; charset=utf-8" },

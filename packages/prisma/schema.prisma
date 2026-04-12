@@ -132,6 +132,7 @@ model User {
 
   // Activity & email tracking
   lastLoginAt           DateTime?
+  lastActiveAt          DateTime? // Updated periodically during session use (rate-limited)
   inactivityEmailSentAt DateTime?
   educationEmailsOptOut Boolean   @default(false)
 

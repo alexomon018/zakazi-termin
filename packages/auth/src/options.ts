@@ -134,6 +134,7 @@ declare module "next-auth/jwt" {
     locale: string;
     timeZone: string;
     subscriptionStatus?: string | null;
+    lastActiveUpdate?: number;
   }
 }
 
@@ -323,12 +324,14 @@ export const authOptions: NextAuthOptions = {
         token.salonName = user.salonName;
         token.locale = user.locale ?? "sr";
         token.timeZone = user.timeZone ?? "Europe/Belgrade";
+        token.lastActiveUpdate = Date.now();
 
         // Track login activity (fire-and-forget)
+        const now = new Date();
         prisma.user
           .update({
             where: { id: user.id },
-            data: { lastLoginAt: new Date(), inactivityEmailSentAt: null },
+            data: { lastLoginAt: now, lastActiveAt: now, inactivityEmailSentAt: null },
           })
           .catch((err) => {
             logger.error("Failed to update lastLoginAt", {
@@ -349,12 +352,14 @@ export const authOptions: NextAuthOptions = {
           token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
+          token.lastActiveUpdate = Date.now();
 
           // Track login activity (fire-and-forget)
+          const now = new Date();
           prisma.user
             .update({
               where: { id: dbUser.id },
-              data: { lastLoginAt: new Date(), inactivityEmailSentAt: null },
+              data: { lastLoginAt: now, lastActiveAt: now, inactivityEmailSentAt: null },
             })
             .catch((err) => {
               logger.error("Failed to update lastLoginAt", {
@@ -371,6 +376,27 @@ export const authOptions: NextAuthOptions = {
             providerId: account.providerAccountId,
           });
         }
+      }
+
+      // Rate-limited activity tracking: update lastActiveAt at most once per hour.
+      // This ensures the inactivity cron job measures real product usage, not just sign-ins.
+      const ACTIVITY_UPDATE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+      if (
+        token.id &&
+        (!token.lastActiveUpdate || Date.now() - token.lastActiveUpdate > ACTIVITY_UPDATE_INTERVAL_MS)
+      ) {
+        token.lastActiveUpdate = Date.now();
+        prisma.user
+          .update({
+            where: { id: token.id },
+            data: { lastActiveAt: new Date(), inactivityEmailSentAt: null },
+          })
+          .catch((err) => {
+            logger.error("Failed to update lastActiveAt", {
+              userId: token.id,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          });
       }
 
       // Add subscription status to token (cached in Redis to reduce database queries)

@@ -394,7 +394,9 @@ export async function POST(req: Request) {
 
     // =========================================================================
     // 4. INACTIVITY RE-ENGAGEMENT EMAILS
-    // Send to users who haven't logged in for 7+ days (once per inactivity cycle)
+    // Send to users who haven't been active for 7+ days (once per inactivity cycle).
+    // Uses lastActiveAt (updated on every session use, rate-limited to 1h)
+    // with lastLoginAt as fallback for users who signed up before the field existed.
     // =========================================================================
     const inactivityThreshold = new Date(
       now.getTime() - INACTIVITY_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
@@ -403,11 +405,16 @@ export async function POST(req: Request) {
     const inactiveUsers = await prisma.user.findMany({
       where: {
         emailVerified: { not: null },
-        lastLoginAt: {
-          not: null,
-          lt: inactivityThreshold,
-        },
         inactivityEmailSentAt: null,
+        OR: [
+          {
+            lastActiveAt: { not: null, lt: inactivityThreshold },
+          },
+          {
+            lastActiveAt: null,
+            lastLoginAt: { not: null, lt: inactivityThreshold },
+          },
+        ],
       },
       select: {
         id: true,
@@ -421,16 +428,23 @@ export async function POST(req: Request) {
 
     for (const user of inactiveUsers) {
       try {
+        // Claim delivery atomically before sending — conditional update ensures
+        // only one concurrent run can claim a given user.
+        const claimed = await prisma.user.updateMany({
+          where: { id: user.id, inactivityEmailSentAt: null },
+          data: { inactivityEmailSentAt: now },
+        });
+
+        if (claimed.count === 0) {
+          // Another run already claimed this user — skip to avoid duplicate email
+          continue;
+        }
+
         await emailService.sendInactivityEmail({
           userEmail: user.email,
           userName: user.name || "Korisniče",
           salonName: user.salonName,
           dashboardUrl: `${APP_URL}/dashboard`,
-        });
-
-        await prisma.user.update({
-          where: { id: user.id, inactivityEmailSentAt: null },
-          data: { inactivityEmailSentAt: now },
         });
 
         results.emailsSent++;
@@ -500,24 +514,46 @@ export async function POST(req: Request) {
         // Check if user already adopted this feature (smart skip)
         const shouldSkip = checkSkipCondition(step.skipCheck, user);
 
-        if (shouldSkip) {
-          // Record as sent to advance the sequence, but don't send email
-          try {
-            await prisma.emailDripRecord.create({
+        // Atomically verify opt-out status and claim delivery in one transaction.
+        // Guards against the user opting out after dripCandidates was fetched.
+        let claimed = false;
+        try {
+          await prisma.$transaction(async (tx) => {
+            const freshUser = await tx.user.findUniqueOrThrow({
+              where: { id: user.id },
+              select: { educationEmailsOptOut: true },
+            });
+            if (freshUser.educationEmailsOptOut) {
+              throw new Error("USER_OPTED_OUT");
+            }
+            await tx.emailDripRecord.create({
               data: { userId: user.id, emailKey: step.emailKey },
             });
-            results.educationSkipped++;
-            logger.info("Education email skipped (feature already adopted)", {
+          });
+          claimed = true;
+        } catch (err) {
+          if (err instanceof Error && err.message === "USER_OPTED_OUT") {
+            logger.info("Education email skipped (user opted out)", {
               userId: user.id,
               emailKey: step.emailKey,
             });
-          } catch {
-            // Unique constraint violation means it was already recorded
+            break;
           }
+          // Unique constraint violation — already claimed by another run
           continue;
         }
 
-        // Send the education email
+        if (!claimed) continue;
+
+        if (shouldSkip) {
+          results.educationSkipped++;
+          logger.info("Education email skipped (feature already adopted)", {
+            userId: user.id,
+            emailKey: step.emailKey,
+          });
+          continue;
+        }
+
         try {
           await emailService.sendFeatureEducationEmail({
             userName: user.name || "Korisniče",
@@ -531,10 +567,6 @@ export async function POST(req: Request) {
             stepNumber: EDUCATION_SEQUENCE.indexOf(step) + 1,
             totalSteps: EDUCATION_SEQUENCE.length,
             unsubscribeUrl: buildUnsubscribeUrl(user.id, "education"),
-          });
-
-          await prisma.emailDripRecord.create({
-            data: { userId: user.id, emailKey: step.emailKey },
           });
 
           results.emailsSent++;

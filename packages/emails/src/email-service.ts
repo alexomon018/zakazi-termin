@@ -331,20 +331,26 @@ class EmailService {
 
   // Send inactivity re-engagement email (7 days inactive)
   async sendInactivityEmail(data: InactivityEmailData): Promise<void> {
-    await this.send({
+    const result = await this.send({
       to: data.userEmail,
       subject: "Nedostajete nam na Salonko!",
       react: createElement(InactivityReengagementEmail, data),
     });
+    if (!result.success) {
+      throw new Error(result.error ?? "Failed to send inactivity email");
+    }
   }
 
   // Send feature education drip email
   async sendFeatureEducationEmail(data: FeatureEducationEmailData): Promise<void> {
-    await this.send({
+    const result = await this.send({
       to: data.userEmail,
       subject: `${data.featureTitle} - Salonko`,
       react: createElement(FeatureEducationEmail, data),
     });
+    if (!result.success) {
+      throw new Error(result.error ?? "Failed to send feature education email");
+    }
   }
 
   // Team-related emails
