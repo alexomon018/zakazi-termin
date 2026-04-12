@@ -323,6 +323,19 @@ export const authOptions: NextAuthOptions = {
         token.salonName = user.salonName;
         token.locale = user.locale ?? "sr";
         token.timeZone = user.timeZone ?? "Europe/Belgrade";
+
+        // Track login activity (fire-and-forget)
+        prisma.user
+          .update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date(), inactivityEmailSentAt: null },
+          })
+          .catch((err) => {
+            logger.error("Failed to update lastLoginAt", {
+              userId: user.id,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          });
       }
 
       // OAuth sign in - fetch additional user data and ensure user exists
@@ -336,6 +349,19 @@ export const authOptions: NextAuthOptions = {
           token.salonName = dbUser.salonName;
           token.locale = dbUser.locale;
           token.timeZone = dbUser.timeZone;
+
+          // Track login activity (fire-and-forget)
+          prisma.user
+            .update({
+              where: { id: dbUser.id },
+              data: { lastLoginAt: new Date(), inactivityEmailSentAt: null },
+            })
+            .catch((err) => {
+              logger.error("Failed to update lastLoginAt", {
+                userId: dbUser.id,
+                error: err instanceof Error ? err.message : String(err),
+              });
+            });
         } else {
           // User should have been created in signIn callback but wasn't found
           // This can happen if there was an error during user creation

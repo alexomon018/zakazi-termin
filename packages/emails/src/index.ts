@@ -22,8 +22,12 @@ export {
   type SupportRequestEmailProps,
 } from "./templates/support-request";
 export { TeamInviteEmail, type TeamInviteEmailProps } from "./templates/team-invite";
+export { InactivityReengagementEmail } from "./templates/inactivity-reengagement";
+export { FeatureEducationEmail } from "./templates/feature-education";
 export type {
   BookingEmailData,
+  FeatureEducationEmailData,
+  InactivityEmailData,
   PaymentFailedEmailData,
   TrialEndingEmailData,
   SubscriptionCanceledEmailData,

@@ -1,3 +1,4 @@
+import { buildUnsubscribeUrl } from "@/app/api/email/unsubscribe/route";
 import { getAppUrl, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
 import { prisma } from "@salonko/prisma";
@@ -9,6 +10,113 @@ const APP_URL = getAppUrl();
 
 // Dunning schedule: days after first payment failure to send follow-up emails
 const DUNNING_SCHEDULE_DAYS = [3, 7, 14]; // Day 1 is sent immediately via webhook
+
+// Inactivity threshold: days since last login before sending re-engagement email
+const INACTIVITY_THRESHOLD_DAYS = 7;
+
+// Education drip sequence: spaced across ~1 month
+const EDUCATION_SEQUENCE = [
+  {
+    emailKey: "education_services",
+    daysAfterSignup: 3,
+    subject: "Kreirajte svoju prvu uslugu",
+    featureTitle: "Kreirajte svoju prvu uslugu",
+    featureDescription:
+      "Definišite usluge koje nudite u svom salonu — od šišanja do farbanja. Svaka usluga ima svoj naziv, trajanje i opis koji klijenti vide pri zakazivanju.",
+    helpPath: "/help/pocetak/prvi-tip-dogadjaja",
+    ctaText: "Kreirajte uslugu",
+    ctaPath: "/dashboard/event-types",
+    skipCheck: "hasEventTypes" as const,
+  },
+  {
+    emailKey: "education_availability",
+    daysAfterSignup: 8,
+    subject: "Podesite radno vreme",
+    featureTitle: "Podesite radno vreme salona",
+    featureDescription:
+      "Odredite kada ste dostupni za zakazivanje — podesite radne dane, sate i pauze. Klijenti će moći da zakažu termine samo u okviru Vašeg radnog vremena.",
+    helpPath: "/help/raspolozivost/radno-vreme",
+    ctaText: "Podesite raspored",
+    ctaPath: "/dashboard/availability",
+    skipCheck: "hasCustomSchedule" as const,
+  },
+  {
+    emailKey: "education_bookings",
+    daysAfterSignup: 13,
+    subject: "Kako klijenti zakazuju termine",
+    featureTitle: "Kako klijenti zakazuju termine",
+    featureDescription:
+      "Saznajte kako izgleda proces zakazivanja iz perspektive klijenta i kako da upravljate dolazećim rezervacijama u kontrolnoj tabli.",
+    helpPath: "/help/zakazivanje/kako-klijenti-zakazuju",
+    ctaText: "Pregledajte rezervacije",
+    ctaPath: "/dashboard/bookings",
+    skipCheck: "hasBookings" as const,
+  },
+  {
+    emailKey: "education_customization",
+    daysAfterSignup: 18,
+    subject: "Personalizujte stranicu za zakazivanje",
+    featureTitle: "Personalizujte stranicu za zakazivanje",
+    featureDescription:
+      "Prilagodite izgled stranice za zakazivanje Vašem brendu — promenite boju, dodajte informacije o salonu i učinite je profesionalnom.",
+    helpPath: "/help/personalizacija/prilagodjena-stranica",
+    ctaText: "Personalizujte stranicu",
+    ctaPath: "/dashboard/settings/appearance",
+    skipCheck: "hasCustomBrand" as const,
+  },
+  {
+    emailKey: "education_team",
+    daysAfterSignup: 23,
+    subject: "Dodajte članove tima",
+    featureTitle: "Dodajte članove tima u salon",
+    featureDescription:
+      "Pozovite zaposlene da koriste Salonko — svaki član tima može imati sopstveni raspored, usluge i pristup kontrolnoj tabli.",
+    helpPath: "/help/tim/dodavanje-clanova",
+    ctaText: "Dodajte članove",
+    ctaPath: "/dashboard/settings/team",
+    skipCheck: "hasTeamMembers" as const,
+  },
+  {
+    emailKey: "education_billing",
+    daysAfterSignup: 28,
+    subject: "Upravljanje pretplatom",
+    featureTitle: "Upravljanje pretplatom i plaćanjem",
+    featureDescription:
+      "Pregledajte planove pretplate, upravljajte plaćanjem i pristupite fakturama. Saznajte sve o opcijama koje su Vam dostupne.",
+    helpPath: "/help/placanje/planovi-i-cene",
+    ctaText: "Pregledajte pretplatu",
+    ctaPath: "/dashboard/settings/billing",
+    skipCheck: "hasActiveSubscription" as const,
+  },
+] as const;
+
+type SkipCheck = (typeof EDUCATION_SEQUENCE)[number]["skipCheck"];
+
+const DEFAULT_BRAND_COLOR = "#292929";
+
+interface DripUserData {
+  brandColor: string | null;
+  _count: { eventTypes: number; bookings: number; memberships: number };
+  schedules: { id: string }[];
+  subscription: { status: string } | null;
+}
+
+function checkSkipCondition(check: SkipCheck, user: DripUserData): boolean {
+  switch (check) {
+    case "hasEventTypes":
+      return user._count.eventTypes > 0;
+    case "hasCustomSchedule":
+      return user.schedules.length > 1;
+    case "hasBookings":
+      return user._count.bookings > 0;
+    case "hasCustomBrand":
+      return user.brandColor !== null && user.brandColor !== DEFAULT_BRAND_COLOR;
+    case "hasTeamMembers":
+      return user._count.memberships > 0;
+    case "hasActiveSubscription":
+      return user.subscription?.status === "ACTIVE";
+  }
+}
 
 /**
  * Trial Expiration & Dunning Cron Job
@@ -53,6 +161,9 @@ export async function POST(req: Request) {
     expiredTrials: 0,
     trialReminders: 0,
     dunningEmails: 0,
+    inactivityEmails: 0,
+    educationEmails: 0,
+    educationSkipped: 0,
     emailsSent: 0,
     emailsFailed: 0,
   };
@@ -278,6 +389,172 @@ export async function POST(req: Request) {
             userId: subscription.user.id,
           });
         }
+      }
+    }
+
+    // =========================================================================
+    // 4. INACTIVITY RE-ENGAGEMENT EMAILS
+    // Send to users who haven't logged in for 7+ days (once per inactivity cycle)
+    // =========================================================================
+    const inactivityThreshold = new Date(
+      now.getTime() - INACTIVITY_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
+    );
+
+    const inactiveUsers = await prisma.user.findMany({
+      where: {
+        emailVerified: { not: null },
+        lastLoginAt: {
+          not: null,
+          lt: inactivityThreshold,
+        },
+        inactivityEmailSentAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        salonName: true,
+      },
+    });
+
+    logger.info("Inactive users for re-engagement", { count: inactiveUsers.length });
+
+    for (const user of inactiveUsers) {
+      try {
+        await emailService.sendInactivityEmail({
+          userEmail: user.email,
+          userName: user.name || "Korisniče",
+          salonName: user.salonName,
+          dashboardUrl: `${APP_URL}/dashboard`,
+        });
+
+        await prisma.user.update({
+          where: { id: user.id, inactivityEmailSentAt: null },
+          data: { inactivityEmailSentAt: now },
+        });
+
+        results.emailsSent++;
+        results.inactivityEmails++;
+        logger.info("Inactivity email sent", { userId: user.id });
+      } catch (emailError) {
+        results.emailsFailed++;
+        logger.error("Failed to send inactivity email", {
+          error: emailError instanceof Error ? emailError.message : String(emailError),
+          userId: user.id,
+        });
+      }
+    }
+
+    // =========================================================================
+    // 5. FEATURE EDUCATION DRIP CAMPAIGN
+    // Send educational emails spread across ~1 month after signup
+    // =========================================================================
+    const oldestDripDay = EDUCATION_SEQUENCE[EDUCATION_SEQUENCE.length - 1].daysAfterSignup;
+    const earliestSignup = new Date(now.getTime() - (oldestDripDay + 1) * 24 * 60 * 60 * 1000);
+    const minimumAge = new Date(
+      now.getTime() - EDUCATION_SEQUENCE[0].daysAfterSignup * 24 * 60 * 60 * 1000
+    );
+
+    const dripCandidates = await prisma.user.findMany({
+      where: {
+        emailVerified: { not: null },
+        educationEmailsOptOut: false,
+        createdAt: {
+          gte: earliestSignup,
+          lte: minimumAge,
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        salonName: true,
+        createdAt: true,
+        brandColor: true,
+        _count: {
+          select: {
+            eventTypes: true,
+            bookings: true,
+            memberships: true,
+          },
+        },
+        schedules: { select: { id: true } },
+        subscription: { select: { status: true } },
+        emailDripRecords: { select: { emailKey: true } },
+      },
+    });
+
+    logger.info("Education drip candidates", { count: dripCandidates.length });
+
+    for (const user of dripCandidates) {
+      const daysSinceSignup = Math.floor(
+        (now.getTime() - user.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const sentKeys = new Set(user.emailDripRecords.map((r) => r.emailKey));
+
+      // Find the next unsent email in the sequence
+      for (const step of EDUCATION_SEQUENCE) {
+        if (sentKeys.has(step.emailKey)) continue;
+        if (daysSinceSignup < step.daysAfterSignup) break;
+
+        // Check if user already adopted this feature (smart skip)
+        const shouldSkip = checkSkipCondition(step.skipCheck, user);
+
+        if (shouldSkip) {
+          // Record as sent to advance the sequence, but don't send email
+          try {
+            await prisma.emailDripRecord.create({
+              data: { userId: user.id, emailKey: step.emailKey },
+            });
+            results.educationSkipped++;
+            logger.info("Education email skipped (feature already adopted)", {
+              userId: user.id,
+              emailKey: step.emailKey,
+            });
+          } catch {
+            // Unique constraint violation means it was already recorded
+          }
+          continue;
+        }
+
+        // Send the education email
+        try {
+          await emailService.sendFeatureEducationEmail({
+            userName: user.name || "Korisniče",
+            userEmail: user.email,
+            salonName: user.salonName,
+            featureTitle: step.featureTitle,
+            featureDescription: step.featureDescription,
+            helpArticleUrl: `${APP_URL}${step.helpPath}`,
+            ctaText: step.ctaText,
+            ctaUrl: `${APP_URL}${step.ctaPath}`,
+            stepNumber: EDUCATION_SEQUENCE.indexOf(step) + 1,
+            totalSteps: EDUCATION_SEQUENCE.length,
+            unsubscribeUrl: buildUnsubscribeUrl(user.id, "education"),
+          });
+
+          await prisma.emailDripRecord.create({
+            data: { userId: user.id, emailKey: step.emailKey },
+          });
+
+          results.emailsSent++;
+          results.educationEmails++;
+          logger.info("Education email sent", {
+            userId: user.id,
+            emailKey: step.emailKey,
+            stepNumber: EDUCATION_SEQUENCE.indexOf(step) + 1,
+          });
+        } catch (emailError) {
+          results.emailsFailed++;
+          logger.error("Failed to send education email", {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            userId: user.id,
+            emailKey: step.emailKey,
+          });
+        }
+
+        // Only send one email per user per cron run
+        break;
       }
     }
 

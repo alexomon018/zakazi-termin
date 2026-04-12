@@ -13,6 +13,8 @@ import {
   EmailVerificationEmail,
   type EmailVerificationEmailProps,
 } from "./templates/email-verification";
+import { FeatureEducationEmail } from "./templates/feature-education";
+import { InactivityReengagementEmail } from "./templates/inactivity-reengagement";
 import { PasswordResetEmail, type PasswordResetEmailProps } from "./templates/password-reset";
 import { PaymentFailedEmail } from "./templates/payment-failed";
 import { SubscriptionCanceledEmail } from "./templates/subscription-canceled";
@@ -24,6 +26,8 @@ import { TrialEndingEmail } from "./templates/trial-ending";
 import { WelcomeEmail, type WelcomeEmailProps } from "./templates/welcome";
 import type {
   BookingEmailData,
+  FeatureEducationEmailData,
+  InactivityEmailData,
   PaymentFailedEmailData,
   SubscriptionCanceledEmailData,
   SubscriptionExpiredEmailData,
@@ -320,6 +324,26 @@ class EmailService {
       to: supportEmail,
       subject: `Zahtev za podršku: ${data.subject}`,
       react: createElement(SupportRequestEmail, data),
+    });
+  }
+
+  // Engagement & education emails
+
+  // Send inactivity re-engagement email (7 days inactive)
+  async sendInactivityEmail(data: InactivityEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: "Nedostajete nam na Salonko!",
+      react: createElement(InactivityReengagementEmail, data),
+    });
+  }
+
+  // Send feature education drip email
+  async sendFeatureEducationEmail(data: FeatureEducationEmailData): Promise<void> {
+    await this.send({
+      to: data.userEmail,
+      subject: `${data.featureTitle} - Salonko`,
+      react: createElement(FeatureEducationEmail, data),
     });
   }
 

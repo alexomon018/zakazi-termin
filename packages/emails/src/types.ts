@@ -71,6 +71,29 @@ export interface TeamInviteEmailData {
   recipientEmail: string;
 }
 
+// Inactivity re-engagement email
+export interface InactivityEmailData {
+  userEmail: string;
+  userName: string;
+  salonName?: string | null;
+  dashboardUrl: string;
+}
+
+// Feature education drip campaign email
+export interface FeatureEducationEmailData {
+  userName: string;
+  userEmail: string;
+  salonName?: string | null;
+  featureTitle: string;
+  featureDescription: string;
+  helpArticleUrl: string;
+  ctaText: string;
+  ctaUrl: string;
+  stepNumber: number;
+  totalSteps: number;
+  unsubscribeUrl: string;
+}
+
 // Support-related email types
 export interface SupportRequestEmailData {
   email: string;
