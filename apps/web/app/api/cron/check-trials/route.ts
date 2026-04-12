@@ -1,7 +1,7 @@
 import { buildUnsubscribeUrl } from "@/app/api/email/unsubscribe/route";
 import { getAppUrl, logger } from "@salonko/config";
 import { emailService } from "@salonko/emails";
-import { prisma } from "@salonko/prisma";
+import { Prisma, prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
 // Secret to protect the cron endpoint
@@ -531,16 +531,23 @@ export async function POST(req: Request) {
             });
           });
           claimed = true;
-        } catch (err) {
-          if (err instanceof Error && err.message === "USER_OPTED_OUT") {
+        } catch (e) {
+          if (e instanceof Error && e.message === "USER_OPTED_OUT") {
             logger.info("Education email skipped (user opted out)", {
               userId: user.id,
               emailKey: step.emailKey,
             });
             break;
           }
-          // Unique constraint violation — already claimed by another run
-          continue;
+          if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+            continue;
+          }
+          logger.error("Failed to claim education drip record", {
+            error: e instanceof Error ? e.message : String(e),
+            userId: user.id,
+            emailKey: step.emailKey,
+          });
+          break;
         }
 
         if (!claimed) continue;

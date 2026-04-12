@@ -383,7 +383,8 @@ export const authOptions: NextAuthOptions = {
       const ACTIVITY_UPDATE_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
       if (
         token.id &&
-        (!token.lastActiveUpdate || Date.now() - token.lastActiveUpdate > ACTIVITY_UPDATE_INTERVAL_MS)
+        (!token.lastActiveUpdate ||
+          Date.now() - token.lastActiveUpdate > ACTIVITY_UPDATE_INTERVAL_MS)
       ) {
         token.lastActiveUpdate = Date.now();
         prisma.user
