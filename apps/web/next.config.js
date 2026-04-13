@@ -36,6 +36,13 @@ const nextConfig = {
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()];
     }
+    // Ensure a single instance of next-auth across the monorepo to avoid
+    // "useSession must be wrapped in a SessionProvider" errors
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "next-auth": path.resolve(__dirname, "../../node_modules/next-auth"),
+      "next-auth/react": path.resolve(__dirname, "../../node_modules/next-auth/react"),
+    };
     return config;
   },
   async headers() {

@@ -25,7 +25,7 @@ export function UserHeroSection({ onSearchClick }: UserHeroSectionProps) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-background">
+    <section data-testid="hero" className="relative overflow-hidden bg-white dark:bg-background">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:4rem_4rem] dark:bg-[linear-gradient(to_right,#1a1a2e_1px,transparent_1px),linear-gradient(to_bottom,#1a1a2e_1px,transparent_1px)] opacity-40" />
 
