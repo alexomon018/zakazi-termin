@@ -33,7 +33,7 @@ const nextConfig = {
     "@salonko/config",
   ],
   webpack: (config, { isServer }) => {
-    const nextAuthRoot = path.dirname(require.resolve("next-auth/package.json"));
+    const nextAuthRoot = path.dirname(require.resolve("next-auth"));
     const nextAuthReactEntry = require.resolve("next-auth/react");
 
     if (isServer) {
