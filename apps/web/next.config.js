@@ -33,6 +33,9 @@ const nextConfig = {
     "@salonko/config",
   ],
   webpack: (config, { isServer }) => {
+    const nextAuthRoot = path.dirname(require.resolve("next-auth/package.json"));
+    const nextAuthReactEntry = require.resolve("next-auth/react");
+
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()];
     }
@@ -40,8 +43,8 @@ const nextConfig = {
     // "useSession must be wrapped in a SessionProvider" errors
     config.resolve.alias = {
       ...config.resolve.alias,
-      "next-auth": path.resolve(__dirname, "../../node_modules/next-auth"),
-      "next-auth/react": path.resolve(__dirname, "../../node_modules/next-auth/react"),
+      "next-auth": nextAuthRoot,
+      "next-auth/react": nextAuthReactEntry,
     };
     return config;
   },
