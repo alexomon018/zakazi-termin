@@ -19,11 +19,28 @@ for i in $(seq 1 120); do
   sleep 1
 done
 
-# Extra settle time for system services to stabilize
-sleep 5
+# Unlock screen so Maestro driver can interact with it
+adb shell input keyevent 82
+
+# Extra settle time for system services to stabilize on slow CI runners
+sleep 15
 
 adb reverse tcp:3000 tcp:3000
 adb reverse tcp:8081 tcp:8081
+
+# Wait for Maestro's dadb port (7001) to be reachable on the emulator.
+# The Maestro Android driver times out if the port is not open before `maestro test` is called.
+echo "Waiting for Maestro dadb port 7001..."
+for i in $(seq 1 60); do
+  if adb shell "cat /dev/tcp/127.0.0.1/7001" 2>/dev/null; then
+    echo "Maestro dadb port ready after ~${i}s"
+    break
+  fi
+  if [ "$i" -eq 60 ]; then
+    echo "WARNING: dadb port 7001 not detected; proceeding anyway (Maestro will retry internally)"
+  fi
+  sleep 2
+done
 
 # Debug APK from Gradle: .../outputs/apk/debug/*.apk or .../outputs/apk/<variant>/debug/*.apk
 APK=$(find "$GITHUB_WORKSPACE/apps/mobile/android" -type f -name "*debug*.apk" -path "*/outputs/apk/*" | head -1)

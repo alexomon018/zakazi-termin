@@ -33,9 +33,19 @@ const nextConfig = {
     "@salonko/config",
   ],
   webpack: (config, { isServer }) => {
+    const nextAuthRoot = path.dirname(require.resolve("next-auth"));
+    const nextAuthReactEntry = require.resolve("next-auth/react");
+
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()];
     }
+    // Ensure a single instance of next-auth across the monorepo to avoid
+    // "useSession must be wrapped in a SessionProvider" errors
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "next-auth": nextAuthRoot,
+      "next-auth/react": nextAuthReactEntry,
+    };
     return config;
   },
   async headers() {

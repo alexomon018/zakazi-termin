@@ -167,6 +167,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           force-avd-creation: false
+          emulator-boot-timeout: 300
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: bash "$GITHUB_WORKSPACE/scripts/maestro-run-emulator.sh"
