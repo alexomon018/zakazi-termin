@@ -38,7 +38,7 @@ export class BookingsPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.BOOKINGS);
+    await this.navigateTo(ROUTES.BOOKINGS);
     await this.waitForPageLoad();
   }
 
@@ -148,7 +148,7 @@ export class BookingDetailsPage extends BasePage {
   }
 
   async goto(bookingUid: string): Promise<void> {
-    await this.page.goto(ROUTES.bookingDetails(bookingUid));
+    await this.navigateTo(ROUTES.bookingDetails(bookingUid));
     await this.waitForPageLoad();
   }
 

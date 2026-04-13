@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from "@playwright/test";
-import { ROUTES } from "../lib/constants";
+import { LOCALIZED_STRINGS, ROUTES } from "../lib/constants";
 import { BasePage } from "./BasePage";
 
 /**
@@ -19,7 +19,7 @@ export class PublicProfilePage extends BasePage {
   }
 
   async goto(salonName: string): Promise<void> {
-    await this.page.goto(ROUTES.publicBookingPage(salonName));
+    await this.navigateTo(ROUTES.publicBookingPage(salonName));
     await this.waitForPageLoad();
   }
 
@@ -99,7 +99,7 @@ export class EventTypeBookingPage extends BasePage {
   }
 
   async goto(salonName: string, eventSlug: string): Promise<void> {
-    await this.page.goto(ROUTES.publicEventType(salonName, eventSlug));
+    await this.navigateTo(ROUTES.publicEventType(salonName, eventSlug));
     await this.waitForPageLoad();
   }
 
@@ -158,11 +158,17 @@ export class EventTypeBookingPage extends BasePage {
   }
 
   /**
-   * Select a time slot
+   * Select a time slot and confirm the selection
    */
   async selectTimeSlot(index = 0): Promise<void> {
     const slots = this.getTimeSlots();
     await slots.nth(index).click();
+
+    const confirmSlotButton = this.page.locator(
+      `button:has-text("${LOCALIZED_STRINGS.CONFIRM_AND_CONTINUE}")`
+    );
+    await confirmSlotButton.waitFor({ state: "visible", timeout: 5000 });
+    await confirmSlotButton.click();
   }
 
   /**
@@ -252,7 +258,7 @@ export class BookingConfirmationPage extends BasePage {
   }
 
   async goto(bookingUid: string): Promise<void> {
-    await this.page.goto(ROUTES.bookingDetails(bookingUid));
+    await this.navigateTo(ROUTES.bookingDetails(bookingUid));
     await this.waitForPageLoad();
   }
 

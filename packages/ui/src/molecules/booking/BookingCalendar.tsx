@@ -62,9 +62,15 @@ export function BookingCalendar({
   };
 
   return (
-    <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8 w-full md:w-[420px] lg:w-[480px]">
+    <div
+      data-testid="booking-calendar"
+      className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-8 w-full md:w-[420px] lg:w-[480px]"
+    >
       <div className="flex justify-between items-center mb-4 md:mb-6">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h3
+          data-testid="calendar-month-display"
+          className="text-base sm:text-lg font-semibold text-foreground"
+        >
           {currentMonth.toLocaleDateString("sr-RS", {
             month: "long",
             year: "numeric",
@@ -77,6 +83,7 @@ export function BookingCalendar({
             onClick={onPreviousMonth}
             disabled={currentMonth <= new Date()}
             className="p-0 w-8 h-8 sm:w-9 sm:h-9"
+            data-testid="calendar-prev-month"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
@@ -85,6 +92,7 @@ export function BookingCalendar({
             size="sm"
             onClick={onNextMonth}
             className="p-0 w-8 h-8 sm:w-9 sm:h-9"
+            data-testid="calendar-next-month"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
@@ -96,7 +104,7 @@ export function BookingCalendar({
         {["Pon", "Uto", "Sre", "Čet", "Pet", "Sub", "Ned"].map((day) => (
           <div
             key={day}
-            className="py-1 sm:py-2 text-xs sm:text-sm font-medium text-center text-gray-500 dark:text-gray-400"
+            className="py-1 sm:py-2 text-xs sm:text-sm font-medium text-center text-muted-foreground"
           >
             {day}
           </div>
@@ -132,6 +140,7 @@ export function BookingCalendar({
                 type="button"
                 disabled={isDisabled}
                 onClick={() => onDateSelect(date)}
+                data-testid={`calendar-day-${date.getDate()}`}
                 variants={scaleOnHover}
                 initial="rest"
                 whileHover={!isDisabled ? "hover" : "rest"}
@@ -154,9 +163,7 @@ export function BookingCalendar({
       </AnimatePresence>
 
       {slotsLoading && (
-        <p className="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
-          Učitavanje termina...
-        </p>
+        <p className="mt-4 text-sm text-center text-muted-foreground">Učitavanje termina...</p>
       )}
     </div>
   );

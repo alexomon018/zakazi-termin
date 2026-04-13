@@ -9,27 +9,27 @@ type Props = {
 
 export default async function EditEventTypePage({ params }: Props) {
   const { id } = await params;
-  const eventTypeId = Number.parseInt(id);
-
-  if (Number.isNaN(eventTypeId)) {
-    notFound();
-  }
 
   const caller = await createServerCaller();
 
-  // Fetch data in parallel
   const [eventType, schedules] = await Promise.all([
-    caller.eventType.byId({ id: eventTypeId }).catch(() => null),
+    caller.eventType.byId({ id }).catch((err) => {
+      const isNotFound =
+        err?.code === "NOT_FOUND" ||
+        err?.data?.code === "NOT_FOUND" ||
+        err?.data?.httpStatus === 404 ||
+        err?.status === 404;
+      if (isNotFound) return null;
+      throw err;
+    }),
     caller.availability.listSchedules(),
   ]);
 
   if (!eventType) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Tip termina nije pronađen
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-2">
+      <div className="py-12 text-center">
+        <h2 className="text-xl font-semibold text-foreground">Tip termina nije pronađen</h2>
+        <p className="mt-2 text-muted-foreground">
           Ovaj tip termina ne postoji ili nemate pristup.
         </p>
         <Link href="/dashboard/event-types">

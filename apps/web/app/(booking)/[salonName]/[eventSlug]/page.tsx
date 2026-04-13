@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const eventType = await caller.eventType.getPublic({
-      salonName,
+      salonSlug: salonName,
       slug: eventSlug,
     });
 
@@ -35,6 +35,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const description =
       eventType.description ||
       `Zakazite ${eventType.title} (${eventType.length} min) kod ${eventType.user.salonName || salonName}. Online zakazivanje termina putem Salonko platforme.`;
+    // Only use the dedicated salon icon for public booking pages - never the user's Google avatar
+    const imageUrl = eventType.user.salonIconUrl ?? "/og-image.png";
 
     return {
       title,
@@ -44,15 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         url: `${baseUrl}/${salonName}/${eventSlug}`,
         type: "website",
-        images: eventType.user.avatarUrl
-          ? [{ url: eventType.user.avatarUrl, alt: eventType.user.salonName || salonName }]
-          : [],
+        images: imageUrl ? [{ url: imageUrl, alt: eventType.user.salonName || salonName }] : [],
       },
       twitter: {
         card: "summary",
         title,
         description,
-        images: eventType.user.avatarUrl ? [eventType.user.avatarUrl] : [],
+        images: imageUrl ? [imageUrl] : [],
       },
       alternates: {
         canonical: `${baseUrl}/${salonName}/${eventSlug}`,
@@ -74,7 +74,7 @@ export default async function PublicBookingPage({ params }: Props) {
 
   try {
     const eventType = await caller.eventType.getPublic({
-      salonName,
+      salonSlug: salonName,
       slug: eventSlug,
     });
 

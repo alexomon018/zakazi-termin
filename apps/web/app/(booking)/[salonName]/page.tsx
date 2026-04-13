@@ -13,7 +13,7 @@ const baseUrl = getAppUrl();
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { salonName } = await params;
   const caller = await createPublicServerCaller();
-  const user = await caller.user.getPublicProfile({ salonName });
+  const user = await caller.user.getPublicProfile({ salonSlug: salonName });
 
   if (!user) {
     return {
@@ -25,6 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = `${user.salonName || salonName} - Zakazite termin`;
   const description = `Zakazite termin kod ${user.salonName || salonName} online. Brzo i jednostavno zakazivanje termina putem Salonko platforme.`;
+  // Only use the dedicated salon icon for public booking pages - never the user's Google avatar
+  const imageUrl = user.salonIconUrl;
 
   return {
     title,
@@ -34,13 +36,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `${baseUrl}/${salonName}`,
       type: "profile",
-      images: user.avatarUrl ? [{ url: user.avatarUrl, alt: user.salonName || salonName }] : [],
+      images: imageUrl ? [{ url: imageUrl, alt: user.salonName || salonName }] : [],
     },
     twitter: {
       card: "summary",
       title,
       description,
-      images: user.avatarUrl ? [user.avatarUrl] : [],
+      images: imageUrl ? [imageUrl] : [],
     },
     alternates: {
       canonical: `${baseUrl}/${salonName}`,
@@ -54,7 +56,7 @@ export default async function UserBookingPage({ params }: Props) {
   const caller = await createPublicServerCaller();
 
   // Fetch user's public profile
-  const user = await caller.user.getPublicProfile({ salonName });
+  const user = await caller.user.getPublicProfile({ salonSlug: salonName });
 
   if (!user) {
     return <UserNotFound />;
@@ -65,7 +67,7 @@ export default async function UserBookingPage({ params }: Props) {
       <LocalBusinessSchema
         name={user.salonName || salonName}
         salonName={salonName}
-        avatarUrl={user.avatarUrl}
+        avatarUrl={user.salonIconUrl}
       />
       <BreadcrumbSchema
         items={[

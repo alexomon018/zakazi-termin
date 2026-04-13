@@ -11,12 +11,17 @@ build
 
 # Testing
 coverage
+# Maestro screen manifest (not code coverage reports)
+!maestro/coverage/
+!maestro/coverage/**
 
 # Playwright
 **/playwright-report/
 **/playwright/.cache/
 **/test-results/
+playwright-console/
 apps/web/.env.test
+
 
 # Misc
 .DS_Store
@@ -42,11 +47,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Generated build artifacts (noEmit should prevent these, but just in case)
+apps/web/lib/theme-provider.js
+apps/web/lib/theme-provider.d.ts
+apps/web/lib/theme-provider.d.ts.map
+
 # Turbo
 .turbo
 
 # Prisma
 packages/prisma/generated
+
+# Claude worktrees
+.claude/worktrees
+
+# MCP
+.mcp.json
 
 # IDE
 .idea

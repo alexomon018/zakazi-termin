@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect } from "@playwright/test";
-import { ROUTES } from "../lib/constants";
+import { ROUTES, TIMEOUTS } from "../lib/constants";
 import { BasePage } from "./BasePage";
 
 /**
@@ -38,8 +38,16 @@ export class AvailabilityPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto(ROUTES.AVAILABILITY);
+    await this.navigateTo(ROUTES.AVAILABILITY);
     await this.waitForPageLoad();
+  }
+
+  async navigateToScheduleEditor(): Promise<void> {
+    const scheduleLink = this.page.locator("text=Working Hours").first();
+    await scheduleLink.click();
+    await this.page.waitForURL(/\/dashboard\/availability\//, {
+      timeout: TIMEOUTS.NAVIGATION,
+    });
   }
 
   /**
@@ -72,13 +80,13 @@ export class AvailabilityPage extends BasePage {
     await this.clickAddSchedule();
 
     const nameInput = this.page
-      .locator('[data-testid="schedule-name-input"], input[name="name"], input[id="name"]')
+      .locator('[data-testid="schedule-name-input"], input[id="schedule-name"]')
       .first();
     await expect(nameInput).toBeVisible();
     await this.fillField(nameInput, name);
 
     const createButton = this.page
-      .locator('[data-testid="create-schedule-button"], button[type="submit"]')
+      .locator('[data-testid="create-schedule-button"], button:has-text("Kreiraj")')
       .first();
     await this.waitForMutation(async () => {
       await this.clickButton(createButton);
@@ -150,22 +158,13 @@ export class AvailabilityPage extends BasePage {
    * Check if days of the week are visible
    */
   async expectDaysVisible(): Promise<void> {
-    // Look for day labels in Serbian or English
-    const hasDays =
-      (await this.page
-        .locator("text=/[Pp]onedeljak|Monday/")
-        .isVisible()
-        .catch(() => false)) ||
-      (await this.page
-        .locator("text=/[Uu]torak|Tuesday/")
-        .isVisible()
-        .catch(() => false)) ||
-      (await this.page
-        .locator("text=/[Ss]reda|Wednesday/")
-        .isVisible()
-        .catch(() => false));
-    // Days may or may not be visible depending on UI
-    expect(true).toBe(true);
+    // The editor page shows full Serbian day names as span elements
+    const dayLabels = ["Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota", "Nedelja"];
+
+    for (const label of dayLabels) {
+      const dayElement = this.page.locator(`text=${label}`).first();
+      await expect(dayElement).toBeVisible({ timeout: 5000 });
+    }
   }
 
   /**

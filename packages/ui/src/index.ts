@@ -1,9 +1,12 @@
 // Utils
 export { cn } from "./utils";
+export { formatLocalDateForInput } from "./lib/utils/formatLocalDateForInput";
 
 // Atoms
+export { Badge, badgeVariants } from "./atoms/Badge";
 export { Button, buttonVariants } from "./atoms/Button";
 export { Input } from "./atoms/Input";
+export { Textarea } from "./atoms/Textarea";
 export { Label } from "./atoms/Label";
 export { ColorPicker, PRESET_COLORS, DARK_PRESET_COLORS } from "./atoms/ColorPicker";
 export {
@@ -44,6 +47,70 @@ export {
   SelectScrollUpButton,
   SelectScrollDownButton,
 } from "./atoms/Select";
+export {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "./atoms/InputOTP";
+export { Switch } from "./atoms/Switch";
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from "./atoms/Popover";
+export { ScrollArea, ScrollBar } from "./atoms/ScrollArea";
+export {
+  Command,
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandShortcut,
+  CommandSeparator,
+} from "./atoms/Command";
+export { PhoneInput } from "./atoms/PhoneInput";
+export { Checkbox } from "./atoms/Checkbox";
+export { GoogleIcon, SalonkoIcon } from "./atoms/Icons";
+export { FormErrorMessage } from "./atoms/FormErrorMessage";
+export { ServerErrorAlert } from "./atoms/ServerErrorAlert";
+export { LoadingButton } from "./atoms/LoadingButton";
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "./atoms/Tooltip";
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from "./atoms/DropdownMenu";
+export { Separator } from "./atoms/Separator";
+export { Calendar, type CalendarProps } from "./atoms/Calendar";
+
+// Molecules - Auth
+export { AuthHeader } from "./molecules/auth/AuthHeader";
+
+// Molecules - Forms
+export { DurationSelector, DURATION_OPTIONS } from "./molecules/forms/DurationSelector";
+export { FormSection } from "./molecules/forms/FormSection";
+export { SelectField, type SelectOption } from "./molecules/forms/SelectField";
+export { SignupHeader } from "./molecules/forms/SignupHeader";
+export { SignupProgressSteps } from "./molecules/forms/SignupProgressSteps";
+export { SignupFormField } from "./molecules/forms/SignupFormField";
+export { SignupFormSection } from "./molecules/forms/SignupFormSection";
+export { GoogleSearchSection } from "./molecules/forms/GoogleSearchSection";
+export { SalonInfoSection } from "./molecules/forms/SalonInfoSection";
+export { OwnerInfoSection } from "./molecules/forms/OwnerInfoSection";
+
+// Molecules - Google Places
+export { GooglePlacesSearch, type PlaceResult } from "./molecules/google-places/GooglePlacesSearch";
 
 // Molecules - Status
 export { StatusBadge } from "./molecules/status/StatusBadge";
@@ -63,13 +130,53 @@ export { EmptyState } from "./molecules/empty-states/EmptyState";
 // Molecules - Navigation
 export { NavItem } from "./molecules/navigation/NavItem";
 export { MobileNavItem } from "./molecules/navigation/MobileNavItem";
+export { SidebarNavItem } from "./molecules/navigation/SidebarNavItem";
+export { SidebarUserDropdown } from "./molecules/navigation/SidebarUserDropdown";
+export { SidebarFooter } from "./molecules/navigation/SidebarFooter";
+export { MobileBottomNav } from "./molecules/navigation/MobileBottomNav";
+export { MobileTopBar } from "./molecules/navigation/MobileTopBar";
+export { MobileSettingsNav } from "./molecules/navigation/MobileSettingsNav";
 
 // Molecules - Filters
 export { TabFilter } from "./molecules/filters/TabFilter";
 
+// Molecules - Availability
+export {
+  CopyTimesDropdown,
+  DateOverrideDialog,
+  DateOverrideItem,
+  DayAvailabilityRow,
+  ScheduleListItem,
+  TimeRangeInput,
+  TimezoneSelector,
+  type CopyTimesDropdownProps,
+  type DateOverrideDialogProps,
+  type DateOverrideItemProps,
+  type DayAvailabilityRowProps,
+  type ScheduleListItemProps,
+  type TimeRange,
+  type TimeRangeInputProps,
+  type TimezoneSelectorProps,
+} from "./molecules/availability";
+
+// Molecules - Error
+export { ErrorBoundaryUI } from "./molecules/error/ErrorBoundaryUI";
+
 // Molecules - Dialogs
-export { CancelBookingDialog } from "./molecules/dialogs/CancelBookingDialog";
-export { RejectBookingDialog } from "./molecules/dialogs/RejectBookingDialog";
+export { ConfirmDialog } from "./molecules/dialogs/ConfirmDialog";
+export { DeleteAccountDialog } from "./molecules/dialogs/DeleteAccountDialog";
+
+// Molecules - Out of Office
+export {
+  OutOfOfficeDialog,
+  OutOfOfficeEntryItem,
+  ReasonSelector,
+  type OutOfOfficeDialogProps,
+  type OutOfOfficeEntryItemProps,
+  type OutOfOfficeFormValues,
+  type Reason,
+  type ReasonSelectorProps,
+} from "./molecules/out-of-office";
 
 // Molecules - Settings
 export { ThemeOption } from "./molecules/settings/ThemeOption";
@@ -85,9 +192,23 @@ export { PricingCard } from "./molecules/landing/PricingCard";
 export { FooterColumn } from "./molecules/landing/FooterColumn";
 export { TrialBadge } from "./molecules/landing/TrialBadge";
 export { NavLink } from "./molecules/landing/NavLink";
+export { SalonCard, type SalonCardProps } from "./molecules/landing/SalonCard";
+export { SalonSearchInput } from "./molecules/landing/SalonSearchInput";
+export { SalonTypeFilter } from "./molecules/landing/SalonTypeFilter";
 
 // Organisms - Navigation
+/** @deprecated Use DashboardShell instead */
 export { DashboardNav } from "./organisms/navigation/DashboardNav";
+export { DashboardSidebar } from "./organisms/navigation/DashboardSidebar";
+export { DashboardMobileNav } from "./organisms/navigation/DashboardMobileNav";
+export { DashboardShell } from "./organisms/navigation/DashboardShell";
+export { SettingsSidebar } from "./organisms/navigation/SettingsSidebar";
+
+// Organisms - Auth
+export { SignupForm } from "./organisms/auth/SignupForm";
+
+// Organisms - Dashboard
+export { TrialBanner } from "./organisms/dashboard/TrialBanner";
 
 // Organisms - Bookings
 export { BookingsClient } from "./organisms/bookings/BookingsClient";
@@ -99,12 +220,16 @@ export { EditEventTypeClient } from "./organisms/event-types/EditEventTypeClient
 
 // Organisms - Availability
 export { AvailabilityClient } from "./organisms/availability/AvailabilityClient";
+export { AvailabilityListClient } from "./organisms/availability/AvailabilityListClient";
+export { AvailabilityEditorClient } from "./organisms/availability/AvailabilityEditorClient";
 
 // Organisms - Settings
 export { AppearanceClient } from "./organisms/settings/AppearanceClient";
-export { ProfileClient } from "./organisms/settings/ProfileClient";
+export { BillingClient } from "./organisms/settings/BillingClient";
+export { ProfileClient } from "./organisms/settings/profile/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
+export { TeamSettingsClient } from "./organisms/settings/team/TeamSettingsClient";
 
 // Molecules - Booking
 export { BookingEventHeader } from "./molecules/booking/BookingEventHeader";
@@ -113,6 +238,7 @@ export { TimeSlotsList } from "./molecules/booking/TimeSlotsList";
 export { BookingDetailsForm } from "./molecules/booking/BookingDetailsForm";
 export { BookingConfirmation } from "./molecules/booking/BookingConfirmation";
 export { RescheduleBanner } from "./molecules/booking/RescheduleBanner";
+export { StaffSelector, type StaffMember } from "./molecules/booking/StaffSelector";
 
 // Organisms - Booking Flow
 export {
@@ -136,7 +262,22 @@ export { FeaturesSection } from "./organisms/landing/FeaturesSection";
 export { ProcessSection } from "./organisms/landing/ProcessSection";
 export { PricingSection } from "./organisms/landing/PricingSection";
 export { CtaBanner } from "./organisms/landing/CtaBanner";
+export { TestimonialsSection } from "./organisms/landing/TestimonialsSection";
 export { LandingFooter } from "./organisms/landing/LandingFooter";
+export { SalonDiscoverySection } from "./organisms/landing/SalonDiscoverySection";
+export type {
+  SalonDiscoverySectionProps,
+  SalonItem,
+} from "./organisms/landing/SalonDiscoverySection";
+export { UserHeroSection } from "./organisms/landing/UserHeroSection";
+export { UserProcessSection } from "./organisms/landing/UserProcessSection";
+export { SalonCategoriesSection } from "./organisms/landing/SalonCategoriesSection";
+export { VERTICALS, VERTICAL_SLUGS } from "./organisms/landing/vertical-data";
+
+// Organisms - Salon Listing
+export { SalonListingClient } from "./organisms/salon-listing/SalonListingClient";
+export type { SalonListingClientProps } from "./organisms/salon-listing/SalonListingClient";
+export type { VerticalLandingData, VerticalFeature } from "./organisms/landing/vertical-data";
 
 // Organisms - Cookie Consent
 export { CookieBanner } from "./organisms/cookie-consent/CookieBanner";
@@ -153,7 +294,26 @@ export {
   clientFAQs,
   faqCategories,
   homepageFAQs,
+  userFAQs,
 } from "./organisms/faq/faq-data";
+
+// Organisms - Help Center
+export { HelpArticleClient } from "./organisms/help-center/HelpArticleClient";
+export { HelpCenterClient } from "./organisms/help-center/HelpCenterClient";
+export { SupportRequestClient } from "./organisms/help-center/SupportRequestClient";
+export {
+  helpCategories,
+  supportCategories,
+  type HelpArticle,
+  type HelpCategory,
+  type SupportCategoryValue,
+} from "./organisms/help-center/help-center-data";
+export {
+  supportRequestSchema,
+  type SupportRequestFormData,
+} from "./organisms/help-center/support-request-schema";
 
 // Hooks
 export { useCookieConsent } from "./hooks/useCookieConsent";
+export { useDebounce } from "./hooks/useDebounce";
+export { useExponentialBackoffPolling } from "./hooks/useExponentialBackoffPolling";

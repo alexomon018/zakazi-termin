@@ -5,6 +5,7 @@ import {
 } from "@salonko/calendar";
 import { logger } from "@salonko/config";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const calendarRouter = router({
@@ -38,7 +39,7 @@ export const calendarRouter = router({
 
   // List calendars from a connected account
   listCalendars: protectedProcedure
-    .input(z.object({ credentialId: z.number() }))
+    .input(z.object({ credentialId: z.string() }))
     .query(async ({ ctx, input }) => {
       const credential = await ctx.prisma.credential.findFirst({
         where: {
@@ -49,14 +50,17 @@ export const calendarRouter = router({
       });
 
       if (!credential) {
-        throw new Error("Credential not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
       }
 
       const clientId = process.env.GOOGLE_CLIENT_ID;
       const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
       if (!clientId || !clientSecret) {
-        throw new Error("Google Calendar not configured");
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Google Calendar not configured",
+        });
       }
 
       const key = googleCredentialSchema.parse(credential.key);
@@ -98,7 +102,7 @@ export const calendarRouter = router({
   toggleCalendarSelection: protectedProcedure
     .input(
       z.object({
-        credentialId: z.number(),
+        credentialId: z.string(),
         externalId: z.string(),
         selected: z.boolean(),
       })
@@ -113,7 +117,7 @@ export const calendarRouter = router({
       });
 
       if (!credential) {
-        throw new Error("Credential not found");
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
       }
 
       if (input.selected) {
@@ -152,7 +156,7 @@ export const calendarRouter = router({
 
   // Disconnect calendar (delete credential)
   disconnect: protectedProcedure
-    .input(z.object({ credentialId: z.number() }))
+    .input(z.object({ credentialId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.credential.delete({
         where: {

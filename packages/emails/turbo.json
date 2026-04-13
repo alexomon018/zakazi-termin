@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"],
+      "env": ["RESEND_API_KEY", "RESEND_API_KEY_DEV", "EMAIL_FROM", "EMAIL_FROM_DEV"]
+    }
+  }
+}

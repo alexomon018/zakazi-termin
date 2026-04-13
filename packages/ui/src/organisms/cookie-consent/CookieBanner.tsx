@@ -16,21 +16,21 @@ export function CookieBanner() {
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50",
+        "fixed right-0 bottom-0 left-0 z-50",
         "border-t border-border bg-card",
         "p-4 md:p-6",
-        "animate-in slide-in-from-bottom duration-300"
+        "duration-300 animate-in slide-in-from-bottom"
       )}
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="text-sm text-muted-foreground text-center md:text-left">
-          <p className="font-semibold text-foreground mb-1">Kolacici za bolje iskustvo</p>
+      <div className="flex flex-col gap-4 justify-between items-center mx-auto max-w-7xl md:flex-row">
+        <div className="text-sm text-center text-muted-foreground md:text-left">
+          <p className="mb-1 font-semibold text-foreground">Kolačići za bolje iskustvo</p>
           <p>
-            Koristimo neophodne kolacice da bi sajt radio ispravno, a uz tvoju dozvolu i analiticke
-            kolacice za unapredjenje platforme. Podesavanja mozes promeniti u bilo kom trenutku.
-            Vise informacija potrazi u nasoj{" "}
+            Koristimo neophodne kolačiće da bi sajt radio ispravno, a uz tvoju dozvolu i analitičke
+            kolačiće za unapređenje platforme. Podešavanja možeš promeniti u bilo kom trenutku. Više
+            informacija potraži u našoj{" "}
             <Link href="/cookies" className="text-primary hover:underline">
-              politici kolacica
+              politici kolačića
             </Link>
             .
           </p>

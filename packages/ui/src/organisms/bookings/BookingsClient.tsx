@@ -3,12 +3,11 @@
 import { trpc } from "@/lib/trpc/client";
 import {
   Button,
-  CancelBookingDialog,
   Card,
   CardContent,
+  ConfirmDialog,
   DateTimeDisplay,
   LocationDisplay,
-  RejectBookingDialog,
   StatusBadge,
   TabFilter,
   TimeRangeDisplay,
@@ -21,7 +20,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { RouterOutputs } from "@salonko/trpc";
 
 type BookingFilter = "upcoming" | "pending" | "past" | "cancelled";
-type Booking = RouterOutputs["booking"]["list"][number];
+type Booking = RouterOutputs["booking"]["listPaginated"]["bookings"][number];
 
 type BookingsClientProps = {
   initialBookings: Booking[];
@@ -82,15 +81,6 @@ export function BookingsClient({
   const currentBookings = bookingsPerFilter[filter];
   const currentTotal = totalsPerFilter[filter];
   const hasMore = currentBookings.length < currentTotal;
-
-  // Query for loading more or changing filters
-  const { refetch } = trpc.booking.listPaginated.useQuery(
-    getQueryParams(filter, currentBookings.length),
-    {
-      enabled: false,
-      refetchOnWindowFocus: false,
-    }
-  );
 
   const handleFilterChange = async (newFilter: BookingFilter) => {
     if (newFilter === filter) return;
@@ -248,30 +238,36 @@ export function BookingsClient({
 
   const isLoading = isLoadingFilter && currentBookings.length === 0;
 
+  const renderFilters = () => (
+    <div className="overflow-x-auto px-4 -mx-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-2 pb-4 min-w-max border-b border-border sm:min-w-0">
+        {filters.map((f) => (
+          <TabFilter
+            key={f.key}
+            label={f.label}
+            isActive={filter === f.key}
+            onClick={() => handleFilterChange(f.key)}
+            data-testid={`bookings-tab-${f.key}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
+          <h1 data-testid="bookings-title" className="text-2xl font-bold text-foreground">
+            Termini
+          </h1>
+          <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
         </div>
 
-        {/* Filters */}
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
-            {filters.map((f) => (
-              <TabFilter
-                key={f.key}
-                label={f.label}
-                isActive={filter === f.key}
-                onClick={() => handleFilterChange(f.key)}
-              />
-            ))}
-          </div>
-        </div>
+        {renderFilters()}
 
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-gray-500 dark:text-gray-400">Učitavanje...</div>
+          <div className="text-muted-foreground">Učitavanje...</div>
         </div>
       </div>
     );
@@ -280,45 +276,34 @@ export function BookingsClient({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Termini</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">Upravljajte zakazanim terminima</p>
+        <h1 className="text-2xl font-bold text-foreground">Termini</h1>
+        <p className="mt-1 text-muted-foreground">Upravljajte zakazanim terminima</p>
       </div>
 
-      {/* Filters */}
-      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-        <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 pb-4 min-w-max sm:min-w-0">
-          {filters.map((f) => (
-            <TabFilter
-              key={f.key}
-              label={f.label}
-              isActive={filter === f.key}
-              onClick={() => handleFilterChange(f.key)}
-            />
-          ))}
-        </div>
-      </div>
+      {renderFilters()}
 
       {/* Bookings list */}
       {currentBookings.length === 0 ? (
-        <Card>
+        <Card data-testid="bookings-empty-state">
           <CardContent className="py-12 text-center">
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-            <p className="text-gray-500 dark:text-gray-400">{getEmptyMessage()}</p>
+            <Calendar
+              className="mx-auto mb-4 w-12 h-12 text-primary/30 dark:text-primary/40"
+              aria-hidden="true"
+            />
+            <p className="text-muted-foreground">{getEmptyMessage()}</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div data-testid="bookings-list" className="space-y-4">
           {currentBookings.map((booking: Booking) => (
             <Card key={booking.id}>
               <CardContent className="p-0">
                 <div className="p-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
                       {/* Title and status */}
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {booking.title}
-                        </h3>
+                      <div className="flex gap-3 items-center mb-2">
+                        <h3 className="font-semibold text-foreground">{booking.title}</h3>
                         <StatusBadge
                           status={
                             booking.status as "PENDING" | "ACCEPTED" | "CANCELLED" | "REJECTED"
@@ -326,15 +311,22 @@ export function BookingsClient({
                         />
                       </div>
 
-                      {/* Event type */}
-                      {booking.eventType && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                          {booking.eventType.title}
-                        </p>
-                      )}
+                      {/* Event type and staff */}
+                      <div className="flex flex-wrap gap-2 items-center mb-3">
+                        {booking.eventType && (
+                          <p className="text-sm text-muted-foreground">{booking.eventType.title}</p>
+                        )}
+                        {(booking.assignedHost?.name || booking.user?.name) && (
+                          <span className="text-xs text-muted-foreground/70 bg-muted px-2 py-0.5 rounded">
+                            {booking.assignedHost?.name
+                              ? `Host: ${booking.assignedHost.name}`
+                              : `Guest: ${booking.user?.name}`}
+                          </span>
+                        )}
+                      </div>
 
                       {/* Details */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                         <DateTimeDisplay date={booking.startTime} />
                         <TimeRangeDisplay startTime={booking.startTime} endTime={booking.endTime} />
                         {booking.location && <LocationDisplay location={booking.location} />}
@@ -342,50 +334,37 @@ export function BookingsClient({
 
                       {/* Attendees */}
                       {booking.attendees && booking.attendees.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                            GOST
-                          </p>
-                          {booking.attendees.map(
-                            (attendee: {
-                              id: number;
-                              name: string;
-                              email: string;
-                              phoneNumber: string | null;
-                            }) => (
-                              <div key={attendee.id} className="flex items-center gap-2">
-                                <UserAvatar name={attendee.name} />
-                                <UserInfoDisplay name={attendee.name} email={attendee.email} />
-                              </div>
-                            )
-                          )}
+                        <div className="pt-4 mt-4 border-t border-border">
+                          <p className="mb-2 text-xs font-medium text-muted-foreground">GOST</p>
+                          {booking.attendees.map((attendee) => (
+                            <div key={attendee.id} className="flex gap-2 items-center">
+                              <UserAvatar name={attendee.name} />
+                              <UserInfoDisplay name={attendee.name} email={attendee.email} />
+                            </div>
+                          ))}
                         </div>
                       )}
 
                       {/* Notes/description */}
                       {booking.description && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                            NAPOMENA
-                          </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {booking.description}
-                          </p>
+                        <div className="pt-4 mt-4 border-t border-border">
+                          <p className="mb-1 text-xs font-medium text-muted-foreground">NAPOMENA</p>
+                          <p className="text-sm text-muted-foreground">{booking.description}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex gap-2 items-center ml-4">
                       {booking.status === "PENDING" && (
                         <>
                           <Button
                             size="sm"
                             onClick={() => handleConfirm(booking.uid)}
                             disabled={confirmBooking.isPending}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-emerald-600 hover:bg-emerald-700"
                           >
-                            <Check className="w-4 h-4 mr-1" />
+                            <Check className="mr-1 w-4 h-4" aria-hidden="true" />
                             Potvrdi
                           </Button>
                           <Button
@@ -393,9 +372,9 @@ export function BookingsClient({
                             variant="outline"
                             onClick={() => handleRejectClick(booking.uid)}
                             disabled={rejectBooking.isPending}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                           >
-                            <X className="w-4 h-4 mr-1" />
+                            <X className="mr-1 w-4 h-4" aria-hidden="true" />
                             Odbij
                           </Button>
                         </>
@@ -406,7 +385,7 @@ export function BookingsClient({
                           variant="outline"
                           onClick={() => handleCancelClick(booking.uid)}
                           disabled={cancelBooking.isPending}
-                          className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400"
+                          className="text-muted-foreground hover:text-red-600 dark:hover:text-red-400"
                         >
                           Otkaži
                         </Button>
@@ -416,7 +395,7 @@ export function BookingsClient({
                 </div>
 
                 {/* Footer with booking UID */}
-                <div className="bg-gray-50 dark:bg-gray-800/50 px-4 py-2 text-xs text-gray-500 dark:text-gray-400 rounded-b-lg">
+                <div className="px-4 py-2 text-xs bg-muted/50 rounded-b-lg text-muted-foreground">
                   Referenca: {booking.uid}
                 </div>
               </CardContent>
@@ -425,7 +404,7 @@ export function BookingsClient({
 
           {/* Load more button */}
           {hasMore && (
-            <div className="text-center pt-4">
+            <div className="pt-4 text-center">
               <Button variant="outline" onClick={handleLoadMore} disabled={isLoadingMore}>
                 {isLoadingMore ? "Učitavanje..." : "Vidi još"}
               </Button>
@@ -435,17 +414,33 @@ export function BookingsClient({
       )}
 
       {/* Dialogs */}
-      <CancelBookingDialog
+      <ConfirmDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         onConfirm={handleCancelConfirm}
         isLoading={cancelBooking.isPending}
+        title="Otkaži termin"
+        description="Da li ste sigurni da želite da otkažete ovaj termin?"
+        confirmText="Otkaži termin"
+        loadingText="Otkazivanje..."
+        inputConfig={{
+          label: "Razlog otkazivanja (opciono)",
+          placeholder: "Unesite razlog otkazivanja...",
+        }}
       />
-      <RejectBookingDialog
+      <ConfirmDialog
         open={rejectDialogOpen}
         onOpenChange={setRejectDialogOpen}
         onConfirm={handleRejectConfirm}
         isLoading={rejectBooking.isPending}
+        title="Odbij termin"
+        description="Da li ste sigurni da želite da odbijete ovaj zahtev za termin?"
+        confirmText="Odbij termin"
+        loadingText="Odbijanje..."
+        inputConfig={{
+          label: "Razlog odbijanja (opciono)",
+          placeholder: "Unesite razlog odbijanja...",
+        }}
       />
     </div>
   );

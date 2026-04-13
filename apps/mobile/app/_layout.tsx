@@ -1,0 +1,99 @@
+import { AnimatedSplash, ErrorBoundary } from "@/components/atoms";
+import { AuthProvider } from "@/lib/auth-context";
+import { initErrorReporting } from "@/lib/error-reporting";
+import { ThemeProvider, useTheme } from "@/lib/theme-context";
+import { TRPCProvider } from "@/lib/trpc";
+import { useAuthGuard } from "@/lib/use-auth-guard";
+import { Lato_400Regular, Lato_700Bold, Lato_900Black } from "@expo-google-fonts/lato";
+import {
+  OpenSans_400Regular,
+  OpenSans_500Medium,
+  OpenSans_600SemiBold,
+  OpenSans_700Bold,
+} from "@expo-google-fonts/open-sans";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import * as WebBrowser from "expo-web-browser";
+import { useCallback, useState } from "react";
+import { StyleSheet, View } from "react-native";
+
+SplashScreen.preventAutoHideAsync();
+
+// Required for expo-web-browser auth session redirect handling on Android.
+// Must be called at module scope before any auth session is started.
+WebBrowser.maybeCompleteAuthSession();
+
+initErrorReporting();
+
+function RootLayoutNav() {
+  const { theme, colorScheme } = useTheme();
+  const [fontsLoaded, fontError] = useFonts({
+    Lato_400Regular,
+    Lato_700Bold,
+    Lato_900Black,
+    OpenSans_400Regular,
+    OpenSans_500Medium,
+    OpenSans_600SemiBold,
+    OpenSans_700Bold,
+  });
+  const [showSplash, setShowSplash] = useState(true);
+
+  const { isLoading } = useAuthGuard(fontsLoaded || !!fontError);
+  const isReady = !isLoading && (fontsLoaded || !!fontError);
+
+  const handleSplashFinish = useCallback(() => {
+    void SplashScreen.hideAsync();
+    setShowSplash(false);
+  }, []);
+
+  return (
+    <View style={[rootStyles.container, { backgroundColor: theme.colors.background }]}>
+      {isReady && (
+        <>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              headerStyle: { backgroundColor: theme.colors.surface },
+              headerTintColor: theme.colors.foreground,
+              headerShadowVisible: false,
+              contentStyle: { backgroundColor: theme.colors.background },
+            }}
+          >
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="event-type/new" options={{ headerShown: false }} />
+            <Stack.Screen name="event-type/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="schedule/[id]" options={{ headerShown: false }} />
+            <Stack.Screen name="setting/profile" options={{ headerShown: false }} />
+            <Stack.Screen name="setting/appearance" options={{ headerShown: false }} />
+            <Stack.Screen name="setting/out-of-office" options={{ headerShown: false }} />
+            <Stack.Screen name="setting/calendar" options={{ headerShown: false }} />
+            <Stack.Screen name="setting/team" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+        </>
+      )}
+      {showSplash && <AnimatedSplash isReady={isReady} onFinish={handleSplashFinish} />}
+    </View>
+  );
+}
+
+const rootStyles = StyleSheet.create({
+  container: { flex: 1 },
+});
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <TRPCProvider>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <RootLayoutNav />
+          </ErrorBoundary>
+        </ThemeProvider>
+      </TRPCProvider>
+    </AuthProvider>
+  );
+}

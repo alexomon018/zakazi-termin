@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom", "google.maps"],
+    "baseUrl": ".",
+    "paths": {
+      "@salonko/ui/*": ["src/*"],
+      "@salonko/config": ["../config/src"],
+      "@salonko/config/*": ["../config/src/*"],
+      "@salonko/trpc": ["../trpc/src"],
+      "@salonko/trpc/*": ["../trpc/src/*"],
+      "@salonko/prisma": ["../prisma/src"],
+      "@salonko/prisma/*": ["../prisma/src/*"]
+    }
+  },
+  "include": ["src"]
+}

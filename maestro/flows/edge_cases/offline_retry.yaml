@@ -1,0 +1,13 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - edge
+---
+# Placeholder: add Maestro network conditioning when you need true offline behavior.
+# Uses the same visible assertions as login (no testIDs — app does not set auth.screen).
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    text: "Salonko"
+- assertVisible:
+    text: "Prijavite se"

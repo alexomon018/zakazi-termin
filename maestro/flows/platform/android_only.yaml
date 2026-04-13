@@ -1,0 +1,14 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - platform
+  - android
+---
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+# Android-specific branch: ensure Maestro runs platform checks on Android CI.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          text: "Salonko"

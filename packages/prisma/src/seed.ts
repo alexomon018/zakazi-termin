@@ -15,15 +15,17 @@ async function main() {
     { emoji: "📅", reason: "Lični razlozi" },
   ];
 
-  for (const reason of defaultReasons) {
+  for (const reasonData of defaultReasons) {
     await prisma.outOfOfficeReason.upsert({
       where: {
-        id: defaultReasons.indexOf(reason) + 1,
+        reason: reasonData.reason,
       },
-      update: {},
+      update: {
+        emoji: reasonData.emoji,
+      },
       create: {
-        emoji: reason.emoji,
-        reason: reason.reason,
+        emoji: reasonData.emoji,
+        reason: reasonData.reason,
         userId: null, // Global reason
         enabled: true,
       },

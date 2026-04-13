@@ -1,0 +1,16 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["generated/**"],
+      "env": ["DATABASE_URL"]
+    },
+    "db:push": {
+      "env": ["DATABASE_URL"]
+    },
+    "db:migrate": {
+      "env": ["DATABASE_URL"]
+    }
+  }
+}

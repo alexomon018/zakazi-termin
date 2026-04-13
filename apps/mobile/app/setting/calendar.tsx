@@ -1,0 +1,228 @@
+import {
+  AppButton,
+  AppCard,
+  AppText,
+  ConfirmDialog,
+  QueryStateView,
+  ScreenHeader,
+  SectionHeader,
+} from "@/components/atoms";
+import { SettingsScrollView } from "@/components/molecules";
+import { API_URL } from "@/lib/api-url";
+import { tokenStorage } from "@/lib/secure-store";
+import { useTheme } from "@/lib/theme-context";
+import { trpc } from "@/lib/trpc";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
+import { useMemo, useRef, useState } from "react";
+import { StyleSheet, Switch, View } from "react-native";
+
+type CalendarConnection = {
+  id: string;
+  type: string;
+  createdAt: Date;
+  calendarsCount: number;
+  email?: string;
+  calendars?: { externalId: string; name: string; selected: boolean }[];
+};
+
+export default function CalendarSettingsScreen() {
+  const { theme } = useTheme();
+  const utils = trpc.useUtils();
+  const [disconnectTarget, setDisconnectTarget] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const connectingRef = useRef(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+
+  const connectionsQuery = trpc.calendar.listConnections.useQuery(undefined, {
+    retry: false,
+  });
+
+  const disconnectMutation = trpc.calendar.disconnect.useMutation({
+    onSuccess: async () => {
+      setDisconnectTarget(null);
+      await utils.calendar.listConnections.invalidate();
+    },
+  });
+
+  const toggleCalendarMutation = trpc.calendar.toggleCalendarSelection.useMutation({
+    onSuccess: async () => {
+      await utils.calendar.listConnections.invalidate();
+    },
+  });
+
+  const handleConnect = async () => {
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+    setConnectError(null);
+    setConnecting(true);
+    try {
+      const token = await tokenStorage.getToken();
+      const redirectUrl = Linking.createURL("setting/calendar");
+      const mobileRedirect = encodeURIComponent(redirectUrl);
+      const response = await fetch(
+        `${API_URL}/api/integrations/google-calendar/add?mobileRedirect=${mobileRedirect}`,
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+      if (!response.ok) {
+        setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        return;
+      }
+      const { url } = await response.json();
+      const authResult = await WebBrowser.openAuthSessionAsync(url, redirectUrl);
+      if (authResult.type === "success") {
+        const resultUrl = new URL(authResult.url);
+        const result = resultUrl.searchParams.get("result");
+        if (result === "success") {
+          await utils.calendar.listConnections.invalidate();
+        } else {
+          setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+        }
+      }
+    } catch (error) {
+      console.error("Calendar connect error:", error);
+      setConnectError("Greška pri povezivanju kalendara. Pokušajte ponovo.");
+    } finally {
+      connectingRef.current = false;
+      setConnecting(false);
+    }
+  };
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        connectionHeader: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+        },
+        calendarsList: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
+        calendarRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: theme.spacing.md,
+          paddingVertical: theme.spacing.xs,
+        },
+        actions: { marginTop: theme.spacing.md, gap: theme.spacing.sm },
+      }),
+    [theme]
+  );
+
+  if (connectionsQuery.isLoading) {
+    return <QueryStateView state="loading" />;
+  }
+
+  if (connectionsQuery.isError) {
+    return (
+      <QueryStateView
+        state="error"
+        message="Neuspešno učitavanje kalendara."
+        onRetry={() => connectionsQuery.refetch()}
+      />
+    );
+  }
+
+  const connections = (connectionsQuery.data ?? []) as CalendarConnection[];
+
+  return (
+    <>
+      <SettingsScrollView stickyHeader={<ScreenHeader title="Kalendar" />}>
+        <SectionHeader title="Povezani kalendari" />
+
+        {connections.length === 0 ? (
+          <AppCard>
+            <AppText variant="bodySm" muted>
+              Nemate povezanih kalendara. Povežite Google Calendar da automatski sinhronizujete
+              termine.
+            </AppText>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
+            <View style={styles.actions}>
+              <AppButton
+                label="Poveži Google Calendar"
+                onPress={handleConnect}
+                loading={connecting}
+                disabled={connecting}
+              />
+            </View>
+          </AppCard>
+        ) : (
+          connections.map((conn) => (
+            <AppCard key={conn.id}>
+              <View style={styles.connectionHeader}>
+                <View style={{ flex: 1 }}>
+                  <AppText variant="body">{conn.type ?? "Google Calendar"}</AppText>
+                  <AppText variant="caption" muted>
+                    {conn.email ?? "Povezano"}
+                  </AppText>
+                </View>
+                <AppButton
+                  label="Prekini vezu"
+                  onPress={() => setDisconnectTarget(conn.id)}
+                  variant="outline"
+                />
+              </View>
+
+              {conn.calendars && conn.calendars.length > 0 && (
+                <View style={styles.calendarsList}>
+                  <AppText variant="caption" muted>
+                    Kalendari za proveru dostupnosti:
+                  </AppText>
+                  {conn.calendars.map((cal) => (
+                    <View key={cal.externalId} style={styles.calendarRow}>
+                      <Switch
+                        value={cal.selected}
+                        onValueChange={(selected) =>
+                          toggleCalendarMutation.mutate({
+                            credentialId: conn.id,
+                            externalId: cal.externalId,
+                            selected,
+                          })
+                        }
+                        trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                      />
+                      <AppText variant="bodySm">{cal.name}</AppText>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </AppCard>
+          ))
+        )}
+
+        {connections.length > 0 && (
+          <>
+            {connectError && (
+              <AppText variant="bodySm" style={{ color: theme.colors.destructive }}>
+                {connectError}
+              </AppText>
+            )}
+            <AppButton
+              label="Poveži novi kalendar"
+              onPress={handleConnect}
+              variant="outline"
+              loading={connecting}
+              disabled={connecting}
+            />
+          </>
+        )}
+      </SettingsScrollView>
+
+      <ConfirmDialog
+        visible={!!disconnectTarget}
+        title="Prekini vezu"
+        message="Da li ste sigurni da želite da prekinete vezu sa ovim kalendarom?"
+        confirmLabel="Prekini vezu"
+        destructive
+        loading={disconnectMutation.isPending}
+        onConfirm={() => {
+          if (disconnectTarget) disconnectMutation.mutate({ credentialId: disconnectTarget });
+        }}
+        onCancel={() => setDisconnectTarget(null)}
+      />
+    </>
+  );
+}

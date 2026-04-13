@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, formatTime } from "@salonko/config";
 import { Button } from "@salonko/ui";
 import {
   confirmButtonAnimation,
@@ -28,21 +29,6 @@ export function TimeSlotsList({
   onSlotSelect,
   onConfirmSlot,
 }: TimeSlotsListProps) {
-  const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString("sr-RS", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("sr-RS", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  };
-
   return (
     <AnimatePresence>
       {(bookingState === "selecting_time" || bookingState === "booking") && (
@@ -51,10 +37,11 @@ export function TimeSlotsList({
           initial="hidden"
           animate="visible"
           exit="exit"
+          data-testid="time-slots-list"
           className="px-5 py-6 md:px-6 md:py-8 w-full md:w-[280px] lg:w-[320px]"
         >
-          <h3 className="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
-            {selectedDate ? formatDate(selectedDate) : "Izaberite datum"}
+          <h3 className="mb-6 text-lg font-semibold text-foreground">
+            {selectedDate ? formatDate(selectedDate, "shortDate") : "Izaberite datum"}
           </h3>
 
           {selectedDate ? (
@@ -62,7 +49,7 @@ export function TimeSlotsList({
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
-              className="overflow-y-auto space-y-3 max-h-96 pr-1"
+              className="overflow-y-auto space-y-3 max-h-96 pt-0.5 pl-0.5 pr-1"
             >
               {slots.length > 0 ? (
                 slots.map((slot) => {
@@ -74,6 +61,7 @@ export function TimeSlotsList({
                       key={slot}
                       type="button"
                       onClick={() => onSlotSelect(slot)}
+                      data-testid="time-slot"
                       variants={staggerItem}
                       whileTap={{ scale: 0.98 }}
                       className={`w-full text-left px-4 py-3 rounded-lg border transition-all ${
@@ -81,7 +69,7 @@ export function TimeSlotsList({
                           ? "border-brand bg-brand text-white dark:text-gray-900 shadow-md"
                           : isSelected
                             ? "border-brand bg-brand/10 text-brand ring-2 ring-brand/50"
-                            : "border-border hover:border-brand/50 hover:bg-secondary dark:text-gray-100"
+                            : "border-border hover:border-brand/50 hover:bg-secondary text-foreground"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -100,13 +88,13 @@ export function TimeSlotsList({
                   );
                 })
               ) : (
-                <p className="py-4 text-center text-gray-500 dark:text-gray-400">
+                <p className="py-4 text-center text-muted-foreground">
                   Nema dostupnih termina za ovaj dan
                 </p>
               )}
             </m.div>
           ) : (
-            <p className="py-12 text-center text-gray-500 dark:text-gray-400">
+            <p className="py-12 text-center text-muted-foreground">
               Izaberite datum sa kalendara da vidite dostupne termine
             </p>
           )}

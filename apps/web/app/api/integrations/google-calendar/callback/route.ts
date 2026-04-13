@@ -1,41 +1,111 @@
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { getSession } from "@/lib/auth";
-import {
-  GoogleCalendarService,
-  type GoogleCredential,
-  exchangeCodeForTokens,
-} from "@salonko/calendar";
-import { logger } from "@salonko/config";
+import { GoogleCalendarService, exchangeCodeForTokens } from "@salonko/calendar";
+import { getAppUrl, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
-  const session = await getSession();
+const ALLOWED_REDIRECT_SCHEMES = ["exp:", "salonko:", "myapp:"];
 
-  if (!session?.user) {
-    return NextResponse.redirect(new URL("/login", request.url));
+function mobileRedirectResponse(redirectUrl: string, result: string) {
+  try {
+    const url = new URL(redirectUrl);
+    if (!ALLOWED_REDIRECT_SCHEMES.some((scheme) => url.protocol === scheme)) {
+      return new NextResponse("Invalid redirect scheme", { status: 400 });
+    }
+
+    url.searchParams.set("result", result);
+    const safeRedirectUrl = url.toString();
+    return new NextResponse(
+      `<html><body><script>window.location.href=${JSON.stringify(safeRedirectUrl)};</script></body></html>`,
+      { headers: { "Content-Type": "text/html" } }
+    );
+  } catch {
+    return new NextResponse("Invalid redirect URL", { status: 400 });
   }
+}
 
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const stateParam = searchParams.get("state");
   const error = searchParams.get("error");
 
-  // Parse state to get returnTo URL
+  // Parse state and verify HMAC signature to prevent tampering
   let returnTo = "/dashboard/settings";
+  let stateUserId: string | undefined;
+  let mobileRedirect: string | undefined;
   if (stateParam) {
     try {
-      const state = JSON.parse(Buffer.from(stateParam, "base64").toString());
-      returnTo = state.returnTo || returnTo;
+      const decoded = JSON.parse(Buffer.from(stateParam, "base64").toString());
+      const { sig, ...payload } = decoded;
+
+      const stateSecret = process.env.STATE_SECRET;
+      if (!stateSecret) {
+        logger.error("STATE_SECRET environment variable is not configured");
+        return NextResponse.redirect(new URL("/login?error=server_config", request.url));
+      }
+
+      const expectedSig = createHmac("sha256", stateSecret)
+        .update(JSON.stringify(payload))
+        .digest("hex");
+
+      const sigBuffer = Buffer.from(sig || "", "hex");
+      const expectedBuffer = Buffer.from(expectedSig, "hex");
+
+      if (
+        sigBuffer.length !== expectedBuffer.length ||
+        !timingSafeEqual(sigBuffer, expectedBuffer)
+      ) {
+        logger.error("Google Calendar OAuth state signature mismatch");
+        return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
+      }
+
+      // Validate returnTo is a relative path and mobileRedirect uses an allowed scheme
+      if (payload.returnTo && /^\/(?!\/)/.test(payload.returnTo)) {
+        returnTo = payload.returnTo;
+      }
+      stateUserId = payload.userId;
+      if (
+        payload.mobileRedirect &&
+        ALLOWED_REDIRECT_SCHEMES.some((scheme) =>
+          payload.mobileRedirect.startsWith(scheme.replace(":", "://"))
+        )
+      ) {
+        mobileRedirect = payload.mobileRedirect;
+      }
     } catch {
-      // Ignore parse errors
+      return NextResponse.redirect(new URL("/login?error=invalid_state", request.url));
     }
   }
 
+  // Support both cookie-based (web) and userId-in-state (mobile) auth
+  // When stateUserId is present (HMAC-signed), it is the authoritative identity
+  const session = await getSession();
+  const sessionUserId = session?.user?.id;
+
+  if (stateUserId && sessionUserId && sessionUserId !== stateUserId) {
+    logger.error("Google Calendar OAuth state/session user mismatch", {
+      sessionUserId,
+      stateUserId,
+    });
+    return new NextResponse("User mismatch", { status: 403 });
+  }
+
+  const userId = stateUserId ?? sessionUserId;
+
+  if (!userId) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "no_session");
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   if (error) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "denied");
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_denied`, request.url));
   }
 
   if (!code) {
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "missing_code");
     return NextResponse.redirect(new URL(`${returnTo}?error=missing_code`, request.url));
   }
 
@@ -46,8 +116,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL(`${returnTo}?error=google_not_configured`, request.url));
   }
 
-  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  const redirectUri = `${baseUrl}/api/integrations/google-calendar/callback`;
+  const baseUrl = getAppUrl();
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const redirectUri = `${normalizedBaseUrl}/api/integrations/google-calendar/callback`;
 
   try {
     // Exchange code for tokens
@@ -56,12 +127,12 @@ export async function GET(request: Request) {
     // Check if user already has a Google Calendar credential
     const existingCredential = await prisma.credential.findFirst({
       where: {
-        userId: session.user.id,
+        userId,
         type: "google_calendar",
       },
     });
 
-    let credentialId: number;
+    let credentialId: string;
 
     if (existingCredential) {
       // Update existing credential
@@ -80,7 +151,7 @@ export async function GET(request: Request) {
         data: {
           type: "google_calendar",
           key: tokens as unknown as object,
-          userId: session.user.id,
+          userId,
           appId: "google-calendar",
         },
       });
@@ -91,7 +162,7 @@ export async function GET(request: Request) {
     const service = new GoogleCalendarService(
       {
         id: credentialId,
-        userId: session.user.id,
+        userId,
         key: tokens,
       },
       clientId,
@@ -105,7 +176,7 @@ export async function GET(request: Request) {
       await prisma.selectedCalendar.upsert({
         where: {
           userId_integration_externalId: {
-            userId: session.user.id,
+            userId,
             integration: "google_calendar",
             externalId: primaryCalendar.id,
           },
@@ -114,7 +185,7 @@ export async function GET(request: Request) {
           credentialId,
         },
         create: {
-          userId: session.user.id,
+          userId,
           integration: "google_calendar",
           externalId: primaryCalendar.id,
           credentialId,
@@ -122,11 +193,16 @@ export async function GET(request: Request) {
       });
     }
 
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "success");
     return NextResponse.redirect(
       new URL(`${returnTo}?success=google_calendar_connected`, request.url)
     );
   } catch (err) {
-    logger.error("Google Calendar OAuth error", { error: err, userId: session.user.id });
+    logger.error("Google Calendar OAuth error", {
+      error: err,
+      userId,
+    });
+    if (mobileRedirect) return mobileRedirectResponse(mobileRedirect, "auth_failed");
     return NextResponse.redirect(new URL(`${returnTo}?error=google_auth_failed`, request.url));
   }
 }

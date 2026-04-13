@@ -1,92 +1,129 @@
-"use client";
-
-import { useScrollAnimation } from "@salonko/ui/hooks/useScrollAnimation";
-import { PricingCard } from "@salonko/ui/molecules/landing/PricingCard";
+import { PRICING_CONFIG } from "@salonko/config";
+import type { PlanTier } from "@salonko/config";
+import { Button } from "@salonko/ui/atoms/Button";
 import { cn } from "@salonko/ui/utils";
+import { Check } from "lucide-react";
+import Link from "next/link";
 
-export function PricingSection() {
-  const headerRef = useScrollAnimation({ threshold: 0.2, triggerOnce: true });
-  const plans = [
-    {
-      plan: "Starter",
-      price: "1.500",
-      period: "RSD/mes",
-      description: "Savršeno za male salone",
-      features: ["1 zaposleni", "100 termina mesečno", "SMS podsetnici", "Mobilna aplikacija"],
-      buttonText: "Probaj besplatno",
-      buttonVariant: "outline" as const,
-      highlighted: false,
-    },
-    {
-      plan: "Professional",
-      price: "3.500",
-      period: "RSD/mes",
-      description: "Za rastući biznis",
-      features: [
-        "Do 5 zaposlenih",
-        "Neograničeni termini",
-        "SMS i email podsetnici",
-        "Analitika i izveštaji",
-        "Online plaćanja",
-      ],
-      buttonText: "Počni odmah",
-      buttonVariant: "default" as const,
-      badge: "Najpopularnije",
-      highlighted: true,
-    },
-    {
-      plan: "Enterprise",
-      price: "7.000",
-      period: "RSD/mes",
-      description: "Za lance salona",
-      features: [
-        "Neograničeni zaposleni",
-        "Više lokacija",
-        "Sve Professional funkcije",
-        "Prilagođen brend",
-        "Podrška 24/7",
-      ],
-      buttonText: "Kontaktirajte nas",
-      buttonVariant: "outline" as const,
-      highlighted: false,
-    },
-  ];
+type PricingCardProps = {
+  plan: PlanTier;
+  isHighlighted?: boolean;
+};
+
+function computeYearlySavings(): string {
+  const monthlyPrice = Number(PRICING_CONFIG.growth.price.replace(/\./g, ""));
+  const yearlyPrice = Number(PRICING_CONFIG.growth_yearly.price.replace(/\./g, ""));
+  return (monthlyPrice * 12 - yearlyPrice).toLocaleString("sr-RS");
+}
+
+const YEARLY_SAVINGS = computeYearlySavings();
+
+function PricingCard({ plan, isHighlighted }: PricingCardProps) {
+  const config = PRICING_CONFIG[plan];
 
   return (
-    <section id="cene" className="py-20 lg:py-28 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div
-          ref={headerRef.ref}
-          className={cn(
-            "text-center mb-16 transition-all duration-700 ease-out",
-            headerRef.isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          )}
+    <div
+      className={cn(
+        "flex relative flex-col p-6 h-full bg-white rounded-2xl ring-1 shadow-lg dark:bg-card",
+        isHighlighted ? "ring-2 ring-primary" : "ring-gray-200 dark:ring-border"
+      )}
+    >
+      {/* Badge */}
+      {config.badge && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span
+            className={cn(
+              "px-3 py-1 text-xs font-medium text-white whitespace-nowrap rounded-full",
+              isHighlighted ? "bg-primary" : "bg-emerald-500"
+            )}
+          >
+            {config.badge}
+          </span>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="mt-2 text-center">
+        <h3 className="text-lg font-semibold text-foreground">{config.name}</h3>
+        <div className="mt-3">
+          <span className="text-3xl font-bold tracking-tight text-foreground">{config.price}</span>
+          <span className="ml-1 text-sm text-muted-foreground">
+            RSD/{config.billingInterval === "MONTH" ? "mes" : "god"}
+          </span>
+        </div>
+      </div>
+
+      {/* Savings callout for yearly plans */}
+      {plan === "growth_yearly" && (
+        <p className="mt-1 text-xs text-center text-emerald-600 dark:text-emerald-400 font-medium">
+          Uštedite {YEARLY_SAVINGS} RSD godišnje
+        </p>
+      )}
+
+      {/* CTA */}
+      {config.isAvailable ? (
+        <Button
+          className="mt-6 w-full"
+          size="default"
+          variant={isHighlighted ? "default" : "outline"}
+          asChild
         >
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 text-balance">
-            Pristupačne cene za svaki biznis
+          <Link href="/signup">{config.ctaText}</Link>
+        </Button>
+      ) : (
+        <Button
+          className="mt-6 w-full"
+          size="default"
+          variant={isHighlighted ? "default" : "outline"}
+          disabled
+        >
+          {config.ctaText}
+        </Button>
+      )}
+
+      {/* Features */}
+      <div className="flex-1 pt-6 mt-6 border-t border-gray-100 dark:border-border">
+        <ul className="space-y-2.5">
+          {config.features.map((feature) => (
+            <li key={feature} className="flex items-start gap-2.5">
+              <Check className="w-4 h-4 mt-0.5 text-emerald-500 shrink-0" />
+              <span className="text-sm text-foreground">{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export function PricingSection() {
+  return (
+    <section id="cene" className="py-20 bg-white dark:bg-background lg:py-28">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-xs font-semibold tracking-widest uppercase text-primary">Cene</p>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Izaberite plan koji vam odgovara
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-            Bez skrivenih troškova. Otkažite bilo kada.
+          <p className="mt-4 text-lg text-muted-foreground">
+            30 dana besplatno. Bez kreditne kartice. Otkažite bilo kada.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, index) => (
-            <PricingCard
-              key={plan.plan}
-              plan={plan.plan}
-              price={plan.price}
-              period={plan.period}
-              description={plan.description}
-              features={plan.features}
-              buttonText={plan.buttonText}
-              buttonVariant={plan.buttonVariant}
-              badge={plan.badge}
-              highlighted={plan.highlighted}
-              delay={index * 100}
-            />
-          ))}
+        {/* Pricing Cards Grid — only show available plans on landing page */}
+        <div className="grid gap-6 mt-12 sm:grid-cols-2 lg:grid-cols-3">
+          {(["starter", "growth", "growth_yearly"] as const satisfies readonly PlanTier[])
+            .filter((tier) => PRICING_CONFIG[tier].isAvailable)
+            .map((tier) => (
+              <PricingCard key={tier} plan={tier} isHighlighted={tier === "growth"} />
+            ))}
         </div>
+
+        {/* Trust indicators */}
+        <p className="mt-10 text-sm text-center text-muted-foreground">
+          Sigurno plaćanje · SSL zaštićeno · GDPR usklađeno
+        </p>
       </div>
     </section>
   );

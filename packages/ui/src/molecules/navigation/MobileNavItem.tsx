@@ -10,6 +10,8 @@ interface MobileNavItemProps {
   label: string;
   icon: LucideIcon;
   isActive: boolean;
+  requiresSubscription?: boolean;
+  isSubscribed?: boolean;
 }
 
 export const MobileNavItem = memo(function MobileNavItem({
@@ -17,18 +19,40 @@ export const MobileNavItem = memo(function MobileNavItem({
   label,
   icon: Icon,
   isActive,
+  requiresSubscription = false,
+  isSubscribed = false,
 }: MobileNavItemProps) {
+  const isLocked = requiresSubscription && !isSubscribed;
+
+  if (isLocked) {
+    return (
+      <div
+        aria-disabled="true"
+        aria-label={`${label} (zahtevana pretplata)`}
+        tabIndex={-1}
+        className={cn(
+          "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md",
+          "text-muted-foreground pointer-events-none select-none blur-[1px] opacity-50"
+        )}
+      >
+        <Icon className="mr-1 w-4 h-4" />
+        {label}
+      </div>
+    );
+  }
+
   return (
     <Link
       href={href}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
-        "flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors",
+        "flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap rounded-md transition-colors",
         isActive
-          ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
-          : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+          ? "text-foreground bg-muted"
+          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
       )}
     >
-      <Icon className="w-4 h-4 mr-1" />
+      <Icon className="mr-1 w-4 h-4" />
       {label}
     </Link>
   );

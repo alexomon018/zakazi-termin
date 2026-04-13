@@ -1,0 +1,183 @@
+name: Maestro E2E
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/mobile/**"
+      - "packages/trpc/**"
+      - "packages/prisma/**"
+      - "packages/auth/**"
+      - "packages/config/**"
+      - "scripts/maestro-expand-flows.sh"
+      - ".github/workflows/maestro-e2e.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22"
+  JAVA_VERSION: "17"
+  # Align with docker-compose.test.yml credentials; service maps host 5433 -> container 5432
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5433/zakazi_termin_test
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+  # Default from apps/mobile/app.json (Android package / iOS bundle); override via MAESTRO_APP_ID secret
+  DEFAULT_MAESTRO_APP_ID: com.salonko.app
+
+jobs:
+  maestro-coverage:
+    name: Maestro coverage manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Validate screen coverage YAML
+        run: yarn maestro:coverage
+
+  check-mobile-app:
+    name: Check apps/mobile exists
+    runs-on: ubuntu-latest
+    outputs:
+      mobile_exists: ${{ steps.check.outputs.mobile_exists }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set mobile presence output
+        id: check
+        run: |
+          if [ -f apps/mobile/package.json ]; then
+            echo "mobile_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "mobile_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Expo app: native android/ is gitignored — expo prebuild generates it before assembleDebug.
+  maestro-e2e-android:
+    name: Maestro E2E (Android emulator + Expo)
+    needs: [maestro-coverage, check-mobile-app]
+    if: needs.check-mobile-app.outputs.mobile_exists == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      CI: true
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: zakazi_termin_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d zakazi_termin_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Push database schema
+        run: yarn workspace @salonko/prisma db:push --skip-generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Start Next.js
+        run: |
+          export NEXTAUTH_SECRET="${NEXTAUTH_SECRET:-ci-e2e-nextauth-secret-placeholder-min-32-chars}"
+          nohup yarn workspace @salonko/web dev >> /tmp/next-dev.log 2>&1 &
+          echo $! > /tmp/next_pid
+          for _ in $(seq 1 60); do
+            curl -sf http://localhost:3000 >/dev/null && exit 0
+            sleep 2
+          done
+          echo "Next.js failed to start. Log:" >&2
+          cat /tmp/next-dev.log >&2 || true
+          exit 1
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET_E2E }}
+          NEXT_PUBLIC_APP_URL: ${{ env.NEXT_PUBLIC_APP_URL }}
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Expo prebuild (Android)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build debug APK
+        working-directory: apps/mobile/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Run Maestro smoke tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MAESTRO_APP_ID_SECRET: ${{ secrets.MAESTRO_APP_ID }}
+          DEFAULT_MAESTRO_APP_ID: ${{ env.DEFAULT_MAESTRO_APP_ID }}
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-boot-timeout: 300
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: bash "$GITHUB_WORKSPACE/scripts/maestro-run-emulator.sh"
+
+      - name: Upload Maestro artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-artifacts
+          path: |
+            ~/.maestro/tests/**/*
+          retention-days: 7
+          if-no-files-found: ignore

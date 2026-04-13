@@ -15,7 +15,7 @@ export function TimeRangeDisplay({ startTime, endTime, locale = "sr-RS" }: TimeR
   };
 
   return (
-    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-2 text-muted-foreground">
       <Clock className="w-4 h-4" />
       <span>
         {formatTime(startTime)} - {formatTime(endTime)}

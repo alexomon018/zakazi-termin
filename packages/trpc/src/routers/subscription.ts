@@ -1,0 +1,716 @@
+import { invalidateSubscriptionCache } from "@salonko/auth/server";
+import { getBillingIntervalFromPlan, logger } from "@salonko/config";
+import { checkoutRateLimiter } from "@salonko/config";
+import type { PlanTier } from "@salonko/config";
+import { emailService } from "@salonko/emails";
+import type { Subscription } from "@salonko/prisma";
+import { protectedProcedure, router } from "@salonko/trpc/trpc";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+
+import { getAppOriginFromRequest } from "../lib/app-origin";
+import {
+  PRICES,
+  getPlanTierFromPriceId,
+  getStripe,
+  isTestStripeId,
+  validateStripeConfig,
+} from "../lib/stripe";
+import { assertValidSubscriptionData } from "../lib/subscription-validation";
+
+const TRIAL_PERIOD_MINUTES = Number.parseInt(process.env.TRIAL_PERIOD_MINUTES || "43200", 10); // Default 30 days
+const TRIAL_DAYS = Math.ceil(TRIAL_PERIOD_MINUTES / (60 * 24));
+
+const planTierSchema = z.enum(["starter", "growth", "growth_yearly", "web_presence"]);
+
+async function checkCheckoutRateLimit(userId: string): Promise<boolean> {
+  // If rate limiter is not configured, allow all requests (development mode)
+  if (!checkoutRateLimiter) {
+    return true;
+  }
+
+  const identifier = `checkout:${userId}`;
+  const { success } = await checkoutRateLimiter.limit(identifier);
+  return success;
+}
+
+/**
+ * Helper to calculate trial status
+ */
+function getTrialStatus(subscription: Subscription | null): {
+  isInTrial: boolean;
+  trialDaysRemaining: number;
+  trialExpired: boolean;
+  totalTrialDays: number;
+} {
+  if (!subscription) {
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: false,
+      totalTrialDays: 0,
+    };
+  }
+
+  if (subscription.status !== "TRIALING") {
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: false,
+      totalTrialDays: 0,
+    };
+  }
+
+  const now = new Date();
+  const trialEnd = subscription.trialEndsAt;
+  const trialStart = subscription.trialStartedAt;
+
+  // Calculate total trial days from start/end timestamps
+  let totalTrialDays = TRIAL_DAYS; // Default fallback
+  if (trialStart && trialEnd) {
+    totalTrialDays = Math.ceil((trialEnd.getTime() - trialStart.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  if (!trialEnd || now > trialEnd) {
+    return {
+      isInTrial: false,
+      trialDaysRemaining: 0,
+      trialExpired: true,
+      totalTrialDays,
+    };
+  }
+
+  // Use Math.ceil to show user-friendly remaining days (any portion of a day counts as a full day)
+  const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  return {
+    isInTrial: true,
+    trialDaysRemaining: daysRemaining,
+    trialExpired: false,
+    totalTrialDays,
+  };
+}
+
+export const subscriptionRouter = router({
+  /**
+   * Get current subscription status
+   */
+  getStatus: protectedProcedure.query(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription) {
+      return {
+        hasSubscription: false,
+        hasPaidSubscription: false,
+        status: null,
+        isActive: false,
+        isInTrial: false,
+        trialDaysRemaining: 0,
+        totalTrialDays: 0,
+        trialEndsAt: null,
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+        billingInterval: null,
+        planTier: null as PlanTier | null,
+        needsSubscription: true, // User has never subscribed
+      };
+    }
+
+    const trialInfo = getTrialStatus(subscription);
+    const isActive =
+      ["TRIALING", "ACTIVE"].includes(subscription.status) && !trialInfo.trialExpired;
+    // User has paid subscription if they have a Stripe subscription ID
+    const hasPaidSubscription = !!subscription.stripeSubscriptionId;
+
+    // Get plan tier from price ID (null for legacy/unknown prices)
+    const planTier = getPlanTierFromPriceId(subscription.stripePriceId);
+
+    return {
+      hasSubscription: true,
+      hasPaidSubscription,
+      status: subscription.status,
+      isActive,
+      isInTrial: trialInfo.isInTrial,
+      trialDaysRemaining: trialInfo.trialDaysRemaining,
+      totalTrialDays: trialInfo.totalTrialDays,
+      trialEndsAt: subscription.trialEndsAt,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+      cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      billingInterval: subscription.billingInterval,
+      planTier,
+      needsSubscription: false, // User has a subscription record
+    };
+  }),
+
+  /**
+   * Start free trial - creates Stripe customer and subscription record
+   * Called on first dashboard visit
+   * Uses transaction to atomically check and create subscription.
+   * If a race condition causes unique constraint violation, the orphaned
+   * Stripe customer is deleted to prevent orphans.
+   */
+  startTrial: protectedProcedure.mutation(async ({ ctx }) => {
+    // Use a transaction to atomically check and create
+    // Note: Stripe customer creation happens inside transaction, but if the
+    // transaction fails (unique constraint), we must clean up the Stripe customer
+    let createdCustomerId: string | null = null;
+
+    try {
+      return await ctx.prisma.$transaction(async (tx) => {
+        // Check if subscription already exists
+        const existing = await tx.subscription.findUnique({
+          where: { userId: ctx.session.user.id },
+        });
+
+        if (existing) {
+          const trialInfo = getTrialStatus(existing);
+          return {
+            success: true,
+            trialEndsAt: existing.trialEndsAt,
+            trialDaysRemaining: trialInfo.trialDaysRemaining,
+          };
+        }
+
+        // Get user details for Stripe customer
+        const user = await tx.user.findUnique({
+          where: { id: ctx.session.user.id },
+        });
+
+        if (!user) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Korisnik nije pronađen.",
+          });
+        }
+
+        // Only initialize Stripe when we actually need to create a new customer
+        const stripe = getStripe();
+
+        // Create Stripe customer
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.name || undefined,
+          metadata: {
+            userId: String(ctx.session.user.id),
+            salonName: user.salonName || "",
+          },
+        });
+        // Track the created customer ID for cleanup if transaction fails
+        createdCustomerId = customer.id;
+
+        // Calculate trial end date using minutes for precision
+        const trialStartedAt = new Date();
+        const trialEndsAt = new Date(Date.now() + TRIAL_PERIOD_MINUTES * 60 * 1000);
+
+        // Validate subscription data before creating
+        const subscriptionData = {
+          status: "TRIALING" as const,
+          trialStartedAt,
+          trialEndsAt,
+        };
+        assertValidSubscriptionData(subscriptionData, "startTrial");
+
+        // Create subscription record
+        const subscription = await tx.subscription.create({
+          data: {
+            userId: ctx.session.user.id,
+            stripeCustomerId: customer.id,
+            status: "TRIALING",
+            trialStartedAt,
+            trialEndsAt,
+          },
+        });
+
+        // Transaction succeeded, clear the cleanup marker
+        createdCustomerId = null;
+
+        return {
+          success: true,
+          trialEndsAt: subscription.trialEndsAt,
+          trialDaysRemaining: TRIAL_DAYS,
+        };
+      });
+    } catch (error) {
+      // Clean up orphaned Stripe customer if one was created before transaction failed
+      if (createdCustomerId) {
+        try {
+          const stripe = getStripe();
+          await stripe.customers.del(createdCustomerId);
+          logger.info("Cleaned up orphaned Stripe customer after transaction failure", {
+            customerId: createdCustomerId,
+          });
+        } catch (cleanupError) {
+          logger.error("Failed to clean up orphaned Stripe customer", {
+            customerId: createdCustomerId,
+            error: cleanupError,
+          });
+        }
+      }
+
+      // Handle race condition - if another request created the subscription
+      if (error instanceof Error && error.message.includes("Unique constraint failed")) {
+        const existingSub = await ctx.prisma.subscription.findUnique({
+          where: { userId: ctx.session.user.id },
+        });
+        if (existingSub) {
+          const trialInfo = getTrialStatus(existingSub);
+          return {
+            success: true,
+            trialEndsAt: existingSub.trialEndsAt,
+            trialDaysRemaining: trialInfo.trialDaysRemaining,
+          };
+        }
+      }
+      throw error;
+    }
+  }),
+
+  /**
+   * Create Stripe Checkout session for subscription
+   */
+  createCheckoutSession: protectedProcedure
+    .input(
+      z.object({
+        plan: planTierSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Rate limiting check (async for distributed rate limiting)
+      validateStripeConfig();
+      const stripe = getStripe();
+      const isAllowed = await checkCheckoutRateLimit(ctx.session.user.id);
+      if (!isAllowed) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "Previše zahteva. Pokušajte ponovo za sat vremena.",
+        });
+      }
+
+      const subscription = await ctx.prisma.subscription.findUnique({
+        where: { userId: ctx.session.user.id },
+      });
+
+      if (!subscription) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Morate prvo započeti probni period.",
+        });
+      }
+
+      // Get billing interval for the selected plan
+      const requestedInterval = getBillingIntervalFromPlan(input.plan);
+
+      // Prevent duplicate subscriptions - user already has active paid subscription
+      if (subscription.stripeSubscriptionId && subscription.status === "ACTIVE") {
+        const currentPlanTier = getPlanTierFromPriceId(subscription.stripePriceId);
+
+        if (currentPlanTier === input.plan) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Već imate aktivnu pretplatu za ovaj plan. Koristite portal za upravljanje pretplatom.",
+          });
+        }
+
+        // Different plan = should use changePlan mutation
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Za promenu plana koristite opciju za promenu plana.",
+        });
+      }
+
+      // Calculate trial end for Stripe
+      // Monthly plans: If user is in trial, delay billing until trial ends
+      // Yearly plans: Charge immediately (discount is already applied in price)
+      // If trial expired, omit trial_end to charge immediately
+      const trialInfo = getTrialStatus(subscription);
+      let trialEndTimestamp: number | null = null;
+
+      // Only apply remaining trial for monthly billing plans
+      if (requestedInterval === "MONTH" && trialInfo.isInTrial && subscription.trialEndsAt) {
+        trialEndTimestamp = Math.floor(subscription.trialEndsAt.getTime() / 1000);
+      }
+      // Yearly plans charge immediately (no trial_end)
+
+      const appOrigin = getAppOriginFromRequest(ctx.req);
+      try {
+        // eslint-disable-next-line no-new
+        new URL(appOrigin);
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Invalid request origin; cannot create Stripe redirect URLs.",
+        });
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        customer: subscription.stripeCustomerId,
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: PRICES[input.plan],
+            quantity: 1,
+          },
+        ],
+        subscription_data: {
+          // Include trial_end only if user is in trial, otherwise omit to charge immediately
+          ...(trialEndTimestamp !== null && { trial_end: trialEndTimestamp }),
+          metadata: {
+            userId: String(ctx.session.user.id),
+          },
+        },
+        success_url: `${appOrigin}/dashboard/settings/billing?success=true`,
+        cancel_url: `${appOrigin}/dashboard/settings/billing?canceled=true`,
+        metadata: {
+          userId: String(ctx.session.user.id),
+        },
+      });
+
+      return { url: session.url };
+    }),
+
+  /**
+   * Create Stripe billing portal session for managing subscription
+   */
+  createPortalSession: protectedProcedure.mutation(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Nemate aktivnu pretplatu.",
+      });
+    }
+
+    const appOrigin = getAppOriginFromRequest(ctx.req);
+    try {
+      // eslint-disable-next-line no-new
+      new URL(appOrigin);
+    } catch {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Invalid request origin; cannot create Stripe redirect URLs.",
+      });
+    }
+
+    const stripe = getStripe();
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripeCustomerId,
+      return_url: `${appOrigin}/dashboard/settings/billing`,
+    });
+
+    return { url: session.url };
+  }),
+
+  /**
+   * Cancel subscription at period end
+   * Uses rollback pattern to ensure Stripe and DB stay in sync
+   */
+  cancel: protectedProcedure.mutation(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+      include: {
+        user: {
+          select: {
+            email: true,
+            name: true,
+            salonName: true,
+          },
+        },
+      },
+    });
+
+    if (!subscription?.stripeSubscriptionId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Nemate aktivnu pretplatu za otkazivanje.",
+      });
+    }
+
+    // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+    if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
+      // Cancel at period end in Stripe first
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+    }
+
+    // Update local record - if this fails, rollback Stripe change
+    try {
+      await ctx.prisma.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          cancelAtPeriodEnd: true,
+          canceledAt: new Date(),
+        },
+      });
+    } catch (dbError) {
+      // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+      if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+        try {
+          const stripe = getStripe();
+          await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+            cancel_at_period_end: false,
+          });
+        } catch (rollbackError) {
+          // Log rollback failure explicitly - system is now in inconsistent state
+          logger.error("Failed to rollback Stripe subscription cancellation", {
+            error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            subscriptionId: subscription.stripeSubscriptionId,
+            userId: ctx.session.user.id,
+          });
+        }
+      }
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Došlo je do greške. Pokušajte ponovo.",
+      });
+    }
+
+    // Send cancellation confirmation email (don't block on failure)
+    if (subscription.currentPeriodEnd) {
+      const appOrigin = getAppOriginFromRequest(ctx.req);
+      emailService
+        .sendSubscriptionCanceledEmail({
+          userEmail: subscription.user.email,
+          userName: subscription.user.name || "Korisniče",
+          salonName: subscription.user.salonName,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          resumeUrl: `${appOrigin}/dashboard/settings/billing`,
+        })
+        .catch((err) => {
+          // Log but don't fail the mutation
+          logger.error("Failed to send subscription canceled email", {
+            error: err,
+          });
+        });
+    }
+
+    return { success: true };
+  }),
+
+  /**
+   * Resume a canceled subscription
+   * Uses rollback pattern to ensure Stripe and DB stay in sync
+   */
+  resume: protectedProcedure.mutation(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription?.stripeSubscriptionId || !subscription.cancelAtPeriodEnd) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Nema pretplate za nastavak.",
+      });
+    }
+
+    // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+    if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+      const stripe = getStripe();
+      // Resume in Stripe first
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: false,
+      });
+    }
+
+    // Update local record - if this fails, rollback Stripe change
+    try {
+      await ctx.prisma.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          cancelAtPeriodEnd: false,
+          canceledAt: null,
+        },
+      });
+    } catch (dbError) {
+      // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+      if (!isTestStripeId(subscription.stripeSubscriptionId)) {
+        try {
+          const stripe = getStripe();
+          await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+            cancel_at_period_end: true,
+          });
+        } catch (rollbackError) {
+          // Log rollback failure explicitly - system is now in inconsistent state
+          logger.error("Failed to rollback Stripe subscription resume", {
+            error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+            subscriptionId: subscription.stripeSubscriptionId,
+            userId: ctx.session.user.id,
+          });
+        }
+      }
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Došlo je do greške. Pokušajte ponovo.",
+      });
+    }
+
+    return { success: true };
+  }),
+
+  /**
+   * Change subscription plan
+   * Takes effect at end of current billing period (no proration)
+   */
+  changePlan: protectedProcedure
+    .input(
+      z.object({
+        newPlan: planTierSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const subscription = await ctx.prisma.subscription.findUnique({
+        where: { userId: ctx.session.user.id },
+      });
+
+      if (!subscription?.stripeSubscriptionId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Nemate aktivnu pretplatu za promenu plana.",
+        });
+      }
+
+      const currentPlanTier = getPlanTierFromPriceId(subscription.stripePriceId);
+
+      if (currentPlanTier === input.newPlan) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Već imate ovaj plan.",
+        });
+      }
+
+      if (subscription.cancelAtPeriodEnd) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Ne možete promeniti plan za otkazanu pretplatu. Prvo nastavite pretplatu.",
+        });
+      }
+
+      // Skip Stripe API call for test subscriptions (E2E tests use fake IDs)
+      const skipStripeCall = isTestStripeId(subscription.stripeSubscriptionId);
+
+      let subscriptionItemId: string | undefined;
+      const originalPriceId = subscription.stripePriceId;
+
+      if (!skipStripeCall) {
+        const stripe = getStripe();
+        // Fetch current subscription from Stripe to get item ID
+        const stripeSubscription = await stripe.subscriptions.retrieve(
+          subscription.stripeSubscriptionId
+        );
+        subscriptionItemId = stripeSubscription.items.data[0]?.id;
+
+        if (!subscriptionItemId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Greška pri dobijanju podataka o pretplati.",
+          });
+        }
+
+        // Schedule plan change at end of current billing period
+        await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+          items: [
+            {
+              id: subscriptionItemId,
+              price: PRICES[input.newPlan],
+            },
+          ],
+          proration_behavior: "none", // Switch at period end, no immediate charge
+        });
+      }
+
+      // Update local DB with new price immediately for UI feedback
+      // The webhook will also fire, but we need immediate cache invalidation
+      const newBillingInterval = getBillingIntervalFromPlan(input.newPlan);
+      try {
+        await ctx.prisma.subscription.update({
+          where: { id: subscription.id },
+          data: {
+            stripePriceId: PRICES[input.newPlan],
+            billingInterval: newBillingInterval,
+          },
+        });
+      } catch (dbError) {
+        // Rollback Stripe change to maintain consistency (only if we made the Stripe call)
+        if (!skipStripeCall && subscriptionItemId) {
+          try {
+            const stripe = getStripe();
+            await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+              items: [
+                {
+                  id: subscriptionItemId,
+                  price: originalPriceId!,
+                },
+              ],
+              proration_behavior: "none",
+            });
+          } catch (rollbackError) {
+            logger.error("Failed to rollback Stripe plan change", {
+              error: rollbackError instanceof Error ? rollbackError.message : String(rollbackError),
+              subscriptionId: subscription.stripeSubscriptionId,
+              userId: ctx.session.user.id,
+            });
+          }
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Došlo je do greške. Pokušajte ponovo.",
+        });
+      }
+
+      // Invalidate subscription cache for immediate UI update
+      await invalidateSubscriptionCache(ctx.session.user.id);
+
+      return {
+        success: true,
+        effectiveDate: subscription.currentPeriodEnd,
+      };
+    }),
+
+  /**
+   * Get invoice history from Stripe
+   */
+  getInvoices: protectedProcedure.query(async ({ ctx }) => {
+    const subscription = await ctx.prisma.subscription.findUnique({
+      where: { userId: ctx.session.user.id },
+    });
+
+    if (!subscription?.stripeCustomerId) {
+      return { invoices: [] };
+    }
+
+    try {
+      const stripe = getStripe();
+      const invoices = await stripe.invoices.list({
+        customer: subscription.stripeCustomerId,
+        limit: 24,
+      });
+
+      return {
+        invoices: invoices.data.map((inv) => ({
+          id: inv.id,
+          number: inv.number,
+          status: inv.status,
+          amountDue: inv.amount_due,
+          amountPaid: inv.amount_paid,
+          currency: inv.currency,
+          created: inv.created,
+          hostedInvoiceUrl: inv.hosted_invoice_url,
+          invoicePdf: inv.invoice_pdf,
+          periodStart: inv.lines.data[0]?.period?.start ?? null,
+          periodEnd: inv.lines.data[0]?.period?.end ?? null,
+        })),
+      };
+    } catch (error) {
+      // Return empty invoices if Stripe customer doesn't exist (e.g., test data)
+      // or if there's any other Stripe API error
+      return { invoices: [] };
+    }
+  }),
+});

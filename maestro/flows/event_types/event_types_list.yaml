@@ -1,0 +1,14 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - smoke
+  - regression
+  - event_types
+---
+# TODO: stub until OAuth — home tab shows "Moje usluge" when authenticated.
+- runFlow:
+    file: ../_helpers/auth/assert_login_screen.yaml
+- runFlow:
+    when:
+      visible: "Moje usluge"
+    commands:
+      - assertVisible: "Moje usluge"

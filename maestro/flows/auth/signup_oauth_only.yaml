@@ -1,0 +1,10 @@
+appId: ${MAESTRO_APP_ID}
+tags:
+  - regression
+  - auth
+---
+# Mobile auth is OAuth-only; no in-app signup. Name reflects N/A for native signup.
+- runFlow:
+    file: ../_helpers/launch_app.yaml
+- assertVisible:
+    text: "Salonko"

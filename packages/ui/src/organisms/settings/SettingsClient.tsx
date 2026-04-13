@@ -2,9 +2,24 @@
 
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@salonko/trpc";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@salonko/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  GoogleIcon,
+} from "@salonko/ui";
 import { AlertCircle, Calendar, Check, ExternalLink, Trash2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 type Connection = RouterOutputs["calendar"]["listConnections"][number];
@@ -14,11 +29,14 @@ type SettingsClientProps = {
 };
 
 export function SettingsClient({ initialConnections }: SettingsClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const successParam = searchParams.get("success");
   const errorParam = searchParams.get("error");
 
   const [connectingCalendar, setConnectingCalendar] = useState(false);
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [connectionToDisconnect, setConnectionToDisconnect] = useState<string | null>(null);
 
   const utils = trpc.useUtils();
 
@@ -40,26 +58,42 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       );
       const data = await response.json();
       if (data.url) {
-        window.location.href = data.url;
+        if (data.url.startsWith("http")) {
+          window.location.href = data.url;
+        } else {
+          router.push(data.url);
+        }
+        return;
       }
+      setConnectingCalendar(false);
     } catch (error) {
       console.error("Failed to initiate Google Calendar connection:", error);
       setConnectingCalendar(false);
     }
   };
 
+  const handleDisconnect = (credentialId: string) => {
+    setConnectionToDisconnect(credentialId);
+    setDisconnectDialogOpen(true);
+  };
+
+  const confirmDisconnect = () => {
+    if (connectionToDisconnect) {
+      disconnectCalendar.mutate({ credentialId: connectionToDisconnect });
+      setConnectionToDisconnect(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Podešavanja</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-1">
-          Upravljajte svojim nalogom i integracijama
-        </p>
+        <h1 className="text-2xl font-bold text-foreground">Podešavanja</h1>
+        <p className="mt-1 text-muted-foreground">Upravljajte svojim nalogom i integracijama</p>
       </div>
 
       {/* Success/Error Messages */}
       {successParam === "google_calendar_connected" && (
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-green-50 rounded-lg border border-green-200 dark:bg-green-900/20 dark:border-green-800">
           <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
           <span className="text-green-800 dark:text-green-300">
             Google Calendar je uspešno povezan!
@@ -68,7 +102,7 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
       )}
 
       {errorParam && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex gap-3 items-center p-4 bg-red-50 rounded-lg border border-red-200 dark:bg-red-900/20 dark:border-red-800">
           <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
           <span className="text-red-800 dark:text-red-300">
             {errorParam === "google_auth_denied" && "Odbili ste pristup Google Calendar-u."}
@@ -81,14 +115,14 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
 
       {/* Calendar Integrations */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+        <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex gap-2 items-center text-lg">
+            <Calendar className="w-5 h-5 text-muted-foreground" />
             Kalendar integracije
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             Povežite svoje kalendare kako bismo automatski proveravali vašu zauzetost i izbegavali
             duple rezervacije.
           </p>
@@ -99,94 +133,74 @@ export function SettingsClient({ initialConnections }: SettingsClientProps) {
               connections.map((connection: Connection) => (
                 <div
                   key={connection.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border border-border"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6"
-                        viewBox="0 0 24 24"
-                        role="img"
-                        aria-label="Google Calendar logo"
-                      >
-                        <path
-                          fill="#4285F4"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
-                      </svg>
+                  <div className="flex gap-3 items-center">
+                    <div className="flex justify-center items-center w-10 h-10 bg-background rounded-lg border border-border dark:bg-muted">
+                      <GoogleIcon className="w-6 h-6 text-blue-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Google Calendar</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="font-medium text-foreground">Google Calendar</p>
+                      <p className="text-sm text-muted-foreground">
                         {connection.calendarsCount} kalendar(a) odabrano
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex gap-2 items-center">
                     <CalendarSelectionButton credentialId={connection.id} />
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => {
-                        if (confirm("Da li ste sigurni da želite da isključite ovaj kalendar?")) {
-                          disconnectCalendar.mutate({ credentialId: connection.id });
-                        }
-                      }}
+                      className="group"
+                      aria-label="Prekini vezu sa kalendarom"
+                      onClick={() => handleDisconnect(connection.id)}
                       disabled={disconnectCalendar.isPending}
                     >
-                      <Trash2 className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
+                      <Trash2 className="w-4 h-4 text-muted-foreground group-hover:text-red-500 dark:group-hover:text-red-400" />
                     </Button>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 py-2">
-                Nemate povezanih kalendara.
-              </p>
+              <div className="flex flex-col gap-3 p-4 text-sm text-muted-foreground rounded-lg border border-border border-dashed">
+                <div>
+                  <p className="font-medium text-foreground">Nema povezanih kalendara</p>
+                  <p>Povežite Google Calendar da bismo automatski blokirali zauzete termine.</p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <Button
+                    onClick={handleConnectGoogle}
+                    disabled={connectingCalendar}
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    <GoogleIcon className="mr-2 w-4 h-4" />
+                    {connectingCalendar ? "Povezivanje..." : "Poveži Google Calendar"}
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    Možete odabrati kalendare nakon povezivanja.
+                  </span>
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Connect Button */}
-          <Button onClick={handleConnectGoogle} disabled={connectingCalendar} className="w-full">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" role="img" aria-label="Google logo">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            {connectingCalendar ? "Povezivanje..." : "Poveži Google Calendar"}
-          </Button>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={disconnectDialogOpen}
+        onOpenChange={setDisconnectDialogOpen}
+        onConfirm={confirmDisconnect}
+        title="Isključi kalendar"
+        description="Da li ste sigurni da želite da isključite ovaj kalendar?"
+        confirmText="Isključi"
+        isLoading={disconnectCalendar.isPending}
+      />
     </div>
   );
 }
 
-function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
+function CalendarSelectionButton({ credentialId }: { credentialId: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const utils = trpc.useUtils();
 
@@ -202,27 +216,24 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
     },
   });
 
-  if (!isOpen) {
-    return (
-      <Button variant="outline" size="sm" onClick={() => setIsOpen(true)}>
-        <ExternalLink className="w-4 h-4 mr-1" />
-        Kalendari
-      </Button>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="font-semibold text-gray-900 dark:text-white">Odaberite kalendare</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Odabrani kalendari će se koristiti za proveru zauzetosti
-          </p>
-        </div>
-        <div className="p-4 max-h-80 overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <ExternalLink className="mr-1 w-4 h-4" />
+          Kalendari
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Odaberite kalendare</DialogTitle>
+          <DialogDescription>
+            Odabrani kalendari će se koristiti za proveru zauzetosti.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="overflow-y-auto max-h-80">
           {isLoading ? (
-            <div className="text-gray-500 dark:text-gray-400 text-center py-4">Učitavanje...</div>
+            <div className="py-4 text-center text-muted-foreground">Učitavanje...</div>
           ) : (
             <div className="space-y-2">
               {calendars?.map(
@@ -234,7 +245,7 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
                 }) => (
                   <label
                     key={cal.externalId}
-                    className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                    className="flex gap-3 items-center p-2 rounded cursor-pointer hover:bg-muted/50 dark:hover:bg-muted"
                   >
                     <input
                       type="checkbox"
@@ -246,10 +257,10 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
                           selected: !cal.selected,
                         })
                       }
-                      className="rounded border-gray-300 dark:border-gray-600"
+                      className="rounded border-border"
                     />
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{cal.name}</p>
+                      <p className="font-medium text-foreground">{cal.name}</p>
                       {cal.primary && (
                         <span className="text-xs text-green-600 dark:text-green-400">Primarni</span>
                       )}
@@ -260,12 +271,10 @@ function CalendarSelectionButton({ credentialId }: { credentialId: number }) {
             </div>
           )}
         </div>
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <Button onClick={() => setIsOpen(false)} className="w-full">
-            Zatvori
-          </Button>
-        </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button onClick={() => setIsOpen(false)}>Zatvori</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

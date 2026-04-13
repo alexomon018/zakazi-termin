@@ -1,15 +1,9 @@
 import type { Account, PrismaClient, User } from "@salonko/prisma";
 import type { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 
-function parseIntSafe(value: string | number | undefined): number {
-  if (typeof value === "number") return value;
-  if (typeof value === "string") return Number.parseInt(value, 10);
-  throw new Error("Invalid ID type");
-}
-
 function toAdapterUser(user: User): AdapterUser {
   return {
-    id: user.id.toString(),
+    id: user.id,
     name: user.name,
     email: user.email,
     emailVerified: user.emailVerified,
@@ -19,7 +13,7 @@ function toAdapterUser(user: User): AdapterUser {
 
 function toAdapterAccount(account: Account): AdapterAccount {
   return {
-    userId: account.userId.toString(),
+    userId: account.userId,
     type: account.type as AdapterAccount["type"],
     provider: account.provider,
     providerAccountId: account.providerAccountId,
@@ -50,7 +44,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
 
     async getUser(id) {
       const user = await prisma.user.findUnique({
-        where: { id: parseIntSafe(id) },
+        where: { id },
       });
       return user ? toAdapterUser(user) : null;
     },
@@ -75,11 +69,11 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
     async updateUser(data) {
       // Get existing user to preserve fields that shouldn't be overwritten
       const existingUser = await prisma.user.findUnique({
-        where: { id: parseIntSafe(data.id) },
+        where: { id: data.id },
       });
 
       const user = await prisma.user.update({
-        where: { id: parseIntSafe(data.id) },
+        where: { id: data.id },
         data: {
           // Only update name if user doesn't already have one
           name: existingUser?.name || data.name,
@@ -94,7 +88,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
 
     async deleteUser(userId) {
       const user = await prisma.user.delete({
-        where: { id: parseIntSafe(userId) },
+        where: { id: userId },
       });
       return toAdapterUser(user);
     },
@@ -102,7 +96,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
     async linkAccount(account: AdapterAccount) {
       const createdAccount = await prisma.account.create({
         data: {
-          userId: parseIntSafe(account.userId),
+          userId: account.userId,
           type: account.type,
           provider: account.provider,
           providerAccountId: account.providerAccountId,
@@ -133,14 +127,14 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
     async createSession(data) {
       const session = await prisma.session.create({
         data: {
-          userId: parseIntSafe(data.userId),
+          userId: data.userId,
           sessionToken: data.sessionToken,
           expires: data.expires,
         },
       });
       return {
         sessionToken: session.sessionToken,
-        userId: session.userId.toString(),
+        userId: session.userId,
         expires: session.expires,
       };
     },
@@ -154,7 +148,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
       return {
         session: {
           sessionToken: session.sessionToken,
-          userId: session.userId.toString(),
+          userId: session.userId,
           expires: session.expires,
         },
         user: toAdapterUser(session.user),
@@ -170,7 +164,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
       });
       return {
         sessionToken: session.sessionToken,
-        userId: session.userId.toString(),
+        userId: session.userId,
         expires: session.expires,
       };
     },
@@ -181,7 +175,7 @@ export function SalonkoAdapter(prisma: PrismaClient): Adapter {
       });
       return {
         sessionToken: session.sessionToken,
-        userId: session.userId.toString(),
+        userId: session.userId,
         expires: session.expires,
       };
     },

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "rootDir": ".",
+    "outDir": "dist",
+    "types": ["node"],
+    "allowJs": false
+  },
+  "include": ["src", "generated/client/index.d.ts"],
+  "references": [{ "path": "../config" }]
+}
