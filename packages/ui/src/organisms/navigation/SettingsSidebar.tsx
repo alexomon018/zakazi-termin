@@ -10,7 +10,16 @@ import {
 } from "@salonko/ui/atoms/Tooltip";
 import { SidebarNavItem } from "@salonko/ui/molecules/navigation/SidebarNavItem";
 import { cn } from "@salonko/ui/utils";
-import { ArrowLeft, Calendar, CalendarOff, CreditCard, Palette, User, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  CalendarOff,
+  CreditCard,
+  MessageCircle,
+  Palette,
+  User,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { memo, useCallback, useMemo } from "react";
@@ -56,6 +65,13 @@ const settingsNavItems: SettingsNavItem[] = [
     label: "Van kancelarije",
     description: "Upravljajte odsustvima",
     icon: CalendarOff,
+  },
+  {
+    href: "/dashboard/settings/messaging",
+    label: "Messaging kanali",
+    description: "WhatsApp i Viber integracije",
+    icon: MessageCircle,
+    allowedRoles: ["OWNER", "ADMIN"],
   },
   {
     href: "/dashboard/settings",

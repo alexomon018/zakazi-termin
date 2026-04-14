@@ -168,6 +168,9 @@ model User {
   // Email drip campaign
   emailDripRecords EmailDripRecord[]
 
+  // Messaging channels (WhatsApp / Viber)
+  messagingChannels MessagingChannel[]
+
   @@index([email])
   @@index([salonSlug])
 }
@@ -669,4 +672,49 @@ model EmailDripRecord {
 
   @@unique([userId, emailKey])
   @@index([userId])
+}
+
+// ===== AI AGENT =====
+
+model AgentConversation {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platform   String   // "whatsapp" | "viber"
+  externalId String   // platform-specific conversation/user ID
+  salonSlug  String   // which salon this conversation belongs to
+  messages   Json     // Claude message history array
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  proposals AgentBookingProposal[]
+
+  @@unique([platform, externalId, salonSlug])
+  @@index([updatedAt])
+}
+
+model MessagingChannel {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platform     String   // "whatsapp" | "viber"
+  externalId   String   // WhatsApp phone_number_id OR Viber channelId (per-bot URL segment)
+  salonUserId  String
+  salon        User     @relation(fields: [salonUserId], references: [id], onDelete: Cascade)
+  // Viber-only: AES-256-GCM encrypted bot auth token. Null for WhatsApp (uses global access token).
+  authTokenEnc String?
+  // Viber-only: bot display name used in outgoing messages.
+  botName      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([platform, externalId])
+  @@index([salonUserId])
+}
+
+model AgentBookingProposal {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String            @db.Uuid
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  payload        Json              // { eventTypeSlug, startTime, endTime, name, email, phone?, notes?, timeZone }
+  expiresAt      DateTime
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, expiresAt])
 }

@@ -230,6 +230,7 @@ export { ProfileClient } from "./organisms/settings/profile/ProfileClient";
 export { SettingsClient } from "./organisms/settings/SettingsClient";
 export { OutOfOfficeClient } from "./organisms/settings/OutOfOfficeClient";
 export { TeamSettingsClient } from "./organisms/settings/team/TeamSettingsClient";
+export { MessagingChannelsClient } from "./organisms/settings/MessagingChannelsClient";
 
 // Molecules - Booking
 export { BookingEventHeader } from "./molecules/booking/BookingEventHeader";

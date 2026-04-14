@@ -17,6 +17,7 @@ import {
   CreditCard,
   LayoutDashboard,
   Menu,
+  MessageCircle,
   Palette,
   User,
   Users,
@@ -58,6 +59,12 @@ const settingsNavItems: SettingsNavItem[] = [
     href: "/dashboard/settings/out-of-office",
     label: "Van kancelarije",
     icon: CalendarOff,
+  },
+  {
+    href: "/dashboard/settings/messaging",
+    label: "Messaging kanali",
+    icon: MessageCircle,
+    allowedRoles: ["OWNER", "ADMIN"],
   },
   {
     href: "/dashboard/settings",
