@@ -10,6 +10,8 @@ export interface SingleTurnScenario {
   category: "golden" | "secondary" | "negative";
   prompt: string;
   expectedTools?: string[];
+  /** If set, the first tool call in the response must match exactly (single-turn order). */
+  expectedFirstTool?: string;
   forbiddenTools?: string[];
   salonName?: string;
 }

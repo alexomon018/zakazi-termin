@@ -1,6 +1,7 @@
 "use client";
 
 import { trpc } from "@/lib/trpc/client";
+import type { RouterOutputs } from "@salonko/trpc";
 import {
   Button,
   ConfirmDialog,
@@ -18,6 +19,8 @@ import { useMemo, useState } from "react";
 
 type ChannelPlatform = "whatsapp" | "viber";
 
+type MessagingChannelListItem = RouterOutputs["messagingChannel"]["list"][number];
+
 interface MessagingChannelsClientProps {
   /** App origin (e.g. https://zakazi-termin.rs) used to render webhook URLs. */
   appOrigin: string;
@@ -25,7 +28,8 @@ interface MessagingChannelsClientProps {
 
 export function MessagingChannelsClient({ appOrigin }: MessagingChannelsClientProps) {
   const utils = trpc.useUtils();
-  const { data: channels = [], isLoading } = trpc.messagingChannel.list.useQuery();
+  const { data, isLoading } = trpc.messagingChannel.list.useQuery();
+  const channels: MessagingChannelListItem[] = data ?? [];
   const [addOpen, setAddOpen] = useState<ChannelPlatform | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -111,13 +115,7 @@ export function MessagingChannelsClient({ appOrigin }: MessagingChannelsClientPr
 }
 
 interface ChannelRowProps {
-  channel: {
-    id: string;
-    platform: string;
-    externalId: string;
-    botName: string | null;
-    createdAt: Date;
-  };
+  channel: MessagingChannelListItem;
   appOrigin: string;
   onDelete: () => void;
 }
@@ -211,7 +209,7 @@ function AddChannelDialog({
   const createWhatsApp = trpc.messagingChannel.createWhatsApp.useMutation({
     onSuccess: async () => {
       await utils.messagingChannel.list.invalidate();
-      resetForm();
+      resetAll();
       onClose();
     },
   });
@@ -219,10 +217,16 @@ function AddChannelDialog({
   const createViber = trpc.messagingChannel.createViber.useMutation({
     onSuccess: async () => {
       await utils.messagingChannel.list.invalidate();
-      resetForm();
+      resetAll();
       onClose();
     },
   });
+
+  const resetAll = () => {
+    resetForm();
+    createWhatsApp.reset();
+    createViber.reset();
+  };
 
   const isPending = createWhatsApp.isPending || createViber.isPending;
   const error = createWhatsApp.error?.message || createViber.error?.message;
@@ -247,7 +251,7 @@ function AddChannelDialog({
       open={platform !== null}
       onOpenChange={(open) => {
         if (!open) {
-          resetForm();
+          resetAll();
           onClose();
         }
       }}
@@ -346,7 +350,15 @@ function AddChannelDialog({
           )}
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                resetAll();
+                onClose();
+              }}
+              disabled={isPending}
+            >
               Otkaži
             </Button>
             <Button type="submit" disabled={isPending}>

@@ -177,26 +177,28 @@ async function callTool(
     });
     if (!eventType) return JSON.stringify({ error: "Usluga nije pronađena." });
 
-    const booking = await caller.booking.create({
-      eventTypeId: eventType.id,
-      startTime: new Date(payload.data.startTime),
-      endTime: new Date(payload.data.endTime),
-      name: payload.data.name,
-      email: payload.data.email,
-      phoneNumber: payload.data.phone,
-      notes: payload.data.notes,
-      timeZone: payload.data.timeZone,
-      locale: "sr",
-    });
+    try {
+      const booking = await caller.booking.create({
+        eventTypeId: eventType.id,
+        startTime: new Date(payload.data.startTime),
+        endTime: new Date(payload.data.endTime),
+        name: payload.data.name,
+        email: payload.data.email,
+        phoneNumber: payload.data.phone,
+        notes: payload.data.notes,
+        timeZone: payload.data.timeZone,
+        locale: "sr",
+      });
 
-    await prisma.agentBookingProposal.delete({ where: { id: proposal.id } });
-
-    return JSON.stringify({
-      uid: booking.uid,
-      startTime: booking.startTime,
-      endTime: booking.endTime,
-      status: booking.status,
-    });
+      return JSON.stringify({
+        uid: booking.uid,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        status: booking.status,
+      });
+    } finally {
+      await prisma.agentBookingProposal.delete({ where: { id: proposal.id } });
+    }
   }
 
   return JSON.stringify({ error: `Unknown tool: ${toolName}` });

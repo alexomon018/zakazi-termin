@@ -7,6 +7,14 @@
 import "dotenv/config";
 
 import { evaluate } from "@lmnr-ai/lmnr";
+
+const LMNR_PROJECT_API_KEY = process.env.LMNR_PROJECT_API_KEY;
+if (!LMNR_PROJECT_API_KEY) {
+  console.error(
+    "LMNR_PROJECT_API_KEY is required to run Laminar evals. Set it in your environment or .env file."
+  );
+  process.exit(1);
+}
 import { multiTurnScenarios } from "./data/multi-turn";
 import { llmJudge, toolOrderCorrect, toolsAvoided, toolsSelected } from "./evaluators";
 import { runMultiTurn } from "./executors";
@@ -35,7 +43,7 @@ evaluate<MultiTurnScenario, Target, Awaited<ReturnType<typeof runMultiTurn>>>({
     outputQuality: async (output, _target, data) => (data ? llmJudge(output, data) : 1),
   },
   config: {
-    projectApiKey: process.env.LMNR_PROJECT_API_KEY,
+    projectApiKey: LMNR_PROJECT_API_KEY,
   },
   groupName: "agent-multi-turn",
 });

@@ -46,17 +46,14 @@ async function runSingleTurnSuite() {
       console.log(
         `[${marker}] ${scenario.id} (${scenario.category}) tools=${JSON.stringify(
           output.toolNames
-        )} selected=${score.toolsSelected} avoided=${score.toolsAvoided}`
+        )} selected=${score.toolsSelected} avoided=${score.toolsAvoided} firstTool=${score.firstTool}`
       );
     } catch (err) {
       console.log(`[ERROR] ${scenario.id}: ${(err as Error).message}`);
     }
   }
-  console.log(
-    `\nSingle-turn: ${passed}/${singleTurnScenarios.length} passed (${fmt(
-      passed / singleTurnScenarios.length
-    )})`
-  );
+  const safeRatio = singleTurnScenarios.length ? passed / singleTurnScenarios.length : 0;
+  console.log(`\nSingle-turn: ${passed}/${singleTurnScenarios.length} passed (${fmt(safeRatio)})`);
   return { passed, total: singleTurnScenarios.length };
 }
 

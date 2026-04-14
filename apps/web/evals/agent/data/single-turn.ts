@@ -14,6 +14,8 @@ export const singleTurnScenarios: SingleTurnScenario[] = [
     description: "Ask for a slot tomorrow — must start with get_salon_info (needs slug first)",
     prompt: "Hoću termin za šišanje sutra ujutro.",
     expectedTools: ["get_salon_info"],
+    expectedFirstTool: "get_salon_info",
+    forbiddenTools: ["check_availability", "create_booking"],
   },
   {
     id: "golden-salon-address",

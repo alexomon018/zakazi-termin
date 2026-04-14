@@ -1,14 +1,11 @@
-import { checkAgentRateLimit, verifyAgentSecret } from "@/lib/agent/auth";
+import { verifyAgentRequest } from "@/lib/agent/auth";
 import { createPublicServerCaller } from "@/lib/trpc/server";
 import { logger } from "@salonko/config";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const authError = verifyAgentSecret(request);
-  if (authError) return authError;
-
-  const limitError = await checkAgentRateLimit(request, "agent-slots");
-  if (limitError) return limitError;
+  const guardError = await verifyAgentRequest(request, "agent-slots");
+  if (guardError) return guardError;
 
   const { searchParams } = new URL(request.url);
   const salonSlug = searchParams.get("salonSlug");

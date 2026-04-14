@@ -7,6 +7,17 @@ import type {
   SingleTurnScenario,
 } from "./types";
 
+function toolNameSequence(output: SingleTurnResult | MultiTurnResult): string[] {
+  return "toolCallOrder" in output ? output.toolCallOrder : output.toolNames;
+}
+
+/** If `expected` is set, the first tool in the recorded sequence must equal it. */
+export function firstToolIs(output: SingleTurnResult | MultiTurnResult, expected?: string): number {
+  if (!expected) return 1;
+  const seq = toolNameSequence(output);
+  return seq.length > 0 && seq[0] === expected ? 1 : 0;
+}
+
 export function toolsSelected(
   output: SingleTurnResult | MultiTurnResult,
   expected?: string[]
@@ -63,14 +74,15 @@ export async function llmJudge(
   if (!apiKey) return 0;
   const client = new Anthropic({ apiKey });
 
-  const response = await client.messages.create({
-    model: MODEL,
-    max_tokens: 256,
-    system: judgeSystem,
-    messages: [
-      {
-        role: "user",
-        content: `Task: ${scenario.originalTask}
+  try {
+    const response = await client.messages.create({
+      model: MODEL,
+      max_tokens: 256,
+      system: judgeSystem,
+      messages: [
+        {
+          role: "user",
+          content: `Task: ${scenario.originalTask}
 
 Tools called (in order): ${JSON.stringify(output.toolCallOrder)}
 Expected tool order: ${JSON.stringify(scenario.expectedToolOrder ?? [])}
@@ -82,19 +94,23 @@ ${output.reply}
 """
 
 Return JSON only.`,
-      },
-    ],
-  });
+        },
+      ],
+    });
 
-  const text = response.content.find((b) => b.type === "text");
-  if (!text || text.type !== "text") return 0;
-  try {
+    const text = response.content.find((b) => b.type === "text");
+    if (!text || text.type !== "text") return 0;
     const match = text.text.match(/\{[\s\S]*\}/);
     if (!match) return 0;
     const parsed = JSON.parse(match[0]) as { score?: number };
     if (typeof parsed.score !== "number") return 0;
     return Math.max(0, Math.min(1, parsed.score / 10));
-  } catch {
+  } catch (err) {
+    console.error("[llmJudge] judge call or parse failed", {
+      originalTask: scenario.originalTask,
+      toolCallOrder: output.toolCallOrder,
+      error: err,
+    });
     return 0;
   }
 }
@@ -102,6 +118,7 @@ Return JSON only.`,
 export function scoreSingleTurn(scenario: SingleTurnScenario, output: SingleTurnResult) {
   const selected = toolsSelected(output, scenario.expectedTools);
   const avoided = toolsAvoided(output, scenario.forbiddenTools);
-  const passed = selected === 1 && avoided === 1;
-  return { toolsSelected: selected, toolsAvoided: avoided, passed };
+  const firstTool = firstToolIs(output, scenario.expectedFirstTool);
+  const passed = selected === 1 && avoided === 1 && firstTool === 1;
+  return { toolsSelected: selected, toolsAvoided: avoided, firstTool, passed };
 }

@@ -139,6 +139,15 @@ function extractText(content: Anthropic.ContentBlock[]): string | null {
   return textBlock && textBlock.type === "text" ? textBlock.text : null;
 }
 
+/** All text blocks in a single assistant message (e.g. commentary alongside tool_use). */
+function collectTextBlocks(content: Anthropic.ContentBlock[]): string | null {
+  const parts: string[] = [];
+  for (const b of content) {
+    if (b.type === "text") parts.push(b.text);
+  }
+  return parts.length > 0 ? parts.join("\n\n") : null;
+}
+
 export async function runAgentLoop({
   client,
   messages,
@@ -170,6 +179,10 @@ export async function runAgentLoop({
     }
 
     if (response.stop_reason === "tool_use") {
+      const toolUseText = collectTextBlocks(response.content);
+      if (toolUseText) {
+        reply = reply === DEFAULT_ERROR_REPLY ? toolUseText : `${reply}\n\n${toolUseText}`;
+      }
       const toolResults: Anthropic.ToolResultBlockParam[] = [];
       for (const block of response.content) {
         if (block.type !== "tool_use") continue;

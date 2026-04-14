@@ -35,7 +35,8 @@ export const multiTurnScenarios: MultiTurnScenario[] = [
   {
     id: "negative-user-refuses",
     category: "negative",
-    description: "Mid-conversation: user rejects proposed slot — must NOT call create_booking.",
+    description:
+      "Mid-conversation: user rejects proposed slots — must call check_availability again for new options and must NOT call create_booking.",
     messages: [
       { role: "user", content: "Hoću termin za šišanje sutra." },
       {
@@ -46,7 +47,9 @@ export const multiTurnScenarios: MultiTurnScenario[] = [
       { role: "user", content: "Ne, ne odgovara mi nijedan. Daj mi druge termine." },
     ],
     mockTools: defaultMockedTools,
+    expectedToolOrder: ["get_salon_info", "check_availability"],
     forbiddenTools: ["create_booking"],
-    originalTask: "User refused proposed slots. Agent must re-query availability, not book.",
+    originalTask:
+      "User refused proposed slots. Agent must call get_salon_info and check_availability (re-query), not create_booking.",
   },
 ];

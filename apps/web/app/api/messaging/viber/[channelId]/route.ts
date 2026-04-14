@@ -65,6 +65,17 @@ export async function POST(
       }),
     });
 
+    if (!agentResponse.ok) {
+      const errorBody = await agentResponse.text();
+      logger.error("Agent endpoint returned error", {
+        status: agentResponse.status,
+        body: errorBody,
+        senderId,
+        channelId,
+      });
+      return NextResponse.json({ status: 0 });
+    }
+
     const { reply } = (await agentResponse.json()) as { reply: string };
 
     await sendViberMessage(channel.authToken, channel.botName ?? DEFAULT_BOT_NAME, senderId, reply);

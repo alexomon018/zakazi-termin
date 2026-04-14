@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { getAppUrl, logger } from "@salonko/config";
 import { NextResponse } from "next/server";
 
@@ -8,6 +8,11 @@ const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
 
 /** Meta webhook verification handshake */
 export async function GET(request: Request) {
+  if (!WHATSAPP_WEBHOOK_SECRET) {
+    logger.error("WHATSAPP_WEBHOOK_SECRET is not configured");
+    return NextResponse.json({ error: "Not configured" }, { status: 500 });
+  }
+
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get("hub.mode");
   const token = searchParams.get("hub.verify_token");
@@ -33,8 +38,16 @@ export async function POST(request: Request) {
   if (!signature) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
-  const expected = `sha256=${createHmac("sha256", WHATSAPP_WEBHOOK_SECRET).update(rawBody).digest("hex")}`;
-  if (signature !== expected) {
+  const prefix = "sha256=";
+  if (!signature.toLowerCase().startsWith(prefix)) {
+    logger.error("WhatsApp signature mismatch");
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+  const incomingHex = signature.slice(prefix.length);
+  const expectedHex = createHmac("sha256", WHATSAPP_WEBHOOK_SECRET).update(rawBody).digest("hex");
+  const expectedBuf = Buffer.from(expectedHex, "hex");
+  const incomingBuf = Buffer.from(incomingHex, "hex");
+  if (incomingBuf.length !== expectedBuf.length || !timingSafeEqual(expectedBuf, incomingBuf)) {
     logger.error("WhatsApp signature mismatch");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
@@ -83,7 +96,22 @@ export async function POST(request: Request) {
       }),
     });
 
-    const { reply } = (await agentResponse.json()) as { reply: string };
+    if (!agentResponse.ok) {
+      const errorBody = await agentResponse.text();
+      logger.error("Agent endpoint returned error", {
+        status: agentResponse.status,
+        senderPhone,
+        phoneNumberId,
+        errorBody,
+      });
+      return NextResponse.json({ received: true });
+    }
+
+    const { reply } = (await agentResponse.json()) as { reply?: string };
+    if (!reply) {
+      logger.warn("Agent returned empty reply", { senderPhone });
+      return NextResponse.json({ received: true });
+    }
 
     await sendWhatsAppMessage(channel.authToken, phoneNumberId, senderPhone, reply);
   } catch (error) {
@@ -93,6 +121,8 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
+const WHATSAPP_SEND_TIMEOUT_MS = 5000;
+
 async function sendWhatsAppMessage(
   accessToken: string,
   phoneNumberId: string,
@@ -100,23 +130,36 @@ async function sendWhatsAppMessage(
   text: string
 ): Promise<void> {
   const url = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: text },
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), WHATSAPP_SEND_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to,
+        type: "text",
+        text: { body: text },
+      }),
+    });
 
-  if (!res.ok) {
-    const error = await res.text();
-    logger.error("WhatsApp send message failed", { to, status: res.status, error });
+    if (!res.ok) {
+      const error = await res.text();
+      logger.error("WhatsApp send message failed", { to, status: res.status, error });
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      logger.error("WhatsApp send message timed out", { to, timeoutMs: WHATSAPP_SEND_TIMEOUT_MS });
+      return;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

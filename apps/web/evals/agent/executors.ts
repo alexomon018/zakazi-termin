@@ -45,10 +45,10 @@ export async function runSingleTurn(scenario: SingleTurnScenario): Promise<Singl
     .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === "tool_use")
     .map((b) => ({ name: b.name, input: b.input }));
 
-  const text =
-    response.content.find((b) => b.type === "text")?.type === "text"
-      ? (response.content.find((b) => b.type === "text") as Anthropic.Messages.TextBlock).text
-      : null;
+  const textBlock = response.content.find(
+    (b): b is Anthropic.Messages.TextBlock => b.type === "text"
+  );
+  const text = textBlock?.text ?? null;
 
   return {
     toolCalls,

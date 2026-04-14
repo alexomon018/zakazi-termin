@@ -1,9 +1,22 @@
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import type { MockedTools } from "../types";
 
 /**
  * Default mocked tool responses that match the shape returned by callTool
  * in apps/web/app/api/messaging/agent/route.ts. All responses are JSON strings.
  */
+const BELGRADE_TZ = "Europe/Belgrade";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+function belgradeSlotISOsFromNow(offsetHours: number[]): string[] {
+  const base = dayjs.tz(new Date(), BELGRADE_TZ);
+  return offsetHours.map((h) => base.add(h, "hour").format("YYYY-MM-DDTHH:mm:ssZ"));
+}
+
 export const defaultMockedTools: MockedTools = {
   get_salon_info: JSON.stringify({
     salonName: "Test Salon",
@@ -11,7 +24,7 @@ export const defaultMockedTools: MockedTools = {
     salonCity: "Beograd",
     salonAddress: "Knez Mihailova 1",
     salonTypes: ["HAIR_SALON"],
-    timeZone: "Europe/Belgrade",
+    timeZone: BELGRADE_TZ,
     services: [
       {
         id: "et-sisanje",
@@ -37,13 +50,8 @@ export const defaultMockedTools: MockedTools = {
   check_availability: (args) => {
     const slug = (args.eventTypeSlug as string) ?? "sisanje";
     return JSON.stringify({
-      slots: [
-        "2026-04-15T09:00:00+02:00",
-        "2026-04-15T10:00:00+02:00",
-        "2026-04-15T11:00:00+02:00",
-        "2026-04-15T14:00:00+02:00",
-      ],
-      timeZone: "Europe/Belgrade",
+      slots: belgradeSlotISOsFromNow([1, 2, 3, 6]),
+      timeZone: BELGRADE_TZ,
       eventType: { id: `et-${slug}`, title: slug, length: 30 },
     });
   },
@@ -62,7 +70,7 @@ export const emptyAvailabilityMock: MockedTools = {
   ...defaultMockedTools,
   check_availability: JSON.stringify({
     slots: [],
-    timeZone: "Europe/Belgrade",
+    timeZone: BELGRADE_TZ,
     eventType: { id: "et-sisanje", title: "Šišanje", length: 30 },
   }),
 };

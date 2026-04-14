@@ -22,7 +22,12 @@ yarn workspace @salonko/web agent:eval:lmnr:single
 yarn workspace @salonko/web agent:eval:lmnr:multi
 ```
 
-Also requires `LMNR_PROJECT_API_KEY`. Scenarios are uploaded as a Laminar evaluation run and scored by the same evaluators as the stdout runner. Group names: `agent-single-turn`, `agent-multi-turn`.
+Environment (also loaded from `.env` via `dotenv`, same as the stdout runner):
+
+- **`LMNR_PROJECT_API_KEY`** — authenticates uploads to Laminar; both `agent:eval:lmnr:single` and `agent:eval:lmnr:multi` pass this to `evaluate()`.
+- **`ANTHROPIC_API_KEY`** — required for Claude when running those commands: the executor calls the model for every scenario, and `agent:eval:lmnr:multi` also uses Claude for the `outputQuality` (LLM judge) evaluator.
+
+Scenarios are uploaded as a Laminar evaluation run and scored by the same evaluators as the stdout runner. Group names: `agent-single-turn`, `agent-multi-turn`.
 
 ## Suites
 
