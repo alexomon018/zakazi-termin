@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-channel";
 
 const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
-const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
 
 /** Meta webhook verification handshake */
 export async function GET(request: Request) {
@@ -22,8 +21,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!WHATSAPP_WEBHOOK_SECRET || !WHATSAPP_ACCESS_TOKEN) {
-    logger.error("WhatsApp env vars not configured");
+  if (!WHATSAPP_WEBHOOK_SECRET) {
+    logger.error("WHATSAPP_WEBHOOK_SECRET is not configured");
     return NextResponse.json({ error: "Not configured" }, { status: 500 });
   }
 
@@ -60,9 +59,9 @@ export async function POST(request: Request) {
 
   // Resolve the salon this phone number belongs to
   const channel = await resolveChannel("whatsapp", phoneNumberId);
-  if (!channel) {
-    // Silent 200 so Meta doesn't retry unmapped numbers into a loop.
-    logger.warn("WhatsApp message for unmapped phone_number_id", { phoneNumberId });
+  if (!channel?.authToken) {
+    // Silent 200 so Meta doesn't retry unmapped/misconfigured numbers into a loop.
+    logger.warn("WhatsApp message for unmapped or tokenless phone_number_id", { phoneNumberId });
     return NextResponse.json({ received: true });
   }
 
@@ -86,7 +85,7 @@ export async function POST(request: Request) {
 
     const { reply } = (await agentResponse.json()) as { reply: string };
 
-    await sendWhatsAppMessage(phoneNumberId, senderPhone, reply);
+    await sendWhatsAppMessage(channel.authToken, phoneNumberId, senderPhone, reply);
   } catch (error) {
     logger.error("WhatsApp message processing failed", { error, senderPhone });
   }
@@ -94,12 +93,17 @@ export async function POST(request: Request) {
   return NextResponse.json({ received: true });
 }
 
-async function sendWhatsAppMessage(phoneNumberId: string, to: string, text: string): Promise<void> {
+async function sendWhatsAppMessage(
+  accessToken: string,
+  phoneNumberId: string,
+  to: string,
+  text: string
+): Promise<void> {
   const url = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({

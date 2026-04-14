@@ -197,11 +197,13 @@ function AddChannelDialog({
 }: AddChannelDialogProps) {
   const utils = trpc.useUtils();
   const [phoneNumberId, setPhoneNumberId] = useState("");
+  const [whatsAppAccessToken, setWhatsAppAccessToken] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [botName, setBotName] = useState("");
 
   const resetForm = () => {
     setPhoneNumberId("");
+    setWhatsAppAccessToken("");
     setAuthToken("");
     setBotName("");
   };
@@ -228,7 +230,10 @@ function AddChannelDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (platform === "whatsapp") {
-      createWhatsApp.mutate({ phoneNumberId: phoneNumberId.trim() });
+      createWhatsApp.mutate({
+        phoneNumberId: phoneNumberId.trim(),
+        accessToken: whatsAppAccessToken.trim(),
+      });
     } else if (platform === "viber") {
       createViber.mutate({
         authToken: authToken.trim(),
@@ -273,6 +278,21 @@ function AddChannelDialog({
                   pattern="\d+"
                   data-testid="whatsapp-phone-number-id"
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="whatsAppAccessToken">Access token</Label>
+                <Input
+                  id="whatsAppAccessToken"
+                  type="password"
+                  value={whatsAppAccessToken}
+                  onChange={(e) => setWhatsAppAccessToken(e.target.value)}
+                  placeholder="System User token iz Meta konzole"
+                  required
+                  data-testid="whatsapp-access-token"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Meta Developer Console → WhatsApp → API Setup → System User token.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-muted-foreground">

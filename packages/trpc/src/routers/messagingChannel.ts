@@ -24,7 +24,11 @@ export const messagingChannelRouter = router({
     return channels;
   }),
 
-  /** Link a WhatsApp phone_number_id to this salon. */
+  /**
+   * Link a WhatsApp phone_number_id to this salon. The access token (from the
+   * salon owner's own Meta app) is encrypted at rest and used to send outgoing
+   * replies, so each salon is self-serve.
+   */
   createWhatsApp: protectedProcedure
     .input(
       z.object({
@@ -33,6 +37,7 @@ export const messagingChannelRouter = router({
           .trim()
           .min(1, "Phone number ID je obavezan")
           .regex(/^\d+$/, "Phone number ID mora sadržati samo brojeve"),
+        accessToken: z.string().trim().min(10, "Access token je obavezan"),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -53,6 +58,7 @@ export const messagingChannelRouter = router({
           platform: "whatsapp",
           externalId: input.phoneNumberId,
           salonUserId: ctx.session.user.id,
+          authTokenEnc: encryptToken(input.accessToken),
         },
         select: { id: true, platform: true, externalId: true, botName: true, createdAt: true },
       });
