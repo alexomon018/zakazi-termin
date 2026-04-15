@@ -677,13 +677,14 @@ model EmailDripRecord {
 // ===== AI AGENT =====
 
 model AgentConversation {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  platform   String   // "whatsapp" | "viber"
-  externalId String   // platform-specific conversation/user ID
-  salonSlug  String   // which salon this conversation belongs to
-  messages   Json     // Claude message history array
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platform        String   // "whatsapp" | "viber"
+  externalId      String   // platform-specific conversation/user ID
+  salonSlug       String   // which salon this conversation belongs to
+  messages        Json     // Claude message history array
+  messagesVersion Int      @default(0) // optimistic concurrency guard for message writes
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   proposals AgentBookingProposal[]
 

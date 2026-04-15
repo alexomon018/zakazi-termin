@@ -181,7 +181,13 @@ function CopyableUrl({ url }: { url: string }) {
   return (
     <div className="flex gap-2 items-center">
       <code className="flex-1 p-2 text-xs truncate rounded bg-muted font-mono">{url}</code>
-      <Button size="icon" variant="ghost" onClick={handleCopy} aria-label="Kopiraj URL">
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        onClick={handleCopy}
+        aria-label="Kopiraj URL"
+      >
         {copied ? (
           <Check className="w-4 h-4 text-green-600" />
         ) : copyFailed ? (

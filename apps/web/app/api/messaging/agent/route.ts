@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const MAX_CONCURRENCY_RETRIES = 3;
 
 const bodySchema = z.object({
   platform: z.enum(["whatsapp", "viber"]),
@@ -18,15 +19,15 @@ const bodySchema = z.object({
 
 const checkAvailabilitySchema = z.object({
   eventTypeSlug: z.string(),
-  dateFrom: z.string(),
-  dateTo: z.string(),
+  dateFrom: z.string().datetime(),
+  dateTo: z.string().datetime(),
   timeZone: z.string().default("Europe/Belgrade"),
 });
 
 const proposeBookingSchema = z.object({
   eventTypeSlug: z.string(),
-  startTime: z.string(),
-  endTime: z.string(),
+  startTime: z.string().datetime(),
+  endTime: z.string().datetime(),
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
@@ -178,28 +179,34 @@ async function callTool(
     });
     if (!eventType) return JSON.stringify({ error: "Usluga nije pronađena." });
 
-    try {
-      const booking = await caller.booking.create({
-        eventTypeId: eventType.id,
-        startTime: new Date(payload.data.startTime),
-        endTime: new Date(payload.data.endTime),
-        name: payload.data.name,
-        email: payload.data.email,
-        phoneNumber: payload.data.phone,
-        notes: payload.data.notes,
-        timeZone: payload.data.timeZone,
-        locale: "sr",
-      });
+    const booking = await caller.booking.create({
+      eventTypeId: eventType.id,
+      startTime: new Date(payload.data.startTime),
+      endTime: new Date(payload.data.endTime),
+      name: payload.data.name,
+      email: payload.data.email,
+      phoneNumber: payload.data.phone,
+      notes: payload.data.notes,
+      timeZone: payload.data.timeZone,
+      locale: "sr",
+    });
 
-      return JSON.stringify({
-        uid: booking.uid,
-        startTime: booking.startTime,
-        endTime: booking.endTime,
-        status: booking.status,
-      });
-    } finally {
+    try {
       await prisma.agentBookingProposal.delete({ where: { id: proposal.id } });
+    } catch (deleteErr) {
+      logger.error("Failed to delete booking proposal after successful booking", {
+        proposalId: proposal.id,
+        bookingUid: booking.uid,
+        error: deleteErr,
+      });
     }
+
+    return JSON.stringify({
+      uid: booking.uid,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      status: booking.status,
+    });
   }
 
   return JSON.stringify({ error: `Unknown tool: ${toolName}` });
@@ -235,6 +242,7 @@ export async function POST(request: Request) {
     where: { platform_externalId_salonSlug: { platform, externalId, salonSlug } },
     create: { platform, externalId, salonSlug, messages: [] },
     update: {},
+    select: { id: true, messages: true, messagesVersion: true },
   });
 
   const salon = await prisma.user.findFirst({
@@ -268,11 +276,61 @@ export async function POST(request: Request) {
     logger.error("Claude API error", { error, platform, salonSlug });
   }
 
-  const trimmedMessages = compactHistory(finalMessages);
-  await prisma.agentConversation.update({
-    where: { id: conversation.id },
-    data: { messages: trimmedMessages as object[] },
-  });
+  const persistErr = await persistMessages(
+    conversation.id,
+    conversation.messagesVersion,
+    finalMessages
+  );
+  if (persistErr) return persistErr;
 
   return NextResponse.json({ reply });
+}
+
+/**
+ * Persist compacted messages with optimistic concurrency.
+ * Returns a NextResponse on unrecoverable conflict, or null on success.
+ */
+async function persistMessages(
+  conversationId: string,
+  initialVersion: number,
+  finalMessages: Anthropic.MessageParam[]
+): Promise<NextResponse | null> {
+  let currentVersion = initialVersion;
+  let messagesToWrite = finalMessages;
+
+  for (let attempt = 0; attempt < MAX_CONCURRENCY_RETRIES; attempt++) {
+    const trimmed = compactHistory(messagesToWrite);
+
+    const updated = await prisma.agentConversation.updateMany({
+      where: { id: conversationId, messagesVersion: currentVersion },
+      data: {
+        messages: trimmed as object[],
+        messagesVersion: currentVersion + 1,
+      },
+    });
+
+    if (updated.count > 0) return null;
+
+    const fresh = await prisma.agentConversation.findUnique({
+      where: { id: conversationId },
+      select: { messages: true, messagesVersion: true },
+    });
+    if (!fresh) return null;
+
+    currentVersion = fresh.messagesVersion;
+    const existingMessages = fresh.messages as unknown as Anthropic.MessageParam[];
+
+    // Keep everything the DB already has, then append only the turns
+    // this request produced beyond the shared prefix length.
+    const newTail = finalMessages.slice(existingMessages.length);
+    messagesToWrite = [...existingMessages, ...newTail];
+  }
+
+  logger.warn("Optimistic concurrency retries exhausted for agent conversation", {
+    conversationId,
+  });
+  return NextResponse.json(
+    { error: "Conversation was modified concurrently, please retry" },
+    { status: 409 }
+  );
 }

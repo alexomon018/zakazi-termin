@@ -40,6 +40,20 @@ function fmt(n: number): string {
   return n.toFixed(2);
 }
 
+function errorMessage(err: unknown): string {
+  try {
+    if (err instanceof Error) {
+      return err.message + (err.stack ? `\n${err.stack}` : "");
+    }
+    if (typeof err === "string") {
+      return err;
+    }
+    return JSON.stringify(err);
+  } catch {
+    return String(err);
+  }
+}
+
 async function runSingleTurnSuite() {
   console.log("\n=== Single-turn suite ===");
   let passed = 0;
@@ -55,7 +69,7 @@ async function runSingleTurnSuite() {
         )} selected=${score.toolsSelected} avoided=${score.toolsAvoided} firstTool=${score.firstTool}`
       );
     } catch (err) {
-      console.log(`[ERROR] ${scenario.id}: ${(err as Error).message}`);
+      console.log(`[ERROR] ${scenario.id}: ${errorMessage(err)}`);
     }
   }
   const safeRatio = singleTurnScenarios.length ? passed / singleTurnScenarios.length : 0;
@@ -89,7 +103,7 @@ async function runMultiTurnSuite() {
         console.log(`       reply: ${output.reply.slice(0, 160).replace(/\n/g, " ")}`);
       }
     } catch (err) {
-      console.log(`[ERROR] ${scenario.id}: ${(err as Error).message}`);
+      console.log(`[ERROR] ${scenario.id}: ${errorMessage(err)}`);
     }
   }
   const safeRatio = multiTurnScenarios.length ? passed / multiTurnScenarios.length : 0;
@@ -123,6 +137,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
+  console.error(errorMessage(err));
   process.exit(1);
 });

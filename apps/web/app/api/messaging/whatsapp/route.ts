@@ -20,7 +20,10 @@ export async function GET(request: Request) {
   const challenge = searchParams.get("hub.challenge");
 
   if (mode === "subscribe" && token === WHATSAPP_WEBHOOK_SECRET) {
-    return new Response(challenge, { status: 200 });
+    if (challenge) {
+      return new Response(challenge, { status: 200 });
+    }
+    return NextResponse.json({ error: "Missing hub.challenge" }, { status: 400 });
   }
 
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -71,21 +74,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   }
 
-  // Resolve the salon this phone number belongs to
-  const channel = await resolveChannel("whatsapp", phoneNumberId);
-  if (!channel?.authToken) {
-    // Silent 200 so Meta doesn't retry unmapped/misconfigured numbers into a loop.
-    logger.warn("WhatsApp message for unmapped or tokenless phone_number_id", { phoneNumberId });
-    return NextResponse.json({ received: true });
-  }
-
-  const rateLimited = await checkChannelRateLimit("whatsapp", phoneNumberId);
-  if (rateLimited) return NextResponse.json({ received: true });
-
   const senderPhone = message.from;
   const userMessage = message.text.body;
 
   try {
+    let channel: Awaited<ReturnType<typeof resolveChannel>>;
+    try {
+      channel = await resolveChannel("whatsapp", phoneNumberId);
+    } catch (error) {
+      logger.warn("Failed to resolve WhatsApp channel", { phoneNumberId, error });
+      return NextResponse.json({ received: true });
+    }
+
+    if (!channel?.authToken) {
+      logger.warn("WhatsApp message for unmapped or tokenless phone_number_id", { phoneNumberId });
+      return NextResponse.json({ received: true });
+    }
+
+    try {
+      const rateLimited = await checkChannelRateLimit("whatsapp", phoneNumberId);
+      if (rateLimited) return NextResponse.json({ received: true });
+    } catch (error) {
+      logger.warn("Rate limit check failed for WhatsApp channel", { phoneNumberId, error });
+      return NextResponse.json({ received: true });
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), WHATSAPP_SEND_TIMEOUT_MS);
     let agentResponse: Response;
@@ -137,7 +150,7 @@ export async function POST(request: Request) {
 
     await sendWhatsAppMessage(channel.authToken, phoneNumberId, senderPhone, reply);
   } catch (error) {
-    logger.error("WhatsApp message processing failed", { error, senderPhone });
+    logger.error("WhatsApp message processing failed", { error, senderPhone, phoneNumberId });
   }
 
   return NextResponse.json({ received: true });

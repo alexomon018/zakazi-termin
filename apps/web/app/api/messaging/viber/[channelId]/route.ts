@@ -14,48 +14,57 @@ export async function POST(
 ) {
   const { channelId } = await params;
 
-  const channel = await resolveChannel("viber", channelId);
-  if (!channel?.authToken) {
-    logger.warn("Viber webhook for unmapped channelId", { channelId });
-    // Viber expects status 0 = OK; returning non-zero would cause retries for
-    // a salon we can't route to.
-    return NextResponse.json({ status: 0 });
-  }
-
-  const rawBody = await request.text();
-
-  // Verify X-Viber-Content-Signature using the per-channel auth token.
-  const signature = request.headers.get("x-viber-content-signature");
-  if (!signature) {
-    return NextResponse.json({ error: "Missing signature" }, { status: 400 });
-  }
-  const expected = createHmac("sha256", channel.authToken).update(rawBody).digest("hex");
-  if (signature !== expected) {
-    logger.error("Viber signature mismatch", { channelId });
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
-  }
-
-  let payload: ViberPayload;
   try {
-    payload = JSON.parse(rawBody) as ViberPayload;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+    let channel: Awaited<ReturnType<typeof resolveChannel>>;
+    try {
+      channel = await resolveChannel("viber", channelId);
+    } catch (error) {
+      logger.error("Failed to resolve Viber channel", { error, channelId });
+      return NextResponse.json({ status: 0 });
+    }
 
-  if (payload.event !== "message" || payload.message?.type !== "text" || !payload.message?.text) {
-    return NextResponse.json({ status: 0 });
-  }
+    if (!channel?.authToken) {
+      logger.warn("Viber webhook for unmapped channelId", { channelId });
+      return NextResponse.json({ status: 0 });
+    }
 
-  const senderId = payload.sender?.id;
-  const userMessage = payload.message.text;
-  if (!senderId) {
-    return NextResponse.json({ status: 0 });
-  }
+    const rawBody = await request.text();
 
-  const rateLimited = await checkChannelRateLimit("viber", channelId);
-  if (rateLimited) return NextResponse.json({ status: 0 });
+    const signature = request.headers.get("x-viber-content-signature");
+    if (!signature) {
+      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+    }
+    const expected = createHmac("sha256", channel.authToken).update(rawBody).digest("hex");
+    if (signature !== expected) {
+      logger.error("Viber signature mismatch", { channelId });
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+    }
 
-  try {
+    let payload: ViberPayload;
+    try {
+      payload = JSON.parse(rawBody) as ViberPayload;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
+
+    if (payload.event !== "message" || payload.message?.type !== "text" || !payload.message?.text) {
+      return NextResponse.json({ status: 0 });
+    }
+
+    const senderId = payload.sender?.id;
+    const userMessage = payload.message.text;
+    if (!senderId) {
+      return NextResponse.json({ status: 0 });
+    }
+
+    try {
+      const rateLimited = await checkChannelRateLimit("viber", channelId);
+      if (rateLimited) return NextResponse.json({ status: 0 });
+    } catch (error) {
+      logger.error("Rate limit check failed for Viber channel", { error, channelId });
+      return NextResponse.json({ status: 0 });
+    }
+
     const agentController = new AbortController();
     const agentTimeout = setTimeout(() => agentController.abort(), AGENT_FETCH_TIMEOUT_MS);
 
@@ -104,7 +113,7 @@ export async function POST(
 
     await sendViberMessage(channel.authToken, channel.botName ?? DEFAULT_BOT_NAME, senderId, reply);
   } catch (error) {
-    logger.error("Viber message processing failed", { error, senderId, channelId });
+    logger.error("Viber message processing failed", { error, channelId });
   }
 
   return NextResponse.json({ status: 0 });
