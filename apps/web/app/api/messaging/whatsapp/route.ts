@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-channel";
 
 const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
+const AGENT_API_SECRET = process.env.AGENT_API_SECRET;
 const WHATSAPP_SEND_TIMEOUT_MS = 5000;
 
 /** Meta webhook verification handshake */
@@ -99,6 +100,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
+    if (!AGENT_API_SECRET) {
+      logger.error("AGENT_API_SECRET is not configured");
+      return NextResponse.json({ received: true });
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), WHATSAPP_SEND_TIMEOUT_MS);
     let agentResponse: Response;
@@ -108,12 +114,12 @@ export async function POST(request: Request) {
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.AGENT_API_SECRET}`,
+          Authorization: `Bearer ${AGENT_API_SECRET}`,
         },
         body: JSON.stringify({
           platform: "whatsapp",
           externalId: senderPhone,
-          salonSlug: channel.salonSlug,
+          salonUserId: channel.salonUserId,
           userMessage,
         }),
       });

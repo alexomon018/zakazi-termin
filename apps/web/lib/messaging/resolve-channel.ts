@@ -8,7 +8,6 @@ export type MessagingPlatform = "whatsapp" | "viber";
 
 export interface ResolvedChannel {
   channelId: string;
-  salonSlug: string;
   salonUserId: string;
   /** Decrypted Viber bot auth token. Undefined for WhatsApp. */
   authToken?: string;
@@ -18,8 +17,7 @@ export interface ResolvedChannel {
 
 /**
  * Looks up a messaging channel by `(platform, externalId)` and returns the
- * salon it routes to. Returns `null` if no mapping exists or the salon lacks
- * a `salonSlug`.
+ * salon it routes to. Returns `null` if no mapping exists.
  */
 export async function resolveChannel(
   platform: MessagingPlatform,
@@ -31,11 +29,11 @@ export async function resolveChannel(
       id: true,
       authTokenEnc: true,
       botName: true,
-      salon: { select: { id: true, salonSlug: true } },
+      salon: { select: { id: true } },
     },
   });
 
-  if (!channel?.salon?.salonSlug) return null;
+  if (!channel?.salon) return null;
 
   let authToken: string | undefined;
   if (channel.authTokenEnc) {
@@ -52,7 +50,6 @@ export async function resolveChannel(
 
   return {
     channelId: channel.id,
-    salonSlug: channel.salon.salonSlug,
     salonUserId: channel.salon.id,
     authToken,
     botName: channel.botName ?? undefined,

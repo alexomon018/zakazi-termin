@@ -169,7 +169,8 @@ model User {
   emailDripRecords EmailDripRecord[]
 
   // Messaging channels (WhatsApp / Viber)
-  messagingChannels MessagingChannel[]
+  messagingChannels    MessagingChannel[]
+  agentConversations   AgentConversation[]
 
   @@index([email])
   @@index([salonSlug])
@@ -680,7 +681,8 @@ model AgentConversation {
   id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   platform        String   // "whatsapp" | "viber"
   externalId      String   // platform-specific conversation/user ID
-  salonSlug       String   // which salon this conversation belongs to
+  salonUserId     String
+  salon           User     @relation(fields: [salonUserId], references: [id], onDelete: Cascade)
   messages        Json     // Claude message history array
   messagesVersion Int      @default(0) // optimistic concurrency guard for message writes
   createdAt       DateTime @default(now())
@@ -688,7 +690,8 @@ model AgentConversation {
 
   proposals AgentBookingProposal[]
 
-  @@unique([platform, externalId, salonSlug])
+  @@unique([platform, externalId, salonUserId])
+  @@index([salonUserId])
   @@index([updatedAt])
 }
 

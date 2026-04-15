@@ -80,7 +80,7 @@ export async function POST(
         body: JSON.stringify({
           platform: "viber",
           externalId: senderId,
-          salonSlug: channel.salonSlug,
+          salonUserId: channel.salonUserId,
           userMessage,
         }),
       });

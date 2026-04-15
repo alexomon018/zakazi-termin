@@ -32,11 +32,16 @@ export function MessagingChannelsClient({ appOrigin }: MessagingChannelsClientPr
   const channels: MessagingChannelListItem[] = data ?? [];
   const [addOpen, setAddOpen] = useState<ChannelPlatform | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const deleteChannel = trpc.messagingChannel.delete.useMutation({
     onSuccess: async () => {
+      setDeleteError(null);
       await utils.messagingChannel.list.invalidate();
       setDeleteId(null);
+    },
+    onError: (error) => {
+      setDeleteError(error.message);
     },
   });
 
@@ -83,7 +88,11 @@ export function MessagingChannelsClient({ appOrigin }: MessagingChannelsClientPr
               key={channel.id}
               channel={channel}
               appOrigin={appOrigin}
-              onDelete={() => setDeleteId(channel.id)}
+              onDelete={() => {
+                deleteChannel.reset();
+                setDeleteError(null);
+                setDeleteId(channel.id);
+              }}
             />
           ))}
         </ul>
@@ -99,15 +108,23 @@ export function MessagingChannelsClient({ appOrigin }: MessagingChannelsClientPr
       <ConfirmDialog
         open={Boolean(deleteId)}
         onOpenChange={(open) => {
-          if (!open) setDeleteId(null);
+          if (!open) {
+            setDeleteId(null);
+            setDeleteError(null);
+            deleteChannel.reset();
+          }
         }}
         title="Ukloni kanal"
         description="Da li ste sigurni da želite da uklonite ovaj kanal? Klijenti više neće moći da komuniciraju sa vašim botom."
         confirmText="Ukloni"
         loadingText="Uklanjanje..."
         isLoading={deleteChannel.isPending}
+        errorMessage={deleteError ?? deleteChannel.error?.message}
         onConfirm={() => {
-          if (deleteId) deleteChannel.mutate({ id: deleteId });
+          if (!deleteId) return;
+          setDeleteError(null);
+          deleteChannel.reset();
+          deleteChannel.mutate({ id: deleteId });
         }}
       />
     </div>

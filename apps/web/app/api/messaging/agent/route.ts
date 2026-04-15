@@ -13,7 +13,7 @@ const MAX_CONCURRENCY_RETRIES = 3;
 const bodySchema = z.object({
   platform: z.enum(["whatsapp", "viber"]),
   externalId: z.string(),
-  salonSlug: z.string(),
+  salonUserId: z.string(),
   userMessage: z.string(),
 });
 
@@ -47,13 +47,14 @@ type Caller = Awaited<ReturnType<typeof createPublicServerCaller>>;
 async function callTool(
   toolName: string,
   toolInput: Record<string, unknown>,
+  salonUserId: string,
   salonSlug: string,
   conversationId: string,
   caller: Caller
 ): Promise<string> {
   if (toolName === "get_salon_info") {
-    const salon = await prisma.user.findFirst({
-      where: { salonSlug, salonName: { not: null } },
+    const salon = await prisma.user.findUnique({
+      where: { id: salonUserId },
       select: {
         salonName: true,
         salonSlug: true,
@@ -236,20 +237,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const { platform, externalId, salonSlug, userMessage } = parsed.data;
+  const { platform, externalId, salonUserId, userMessage } = parsed.data;
 
   const conversation = await prisma.agentConversation.upsert({
-    where: { platform_externalId_salonSlug: { platform, externalId, salonSlug } },
-    create: { platform, externalId, salonSlug, messages: [] },
+    where: { platform_externalId_salonUserId: { platform, externalId, salonUserId } },
+    create: { platform, externalId, salonUserId, messages: [] },
     update: {},
     select: { id: true, messages: true, messagesVersion: true },
   });
 
-  const salon = await prisma.user.findFirst({
-    where: { salonSlug, salonName: { not: null } },
-    select: { salonName: true },
+  const salon = await prisma.user.findUnique({
+    where: { id: salonUserId },
+    select: { salonName: true, salonSlug: true },
   });
-  const salonName = salon?.salonName ?? salonSlug;
+  if (!salon?.salonSlug) {
+    return NextResponse.json({ error: "Salon not found" }, { status: 404 });
+  }
+  const { salonSlug } = salon;
+  const salonName = salon.salonName ?? salonSlug;
 
   const initialMessages: Anthropic.MessageParam[] = [
     ...(conversation.messages as unknown as Anthropic.MessageParam[]),
@@ -267,13 +272,14 @@ export async function POST(request: Request) {
       client,
       messages: initialMessages,
       salonName,
-      toolExecutor: (name, input) => callTool(name, input, salonSlug, conversation.id, caller),
+      toolExecutor: (name, input) =>
+        callTool(name, input, salonUserId, salonSlug, conversation.id, caller),
       onToolError: (tool, err) => logger.error("Agent tool call failed", { tool, error: err }),
     });
     reply = result.reply;
     finalMessages = result.messages;
   } catch (error) {
-    logger.error("Claude API error", { error, platform, salonSlug });
+    logger.error("Claude API error", { error, platform, salonUserId });
   }
 
   const persistErr = await persistMessages(
