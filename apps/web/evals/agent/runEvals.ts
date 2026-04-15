@@ -20,14 +20,20 @@ import {
 } from "./evaluators";
 import { runMultiTurn, runSingleTurn } from "./executors";
 
+const MIN_JUDGE_SCORE = 0.7;
+
 type SuiteName = "single-turn" | "multi-turn" | "all";
 
 function parseSuite(argv: string[]): SuiteName {
   const idx = argv.indexOf("--suite");
   if (idx === -1) return "all";
   const value = argv[idx + 1];
-  if (value === "single-turn" || value === "multi-turn") return value;
-  return "all";
+  if (value === "single-turn" || value === "multi-turn" || value === "all") {
+    return value;
+  }
+  throw new Error(
+    `Invalid --suite value: ${value ?? "<missing>"}. Allowed: single-turn, multi-turn, all`
+  );
 }
 
 function fmt(n: number): string {
@@ -68,7 +74,10 @@ async function runMultiTurnSuite() {
       const order = toolOrderCorrect(output, scenario.expectedToolOrder);
       const judge = await llmJudge(output, scenario);
       const scenarioPassed =
-        avoided === 1 && order >= 0.99 && (scenario.expectedToolOrder ? selected === 1 : true);
+        judge >= MIN_JUDGE_SCORE &&
+        avoided === 1 &&
+        order >= 0.99 &&
+        (scenario.expectedToolOrder ? selected === 1 : true);
       if (scenarioPassed) passed++;
       const marker = scenarioPassed ? "PASS" : "FAIL";
       console.log(
@@ -83,11 +92,8 @@ async function runMultiTurnSuite() {
       console.log(`[ERROR] ${scenario.id}: ${(err as Error).message}`);
     }
   }
-  console.log(
-    `\nMulti-turn: ${passed}/${multiTurnScenarios.length} passed (${fmt(
-      passed / multiTurnScenarios.length
-    )})`
-  );
+  const safeRatio = multiTurnScenarios.length ? passed / multiTurnScenarios.length : 0;
+  console.log(`\nMulti-turn: ${passed}/${multiTurnScenarios.length} passed (${fmt(safeRatio)})`);
   return { passed, total: multiTurnScenarios.length };
 }
 

@@ -165,16 +165,30 @@ function ChannelRow({ channel, appOrigin, onDelete }: ChannelRowProps) {
 
 function CopyableUrl({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopyFailed(false);
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy URL to clipboard:", err);
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 2000);
+    }
   };
   return (
     <div className="flex gap-2 items-center">
       <code className="flex-1 p-2 text-xs truncate rounded bg-muted font-mono">{url}</code>
       <Button size="icon" variant="ghost" onClick={handleCopy} aria-label="Kopiraj URL">
-        {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+        {copied ? (
+          <Check className="w-4 h-4 text-green-600" />
+        ) : copyFailed ? (
+          <AlertCircle className="w-4 h-4 text-destructive" aria-hidden="true" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
       </Button>
     </div>
   );

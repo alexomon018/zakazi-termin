@@ -1,3 +1,4 @@
+import { verifyAgentRequest } from "@/lib/agent/auth";
 import { DEFAULT_ERROR_REPLY, compactHistory, runAgentLoop } from "@/lib/agent/loop";
 import { createPublicServerCaller } from "@/lib/trpc/server";
 import Anthropic from "@anthropic-ai/sdk";
@@ -205,6 +206,9 @@ async function callTool(
 }
 
 export async function POST(request: Request) {
+  const guardError = await verifyAgentRequest(request, "agent-messaging");
+  if (guardError) return guardError;
+
   if (!ANTHROPIC_API_KEY) {
     logger.error("ANTHROPIC_API_KEY is not configured");
     return NextResponse.json({ error: "AI service not configured" }, { status: 500 });

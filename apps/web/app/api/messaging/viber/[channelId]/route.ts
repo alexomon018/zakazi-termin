@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-channel";
 
 const DEFAULT_BOT_NAME = "Booking Assistant";
+const AGENT_FETCH_TIMEOUT_MS = 8_000;
+const VIBER_SEND_TIMEOUT_MS = 5_000;
 
 export async function POST(
   request: Request,
@@ -54,16 +56,38 @@ export async function POST(
   if (rateLimited) return NextResponse.json({ status: 0 });
 
   try {
-    const agentResponse = await fetch(`${getAppUrl()}/api/messaging/agent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        platform: "viber",
-        externalId: senderId,
-        salonSlug: channel.salonSlug,
-        userMessage,
-      }),
-    });
+    const agentController = new AbortController();
+    const agentTimeout = setTimeout(() => agentController.abort(), AGENT_FETCH_TIMEOUT_MS);
+
+    let agentResponse: Response;
+    try {
+      agentResponse = await fetch(`${getAppUrl()}/api/messaging/agent`, {
+        method: "POST",
+        signal: agentController.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.AGENT_API_SECRET}`,
+        },
+        body: JSON.stringify({
+          platform: "viber",
+          externalId: senderId,
+          salonSlug: channel.salonSlug,
+          userMessage,
+        }),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        logger.error("Agent fetch timed out", {
+          senderId,
+          channelId,
+          timeoutMs: AGENT_FETCH_TIMEOUT_MS,
+        });
+        return NextResponse.json({ status: 0 });
+      }
+      throw error;
+    } finally {
+      clearTimeout(agentTimeout);
+    }
 
     if (!agentResponse.ok) {
       const errorBody = await agentResponse.text();
@@ -92,23 +116,36 @@ async function sendViberMessage(
   receiver: string,
   text: string
 ): Promise<void> {
-  const res = await fetch("https://chatapi.viber.com/pa/send_message", {
-    method: "POST",
-    headers: {
-      "X-Viber-Auth-Token": authToken,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      receiver,
-      type: "text",
-      text,
-      sender: { name: botName },
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), VIBER_SEND_TIMEOUT_MS);
+  try {
+    const res = await fetch("https://chatapi.viber.com/pa/send_message", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "X-Viber-Auth-Token": authToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        receiver,
+        type: "text",
+        text,
+        sender: { name: botName },
+      }),
+    });
 
-  if (!res.ok) {
-    const error = await res.text();
-    logger.error("Viber send message failed", { receiver, status: res.status, error });
+    if (!res.ok) {
+      const error = await res.text();
+      logger.error("Viber send message failed", { receiver, status: res.status, error });
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      logger.error("Viber send message timed out", { receiver, timeoutMs: VIBER_SEND_TIMEOUT_MS });
+      return;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

@@ -20,9 +20,9 @@ function buildMockExecutor(mocks: MockedTools) {
   return async (name: string, input: Record<string, unknown>): Promise<string> => {
     const mock = mocks[name];
     if (mock === undefined) {
-      return JSON.stringify({ error: `No mock for tool ${name}` });
+      throw new Error(`No mock for tool ${name}`);
     }
-    return typeof mock === "function" ? mock(input) : mock;
+    return typeof mock === "function" ? await mock(input) : mock;
   };
 }
 

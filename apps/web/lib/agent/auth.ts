@@ -12,14 +12,13 @@ export async function verifyAgentRequest(
 ): Promise<NextResponse | null> {
   if (publicApiRateLimiter) {
     const ip = getClientIp(request);
-    if (ip) {
-      const { success } = await publicApiRateLimiter.limit(`${bucket}:${ip}`);
-      if (!success) {
-        return NextResponse.json(
-          { error: "Previše zahteva. Pokušajte ponovo za minut." },
-          { status: 429 }
-        );
-      }
+    const key = ip ? `${bucket}:${ip}` : `${bucket}:global`;
+    const { success } = await publicApiRateLimiter.limit(key);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Previše zahteva. Pokušajte ponovo za minut." },
+        { status: 429 }
+      );
     }
   }
 

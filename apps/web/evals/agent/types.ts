@@ -1,6 +1,6 @@
 import type Anthropic from "@anthropic-ai/sdk";
 
-export type MockToolResult = string | ((args: Record<string, unknown>) => string);
+export type MockToolResult = string | ((args: Record<string, unknown>) => string | Promise<string>);
 
 export type MockedTools = Record<string, MockToolResult>;
 
