@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getAppUrl, logger } from "@salonko/config";
+import { getAppUrl, isMessagingAiEnabled, logger } from "@salonko/config";
 import { NextResponse } from "next/server";
 
 import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-channel";
@@ -7,9 +7,13 @@ import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-c
 const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
 const AGENT_API_SECRET = process.env.AGENT_API_SECRET;
 const WHATSAPP_SEND_TIMEOUT_MS = 5000;
+const AGENT_FETCH_TIMEOUT_MS = 30_000;
 
 /** Meta webhook verification handshake */
 export async function GET(request: Request) {
+  if (!isMessagingAiEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (!WHATSAPP_WEBHOOK_SECRET) {
     logger.error("WHATSAPP_WEBHOOK_SECRET is not configured");
     return NextResponse.json({ error: "Not configured" }, { status: 500 });
@@ -20,6 +24,13 @@ export async function GET(request: Request) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
+  console.log(
+    "[whatsapp-debug] mode=%s token=%s secret=%s match=%s",
+    mode,
+    token,
+    WHATSAPP_WEBHOOK_SECRET,
+    token === WHATSAPP_WEBHOOK_SECRET
+  );
   if (mode === "subscribe" && token === WHATSAPP_WEBHOOK_SECRET) {
     if (challenge) {
       return new Response(challenge, { status: 200 });
@@ -31,6 +42,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (!isMessagingAiEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (!WHATSAPP_WEBHOOK_SECRET) {
     logger.error("WHATSAPP_WEBHOOK_SECRET is not configured");
     return NextResponse.json({ error: "Not configured" }, { status: 500 });
@@ -106,9 +120,15 @@ export async function POST(request: Request) {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), WHATSAPP_SEND_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), AGENT_FETCH_TIMEOUT_MS);
     let agentResponse: Response;
     try {
+      console.log(
+        "[whatsapp] agent base url =",
+        getAppUrl(),
+        "NEXT_PUBLIC_APP_URL =",
+        process.env.NEXT_PUBLIC_APP_URL
+      );
       agentResponse = await fetch(`${getAppUrl()}/api/messaging/agent`, {
         method: "POST",
         signal: controller.signal,
@@ -128,7 +148,7 @@ export async function POST(request: Request) {
         logger.error("Agent fetch timed out", {
           senderPhone,
           phoneNumberId,
-          timeoutMs: WHATSAPP_SEND_TIMEOUT_MS,
+          timeoutMs: AGENT_FETCH_TIMEOUT_MS,
         });
         return NextResponse.json({ received: true });
       }

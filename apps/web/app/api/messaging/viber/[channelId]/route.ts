@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { getAppUrl, logger } from "@salonko/config";
+import { getAppUrl, isMessagingAiEnabled, logger } from "@salonko/config";
 import { NextResponse } from "next/server";
 
 import { checkChannelRateLimit, resolveChannel } from "@/lib/messaging/resolve-channel";
@@ -13,6 +13,10 @@ export async function POST(
   { params }: { params: Promise<{ channelId: string }> }
 ) {
   const { channelId } = await params;
+
+  if (!isMessagingAiEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   try {
     let channel: Awaited<ReturnType<typeof resolveChannel>>;

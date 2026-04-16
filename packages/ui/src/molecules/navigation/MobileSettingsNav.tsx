@@ -1,5 +1,6 @@
 "use client";
 
+import { isMessagingAiEnabled } from "@salonko/config";
 import type { MembershipRole } from "@salonko/prisma";
 import {
   DropdownMenu,
@@ -60,12 +61,16 @@ const settingsNavItems: SettingsNavItem[] = [
     label: "Van kancelarije",
     icon: CalendarOff,
   },
-  {
-    href: "/dashboard/settings/messaging",
-    label: "Messaging kanali",
-    icon: MessageCircle,
-    allowedRoles: ["OWNER", "ADMIN"],
-  },
+  ...(isMessagingAiEnabled()
+    ? [
+        {
+          href: "/dashboard/settings/messaging",
+          label: "Messaging kanali",
+          icon: MessageCircle,
+          allowedRoles: ["OWNER", "ADMIN"],
+        } satisfies SettingsNavItem,
+      ]
+    : []),
   {
     href: "/dashboard/settings",
     label: "Kalendar",

@@ -2,6 +2,7 @@ export * from "./constants";
 export * from "./app-url";
 export * from "./date-formatters";
 export * from "./dayjs";
+export * from "./feature-flags";
 export * from "./logger";
 export * from "./pricing";
 export * from "./ratelimit";

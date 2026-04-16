@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { isMessagingAiEnabled } from "@salonko/config";
 import { protectedProcedure, router } from "@salonko/trpc/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -7,9 +8,19 @@ import { encryptToken } from "../lib/messaging-crypto";
 
 const PLATFORMS = ["whatsapp", "viber"] as const;
 
+const messagingProcedure = protectedProcedure.use(({ next }) => {
+  if (!isMessagingAiEnabled()) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Ova funkcija nije dostupna.",
+    });
+  }
+  return next();
+});
+
 export const messagingChannelRouter = router({
   /** List messaging channels owned by the current user. */
-  list: protectedProcedure.query(async ({ ctx }) => {
+  list: messagingProcedure.query(async ({ ctx }) => {
     const channels = await ctx.prisma.messagingChannel.findMany({
       where: { salonUserId: ctx.session.user.id },
       select: {
@@ -29,7 +40,7 @@ export const messagingChannelRouter = router({
    * salon owner's own Meta app) is encrypted at rest and used to send outgoing
    * replies, so each salon is self-serve.
    */
-  createWhatsApp: protectedProcedure
+  createWhatsApp: messagingProcedure
     .input(
       z.object({
         phoneNumberId: z
@@ -69,7 +80,7 @@ export const messagingChannelRouter = router({
    * salon owner pastes into Viber console) and encrypts the auth token at
    * rest.
    */
-  createViber: protectedProcedure
+  createViber: messagingProcedure
     .input(
       z.object({
         authToken: z.string().trim().min(10, "Auth token je obavezan"),
@@ -92,7 +103,7 @@ export const messagingChannelRouter = router({
     }),
 
   /** Delete a channel owned by the current user. */
-  delete: protectedProcedure
+  delete: messagingProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const channel = await ctx.prisma.messagingChannel.findUnique({

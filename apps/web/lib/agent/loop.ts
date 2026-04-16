@@ -94,8 +94,11 @@ export const agentTools: Anthropic.Tool[] = [
   },
 ];
 
-export function buildSystemPrompt(salonName: string): string {
+export function buildSystemPrompt(salonName: string, now: Date = new Date()): string {
+  const today = now.toISOString().slice(0, 10);
   return `Ti si asistent za zakazivanje termina u salonu "${salonName}". Komunikacija je isključivo na srpskom jeziku, neformalan ton (ti forma).
+
+Današnji datum: ${today} (Europe/Belgrade). Kada korisnik pomene relativne datume ("danas", "sutra", "petak", "17. april"), izračunaj apsolutni datum iz ovoga pre poziva alata.
 
 ## Pravila ponašanja
 
@@ -108,6 +111,8 @@ export function buildSystemPrompt(salonName: string): string {
 4. **Alternativni termini**: Ako željeno vreme nije slobodno, odmah ponudi 2-3 alternative iz rezultata check_availability.
 
 5. **Van opsega**: Ako korisnik pita nešto što nije vezano za zakazivanje (cene, posebne ponude, pitanja o osoblju itd.), reci: "Za ovo pitanje kontaktirajte salon direktno."
+
+5b. **Provera termina je OBAVEZNA pre predloga**: Kada korisnik pomene uslugu i vreme (čak i grubo, npr. "petak"), MORAŠ pozvati check_availability. Nikada ne odgovaraj "tehnička greška" niti preusmeravaj na direktan kontakt dok ne pokušaš alat. Ako check_availability vrati grešku, pokušaj ponovo ili pitaj korisnika za precizniji datum.
 
 6. **Status termina**: Nakon uspešnog create_booking, obavesti korisnika da termin čeka potvrdu salona i da će dobiti email potvrdu. Ako predlog istekne ili je nevažeći, ponovo pripremi novi propose_booking.
 
@@ -170,6 +175,14 @@ export async function runAgentLoop({
       messages: working,
     });
 
+    console.log(
+      "[agent] round",
+      round,
+      "stop_reason=",
+      response.stop_reason,
+      "blocks=",
+      response.content.map((b) => b.type)
+    );
     working.push({ role: "assistant", content: response.content });
 
     if (response.stop_reason === "end_turn") {

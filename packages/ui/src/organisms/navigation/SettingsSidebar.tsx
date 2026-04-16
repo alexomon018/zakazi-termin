@@ -1,5 +1,6 @@
 "use client";
 
+import { isMessagingAiEnabled } from "@salonko/config";
 import type { MembershipRole } from "@salonko/prisma";
 import { Separator } from "@salonko/ui/atoms/Separator";
 import {
@@ -66,13 +67,17 @@ const settingsNavItems: SettingsNavItem[] = [
     description: "Upravljajte odsustvima",
     icon: CalendarOff,
   },
-  {
-    href: "/dashboard/settings/messaging",
-    label: "Messaging kanali",
-    description: "WhatsApp i Viber integracije",
-    icon: MessageCircle,
-    allowedRoles: ["OWNER", "ADMIN"],
-  },
+  ...(isMessagingAiEnabled()
+    ? [
+        {
+          href: "/dashboard/settings/messaging",
+          label: "Messaging kanali",
+          description: "WhatsApp i Viber integracije",
+          icon: MessageCircle,
+          allowedRoles: ["OWNER", "ADMIN"],
+        } satisfies SettingsNavItem,
+      ]
+    : []),
   {
     href: "/dashboard/settings",
     label: "Kalendar integracije",

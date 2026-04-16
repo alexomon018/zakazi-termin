@@ -2,7 +2,7 @@ import { verifyAgentRequest } from "@/lib/agent/auth";
 import { DEFAULT_ERROR_REPLY, compactHistory, runAgentLoop } from "@/lib/agent/loop";
 import { createPublicServerCaller } from "@/lib/trpc/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { logger } from "@salonko/config";
+import { isMessagingAiEnabled, logger } from "@salonko/config";
 import { prisma } from "@salonko/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -17,10 +17,14 @@ const bodySchema = z.object({
   userMessage: z.string(),
 });
 
+const isoDateOrDateTime = z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
+  message: "Expected YYYY-MM-DD or ISO-8601 datetime",
+});
+
 const checkAvailabilitySchema = z.object({
   eventTypeSlug: z.string(),
-  dateFrom: z.string().datetime(),
-  dateTo: z.string().datetime(),
+  dateFrom: isoDateOrDateTime,
+  dateTo: isoDateOrDateTime,
   timeZone: z.string().default("Europe/Belgrade"),
 });
 
@@ -92,7 +96,11 @@ async function callTool(
   if (toolName === "check_availability") {
     const parsed = checkAvailabilitySchema.safeParse(toolInput);
     if (!parsed.success) {
-      return JSON.stringify({ error: "Neispravni parametri za proveru termina." });
+      return JSON.stringify({
+        error: "Neispravni parametri za proveru termina.",
+        details: parsed.error.flatten().fieldErrors,
+        received: toolInput,
+      });
     }
     const eventType = await caller.eventType.getPublic({
       salonSlug,
@@ -214,6 +222,10 @@ async function callTool(
 }
 
 export async function POST(request: Request) {
+  if (!isMessagingAiEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const guardError = await verifyAgentRequest(request, "agent-messaging");
   if (guardError) return guardError;
 
