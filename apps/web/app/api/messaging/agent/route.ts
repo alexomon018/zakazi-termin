@@ -268,8 +268,10 @@ export async function POST(request: Request) {
   const { salonSlug } = salon;
   const salonName = salon.salonName ?? salonSlug;
 
+  const baselineMessages = conversation.messages as unknown as Anthropic.MessageParam[];
+  const baselineMessagesLength = baselineMessages.length;
   const initialMessages: Anthropic.MessageParam[] = [
-    ...(conversation.messages as unknown as Anthropic.MessageParam[]),
+    ...baselineMessages,
     { role: "user", content: userMessage },
   ];
 
@@ -292,12 +294,14 @@ export async function POST(request: Request) {
     finalMessages = result.messages;
   } catch (error) {
     logger.error("Claude API error", { error, platform, salonUserId });
+    finalMessages = [...initialMessages, { role: "assistant", content: DEFAULT_ERROR_REPLY }];
   }
 
   const persistErr = await persistMessages(
     conversation.id,
     conversation.messagesVersion,
-    finalMessages
+    finalMessages,
+    baselineMessagesLength
   );
   if (persistErr) return persistErr;
 
@@ -311,7 +315,8 @@ export async function POST(request: Request) {
 async function persistMessages(
   conversationId: string,
   initialVersion: number,
-  finalMessages: Anthropic.MessageParam[]
+  finalMessages: Anthropic.MessageParam[],
+  baselineMessagesLength: number
 ): Promise<NextResponse | null> {
   let currentVersion = initialVersion;
   let messagesToWrite = finalMessages;
@@ -338,9 +343,10 @@ async function persistMessages(
     currentVersion = fresh.messagesVersion;
     const existingMessages = fresh.messages as unknown as Anthropic.MessageParam[];
 
-    // Keep everything the DB already has, then append only the turns
-    // this request produced beyond the shared prefix length.
-    const newTail = finalMessages.slice(existingMessages.length);
+    // Append only the turns this request produced beyond the baseline it
+    // started from — slicing by existingMessages.length would drop our turns
+    // if a concurrent writer already grew the DB.
+    const newTail = finalMessages.slice(baselineMessagesLength);
     messagesToWrite = [...existingMessages, ...newTail];
   }
 

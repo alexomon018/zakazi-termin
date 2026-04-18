@@ -95,7 +95,16 @@ export const agentTools: Anthropic.Tool[] = [
 ];
 
 export function buildSystemPrompt(salonName: string, now: Date = new Date()): string {
-  const today = now.toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Belgrade",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const year = parts.find((p) => p.type === "year")?.value;
+  const month = parts.find((p) => p.type === "month")?.value;
+  const day = parts.find((p) => p.type === "day")?.value;
+  const today = `${year}-${month}-${day}`;
   return `Ti si asistent za zakazivanje termina u salonu "${salonName}". Komunikacija je isključivo na srpskom jeziku, neformalan ton (ti forma).
 
 Današnji datum: ${today} (Europe/Belgrade). Kada korisnik pomene relativne datume ("danas", "sutra", "petak", "17. april"), izračunaj apsolutni datum iz ovoga pre poziva alata.
@@ -219,6 +228,10 @@ export async function runAgentLoop({
       continue;
     }
 
+    const partialText = collectTextBlocks(response.content);
+    if (partialText) {
+      reply = reply === DEFAULT_ERROR_REPLY ? partialText : `${reply}\n\n${partialText}`;
+    }
     break;
   }
 

@@ -24,13 +24,6 @@ export async function GET(request: Request) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  console.log(
-    "[whatsapp-debug] mode=%s token=%s secret=%s match=%s",
-    mode,
-    token,
-    WHATSAPP_WEBHOOK_SECRET,
-    token === WHATSAPP_WEBHOOK_SECRET
-  );
   if (mode === "subscribe" && token === WHATSAPP_WEBHOOK_SECRET) {
     if (challenge) {
       return new Response(challenge, { status: 200 });
@@ -97,7 +90,10 @@ export async function POST(request: Request) {
     try {
       channel = await resolveChannel("whatsapp", phoneNumberId);
     } catch (error) {
-      logger.warn("Failed to resolve WhatsApp channel", { phoneNumberId, error });
+      logger.warn("Failed to resolve WhatsApp channel", {
+        phoneNumberId,
+        error,
+      });
       return NextResponse.json({ received: true });
     }
 
@@ -110,7 +106,10 @@ export async function POST(request: Request) {
       const rateLimited = await checkChannelRateLimit("whatsapp", phoneNumberId);
       if (rateLimited) return NextResponse.json({ received: true });
     } catch (error) {
-      logger.warn("Rate limit check failed for WhatsApp channel", { phoneNumberId, error });
+      logger.warn("Rate limit check failed for WhatsApp channel", {
+        phoneNumberId,
+        error,
+      });
       return NextResponse.json({ received: true });
     }
 
@@ -123,12 +122,6 @@ export async function POST(request: Request) {
     const timeoutId = setTimeout(() => controller.abort(), AGENT_FETCH_TIMEOUT_MS);
     let agentResponse: Response;
     try {
-      console.log(
-        "[whatsapp] agent base url =",
-        getAppUrl(),
-        "NEXT_PUBLIC_APP_URL =",
-        process.env.NEXT_PUBLIC_APP_URL
-      );
       agentResponse = await fetch(`${getAppUrl()}/api/messaging/agent`, {
         method: "POST",
         signal: controller.signal,
@@ -176,7 +169,11 @@ export async function POST(request: Request) {
 
     await sendWhatsAppMessage(channel.authToken, phoneNumberId, senderPhone, reply);
   } catch (error) {
-    logger.error("WhatsApp message processing failed", { error, senderPhone, phoneNumberId });
+    logger.error("WhatsApp message processing failed", {
+      error,
+      senderPhone,
+      phoneNumberId,
+    });
   }
 
   return NextResponse.json({ received: true });
@@ -209,11 +206,18 @@ async function sendWhatsAppMessage(
 
     if (!res.ok) {
       const error = await res.text();
-      logger.error("WhatsApp send message failed", { to, status: res.status, error });
+      logger.error("WhatsApp send message failed", {
+        to,
+        status: res.status,
+        error,
+      });
     }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      logger.error("WhatsApp send message timed out", { to, timeoutMs: WHATSAPP_SEND_TIMEOUT_MS });
+      logger.error("WhatsApp send message timed out", {
+        to,
+        timeoutMs: WHATSAPP_SEND_TIMEOUT_MS,
+      });
       return;
     }
     throw error;

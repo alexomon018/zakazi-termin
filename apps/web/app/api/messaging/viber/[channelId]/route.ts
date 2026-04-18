@@ -113,7 +113,17 @@ export async function POST(
       return NextResponse.json({ status: 0 });
     }
 
-    const { reply } = (await agentResponse.json()) as { reply: string };
+    const agentJson = (await agentResponse.json()) as { reply?: unknown };
+    const { reply } = agentJson;
+
+    if (typeof reply !== "string" || reply.trim().length === 0) {
+      logger.error("Agent returned invalid reply", {
+        agentResponse: agentJson,
+        senderId,
+        channelId,
+      });
+      return NextResponse.json({ status: 0 });
+    }
 
     await sendViberMessage(channel.authToken, channel.botName ?? DEFAULT_BOT_NAME, senderId, reply);
   } catch (error) {
