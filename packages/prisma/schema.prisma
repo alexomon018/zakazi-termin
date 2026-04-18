@@ -701,9 +701,10 @@ model MessagingChannel {
   externalId   String   // WhatsApp phone_number_id OR Viber channelId (per-bot URL segment)
   salonUserId  String
   salon        User     @relation(fields: [salonUserId], references: [id], onDelete: Cascade)
-  // Viber-only: AES-256-GCM encrypted bot auth token. Null for WhatsApp (uses global access token).
+  // AES-256-GCM encrypted per-salon access token (WhatsApp Cloud API or Viber bot); set via
+  // messagingChannel.createWhatsApp (authTokenEnc: encryptToken) / createViber; webhooks decrypt for outbound sends.
   authTokenEnc String?
-  // Viber-only: bot display name used in outgoing messages.
+  // Viber-only: bot display name.
   botName      String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

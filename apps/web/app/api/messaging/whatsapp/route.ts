@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { getAppUrl, isMessagingAiEnabled, logger } from "@salonko/config";
 import { NextResponse } from "next/server";
 
@@ -8,6 +8,15 @@ const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
 const AGENT_API_SECRET = process.env.AGENT_API_SECRET;
 const WHATSAPP_SEND_TIMEOUT_MS = 5000;
 const AGENT_FETCH_TIMEOUT_MS = 30_000;
+
+/** Stable redaction for E.164 / sender ids in logs (last 4 + short hash). */
+function redactPhone(phone: string): string {
+  const digits = phone.replaceAll(/\D/g, "");
+  const last4 = digits.slice(-4);
+  if (last4.length === 0) return "[redacted]";
+  const hash = createHash("sha256").update(phone, "utf8").digest("hex").slice(0, 8);
+  return `phone:<h:${hash}>…${last4}`;
+}
 
 /** Meta webhook verification handshake */
 export async function GET(request: Request) {
@@ -97,8 +106,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
+    // Outbound token: per-salon credential from MessagingChannel.authTokenEnc (see resolveChannel + createWhatsApp).
     if (!channel?.authToken) {
-      logger.warn("WhatsApp message for unmapped or tokenless phone_number_id", { phoneNumberId });
+      logger.warn("WhatsApp message for unmapped or undecryptable channel (no send token)", {
+        phoneNumberId,
+      });
       return NextResponse.json({ received: true });
     }
 
@@ -139,7 +151,7 @@ export async function POST(request: Request) {
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         logger.error("Agent fetch timed out", {
-          senderPhone,
+          senderPhone: redactPhone(senderPhone),
           phoneNumberId,
           timeoutMs: AGENT_FETCH_TIMEOUT_MS,
         });
@@ -154,7 +166,7 @@ export async function POST(request: Request) {
       const errorBody = await agentResponse.text();
       logger.error("Agent endpoint returned error", {
         status: agentResponse.status,
-        senderPhone,
+        senderPhone: redactPhone(senderPhone),
         phoneNumberId,
         errorBody,
       });
@@ -163,7 +175,9 @@ export async function POST(request: Request) {
 
     const { reply } = (await agentResponse.json()) as { reply?: string };
     if (!reply) {
-      logger.warn("Agent returned empty reply", { senderPhone });
+      logger.warn("Agent returned empty reply", {
+        senderPhone: redactPhone(senderPhone),
+      });
       return NextResponse.json({ received: true });
     }
 
@@ -171,7 +185,7 @@ export async function POST(request: Request) {
   } catch (error) {
     logger.error("WhatsApp message processing failed", {
       error,
-      senderPhone,
+      senderPhone: redactPhone(senderPhone),
       phoneNumberId,
     });
   }
@@ -207,7 +221,7 @@ async function sendWhatsAppMessage(
     if (!res.ok) {
       const error = await res.text();
       logger.error("WhatsApp send message failed", {
-        to,
+        to: redactPhone(to),
         status: res.status,
         error,
       });
@@ -215,7 +229,7 @@ async function sendWhatsAppMessage(
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       logger.error("WhatsApp send message timed out", {
-        to,
+        to: redactPhone(to),
         timeoutMs: WHATSAPP_SEND_TIMEOUT_MS,
       });
       return;

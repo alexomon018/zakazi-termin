@@ -15,7 +15,7 @@ import {
   Label,
 } from "@salonko/ui";
 import { AlertCircle, Check, Copy, MessageCircle, Phone, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type ChannelPlatform = "whatsapp" | "viber";
 
@@ -243,10 +243,12 @@ function AddChannelDialog({
     setBotName("");
   };
 
+  const resetMutationsRef = useRef<(() => void) | null>(null);
+
   const createWhatsApp = trpc.messagingChannel.createWhatsApp.useMutation({
     onSuccess: async () => {
       await utils.messagingChannel.list.invalidate();
-      resetAll();
+      resetMutationsRef.current?.();
       onClose();
     },
   });
@@ -254,15 +256,19 @@ function AddChannelDialog({
   const createViber = trpc.messagingChannel.createViber.useMutation({
     onSuccess: async () => {
       await utils.messagingChannel.list.invalidate();
-      resetAll();
+      resetMutationsRef.current?.();
       onClose();
     },
   });
 
-  const resetAll = () => {
+  resetMutationsRef.current = () => {
     resetForm();
     createWhatsApp.reset();
     createViber.reset();
+  };
+
+  const resetAll = () => {
+    resetMutationsRef.current?.();
   };
 
   const isPending = createWhatsApp.isPending || createViber.isPending;

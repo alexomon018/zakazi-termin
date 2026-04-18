@@ -9,9 +9,12 @@ export type MessagingPlatform = "whatsapp" | "viber";
 export interface ResolvedChannel {
   channelId: string;
   salonUserId: string;
-  /** Decrypted Viber bot auth token. Undefined for WhatsApp. */
+  /**
+   * Decrypted outbound credential: Viber bot token or WhatsApp Cloud API access token
+   * (`messagingChannel.createWhatsApp` stores `encryptToken(accessToken)` in `authTokenEnc`).
+   */
   authToken?: string;
-  /** Viber bot display name. Undefined for WhatsApp. */
+  /** Viber-only bot display name. */
   botName?: string;
 }
 

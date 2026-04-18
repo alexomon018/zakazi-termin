@@ -30,8 +30,8 @@ const checkAvailabilitySchema = z.object({
 
 const proposeBookingSchema = z.object({
   eventTypeSlug: z.string(),
-  startTime: z.string().datetime(),
-  endTime: z.string().datetime(),
+  startTime: z.string().datetime({ offset: true }),
+  endTime: z.string().datetime({ offset: true }),
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
@@ -131,6 +131,10 @@ async function callTool(
     });
     if (!eventType) return JSON.stringify({ error: "Usluga nije pronađena." });
 
+    await prisma.agentBookingProposal.deleteMany({
+      where: { conversationId, expiresAt: { lt: new Date() } },
+    });
+
     const proposal = await prisma.agentBookingProposal.create({
       data: {
         conversationId,
@@ -170,7 +174,8 @@ async function callTool(
         error: "Predlog nije pronađen. Pripremi novi predlog kroz propose_booking.",
       });
     }
-    if (proposal.expiresAt.getTime() < Date.now()) {
+    const now = new Date();
+    if (proposal.expiresAt.getTime() < now.getTime()) {
       await prisma.agentBookingProposal.delete({ where: { id: proposal.id } });
       return JSON.stringify({
         error: "Predlog je istekao. Pripremi novi predlog kroz propose_booking.",
@@ -188,34 +193,47 @@ async function callTool(
     });
     if (!eventType) return JSON.stringify({ error: "Usluga nije pronađena." });
 
-    const booking = await caller.booking.create({
-      eventTypeId: eventType.id,
-      startTime: new Date(payload.data.startTime),
-      endTime: new Date(payload.data.endTime),
-      name: payload.data.name,
-      email: payload.data.email,
-      phoneNumber: payload.data.phone,
-      notes: payload.data.notes,
-      timeZone: payload.data.timeZone,
-      locale: "sr",
+    const claimed = await prisma.agentBookingProposal.deleteMany({
+      where: {
+        id: proposal.id,
+        conversationId,
+        expiresAt: { gt: now },
+      },
     });
-
-    try {
-      await prisma.agentBookingProposal.delete({ where: { id: proposal.id } });
-    } catch (deleteErr) {
-      logger.error("Failed to delete booking proposal after successful booking", {
-        proposalId: proposal.id,
-        bookingUid: booking.uid,
-        error: deleteErr,
+    if (claimed.count !== 1) {
+      return JSON.stringify({
+        error:
+          "Predlog nije moguće potvrditi (već iskorišćen ili istekao). Pripremi novi predlog kroz propose_booking.",
       });
     }
 
-    return JSON.stringify({
-      uid: booking.uid,
-      startTime: booking.startTime,
-      endTime: booking.endTime,
-      status: booking.status,
-    });
+    try {
+      const booking = await caller.booking.create({
+        eventTypeId: eventType.id,
+        startTime: new Date(payload.data.startTime),
+        endTime: new Date(payload.data.endTime),
+        name: payload.data.name,
+        email: payload.data.email,
+        phoneNumber: payload.data.phone,
+        notes: payload.data.notes,
+        timeZone: payload.data.timeZone,
+        locale: "sr",
+      });
+      return JSON.stringify({
+        uid: booking.uid,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        status: booking.status,
+      });
+    } catch (createErr) {
+      logger.error("Booking create failed after proposal was claimed", {
+        proposalId: proposal.id,
+        error: createErr,
+      });
+      return JSON.stringify({
+        error: "Kreiranje termina nije uspelo. Pripremi novi predlog kroz propose_booking.",
+      });
+    }
   }
 
   return JSON.stringify({ error: `Unknown tool: ${toolName}` });

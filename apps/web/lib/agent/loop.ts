@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { logger } from "@salonko/config";
 
 export const MAX_TOOL_ROUNDS = 5;
 export const MAX_HISTORY_MESSAGES = 40;
@@ -184,14 +185,11 @@ export async function runAgentLoop({
       messages: working,
     });
 
-    console.log(
-      "[agent] round",
+    logger.debug("agent round", {
       round,
-      "stop_reason=",
-      response.stop_reason,
-      "blocks=",
-      response.content.map((b) => b.type)
-    );
+      stopReason: response.stop_reason,
+      blockTypes: response.content.map((b) => b.type),
+    });
     working.push({ role: "assistant", content: response.content });
 
     if (response.stop_reason === "end_turn") {
