@@ -168,6 +168,10 @@ model User {
   // Email drip campaign
   emailDripRecords EmailDripRecord[]
 
+  // Messaging channels (WhatsApp / Viber)
+  messagingChannels    MessagingChannel[]
+  agentConversations   AgentConversation[]
+
   @@index([email])
   @@index([salonSlug])
 }
@@ -669,4 +673,53 @@ model EmailDripRecord {
 
   @@unique([userId, emailKey])
   @@index([userId])
+}
+
+// ===== AI AGENT =====
+
+model AgentConversation {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platform        String   // "whatsapp" | "viber"
+  externalId      String   // platform-specific conversation/user ID
+  salonUserId     String
+  salon           User     @relation(fields: [salonUserId], references: [id], onDelete: Cascade)
+  messages        Json     // Claude message history array
+  messagesVersion Int      @default(0) // optimistic concurrency guard for message writes
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  proposals AgentBookingProposal[]
+
+  @@unique([platform, externalId, salonUserId])
+  @@index([salonUserId])
+  @@index([updatedAt])
+}
+
+model MessagingChannel {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  platform     String   // "whatsapp" | "viber"
+  externalId   String   // WhatsApp phone_number_id OR Viber channelId (per-bot URL segment)
+  salonUserId  String
+  salon        User     @relation(fields: [salonUserId], references: [id], onDelete: Cascade)
+  // AES-256-GCM encrypted per-salon access token (WhatsApp Cloud API or Viber bot); set via
+  // messagingChannel.createWhatsApp (authTokenEnc: encryptToken) / createViber; webhooks decrypt for outbound sends.
+  authTokenEnc String?
+  // Viber-only: bot display name.
+  botName      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([platform, externalId])
+  @@index([salonUserId])
+}
+
+model AgentBookingProposal {
+  id             String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversationId String            @db.Uuid
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  payload        Json              // { eventTypeSlug, startTime, endTime, name, email, phone?, notes?, timeZone }
+  expiresAt      DateTime
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, expiresAt])
 }

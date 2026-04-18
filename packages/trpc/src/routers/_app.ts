@@ -3,6 +3,7 @@ import { availabilityRouter } from "./availability";
 import { bookingRouter } from "./booking";
 import { calendarRouter } from "./calendar";
 import { eventTypeRouter } from "./eventType";
+import { messagingChannelRouter } from "./messagingChannel";
 import { organizationRouter } from "./organization";
 import { outOfOfficeRouter } from "./outOfOffice";
 import { salonRouter } from "./salon";
@@ -21,6 +22,7 @@ export const appRouter = router({
   organization: organizationRouter,
   team: teamRouter,
   salon: salonRouter,
+  messagingChannel: messagingChannelRouter,
 });
 
 export type AppRouter = typeof appRouter;

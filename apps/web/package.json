@@ -15,9 +15,15 @@
     "test:e2e:headed": "playwright test --headed",
     "test:db:start": "docker compose -f ../../docker-compose.test.yml up -d",
     "test:db:stop": "docker compose -f ../../docker-compose.test.yml down",
-    "test:db:reset": "docker compose -f ../../docker-compose.test.yml down -v && docker compose -f ../../docker-compose.test.yml up -d"
+    "test:db:reset": "docker compose -f ../../docker-compose.test.yml down -v && docker compose -f ../../docker-compose.test.yml up -d",
+    "agent:eval": "tsx evals/agent/runEvals.ts",
+    "agent:eval:single": "tsx evals/agent/runEvals.ts --suite single-turn",
+    "agent:eval:multi": "tsx evals/agent/runEvals.ts --suite multi-turn",
+    "agent:eval:lmnr:single": "tsx evals/agent/single-turn.eval.ts",
+    "agent:eval:lmnr:multi": "tsx evals/agent/multi-turn.eval.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.55.0",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -62,6 +68,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@lmnr-ai/lmnr": "^0.8.0",
     "@playwright/test": "^1.57.0",
     "@prisma/nextjs-monorepo-workaround-plugin": "^7.6.0",
     "@tailwindcss/typography": "^0.5.19",
@@ -73,6 +80,7 @@
     "postcss": "^8.4.49",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.16",
+    "tsx": "^4.19.0",
     "typescript": "^5.7.2"
   }
 }

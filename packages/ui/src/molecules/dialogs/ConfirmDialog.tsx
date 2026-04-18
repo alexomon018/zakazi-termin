@@ -11,6 +11,7 @@ import {
 } from "@salonko/ui/atoms/Dialog";
 import { Input } from "@salonko/ui/atoms/Input";
 import { Label } from "@salonko/ui/atoms/Label";
+import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 
 interface InputConfig {
@@ -37,6 +38,8 @@ interface ConfirmDialogProps {
   variant?: "default" | "destructive";
   /** Optional input field configuration */
   inputConfig?: InputConfig;
+  /** Shown under the description (e.g. mutation error message) */
+  errorMessage?: string;
 }
 
 export function ConfirmDialog({
@@ -51,6 +54,7 @@ export function ConfirmDialog({
   isLoading = false,
   variant = "destructive",
   inputConfig,
+  errorMessage,
 }: ConfirmDialogProps) {
   const [inputValue, setInputValue] = useState("");
 
@@ -77,6 +81,15 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {errorMessage ? (
+          <div
+            role="alert"
+            className="flex gap-2 items-center p-3 rounded-md bg-destructive/10 border border-destructive/20"
+          >
+            <AlertCircle className="w-4 h-4 text-destructive shrink-0" aria-hidden="true" />
+            <span className="text-sm text-destructive">{errorMessage}</span>
+          </div>
+        ) : null}
         {inputConfig && (
           <div className="space-y-4 py-4">
             <div className="space-y-2">

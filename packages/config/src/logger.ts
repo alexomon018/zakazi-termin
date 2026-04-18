@@ -51,6 +51,19 @@ class Logger {
   }
 
   /**
+   * Log a debug message to Sentry (may be filtered by environment sampling).
+   */
+  debug(message: string, context?: LoggerContext): void {
+    Sentry.captureMessage(message, {
+      level: "debug",
+      tags: {
+        source: "logger",
+      },
+      extra: context ? this.sanitizeContext(context) : undefined,
+    });
+  }
+
+  /**
    * Log a warning to Sentry
    * @param message - Warning message
    * @param context - Additional context/extra data

@@ -81,3 +81,17 @@ export const publicApiRateLimiter: Ratelimit | null = sharedRedis
       ephemeralCache: sharedEphemeralCache,
     })
   : null;
+
+/**
+ * Per-messaging-channel rate limiter. Bucket key should be
+ * `messaging:<platform>:<externalId>` so one noisy salon cannot exhaust
+ * shared agent quotas.
+ */
+export const messagingChannelRateLimiter: Ratelimit | null = sharedRedis
+  ? new Ratelimit({
+      redis: sharedRedis,
+      limiter: Ratelimit.slidingWindow(60, "1 m"), // 60 inbound messages per minute per channel
+      prefix: RATE_LIMIT_PREFIX,
+      ephemeralCache: sharedEphemeralCache,
+    })
+  : null;
